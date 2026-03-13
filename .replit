@@ -15,7 +15,7 @@ run = ["npm", "run", "start"]
 PORT = "5000"
 
 [workflows]
-runButton = "Start application"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
@@ -68,6 +68,7 @@ defaultBucketID = "replit-objstore-3a197262-446f-4f16-bd21-669a78015258"
 
 [[ports]]
 localPort = 5000
+externalPort = 5000
 
 [[ports]]
 localPort = 5173
