@@ -5175,17 +5175,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const caseData = await storage.getCaseById(caseId);
-      if (!caseData) {
-        return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
-      }
-
-      const userRole = req.session.userRole;
-      const isPrivilegedRole = userRole === "관리자" || userRole === "심사사";
-      if (!isPrivilegedRole && caseData.assignedTo !== req.session.userId) {
-        return res.status(403).json({ error: "해당 케이스에 대한 권한이 없습니다" });
-      }
-
       console.log(
         `[direct-upload] Saving document for case ${caseId}, file: ${fileName}, size: ${fileSize}`,
       );
