@@ -1,0 +1,95 @@
+이미 존재하는 이 프로젝트에 “누수관리 견적 입력 UI” 컴포넌트를 추가하라. 
+데이터는 CSV가 아니라 **관리자설정 → DB관리**에 업로드된 **엑셀 데이터**를 통해 로드해야 한다.
+
+요구사항
+1) #leak-estimator 라는 컨테이너에 mount되는 단일 컴포넌트를 만든다. (페이지 아무 곳에 <div id="leak-estimator"></div>만 넣으면 뜨게)
+2) 파일 구성:
+   - /public/leak-estimator.css  : 스타일
+   - /public/leak-estimator.js   : 컴포넌트(HTML/CSS/JS 동작 포함)
+   - (선택) /public/xlsx.min.js  : 브라우저에서 엑셀 파싱이 필요할 때 SheetJS CDN 사용
+   * 프레임워크는 쓰지 말고 순수 바닐라 JS로 작성.
+
+3) **데이터 소스 어댑터 패턴**으로 구현:
+   - AdminAPIAdapter: 관리자가 올린 엑셀을 백엔드에서 JSON으로 노출하는 엔드포인트를 호출 (예: GET /api/admin/db/price-catalog).
+     - 어댑터 함수 형태: `async function fetchPriceCatalogFromAdmin(){ ... return rows }`
+     - rows는 아래 “표준 스키마” 배열로 반환
+   - ExcelXlsxAdapter (대안): 만약 프론트에서 직접 xlsx 파일 URL을 받아 파싱해야 하면, `xlsx.min.js`(SheetJS)로 파싱하도록 구현.
+     - `async function fetchPriceCatalogFromXlsx(url){ ... }`
+     - URL은 옵션으로 주입.
+
+   기본값은 AdminAPIAdapter를 사용하되, 전역 설정에서 쉽게 ExcelXlsxAdapter로 바꿀 수 있게 `LeakEstimator.mount(selector, { dataSource: 'admin' | 'xlsx', xlsxUrl?: string })` 형태로 설계.
+
+4) 표준 스키마(메모리 카탈로그):
+   CSV가 아니라도 동일 구조의 배열로 변환해 사용한다:
+   {
+     공종: string,
+     공사명: string,
+     세부공사: '노무비' | '일위대가',
+     세부항목: string,
+     단위: string,              // 노무비: '인' 또는 '회', 일위대가: 빈 문자열 허용
+     단가_인?: number|null,     // 노무비에만 값
+     단가_천장?: number|null,
+     단가_벽체?: number|null,
+     단가_바닥?: number|null,
+     단가_길이?: number|null
+   }
+
+5) 백엔드 JSON이 엑셀 그대로일 수 있으므로, **전처리(Transform) 파이프라인** 포함:
+   - 상하 병합된 표일 경우 `공종 / 공사명(품명) / 세부공사`는 forward-fill 처리
+   - “세부항목”은 엑셀 4번째 열(예: ‘Unnamed: 3’)에서 받아오되, 실제 필드명이 다르면 매핑 가능하도록 옵션 제공
+   - 숫자(예: '9,484')는 천단위 콤마 제거 후 정수 변환
+   - “누수탐지비용/종합검사” 특수 케이스:
+     세부공사 셀에 `1회 - 300,000\n2회 - 400,000\n3회 이상 - 500,000` 같이 들어오면
+     이를 3행으로 분해: 세부공사='노무비', 세부항목='종합검사(1회|2회|3회 이상)', 단위='회', 단가_인=각 금액
+
+6) UI/동작 (디자인은 흰색 카드 + 연한 블루 섹션):
+   - 테이블 상단: “행 추가” 버튼
+   - 열 구성(왼→오):
+     [✓] 선택 | 공종(select) | 공사명(select) | 세부공사(select: 존재할 때만 노출/둘 중 하나면 자동 선택+disabled) | 세부항목(select: 세부공사에 따라 필터) | 단위(readonly) | 기준가(원/단위, readonly) | 수량(number, 기본 1) | (연한 블루 박스) 적용면(천장/벽체/바닥/길이, 라디오-칩) + 기준가(㎡/길이, readonly) + 피해면적(number, 기본 30) | 금액(원, readonly) | 복제 버튼
+   - 선택 흐름: 공종 → 공사명 → 세부공사 → 세부항목 → 적용면
+   - 계산:
+     · 노무비: 금액 = 단가_인 × 수량
+     · 일위대가: 금액 = (선택면 단가 × 피해면적) × 수량
+     ※ 선택면 단가 키 매핑: {벽체: 단가_벽체, 바닥: 단가_바닥, 천장: 단가_천장, 길이: 단가_길이}
+   - 표시는 천단위 콤마, 내부 계산은 정수
+   - “복제”는 현재 행의 상태(선택값/수량/면적/적용면)를 그대로 복사해 새 행 추가
+
+7) 마운트 방식:
+   - 전역 네임스페이스에 `window.LeakEstimator` 제공
+   - 사용 예:
+     ```
+     <div id="leak-estimator"></div>
+     <link rel="stylesheet" href="/public/leak-estimator.css">
+     <script src="/public/leak-estimator.js"></script>
+     <script>
+       LeakEstimator.mount('#leak-estimator', {
+         dataSource: 'admin',                  // 기본: 관리자 DB API 사용
+         adminApi: '/api/admin/db/price-catalog',  // 실제 엔드포인트 경로를 여기로
+         // dataSource: 'xlsx',
+         // xlsxUrl: '/uploads/노무비_DB.xlsx',
+         fieldMap: {                           // 백엔드 JSON 필드명이 다를 때 매핑
+           work: '공종',
+           name: '공사명(품명)',
+           group: '세부공사',
+           item: 'Unnamed: 3',
+           labor: '인',
+           ceil: '천장',
+           wall: '벽체',
+           floor: '바닥',
+           len: '길이'
+         }
+       });
+     </script>
+     ```
+
+8) 성능/안정성
+   - 드롭다운 선택 변경 시 고유값(Set)으로 목록 구성
+   - 라디오(적용면)는 단일 선택 강제
+   - 예외/누락 데이터 있어도 UI가 깨지지 않도록 방어코드 작성
+
+9) 산출물
+   - /public/leak-estimator.css
+   - /public/leak-estimator.js
+   - (필요 시) /public/xlsx.min.js는 CDN으로 링크만
+
+완료 후, 기존 페이지 아무 곳에 <div id="leak-estimator"></div> 넣고, 위 사용 예처럼 mount 스크립

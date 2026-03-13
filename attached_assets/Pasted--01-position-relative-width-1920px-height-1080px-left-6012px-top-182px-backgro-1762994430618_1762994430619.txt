@@ -1,0 +1,5291 @@
+/* 도면작성_01 */
+
+position: relative;
+width: 1920px;
+height: 1080px;
+left: 6012px;
+top: 182px;
+
+background: #FFFFFF;
+
+
+/* grid */
+
+position: absolute;
+width: 1921px;
+height: 1080px;
+left: 0px;
+top: 0px;
+
+
+
+/* horizental */
+
+position: absolute;
+width: 1920px;
+height: 1080px;
+left: 0px;
+top: 0px;
+
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 0.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 10.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 20.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 30.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 40.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 50.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 60.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 70.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 80.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 90.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 100.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 110.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 120.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 130.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 140.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 150.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 160.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 170.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 180.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 190.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 200.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 210.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 220.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 230.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 240.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 250.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 260.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 270.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 280.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 290.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 300.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 310.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 320.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 330.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 340.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 350.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 360.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 370.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 380.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 390.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 400.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 410.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 420.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 430.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 440.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 450.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 460.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 470.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 480.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 490.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 500.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 510.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 520.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 530.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 540.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 550.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 560.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 570.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 580.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 590.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 600.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 610.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 620.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 630.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 640.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 650.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 660.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 670.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 680.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 690.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 700.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 710.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 720.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 730.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 740.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 750.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 760.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 779.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 770px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 789.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 799.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 809.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 819.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 829.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 839.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 849.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 859.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 869.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 879.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 889.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 899.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 909.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 919.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 929.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 939.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 949.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 959.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 969.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 979.5px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 990px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1000px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1010px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1020px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1030px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1040px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1050px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1060px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1070px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1080px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1090px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1100px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1110px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1120px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1130px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1140px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1150px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1160px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1170px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1180px;
+
+background: #DADADA;
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1920px;
+height: 1px;
+left: calc(50% - 1920px/2);
+top: 1190px;
+
+background: #DADADA;
+
+
+/* vertical */
+
+position: absolute;
+width: 1080px;
+height: 1921px;
+left: 0px;
+top: 0px;
+
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 360.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 370.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 380.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 390.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 400.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 410.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 420.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 430.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 440.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 450.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 460.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 470.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 480.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 490.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 500.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 510.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 520.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 530.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 540.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 550.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 560.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 570.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 580.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 590.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 600.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 610.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 620.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 630.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 640.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 650.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 660.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 670.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 680.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 690.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 700.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 710.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 720.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 730.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 740.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 750.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 760.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 770.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 780.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 790.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 800.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 810.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 820.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 830.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 840.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 850.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 860.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 870.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 880.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 890.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 900.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 910.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 920.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 930.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 940.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 950.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 960.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 970.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 980.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 990.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1000.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1010.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1020.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1030.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1040.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1050.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1060.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1070.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1080.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1090.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1100.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1110.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1120.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1130.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1140.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1150.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1160.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1170.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1180.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1190.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1200.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1210.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1220.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1230.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1240.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1250.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1260.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1270.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1280.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1290.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1300.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1310.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1320.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1330.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1330.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1340.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1350.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1360.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1370.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1380.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1390.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1400.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1410.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1420.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1430.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1440.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1450.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1460.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1470.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1480.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1490.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1500.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1510.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1520.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1530.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1540.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1550.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1560.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1570.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1580.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1590.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1600.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1610.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1620.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1630.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1640.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1650.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1660.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1670.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1680.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1690.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1700.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1710.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1720.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1730.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1740.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1750.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1760.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1770.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1780.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1790.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1800.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1810.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1820.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1830.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1840.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1850.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1860.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1870.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1880.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1890.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1900.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1910.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1920.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1930.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1940.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1950.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1960.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1970.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1980.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 1990.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2000.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2010.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2020.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2030.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2040.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2050.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2060.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2070.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2080.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2090.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2100.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2110.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2120.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2130.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2140.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2150.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2160.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2170.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2180.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2190.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2200.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2210.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2220.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2230.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2240.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2250.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2260.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2270.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2280.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2290.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Vector 2 (Stroke) */
+
+position: absolute;
+width: 1800px;
+height: 1px;
+left: calc(50% - 1800px/2 + 2300.5px);
+top: -360px;
+
+background: #DADADA;
+transform: rotate(-90deg);
+
+
+/* Rectangle 33163 */
+
+box-sizing: border-box;
+
+position: absolute;
+width: 140px;
+height: 10px;
+left: 1896px;
+top: calc(50% - 10px/2 - 65px);
+
+background: rgba(12, 12, 12, 0.3);
+border: 1px solid rgba(0, 143, 237, 0.2);
+backdrop-filter: blur(7px);
+/* Note: backdrop-filter has minimal browser support */
+border-radius: 10px;
+transform: rotate(-90deg);
+
+
+/* Frame 1707491018 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 36px 32px;
+gap: 20px;
+
+position: absolute;
+width: 1920px;
+height: 82px;
+right: 0px;
+top: 89px;
+
+
+
+/* Frame 1707491031 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 16px;
+
+width: 130px;
+height: 33px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 도면 작성 */
+
+width: 94px;
+height: 33px;
+
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 26px;
+line-height: 128%;
+/* or 33px */
+letter-spacing: -0.02em;
+
+color: #0C0C0C;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* icon */
+
+width: 20px;
+height: 20px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Bounding box */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #D9D9D9;
+backdrop-filter: blur(7px);
+/* Note: backdrop-filter has minimal browser support */
+
+
+/* kid_star */
+
+position: absolute;
+left: 10.42%;
+right: 10.35%;
+top: 10.42%;
+bottom: 14.58%;
+
+background: rgba(12, 12, 12, 0.24);
+backdrop-filter: blur(7px);
+/* Note: backdrop-filter has minimal browser support */
+
+
+/* icon */
+
+width: 24px;
+height: 24px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Bounding box */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #D9D9D9;
+
+
+/* keyboard_arrow_down */
+
+position: absolute;
+left: 27.75%;
+right: 27.73%;
+top: 36.07%;
+bottom: 38.85%;
+
+background: rgba(12, 12, 12, 0.7);
+
+
+/* Frame 1707491380 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: flex-end;
+align-items: center;
+padding: 0px;
+gap: 12px;
+
+width: 1662px;
+height: 46px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Frame 1707490450 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px 32px;
+gap: 10px;
+
+width: 76px;
+height: 46px;
+
+background: #008FED;
+/* main2 */
+box-shadow: 2px 4px 30px #BDD1F0;
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 저장 */
+
+width: 31px;
+height: 23px;
+
+/* pretendard/semibold/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: #FDFDFD;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707491313 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px 16px;
+gap: 10px;
+
+width: 94px;
+height: 46px;
+
+background: #FDFDFD;
+/* main2 */
+box-shadow: 2px 4px 30px #BDD1F0;
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* 내보내기 */
+
+width: 62px;
+height: 23px;
+
+/* pretendard/semibold/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: #008FED;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707490987 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 7px;
+
+position: absolute;
+width: 236px;
+height: 268px;
+left: 32px;
+top: 171px;
+
+background: rgba(255, 255, 255, 0.14);
+box-shadow: 0px 42px 50px rgba(189, 189, 189, 0.8);
+backdrop-filter: blur(7px);
+/* Note: backdrop-filter has minimal browser support */
+border-radius: 12px;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 20px;
+gap: 6px;
+
+width: 236px;
+height: 48px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* 현장 입력 */
+
+width: 58px;
+height: 20px;
+
+/* pretendard/medium/16 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 128%;
+/* or 20px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.8);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707491033 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px 8px;
+gap: 10px;
+
+width: 236px;
+height: 48px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 12px;
+gap: 6px;
+
+width: 220px;
+height: 48px;
+
+background: rgba(12, 12, 12, 0.08);
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* 도면 작성 */
+
+width: 58px;
+height: 20px;
+
+/* pretendard/bold/16 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 700;
+font-size: 16px;
+line-height: 128%;
+/* or 20px */
+letter-spacing: -0.02em;
+
+color: #008FED;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 20px;
+gap: 6px;
+
+width: 236px;
+height: 48px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* 증빙자료 등록 */
+
+width: 85px;
+height: 20px;
+
+/* pretendard/medium/16 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 128%;
+/* or 20px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.8);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 20px;
+gap: 6px;
+
+width: 236px;
+height: 48px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* 견적서 작성 */
+
+width: 72px;
+height: 20px;
+
+/* pretendard/medium/16 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 128%;
+/* or 20px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.8);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 20px;
+gap: 6px;
+
+width: 236px;
+height: 48px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+align-self: stretch;
+flex-grow: 0;
+
+
+/* 현장출동보고서 */
+
+width: 95px;
+height: 20px;
+
+/* pretendard/medium/16 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 500;
+font-size: 16px;
+line-height: 128%;
+/* or 20px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.8);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707491380 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: flex-end;
+align-items: center;
+padding: 0px;
+gap: 12px;
+
+position: absolute;
+width: 1662px;
+height: 46px;
+left: 226px;
+top: 105px;
+
+
+
+/* Frame 1707490450 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px 32px;
+gap: 10px;
+
+width: 76px;
+height: 46px;
+
+background: #008FED;
+/* main2 */
+box-shadow: 2px 4px 30px #BDD1F0;
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 저장 */
+
+width: 31px;
+height: 23px;
+
+/* pretendard/semibold/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: #FDFDFD;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707491313 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px 16px;
+gap: 10px;
+
+width: 103px;
+height: 46px;
+
+background: #FDFDFD;
+/* main2 */
+box-shadow: 2px 4px 30px #BDD1F0;
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* PNG 저장 */
+
+width: 71px;
+height: 23px;
+
+/* pretendard/semibold/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: #008FED;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707490516 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+padding: 16px;
+gap: 54px;
+
+position: absolute;
+width: 436px;
+height: 46px;
+left: 30px;
+top: 171px;
+
+background: rgba(12, 12, 12, 0.04);
+backdrop-filter: blur(7px);
+/* Note: backdrop-filter has minimal browser support */
+border-radius: 12px;
+
+
+/* Frame 1707490515 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 8px;
+
+margin: 0 auto;
+width: 188px;
+height: 20px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707490514 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 16px;
+
+width: 188px;
+height: 20px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Ellipse 572 */
+
+width: 8px;
+height: 8px;
+
+background: #008FED;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707490510 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 9px;
+
+width: 164px;
+height: 20px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* MG손해보험 */
+
+width: 80px;
+height: 20px;
+
+/* pretendard/semibold/16 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 16px;
+line-height: 128%;
+/* or 20px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.9);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 25219943 */
+
+width: 75px;
+height: 20px;
+
+/* pretendard/semibold/16 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 16px;
+line-height: 128%;
+/* or 20px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.9);
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* icon */
+
+margin: 0 auto;
+width: 24px;
+height: 24px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Bounding box */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #D9D9D9;
+
+
+/* arrow_drop_down */
+
+position: absolute;
+left: 34.29%;
+right: 34.29%;
+top: 42.71%;
+bottom: 40.07%;
+
+background: rgba(12, 12, 12, 0.4);
+
+
+/* Frame 1707491268 */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: center;
+padding: 0px;
+gap: 8px;
+
+position: absolute;
+width: 304px;
+height: 90px;
+left: calc(50% - 304px/2);
+top: 976px;
+
+
+
+/* Component 95 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 12px;
+gap: 10px;
+
+width: 304px;
+height: 72px;
+
+background: #FDFDFD;
+border: 1px solid rgba(0, 143, 237, 0.2);
+box-shadow: 0px -2px 70px rgba(179, 193, 205, 0.2);
+border-radius: 18px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Component 102 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px;
+gap: 10px;
+
+width: 48px;
+height: 48px;
+
+background: #FDFDFD;
+border-radius: 8px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Component 101 */
+
+width: 28px;
+height: 28px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Bounding box */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #D9D9D9;
+
+
+/* near_me */
+
+position: absolute;
+left: 16.98%;
+right: 18.43%;
+top: 18.35%;
+bottom: 17.1%;
+
+background: rgba(12, 12, 12, 0.8);
+transform: matrix(-1, 0, 0, 1, 0, 0);
+
+
+/* Component 106 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px;
+gap: 10px;
+
+width: 48px;
+height: 48px;
+
+background: #008FED;
+border-radius: 8px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Component 101 */
+
+width: 28px;
+height: 28px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Bounding box */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #D9D9D9;
+
+
+/* add_photo_alternate */
+
+position: absolute;
+left: 14.58%;
+right: 14.58%;
+top: 14.58%;
+bottom: 14.58%;
+
+background: #FDFDFD;
+
+
+/* Component 103 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px;
+gap: 10px;
+
+width: 48px;
+height: 48px;
+
+background: #FDFDFD;
+border-radius: 8px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* Component 101 */
+
+width: 28px;
+height: 28px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Bounding box */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #D9D9D9;
+
+
+/* activity_zone */
+
+position: absolute;
+left: 12.02%;
+right: 12.02%;
+top: 12.02%;
+bottom: 12.02%;
+
+background: rgba(12, 12, 12, 0.8);
+
+
+/* Component 104 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px;
+gap: 10px;
+
+width: 48px;
+height: 48px;
+
+background: #FDFDFD;
+border-radius: 8px;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* Component 101 */
+
+width: 28px;
+height: 28px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Bounding box */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #D9D9D9;
+
+
+/* my_location */
+
+position: absolute;
+left: 7.5%;
+right: 7.5%;
+top: 7.5%;
+bottom: 7.5%;
+
+background: rgba(12, 12, 12, 0.8);
+
+
+/* Component 105 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px;
+gap: 10px;
+
+width: 48px;
+height: 48px;
+
+background: #FDFDFD;
+border-radius: 8px;
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+flex-grow: 0;
+
+
+/* Component 101 */
+
+width: 28px;
+height: 28px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Bounding box */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #D9D9D9;
+
+
+/* select */
+
+position: absolute;
+left: 14.58%;
+right: 14.58%;
+top: 14.58%;
+bottom: 14.58%;
+
+background: rgba(12, 12, 12, 0.8);
+
+
+/* Rectangle 33162 */
+
+box-sizing: border-box;
+
+width: 140px;
+height: 10px;
+
+background: rgba(12, 12, 12, 0.3);
+border: 1px solid rgba(0, 143, 237, 0.2);
+backdrop-filter: blur(7px);
+/* Note: backdrop-filter has minimal browser support */
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Frame 1707490992 */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+
+position: absolute;
+width: 1920px;
+height: 89px;
+left: 0px;
+top: 0px;
+
+background: rgba(255, 255, 255, 0.06);
+border-bottom: 1px solid rgba(0, 143, 237, 0.2);
+backdrop-filter: blur(22px);
+/* Note: backdrop-filter has minimal browser support */
+
+
+/* Frame 1707490989 */
+
+width: 260px;
+height: 89px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* logo */
+
+position: absolute;
+width: 138px;
+height: 25px;
+left: 61px;
+top: 32px;
+
+
+
+/* Frame 2 */
+
+position: absolute;
+left: 0%;
+right: 82.09%;
+top: 0%;
+bottom: 0%;
+
+
+
+/* Vector */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+background: #0C0C0C;
+
+
+/* FLOXN */
+
+position: absolute;
+left: 29.09%;
+right: 5.97%;
+top: 7.8%;
+bottom: 7.8%;
+
+
+
+/* Vector */
+
+position: absolute;
+left: 80.71%;
+right: 5.97%;
+top: 8.96%;
+bottom: 8.95%;
+
+background: #0C0C0C;
+
+
+/* Vector */
+
+position: absolute;
+left: 65.28%;
+right: 19.86%;
+top: 8.96%;
+bottom: 8.95%;
+
+background: #0C0C0C;
+
+
+/* Vector */
+
+position: absolute;
+left: 51.03%;
+right: 33.56%;
+top: 7.8%;
+bottom: 7.8%;
+
+background: #0C0C0C;
+
+
+/* Vector */
+
+position: absolute;
+left: 41.25%;
+right: 48.25%;
+top: 8.96%;
+bottom: 8.95%;
+
+background: #0C0C0C;
+
+
+/* Vector */
+
+position: absolute;
+left: 29.09%;
+right: 59.51%;
+top: 8.96%;
+bottom: 8.95%;
+
+background: #0C0C0C;
+
+
+/* Frame 1707490985 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+gap: 24px;
+
+width: 1660px;
+height: 50px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 1;
+
+
+/* 헤더 메뉴2 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+
+width: 705px;
+height: 50px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 24px;
+gap: 6px;
+
+width: 64px;
+height: 50px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 홈 */
+
+width: 16px;
+height: 23px;
+
+/* pretendard/medium/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 500;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 24px;
+gap: 6px;
+
+width: 129px;
+height: 50px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* 새로운 접수 */
+
+width: 81px;
+height: 23px;
+
+/* pretendard/medium/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 500;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 24px;
+gap: 6px;
+
+width: 110px;
+height: 50px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+
+/* 현장조사 */
+
+width: 62px;
+height: 23px;
+
+/* pretendard/semibold/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: #0C0C0C;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 24px;
+gap: 6px;
+
+width: 140px;
+height: 50px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+
+/* 종합진행관리 */
+
+width: 92px;
+height: 23px;
+
+/* pretendard/medium/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 500;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 24px;
+gap: 6px;
+
+width: 133px;
+height: 50px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+flex-grow: 0;
+
+
+/* 통계 및 정산 */
+
+width: 85px;
+height: 23px;
+
+/* pretendard/medium/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 500;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 헤더 메뉴 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 10px 24px;
+gap: 6px;
+
+width: 129px;
+height: 50px;
+
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 5;
+flex-grow: 0;
+
+
+/* 관리자 설정 */
+
+width: 81px;
+height: 23px;
+
+/* pretendard/medium/18 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 500;
+font-size: 18px;
+line-height: 128%;
+/* identical to box height, or 23px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.5);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;

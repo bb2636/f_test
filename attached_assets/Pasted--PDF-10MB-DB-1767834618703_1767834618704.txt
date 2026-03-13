@@ -1,0 +1,103 @@
+이번 증빙자료 업로드/보고서 불러오기/PDF 생성/이메일 10MB 제한 문제를 근본 해결하기 위해 아래 요구사항대로 전체 구조를 변경·구현해 주세요.
+
+업로드 아키텍처 전환 (DB base64 저장 금지)
+
+신규 증빙자료 업로드는 더 이상 base64(JSON)로 서버에 보내서 PostgreSQL TEXT(fileData)에 저장하지 말고, 반드시 Replit Object Storage(GCS 기반)로 저장하세요.
+
+클라이언트는 Presigned URL로 Object Storage에 “직접 업로드”하고, 서버에는 파일 바이너리/base64를 절대 전달하지 않도록 해주세요.
+
+기존 fileData(base64)는 “레거시 호환” 용도로만 남기고, 신규 업로드는 fileData를 NULL/미사용 처리하세요.
+
+업로드 완료 커밋(무결성) 프로세스 필수
+
+업로드는 2단계로 처리하세요.
+(1) 서버가 presigned URL + storageKey 발급
+(2) 클라이언트 업로드 성공 후 uploadComplete API 호출
+
+uploadComplete API에서 반드시 아래 검증 후에만 DB를 “완료(ready)” 상태로 확정 저장하세요.
+
+Object Storage에 파일이 실제 존재하는지 HEAD/metadata로 확인
+
+fileSize, mimeType 검증
+
+checksum(MD5 또는 SHA256) 검증(가능하면)
+
+업로드가 일부 실패해도 “보고서 데이터 손상 / 불러오기 실패”가 발생하지 않도록,
+DB에는 업로드 성공한 파일만 ready로 남고 실패 파일은 failed로 남게 해주세요.
+
+동시 업로드/재시도 정책 (프론트)
+
+30장 업로드 시 동시 업로드는 3개(최대 5개)로 제한하세요. (p-limit 사용)
+
+업로드 실패 시 p-retry로 3~5회 재시도 + exponential backoff 적용하세요.
+
+resumable/chunk 업로드는 우선 미적용해도 되지만, 업로드 타임아웃/재시도 정책은 반드시 넣어 주세요.
+
+DB 스키마/데이터 모델
+
+증빙자료는 “파일 테이블” 형태로 분리/관리하세요(보고서/케이스와 1:N).
+
+아래 필드는 반드시 저장하세요:
+
+reportId(caseId), tab/category, displayOrder
+
+storageKey (필수)
+
+fileSize, mimeType, checksum, uploadedAt
+
+status(pending/ready/failed)
+
+storageUrl은 만료/정책 변경 가능성이 있으니, 가능하면 DB에는 storageKey만 저장하고,
+조회/다운로드 시점에 URL을 resolve/재발급하는 구조로 구현하세요.
+
+보고서(현장출동보고서) “불러오기” 안정화
+
+보고서 상세 화면에서 증빙자료 목록을 DB에서 조회하여 표시하세요.
+
+각 항목은 status=ready인 파일만 기본 노출하고, failed는 별도 표시(재업로드 유도)하세요.
+
+프론트 미리보기는 URL로 로드하되, URL이 만료될 수 있으므로 필요 시 서버에서 새 URL을 받아오도록 해주세요.
+
+PDF 생성: 용도별 자동 압축(이메일 10MB 제한 필수 대응)
+
+PDF 생성 시 “용도(profile)”를 지원하세요: email / submit(제출용)
+
+email 프로파일은 반드시 10MB 이하가 되도록 자동 압축을 적용하세요:
+
+maxWidth 1600px(또는 그 이하), 96 DPI 수준, JPEG quality 30~40
+
+submit 프로파일은 더 높은 품질(예: maxWidth 2500~3000, quality 60~75)로 생성
+
+sharp를 사용해 Object Storage에서 가져온 이미지들을 리사이즈+재인코딩 후 PDF에 삽입하세요.
+
+PDF 생성 시 이미지 다운로드도 동시성 제한(예: 2~4)과 재시도 적용해서 타임아웃을 방지하세요.
+
+결과 PDF가 email 프로파일인데도 10MB를 넘으면 2차로 quality/해상도를 추가로 낮춰 10MB 이하가 되도록 “보장 로직”을 넣어 주세요.
+
+이메일 첨부/발송 정책
+
+이메일 발송은 email 프로파일 PDF만 첨부(10MB 제한 준수)
+
+제출용/원본이 필요하면 링크(스토리지 다운로드 링크)로 제공하는 옵션도 추가해 주세요.
+
+레거시 호환
+
+기존에 DB fileData(base64)로 저장된 레거시 파일은 그대로 열람/기존 PDF 생성이 가능하도록 분기 처리하세요:
+
+storageKey 있으면 Object Storage 사용
+
+없으면 legacy fileData 사용
+
+단, 신규 업로드는 무조건 Object Storage로만 가도록 강제하세요.
+
+완료 기준(테스트 시나리오)
+
+8MB 이미지 30장을 한 번에 업로드해도 업로드 실패/DB 손상/보고서 불러오기 오류가 없어야 함
+
+email 프로파일로 PDF 생성 후 이메일 첨부가 항상 10MB 이하로 성공해야 함
+
+submit 프로파일로는 품질 유지된 PDF 생성이 가능해야 함
+
+일부 파일 업로드가 실패해도 보고서는 열리고, 실패 파일만 별도로 표시되어야 함
+
+위 요구사항대로 작업 진행하고, 변경되는 API 엔드포인트/DB 마이그레이션/프론트 로직 변경 사항을 간단한 체크리스트 형태로 함께 공유해 주세요.

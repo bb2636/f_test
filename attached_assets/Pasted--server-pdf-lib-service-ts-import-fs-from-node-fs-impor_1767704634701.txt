@@ -1,0 +1,1074 @@
+// server/pdf-lib-service.ts
+import fs from "node:fs";
+import path from "node:path";
+import fontkit from "@pdf-lib/fontkit";
+import sharp from "sharp";
+import {
+  PDFDocument,
+  PDFFont,
+  PDFPage,
+  rgb,
+  StandardFonts,
+} from "pdf-lib";
+
+/**
+ * =========================================
+ * CONFIG
+ * =========================================
+ */
+const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024;
+
+const QUALITY_LEVELS = [
+  { maxDim: 1600, quality: 60 },
+  { maxDim: 1400, quality: 50 },
+  { maxDim: 1200, quality: 40 },
+  { maxDim: 1000, quality: 30 },
+] as const;
+
+// Noto Sans KR 폰트 파일을 프로젝트에 포함시키세요.
+// 예: server/assets/fonts/NotoSansKR-Regular.ttf
+const FONT_REG_PATH = path.join(
+  process.cwd(),
+  "server",
+  "assets",
+  "fonts",
+  "NotoSansKR-Regular.ttf"
+);
+const FONT_BOLD_PATH = path.join(
+  process.cwd(),
+  "server",
+  "assets",
+  "fonts",
+  "NotoSansKR-Bold.ttf"
+);
+
+/**
+ * =========================================
+ * DATA TYPES (프로젝트에 맞게 확장)
+ * =========================================
+ */
+export type EvidenceItem = {
+  id: string;
+  category: string; // "현장사진", "도면계획서", ...
+  subcategory?: string; // "현장출동사진" ...
+  filename: string;
+  uploadedAt: string; // 포맷은 호출부에서 맞추기
+  // 증빙 파일을 가져올 수 있는 URL(또는 내부 경로) - 프로젝트에 맞게 구현
+  fileUrl: string;
+};
+
+export type LaborRow = {
+  workType: string; // 공종
+  workName: string; // 공사명
+  wageItem: string; // 노임항목
+  recoveryArea: number; // 복구면적
+  unitPrice: number; // 적용단가
+  qty: number; // 수량(인)
+  total: number; // 합계
+  expense?: number; // 경비
+  note?: string; // 비고
+};
+
+export type MaterialRow = {
+  workType: string;
+  workName: string;
+  material: string;
+  unitPrice: number;
+  qty: number;
+  unit: string;
+  total: number;
+  note?: string;
+};
+
+export type RecoveryAreaRow = {
+  space: string; // 공간/항목명
+  width: number;
+  height: number;
+  area: number; // width*height
+  standardWorkload?: number; // 기준작업량
+  calculatedArea?: number; // 산출면적
+};
+
+export type DispatchReportData = {
+  // Page1
+  insurerName: string; // 수신 보험사
+  claimNo: string; // 사고접수번호
+  insuredName: string;
+  dispatchManager: string; // 출동담당자
+  partnerCompany: string; // 협력사
+  partnerVendor?: string; // 협력업체(있으면)
+  address: string;
+  dispatchAt: string;
+  작성일_한글: string; // "2026년 1월 3일"
+
+  // Page2
+  visitAt: string;
+  dispatchArea: string;
+  insuredAddress: string;
+  incidentAt: string;
+  category: string;
+  incidentCause: string;
+  specialNotes: string; // 특이사항
+  voc: string; // VOC
+  victimName: string;
+  victimPhone: string;
+  victimAddress: string;
+  processType: string;
+  recoveryMethod: string;
+  authorLabel: string; // "홍길동(협력사)" 등
+
+  // Page3
+  receiptNo: string; // 접수번호
+  drawingImageUrl?: string; // 도면 이미지 URL (없을 수 있음)
+
+  // Evidence Pages
+  evidences: EvidenceItem[];
+
+  // Estimate Page
+  supplierBizNo: string;
+  supplierName: string;
+  supplierCeo: string;
+  estimateAddressLabel?: string; // "현장명(주소)" 옆 값
+  laborRows: LaborRow[];
+  materialRows: MaterialRow[];
+  recoveryAreaRows: RecoveryAreaRow[];
+
+  // Totals (이미 계산해 전달하는 걸 권장)
+  sumLabor: number;
+  sumMaterial: number;
+  subtotal: number;
+  overhead6: number;
+  profit15: number;
+  cutUnder10k: number;
+  vat10: number;
+  grandTotal: number;
+};
+
+/**
+ * =========================================
+ * PUBLIC API
+ * =========================================
+ * - generateDispatchReportPdfBytes(data): PDF bytes 반환
+ * - generateDispatchReportPdfWithSizeLimit(data): 10MB 맞춰 자동 품질 하향
+ */
+export async function generateDispatchReportPdfWithSizeLimit(
+  data: DispatchReportData
+): Promise<Uint8Array> {
+  let lastBytes: Uint8Array | null = null;
+
+  for (const level of QUALITY_LEVELS) {
+    const bytes = await generateDispatchReportPdfBytes(data, level);
+    lastBytes = bytes;
+
+    if (bytes.byteLength <= MAX_PDF_SIZE_BYTES) return bytes;
+  }
+
+  // 최종 레벨도 초과하면, 그래도 반환 (업무 요구에 따라 여기서 throw로 바꿀 수 있음)
+  return lastBytes!;
+}
+
+/**
+ * =========================================
+ * CORE: PDF BUILD
+ * =========================================
+ */
+async function generateDispatchReportPdfBytes(
+  data: DispatchReportData,
+  level: { maxDim: number; quality: number }
+): Promise<Uint8Array> {
+  const pdf = await PDFDocument.create();
+  pdf.registerFontkit(fontkit);
+
+  const fontReg = await embedFont(pdf, FONT_REG_PATH);
+  const fontBold = await embedFont(pdf, FONT_BOLD_PATH);
+
+  // ---- Page 1
+  const p1 = addA4(pdf);
+  drawPage1(p1, data, fontReg, fontBold);
+
+  // ---- Page 2
+  const p2 = addA4(pdf);
+  drawPage2(p2, data, fontReg, fontBold);
+
+  // ---- Page 3 (Drawing)
+  const p3 = addA4(pdf);
+  await drawPage3(p3, data, fontReg, fontBold, level);
+
+  // ---- Evidence Pages
+  await drawEvidencePages(pdf, data, fontReg, fontBold, level);
+
+  // ---- Estimate Page (with recovery-area table)
+  const pEst = addA4(pdf);
+  drawEstimatePage(pEst, data, fontReg, fontBold);
+
+  return await pdf.save();
+}
+
+/**
+ * =========================================
+ * LAYOUT HELPERS
+ * =========================================
+ */
+function addA4(pdf: PDFDocument): PDFPage {
+  // A4 portrait in points (approx): 595.28 x 841.89
+  return pdf.addPage([595.28, 841.89]);
+}
+
+async function embedFont(pdf: PDFDocument, filePath: string): Promise<PDFFont> {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Font file missing: ${filePath}`);
+  }
+  const bytes = fs.readFileSync(filePath);
+  return await pdf.embedFont(bytes, { subset: true });
+}
+
+function drawText(
+  page: PDFPage,
+  text: string,
+  x: number,
+  y: number,
+  size: number,
+  font: PDFFont,
+  options?: { color?: ReturnType<typeof rgb>; maxWidth?: number; lineHeight?: number }
+): number {
+  const color = options?.color ?? rgb(0, 0, 0);
+  const maxWidth = options?.maxWidth ?? 9999;
+  const lineHeight = options?.lineHeight ?? size * 1.3;
+
+  // simple wrap
+  const lines = wrapText(text ?? "", font, size, maxWidth);
+  let cy = y;
+  for (const line of lines) {
+    page.drawText(line, { x, y: cy, size, font, color });
+    cy -= lineHeight;
+  }
+  return cy;
+}
+
+function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
+  const words = (text ?? "").toString().split(/\s+/);
+  const lines: string[] = [];
+  let line = "";
+
+  for (const w of words) {
+    const next = line ? `${line} ${w}` : w;
+    const width = font.widthOfTextAtSize(next, size);
+    if (width <= maxWidth) {
+      line = next;
+    } else {
+      if (line) lines.push(line);
+      line = w;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [""];
+}
+
+function box(
+  page: PDFPage,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  opts?: { border?: boolean; fill?: ReturnType<typeof rgb>; borderColor?: ReturnType<typeof rgb>; borderWidth?: number }
+) {
+  const border = opts?.border ?? true;
+  const fill = opts?.fill;
+  const borderColor = opts?.borderColor ?? rgb(0.75, 0.75, 0.75);
+  const borderWidth = opts?.borderWidth ?? 1;
+
+  page.drawRectangle({
+    x,
+    y,
+    width: w,
+    height: h,
+    color: fill,
+    borderColor: border ? borderColor : undefined,
+    borderWidth: border ? borderWidth : 0,
+  });
+}
+
+function headerBar(
+  page: PDFPage,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  title: string,
+  fontBold: PDFFont
+) {
+  box(page, x, y, w, h, { fill: rgb(0.92, 0.92, 0.92), border: true });
+  page.drawText(title, { x: x + 10, y: y + h - 16, size: 12, font: fontBold });
+}
+
+/**
+ * =========================================
+ * PAGE 1: 현장출동확인서
+ * =========================================
+ */
+function drawPage1(page: PDFPage, d: DispatchReportData, reg: PDFFont, bold: PDFFont) {
+  const M = 40;
+  const top = page.getHeight() - 60;
+
+  // Title
+  page.drawText("현장출동확인서", { x: 0, y: top, size: 20, font: bold, color: rgb(0, 0, 0) });
+  // center title
+  // quick center alignment
+  const title = "현장출동확인서";
+  const titleW = bold.widthOfTextAtSize(title, 20);
+  page.drawText(title, { x: (page.getWidth() - titleW) / 2, y: top, size: 20, font: bold });
+
+  let y = top - 50;
+
+  // "수신"
+  y = drawText(page, `수   신   ${nz(d.insurerName)} 귀하`, M, y, 12, bold);
+
+  y -= 6;
+  y = drawText(
+    page,
+    `사고접수번호  ${nz(d.claimNo)}     피보험자명  ${nz(d.insuredName)}`,
+    M,
+    y,
+    11,
+    reg
+  );
+
+  y -= 6;
+  y = drawText(
+    page,
+    `출동담당자  ${nz(d.dispatchManager)}     협력사  ${nz(d.partnerCompany)}${
+      d.partnerVendor ? `     협력업체  ${d.partnerVendor}` : ""
+    }`,
+    M,
+    y,
+    11,
+    reg
+  );
+
+  y -= 6;
+  y = drawText(page, `주   소  ${nz(d.address)}`, M, y, 11, reg, { maxWidth: page.getWidth() - M * 2 });
+
+  y -= 6;
+  y = drawText(page, `출동일시  ${nz(d.dispatchAt)}`, M, y, 11, reg);
+
+  // Body paragraph (고정 문구)
+  y -= 30;
+  const body = `상기 건에 대하여 현장 출동 조사를 실시하였으며,
+조사 결과를 별첨 보고서와 같이 제출합니다.
+위 내용이 사실과 다름없음을 확인합니다.`;
+  y = drawText(page, body, M, y, 12, reg, { lineHeight: 18 });
+
+  // Date
+  y -= 20;
+  y = drawText(page, nz(d.작성일_한글), page.getWidth() - M - 140, y, 12, reg);
+
+  // Signature block
+  y -= 20;
+  const sx = page.getWidth() - M - 240;
+  box(page, sx, y - 90, 240, 90, { border: true });
+  drawText(page, `회 사 명 : ${nz(d.partnerCompany)}`, sx + 10, y - 20, 11, reg);
+  drawText(page, `담 당 자 : ${nz(d.dispatchManager)}`, sx + 10, y - 40, 11, reg);
+  drawText(page, `연 락 처 : ${"-"}`, sx + 10, y - 60, 11, reg);
+
+  // Footer
+  const footY = 50;
+  page.drawText("FLOXN", { x: M, y: footY + 20, size: 18, font: bold });
+  page.drawText("본 확인서는 현장 출동 사실을 증명합니다.", {
+    x: M,
+    y: footY,
+    size: 10,
+    font: reg,
+    color: rgb(0.2, 0.2, 0.2),
+  });
+}
+
+/**
+ * =========================================
+ * PAGE 2: 출동보고서 (5개 섹션 박스)
+ * =========================================
+ */
+function drawPage2(page: PDFPage, d: DispatchReportData, reg: PDFFont, bold: PDFFont) {
+  const M = 30;
+  const top = page.getHeight() - 60;
+
+  const title = "출동보고서";
+  const titleW = bold.widthOfTextAtSize(title, 20);
+  page.drawText(title, { x: (page.getWidth() - titleW) / 2, y: top, size: 20, font: bold });
+
+  let y = top - 40;
+
+  // Section helper
+  const W = page.getWidth() - M * 2;
+
+  // 1) 현장정보
+  y = drawSectionBox(
+    page,
+    { x: M, y: y, w: W, header: "현장정보", bodyHeight: 90 },
+    () => {
+      const bx = M + 10;
+      let by = y - 30;
+      // table-like lines
+      drawKeyValueRow(page, bx, by, W - 20, "방문일시", nz(d.visitAt), "출동 담당자", nz(d.dispatchManager), reg, bold);
+      by -= 22;
+      drawKeyValueRow(page, bx, by, W - 20, "출동 담당지", nz(d.dispatchArea), "협력업체", nz(d.partnerVendor ?? d.partnerCompany), reg, bold);
+      by -= 22;
+      drawKeyValueSingle(page, bx, by, W - 20, "피보험자 주소", nz(d.insuredAddress), reg, bold);
+    },
+    reg,
+    bold
+  );
+
+  y -= 14;
+
+  // 2) 사고 원인(+수리항목)
+  y = drawSectionBox(
+    page,
+    { x: M, y: y, w: W, header: "사고 원인(+수리항목)", bodyHeight: 90 },
+    () => {
+      const bx = M + 10;
+      let by = y - 30;
+      drawKeyValueRow(page, bx, by, W - 20, "사고 발생일시", nz(d.incidentAt), "카테고리", nz(d.category), reg, bold);
+      by -= 22;
+      drawKeyValueSingle(page, bx, by, W - 20, "사고원인", nz(d.incidentCause), reg, bold, 2);
+    },
+    reg,
+    bold
+  );
+
+  y -= 14;
+
+  // 3) 현장 특이사항
+  y = drawSectionBox(
+    page,
+    { x: M, y: y, w: W, header: "현장 특이사항", bodyHeight: 70 },
+    () => {
+      const tx = M + 10;
+      const ty = y - 30;
+      drawText(page, nz(d.specialNotes || "없음"), tx, ty, 11, reg, { maxWidth: W - 20 });
+    },
+    reg,
+    bold
+  );
+
+  y -= 14;
+
+  // 4) VOC
+  y = drawSectionBox(
+    page,
+    { x: M, y: y, w: W, header: "특이사항 및 요청사항 (VOC)", bodyHeight: 70 },
+    () => {
+      const tx = M + 10;
+      const ty = y - 30;
+      drawText(page, nz(d.voc || "-"), tx, ty, 11, reg, { maxWidth: W - 20 });
+    },
+    reg,
+    bold
+  );
+
+  y -= 14;
+
+  // 5) 복구방식 및 처리유형
+  y = drawSectionBox(
+    page,
+    { x: M, y: y, w: W, header: "피해 복구방식 및 처리 유형", bodyHeight: 120 },
+    () => {
+      const bx = M + 10;
+      let by = y - 30;
+      drawKeyValueRow(page, bx, by, W - 20, "피해자명", nz(d.victimName), "피해자 연락처", nz(d.victimPhone), reg, bold);
+      by -= 22;
+      drawKeyValueSingle(page, bx, by, W - 20, "피해주소", nz(d.victimAddress), reg, bold);
+      by -= 22;
+      drawKeyValueSingle(page, bx, by, W - 20, "처리유형", nz(d.processType), reg, bold);
+      by -= 22;
+      drawKeyValueSingle(page, bx, by, W - 20, "복구방식", nz(d.recoveryMethod), reg, bold);
+    },
+    reg,
+    bold
+  );
+
+  // footer author
+  page.drawText(`작성일: ${nz(d.작성일_한글)}  작성자: ${nz(d.authorLabel)}`, {
+    x: M,
+    y: 30,
+    size: 10,
+    font: reg,
+    color: rgb(0.2, 0.2, 0.2),
+  });
+}
+
+function drawSectionBox(
+  page: PDFPage,
+  spec: { x: number; y: number; w: number; header: string; bodyHeight: number },
+  bodyDrawer: () => void,
+  reg: PDFFont,
+  bold: PDFFont
+) {
+  const headerH = 24;
+  headerBar(page, spec.x, spec.y - headerH, spec.w, headerH, spec.header, bold);
+  box(page, spec.x, spec.y - headerH - spec.bodyHeight, spec.w, spec.bodyHeight, { border: true });
+  bodyDrawer();
+  return spec.y - headerH - spec.bodyHeight;
+}
+
+function drawKeyValueRow(
+  page: PDFPage,
+  x: number,
+  y: number,
+  w: number,
+  k1: string,
+  v1: string,
+  k2: string,
+  v2: string,
+  reg: PDFFont,
+  bold: PDFFont
+) {
+  const mid = x + w * 0.5;
+  page.drawText(`${k1} :`, { x, y, size: 10, font: bold });
+  page.drawText(v1, { x: x + 70, y, size: 10, font: reg });
+  page.drawText(`${k2} :`, { x: mid, y, size: 10, font: bold });
+  page.drawText(v2, { x: mid + 90, y, size: 10, font: reg });
+}
+
+function drawKeyValueSingle(
+  page: PDFPage,
+  x: number,
+  y: number,
+  w: number,
+  k: string,
+  v: string,
+  reg: PDFFont,
+  bold: PDFFont,
+  maxLines = 3
+) {
+  page.drawText(`${k} :`, { x, y, size: 10, font: bold });
+  drawText(page, v, x + 90, y, 10, reg, { maxWidth: w - 100, lineHeight: 14 });
+}
+
+/**
+ * =========================================
+ * PAGE 3: 도면
+ * =========================================
+ */
+async function drawPage3(
+  page: PDFPage,
+  d: DispatchReportData,
+  reg: PDFFont,
+  bold: PDFFont,
+  level: { maxDim: number; quality: number }
+) {
+  const M = 30;
+  const top = page.getHeight() - 50;
+
+  const title = `현장 피해상황 도면  접수번호: ${nz(d.receiptNo)}`;
+  page.drawText(title, { x: M, y: top, size: 14, font: bold });
+
+  page.drawText(
+    `고객사: ${nz(d.insurerName)}  피보험자: ${nz(d.insuredName)}  주소: ${nz(d.address)}`,
+    { x: M, y: top - 20, size: 10, font: reg, color: rgb(0.2, 0.2, 0.2) }
+  );
+
+  // image area
+  const boxX = M;
+  const boxY = 120;
+  const boxW = page.getWidth() - M * 2;
+  const boxH = page.getHeight() - 200;
+
+  box(page, boxX, boxY, boxW, boxH, { border: true });
+
+  if (!d.drawingImageUrl) {
+    page.drawText("도면 자료 없음", { x: boxX + 20, y: boxY + boxH - 40, size: 12, font: bold });
+  } else {
+    const imgBytes = await fetchAndNormalizeImage(d.drawingImageUrl, level);
+    const embedded = await embedJpegPng(page.doc, imgBytes);
+    const dims = fitContain(embedded.width, embedded.height, boxW - 20, boxH - 20);
+
+    page.drawImage(embedded.image, {
+      x: boxX + 10 + (boxW - 20 - dims.w) / 2,
+      y: boxY + 10 + (boxH - 20 - dims.h) / 2,
+      width: dims.w,
+      height: dims.h,
+    });
+  }
+
+  page.drawText(`작성일: ${nz(d.작성일_한글)} | 사고접수번호: ${nz(d.claimNo)}`, {
+    x: M,
+    y: 40,
+    size: 10,
+    font: reg,
+    color: rgb(0.2, 0.2, 0.2),
+  });
+}
+
+/**
+ * =========================================
+ * EVIDENCE PAGES (4~)
+ * - 페이지 상단 헤더바 + 접수번호
+ * - 항목: 이미지 + 파일명 + 업로드일자
+ * =========================================
+ */
+async function drawEvidencePages(
+  pdf: PDFDocument,
+  d: DispatchReportData,
+  reg: PDFFont,
+  bold: PDFFont,
+  level: { maxDim: number; quality: number }
+) {
+  const items = d.evidences ?? [];
+  if (!items.length) return;
+
+  // 카테고리+서브카테고리 순서 유지
+  const chunks: EvidenceItem[][] = [];
+  // 1페이지 최대 2개 배치 (기준 PDF 느낌)
+  for (let i = 0; i < items.length; i += 2) chunks.push(items.slice(i, i + 2));
+
+  for (const group of chunks) {
+    const page = addA4(pdf);
+    await drawEvidencePage(page, d, group, reg, bold, level);
+  }
+}
+
+async function drawEvidencePage(
+  page: PDFPage,
+  d: DispatchReportData,
+  group: EvidenceItem[],
+  reg: PDFFont,
+  bold: PDFFont,
+  level: { maxDim: number; quality: number }
+) {
+  const M = 25;
+  const headerH = 26;
+
+  // top header bar
+  box(page, M, page.getHeight() - 50, page.getWidth() - M * 2, headerH, {
+    fill: rgb(0.9, 0.9, 0.9),
+    border: true,
+  });
+  page.drawText("증빙자료", { x: M + 10, y: page.getHeight() - 44, size: 12, font: bold });
+  const right = `접수번호: ${nz(d.receiptNo)}`;
+  page.drawText(right, {
+    x: page.getWidth() - M - reg.widthOfTextAtSize(right, 11),
+    y: page.getHeight() - 44,
+    size: 11,
+    font: reg,
+  });
+
+  let y = page.getHeight() - 80;
+
+  for (let idx = 0; idx < group.length; idx++) {
+    const it = group[idx];
+    const title = `${it.category}${it.subcategory ? ` - ${it.subcategory}` : ""}`;
+    page.drawText(title, { x: M, y, size: 11, font: bold });
+    y -= 10;
+
+    const boxW = page.getWidth() - M * 2;
+    const boxH = 280;
+
+    box(page, M, y - boxH, boxW, boxH, { border: true });
+
+    // 이미지 로딩/정상화: 실패하면 placeholder + 메타는 유지 (누락 금지)
+    try {
+      const imgBytes = await fetchAndNormalizeImage(it.fileUrl, level);
+      const embedded = await embedJpegPng(page.doc, imgBytes);
+      const dims = fitContain(embedded.width, embedded.height, boxW - 20, boxH - 40);
+
+      page.drawImage(embedded.image, {
+        x: M + 10 + (boxW - 20 - dims.w) / 2,
+        y: y - boxH + 30 + (boxH - 40 - dims.h) / 2,
+        width: dims.w,
+        height: dims.h,
+      });
+    } catch (e: any) {
+      // "에러 페이지로 대체"는 금지. 동일 박스 안에 placeholder로 표시.
+      page.drawText("미리보기 불가 (파일은 목록에 포함됨)", {
+        x: M + 20,
+        y: y - 40,
+        size: 11,
+        font: bold,
+        color: rgb(0.7, 0, 0),
+      });
+      const reason = String(e?.message ?? e ?? "unknown");
+      drawText(page, `사유: ${reason}`, M + 20, y - 60, 9, reg, { maxWidth: boxW - 40 });
+    }
+
+    // filename + uploadedAt
+    page.drawText(it.filename, { x: M, y: y - boxH - 16, size: 9, font: reg, color: rgb(0.2, 0.2, 0.2) });
+    const up = `업로드: ${nz(it.uploadedAt)}`;
+    page.drawText(up, {
+      x: page.getWidth() - M - reg.widthOfTextAtSize(up, 9),
+      y: y - boxH - 16,
+      size: 9,
+      font: reg,
+      color: rgb(0.2, 0.2, 0.2),
+    });
+
+    y -= boxH + 50;
+    if (idx === 0 && group.length === 2) {
+      // leave a gap between 1st and 2nd item
+      y += 10;
+    }
+  }
+}
+
+/**
+ * =========================================
+ * ESTIMATE PAGE (견적서 + 복구면적 산출표 포함)
+ * =========================================
+ */
+function drawEstimatePage(page: PDFPage, d: DispatchReportData, reg: PDFFont, bold: PDFFont) {
+  const M = 25;
+  const top = page.getHeight() - 60;
+
+  const title = "견 적 서";
+  const titleW = bold.widthOfTextAtSize(title, 22);
+  page.drawText(title, { x: (page.getWidth() - titleW) / 2, y: top, size: 22, font: bold });
+
+  // Top info boxes (좌/우)
+  const boxY = top - 30;
+  const leftW = (page.getWidth() - M * 2 - 10) * 0.55;
+  const rightW = (page.getWidth() - M * 2 - 10) * 0.45;
+
+  box(page, M, boxY - 90, leftW, 90, { border: true });
+  box(page, M + leftW + 10, boxY - 90, rightW, 90, { border: true });
+
+  // left fields
+  drawText(page, `현장명(주소) : ${nz(d.estimateAddressLabel ?? d.address)}`, M + 10, boxY - 20, 10, reg, { maxWidth: leftW - 20 });
+  drawText(page, `보험사 : ${nz(d.insurerName)}`, M + 10, boxY - 40, 10, reg);
+  drawText(page, `접수번호 : ${nz(d.receiptNo)}`, M + 10, boxY - 60, 10, reg);
+
+  // right supplier
+  drawText(page, `사업자번호 : ${nz(d.supplierBizNo)}`, M + leftW + 20, boxY - 20, 10, reg, { maxWidth: rightW - 20 });
+  drawText(page, `상호명 : ${nz(d.supplierName)}`, M + leftW + 20, boxY - 40, 10, reg);
+  drawText(page, `대표자 : ${nz(d.supplierCeo)}`, M + leftW + 20, boxY - 60, 10, reg);
+
+  let y = boxY - 110;
+
+  // 복구면적 산출표 (견적서 내부 필수)
+  y = drawRecoveryAreaTable(page, M, y, page.getWidth() - M * 2, d.recoveryAreaRows, reg, bold) - 16;
+
+  // 노무비 섹션
+  y = drawLaborTable(page, M, y, page.getWidth() - M * 2, d.laborRows, reg, bold) - 12;
+
+  // 자재비 섹션
+  y = drawMaterialTable(page, M, y, page.getWidth() - M * 2, d.materialRows, reg, bold) - 12;
+
+  // 합계 박스(우측 하단 느낌)
+  drawTotalsBox(page, page.getWidth() - M - 220, 140, 220, 160, d, reg, bold);
+
+  // 고정 문구
+  drawText(
+    page,
+    "상기 견적은 시공 전 예상금액이며, 현장 상황 및 실제 시공범위에 따라 일부 변동될 수 있습니다.",
+    M,
+    90,
+    9,
+    reg,
+    { maxWidth: page.getWidth() - M * 2 }
+  );
+
+  drawText(page, `작성일: ${nz(d.작성일_한글)} ${nz(d.partnerCompany)}`, M, 60, 10, reg);
+}
+
+function drawRecoveryAreaTable(
+  page: PDFPage,
+  x: number,
+  yTop: number,
+  w: number,
+  rows: RecoveryAreaRow[],
+  reg: PDFFont,
+  bold: PDFFont
+) {
+  const headerH = 22;
+  const rowH = 18;
+  headerBar(page, x, yTop - headerH, w, headerH, "복구면적 산출표", bold);
+
+  const tableY = yTop - headerH - 6;
+  const cols = [
+    { key: "space", label: "공간/항목", width: w * 0.25 },
+    { key: "width", label: "가로", width: w * 0.12 },
+    { key: "height", label: "세로", width: w * 0.12 },
+    { key: "area", label: "면적", width: w * 0.12 },
+    { key: "standardWorkload", label: "기준작업량", width: w * 0.19 },
+    { key: "calculatedArea", label: "산출면적", width: w * 0.20 },
+  ];
+
+  // header row
+  let cx = x;
+  const headerY = tableY - rowH;
+  for (const c of cols) {
+    box(page, cx, headerY, c.width, rowH, { border: true, fill: rgb(0.95, 0.95, 0.95) });
+    page.drawText(c.label, { x: cx + 4, y: headerY + 5, size: 9, font: bold });
+    cx += c.width;
+  }
+
+  // data rows (최대 높이 넘치면 이후 페이지 분할은 레플릿에서 확장)
+  let yy = headerY - rowH;
+  const data = rows?.length ? rows : [];
+  const maxRows = 8; // A4 한 페이지에 현실적으로 들어가는 수준(필요 시 조정)
+  const sliced = data.slice(0, maxRows);
+
+  for (const r of sliced) {
+    cx = x;
+    const values: Record<string, string> = {
+      space: nz(r.space),
+      width: num(r.width),
+      height: num(r.height),
+      area: num(r.area),
+      standardWorkload: r.standardWorkload == null ? "-" : num(r.standardWorkload),
+      calculatedArea: r.calculatedArea == null ? "-" : num(r.calculatedArea),
+    };
+    for (const c of cols) {
+      box(page, cx, yy, c.width, rowH, { border: true });
+      page.drawText(values[c.key] ?? "-", { x: cx + 4, y: yy + 5, size: 9, font: reg });
+      cx += c.width;
+    }
+    yy -= rowH;
+  }
+
+  return yy;
+}
+
+function drawLaborTable(
+  page: PDFPage,
+  x: number,
+  yTop: number,
+  w: number,
+  rows: LaborRow[],
+  reg: PDFFont,
+  bold: PDFFont
+) {
+  const headerH = 22;
+  const rowH = 16;
+  headerBar(page, x, yTop - headerH, w, headerH, "노무비", bold);
+
+  const cols = [
+    { label: "공종", width: w * 0.10 },
+    { label: "공사명", width: w * 0.14 },
+    { label: "노임항목", width: w * 0.16 },
+    { label: "복구면적", width: w * 0.10 },
+    { label: "적용단가", width: w * 0.12 },
+    { label: "수량(인)", width: w * 0.08 },
+    { label: "합계", width: w * 0.12 },
+    { label: "경비", width: w * 0.08 },
+    { label: "비고", width: w * 0.10 },
+  ];
+
+  let yy = yTop - headerH - 6;
+  // header row
+  let cx = x;
+  yy -= rowH;
+  for (const c of cols) {
+    box(page, cx, yy, c.width, rowH, { border: true, fill: rgb(0.95, 0.95, 0.95) });
+    page.drawText(c.label, { x: cx + 3, y: yy + 4, size: 8.5, font: bold });
+    cx += c.width;
+  }
+
+  const maxRows = 10;
+  const sliced = (rows ?? []).slice(0, maxRows);
+  for (const r of sliced) {
+    yy -= rowH;
+    cx = x;
+    const vals = [
+      nz(r.workType),
+      nz(r.workName),
+      nz(r.wageItem),
+      num(r.recoveryArea),
+      won(r.unitPrice),
+      num(r.qty),
+      won(r.total),
+      r.expense == null ? "-" : won(r.expense),
+      nz(r.note ?? ""),
+    ];
+    for (let i = 0; i < cols.length; i++) {
+      box(page, cx, yy, cols[i].width, rowH, { border: true });
+      page.drawText(vals[i], { x: cx + 3, y: yy + 4, size: 8.5, font: reg });
+      cx += cols[i].width;
+    }
+  }
+
+  return yy - 10;
+}
+
+function drawMaterialTable(
+  page: PDFPage,
+  x: number,
+  yTop: number,
+  w: number,
+  rows: MaterialRow[],
+  reg: PDFFont,
+  bold: PDFFont
+) {
+  const headerH = 22;
+  const rowH = 16;
+  headerBar(page, x, yTop - headerH, w, headerH, "자재비", bold);
+
+  const cols = [
+    { label: "공종", width: w * 0.12 },
+    { label: "공사명", width: w * 0.18 },
+    { label: "자재항목", width: w * 0.22 },
+    { label: "단가", width: w * 0.14 },
+    { label: "수량", width: w * 0.10 },
+    { label: "단위", width: w * 0.08 },
+    { label: "합계", width: w * 0.12 },
+    { label: "비고", width: w * 0.14 },
+  ];
+
+  let yy = yTop - headerH - 6;
+  // header row
+  let cx = x;
+  yy -= rowH;
+  for (const c of cols) {
+    box(page, cx, yy, c.width, rowH, { border: true, fill: rgb(0.95, 0.95, 0.95) });
+    page.drawText(c.label, { x: cx + 3, y: yy + 4, size: 8.5, font: bold });
+    cx += c.width;
+  }
+
+  const maxRows = 8;
+  const sliced = (rows ?? []).slice(0, maxRows);
+  for (const r of sliced) {
+    yy -= rowH;
+    cx = x;
+    const vals = [
+      nz(r.workType),
+      nz(r.workName),
+      nz(r.material),
+      won(r.unitPrice),
+      num(r.qty),
+      nz(r.unit),
+      won(r.total),
+      nz(r.note ?? ""),
+    ];
+    for (let i = 0; i < cols.length; i++) {
+      box(page, cx, yy, cols[i].width, rowH, { border: true });
+      page.drawText(vals[i], { x: cx + 3, y: yy + 4, size: 8.5, font: reg });
+      cx += cols[i].width;
+    }
+  }
+
+  return yy - 10;
+}
+
+function drawTotalsBox(
+  page: PDFPage,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  d: DispatchReportData,
+  reg: PDFFont,
+  bold: PDFFont
+) {
+  box(page, x, y, w, h, { border: true });
+  const rowH = 18;
+  const lines: Array<[string, string, boolean]> = [
+    ["노무비 합계", won(d.sumLabor), false],
+    ["자재비 합계", won(d.sumMaterial), false],
+    ["소계", won(d.subtotal), false],
+    ["일반관리비 (6%)", won(d.overhead6), false],
+    ["이윤 (15%)", won(d.profit15), false],
+    ["만원미만 절사", won(d.cutUnder10k), false],
+    ["부가세 (10%) - 포함", won(d.vat10), false],
+    ["총 합계", won(d.grandTotal), true],
+  ];
+
+  let yy = y + h - rowH - 8;
+  for (const [k, v, highlight] of lines) {
+    if (highlight) {
+      box(page, x + 1, yy - 4, w - 2, rowH + 6, { fill: rgb(1, 0.97, 0.6), border: true });
+    }
+    page.drawText(k, { x: x + 8, y: yy, size: 9.5, font: highlight ? bold : reg });
+    page.drawText(v, {
+      x: x + w - 8 - reg.widthOfTextAtSize(v, 9.5),
+      y: yy,
+      size: 9.5,
+      font: highlight ? bold : reg,
+    });
+    yy -= rowH;
+  }
+}
+
+/**
+ * =========================================
+ * IMAGE HELPERS
+ * - 어떤 이미지든 JPEG로 normalize + resize + quality 적용
+ * =========================================
+ */
+async function fetchAndNormalizeImage(
+  urlOrPath: string,
+  level: { maxDim: number; quality: number }
+): Promise<Buffer> {
+  // 프로젝트에 맞게 "증빙 파일 가져오기"를 구현해야 합니다.
+  // 1) url이면 fetch
+  // 2) 내부 스토리지면 readFile
+  const buf = await loadBinary(urlOrPath);
+
+  // sharp로 강제 변환 (HEIC 등은 sharp가 libvips 지원 필요)
+  // Replit에서 HEIC 지원이 불안하면, 업로드 단계에서 변환을 추천.
+  const img = sharp(buf, { failOn: "none" }).rotate();
+
+  const meta = await img.metadata();
+  const width = meta.width ?? level.maxDim;
+  const height = meta.height ?? level.maxDim;
+
+  const resizeNeeded = Math.max(width, height) > level.maxDim;
+  const normalized = await img
+    .resize(
+      resizeNeeded ? { width: level.maxDim, height: level.maxDim, fit: "inside", withoutEnlargement: true } : undefined
+    )
+    .jpeg({ quality: level.quality, mozjpeg: true })
+    .toBuffer();
+
+  return normalized;
+}
+
+async function loadBinary(urlOrPath: string): Promise<Buffer> {
+  // URL 판단
+  if (/^https?:\/\//i.test(urlOrPath)) {
+    const res = await fetch(urlOrPath);
+    if (!res.ok) throw new Error(`evidence fetch failed: ${res.status} ${res.statusText}`);
+    const ab = await res.arrayBuffer();
+    return Buffer.from(ab);
+  }
+
+  // 로컬/상대 경로
+  const p = path.isAbsolute(urlOrPath) ? urlOrPath : path.join(process.cwd(), urlOrPath);
+  if (!fs.existsSync(p)) throw new Error(`file not found: ${p}`);
+  return fs.readFileSync(p);
+}
+
+async function embedJpegPng(pdf: PDFDocument, bytes: Buffer) {
+  // normalize는 jpeg로 하므로 jpeg로 embed 시도
+  try {
+    const img = await pdf.embedJpg(bytes);
+    return { image: img, width: img.width, height: img.height };
+  } catch {
+    const img = await pdf.embedPng(bytes);
+    return { image: img, width: img.width, height: img.height };
+  }
+}
+
+function fitContain(srcW: number, srcH: number, maxW: number, maxH: number) {
+  const r = Math.min(maxW / srcW, maxH / srcH);
+  return { w: srcW * r, h: srcH * r };
+}
+
+/**
+ * =========================================
+ * UTIL
+ * =========================================
+ */
+function nz(v: any) {
+  const s = (v ?? "").toString().trim();
+  return s.length ? s : "-";
+}
+function num(v: any) {
+  if (v == null || v === "") return "-";
+  const n = Number(v);
+  if (Number.isNaN(n)) return "-";
+  return n.toLocaleString("ko-KR");
+}
+function won(v: any) {
+  if (v == null || v === "") return "-";
+  const n = Number(v);
+  if (Number.isNaN(n)) return "-";
+  return `${n.toLocaleString("ko-KR")} 원`;
+}

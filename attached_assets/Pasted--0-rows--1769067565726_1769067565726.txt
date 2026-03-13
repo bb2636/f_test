@@ -1,0 +1,68 @@
+[필수 수정 명령] 철거공사 노무비 “삭제 불가/삭제 후 부활” 이슈를 구조적으로 완전 해결하세요. (추측/땜질 금지)
+
+0) 문제 정의(현상)
+- 복구면적 산출표(rows)에서 공종/공사명이 철거공사(합판/석고보드/도배/마루/장판 매칭)인 경우 노무비 탭에 자동 행이 생성됨
+- 노무비 탭에서 해당 자동 생성 행을 “개별 삭제(=제외)”해야 하나,
+  (A) 즉시 재생성되거나
+  (B) 탭 이동/재진입/재마운트/새로고침 후 DB 로딩 + Reconcile로 부활함
+
+1) 원인 확정(코드 기반)
+- selectedCaseId 변경/재마운트 시 isHydratedRef.current=false로 리셋되고(rows/laborCostRows 초기화), Hydration useEffect가 DB에서 원본을 다시 로드함
+- Hydration 이후 rows 변경으로 철거공사 Reconcile useEffect가 트리거되어 DEMOLITION_WORK_NAMES 기준 자동 생성이 다시 실행됨
+- 삭제는 UI/state-only(setLaborCostRows filter)이며 DB에는 즉시 반영되지 않아 재진입 시 DB 원본이 그대로 로드됨
+- deletedDemolitionKeys는 React state라 재마운트 시 초기화되어 삭제 기록이 소실됨
+- 또한 삭제 키와 Reconcile 체크 키 불일치로 삭제 기록이 있어도 스킵되지 않음
+
+2) 요구사항(절대 조건)
+- 노무비 탭에서 철거공사 자동 생성 노무비 행을 “개별 삭제(=제외)”할 수 있어야 함
+- 제외된 항목은 탭 이동/재진입/컴포넌트 재마운트/새로고침 후에도 절대 부활하면 안 됨
+- 노무비에서 제외하더라도 복구면적 산출표(rows/estimate_rows) 원본 데이터는 절대 삭제/변경되면 안 됨 (파생값만 제외)
+- 저장 버튼을 누르지 않아도 “삭제(제외)”는 즉시 영속화되어야 함(저장 버튼 의존 금지)
+
+3) 설계 결정(중요: 의미 일치)
+- 현재 철거공사 자동 생성은 동일 공사명(workName)을 합산하여 1개 entry로 만든 후 노무비 1행을 생성함(다수 sourceRowIds 합산).
+- 따라서 “개별 삭제”의 단위는 sourceRowId가 아니라 ‘생성된 철거 노무비 행 단위’가 정답임.
+→ deletion_key는 반드시 `matchedWorkName|detailItem` 로 통일할 것 (sourceRowId 포함 금지)
+  예: "합판|보통인부", "석고보드|보통인부"
+
+4) 구현 지시(필수, 순서대로)
+(1) deletion_key 단일 생성 함수(단일 source of truth) 구현
+- 예: makeDemolitionDeletionKey(matchedWorkName, detailItem) => `${matchedWorkName}|${detailItem}`
+- 삭제/생성/체크 모든 구간에서 이 함수만 사용 (중복 구현 금지)
+
+(2) “삭제(제외)”를 DB에 즉시 영속화 (localStorage/state-only 금지)
+- case_id + deletion_key + type='demolition_auto_labor' 를 저장하는 exclusions 테이블(또는 동등 구조)을 추가
+- 삭제 클릭 시 즉시 API 호출로 upsert/insert 수행
+- 원본 rows/estimate_rows는 절대 수정/삭제하지 말 것
+
+(3) Hydration 단계에서 exclusions를 함께 로드하여 Set 초기화
+- Hydration useEffect에서 rows/laborCostRows 로드와 함께 exclusions도 로드
+- 로드된 exclusions로 deletedDemolitionKeys(Set)를 구성(초기화)하여 재마운트/재진입에도 유지되도록 함
+- isHydratedRef 리셋/selectedCaseId 변경 흐름에서도 exclusions 로드가 누락되지 않도록 보장
+
+(4) Reconcile useEffect에서 재생성 방지(가장 중요)
+- 철거공사 자동 생성 전에 반드시 deletedDemolitionKeys.has(deletion_key) 확인
+- true면 해당 철거 노무비 행은 생성/복원하지 않음
+- 또한 (case_id + deletion_key) 기준으로 idempotent하게 동작하여 중복 생성이 발생하지 않게 할 것
+
+(5) UI 동작 정리
+- 삭제 클릭 시:
+  a) 즉시 UI에서 제거(setLaborCostRows filter)
+  b) 동시에 DB에 exclusion 저장(즉시 영속화)
+- 재진입/새로고침 시:
+  a) Hydration에서 exclusions 로드
+  b) Reconcile이 exclusions를 존중하여 제외 항목을 생성하지 않음
+
+5) 검증 시나리오(반드시 통과)
+(1) 철거공사 자동 생성 → 노무비에서 "합판|보통인부" 제외 → 즉시 사라짐
+(2) 탭 이동 후 복귀 → 제외 항목 부활 없음
+(3) 새로고침 → 제외 항목 부활 없음
+(4) 다른 공종/항목 영향 없음
+(5) 복구면적 산출표 원본 rows는 동일(삭제/변경 없음)
+
+6) 제출물(필수)
+- 변경된 파일/함수/라인 요약
+- exclusions 스키마 및 API(저장/조회) 요약
+- 위 5개 테스트 시나리오 재현 로그(또는 동등한 검증 근거)
+
+위 요구사항 중 하나라도 누락되면 해결로 간주하지 않습니다.

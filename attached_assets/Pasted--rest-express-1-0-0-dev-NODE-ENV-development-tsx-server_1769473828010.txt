@@ -1,0 +1,384 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[DB] Connected to DEVELOPMENT database (ep-restless-snow-a1vl9u1b-pooler.ap-southeast-1.aws.neon.tech)
+[SESSION CONFIG] {
+  nodeEnv: 'development',
+  replitDeployment: undefined,
+  isProduction: false,
+  cookieSecure: false
+}
+[Essential Permissions] Checking and creating essential role permissions...
+[Date Migration] Updated 0 cases with auto-populated dates
+[Email] Initializing SMTP transporter...
+[Email] Provider: hiworks
+[Email] Host: smtps.hiworks.com, Port: 465, Secure: true
+[Email] User: hjlee@floxn.co.kr
+12:25:54 AM [express] serving on port 5000 (timeout: 300000ms)
+[Essential Permissions] Already up-to-date: 관리자
+[Essential Permissions] Already up-to-date: 보험사
+[Essential Permissions] Already up-to-date: 협력사
+Browserslist: browsers data (caniuse-lite) is 15 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[Essential Permissions] Already up-to-date: 심사사
+[Essential Permissions] Already up-to-date: 조사사
+[Email] SMTP connection verified successfully
+[Essential Permissions] Already up-to-date: 의뢰사
+[Essential Permissions] Summary: 0 created, 6 updated
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+[API/USER] Request received {
+  sessionId: 's10L6hd6iiuBpXBKUgDHAoL-xDxkH1OA',
+  hasSession: true,
+  userId: undefined,
+  userRole: undefined,
+  cookieHeader: 'present',
+  nodeEnv: 'development',
+  isProduction: false
+}
+[API/USER] Auth failed - no userId in session { sessionExists: true, sessionKeys: [ 'cookie' ] }
+12:26:09 AM [express] GET /api/user 401 in 5ms :: {"error":"인증되지 않은 사용자입니다"}
+12:26:09 AM [express] GET /api/check-session 304 in 1ms :: {"authenticated":false}
+[LOGIN ATTEMPT] {
+  username: 'test',
+  isProduction: false,
+  nodeEnv: 'development',
+  dbUrl: 'DEV_DATABASE'
+}
+[VERIFY PASSWORD] {
+  username: 'test',
+  userExists: true,
+  status: 'active',
+  passwordValid: true,
+  hasPasswordHash: true
+}
+[LOGIN SUCCESS] {
+  userId: 'fd348116-8723-4b1c-a1ad-09bdd2547515',
+  userRole: '협력사',
+  username: 'test',
+  sessionId: 'cXmdPBzV3yYdHwlLX-nx_8PNGi0qAiTt',
+  cookieSecure: false,
+  cookieSameSite: 'lax'
+}
+[LOGIN] Session saved successfully, sessionId: cXmdPBzV3yYdHwlLX-nx_8PNGi0qAiTt
+[LOGIN] Response data: {
+  userId: 'fd348116-8723-4b1c-a1ad-09bdd2547515',
+  mustChangePassword: false
+}
+12:27:52 AM [express] POST /api/login 200 in 898ms :: {"id":"fd348116-8723-4b1c-a1ad-09bdd2547515","u…
+[API/USER] Request received {
+  sessionId: 'cXmdPBzV3yYdHwlLX-nx_8PNGi0qAiTt',
+  hasSession: true,
+  userId: 'fd348116-8723-4b1c-a1ad-09bdd2547515',
+  userRole: '협력사',
+  cookieHeader: 'present',
+  nodeEnv: 'development',
+  isProduction: false
+}
+12:27:53 AM [express] GET /api/user 200 in 207ms :: {"id":"fd348116-8723-4b1c-a1ad-09bdd2547515","use…
+[MY-PERMISSIONS] Request: { userId: 'fd348116-8723-4b1c-a1ad-09bdd2547515', userRole: '협력사' }
+12:27:53 AM [express] GET /api/favorites 304 in 204ms :: []
+12:27:54 AM [express] GET /api/inquiries 304 in 803ms :: []
+12:27:54 AM [express] GET /api/my-permissions 304 in 804ms :: {"id":"8ac5d016-4f81-42aa-be89-3acfe126…
+12:27:54 AM [express] GET /api/notices 304 in 841ms :: [{"id":"1bc9e4d6-3f27-499b-a581-c52517e52d7d",…
+[getAllCases] Total users in userMap: 35
+[getAllCases] Case 260121002-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121001-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121004-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121002-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121003-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121003-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121001-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121005-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121004-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121005-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260122002-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260122001-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260122002-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260122001-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260126001-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260126001-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260126002-0: managerId=fd92a8ed-8480-4202-9842-32903f4b78c4, found: test
+[getAllCases] Case 260126002-1: managerId=fd92a8ed-8480-4202-9842-32903f4b78c4, found: test
+[getAllCases] Case 260127001-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260127001-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+12:27:55 AM [express] GET /api/cases 200 in 1863ms :: [{"id":"ee25702c-6e35-4dd3-b7ca-854f453df92e","…
+[getAllCases] Total users in userMap: 35
+[getAllCases] Case 260121002-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121001-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121004-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121002-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121003-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121003-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121001-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121005-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121004-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260121005-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260122002-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260122001-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260122002-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260122001-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260126001-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260126001-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260126002-0: managerId=fd92a8ed-8480-4202-9842-32903f4b78c4, found: test
+[getAllCases] Case 260126002-1: managerId=fd92a8ed-8480-4202-9842-32903f4b78c4, found: test
+[getAllCases] Case 260127001-0: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+[getAllCases] Case 260127001-1: managerId=5e53d6ae-06cd-40f0-91c7-b007567d9bfe, found: test
+12:27:55 AM [express] GET /api/dashboard/stats 304 in 2517ms :: {"receivedCases":20,"lastMonthReceive…
+12:28:17 AM [express] GET /api/invoices/approved 304 in 804ms :: []
+12:28:18 AM [express] GET /api/users/basic 304 in 1012ms :: [{"id":"71a3c415-a585-4803-b1c3-4f660208d…
+12:28:19 AM [express] GET /api/drawings/case/82f6bfd3-5f59-4895-b677-06e296951508 404 in 209ms :: {"e…
+[GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508] Partner info: {
+  caseNumber: '260127001-1',
+  assignedPartner: '협력사',
+  assignedPartnerManager: 'test협력자!',
+  assignedPartnerContact: '01043035855'
+}
+12:28:19 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508 200 in 604ms :: {"id":"82f6…
+12:28:20 AM [express] GET /api/documents/case/82f6bfd3-5f59-4895-b677-06e296951508 200 in 838ms :: []
+========================================
+[D] 서버: GET /api/estimates/:caseId/latest 응답 직전
+케이스 ID: 82f6bfd3-5f59-4895-b677-06e296951508
+첫 번째 행 DB에서 조회된 값:
+  repairWidth: 3 타입: number
+  repairHeight: 3 타입: number
+  repairArea: 9 타입: number
+========================================
+12:28:20 AM [express] GET /api/estimates/82f6bfd3-5f59-4895-b677-06e296951508/latest 200 in 1236ms ::…
+12:28:20 AM [express] GET /api/drawings/case/82f6bfd3-5f59-4895-b677-06e296951508 404 in 212ms :: {"e…
+[GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508] Partner info: {
+  caseNumber: '260127001-1',
+  assignedPartner: '협력사',
+  assignedPartnerManager: 'test협력자!',
+  assignedPartnerContact: '01043035855'
+}
+12:28:20 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/related-drawings 200 in 414…
+12:28:21 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508 304 in 610ms :: {"id":"82f6…
+[API/USER] Request received {
+  sessionId: 'cXmdPBzV3yYdHwlLX-nx_8PNGi0qAiTt',
+  hasSession: true,
+  userId: 'fd348116-8723-4b1c-a1ad-09bdd2547515',
+  userRole: '협력사',
+  cookieHeader: 'present',
+  nodeEnv: 'development',
+  isProduction: false
+}
+12:28:23 AM [express] GET /api/drawings/case/82f6bfd3-5f59-4895-b677-06e296951508 404 in 200ms :: {"e…
+12:28:23 AM [express] GET /api/user 304 in 210ms :: {"id":"fd348116-8723-4b1c-a1ad-09bdd2547515","use…
+12:28:24 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/related-documents 304 in 61…
+12:28:24 AM [express] GET /api/labor-rate-tiers 304 in 204ms :: [{"id":1,"minRatio":85,"rateMultiplie…
+Missing required columns in excel_data 자재비
+12:28:24 AM [express] GET /api/materials 200 in 202ms :: []
+12:28:24 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/estimate-exclusions 304 in …
+12:28:24 AM [express] GET /api/unit-price-overrides 200 in 213ms :: [{"id":1,"category":"가설공사","workN…
+12:28:24 AM [express] GET /api/labor-costs 200 in 201ms :: []
+12:28:24 AM [express] GET /api/labor-costs/options 200 in 202ms :: {"categories":[],"workNamesByCateg…
+12:28:24 AM [express] GET /api/master-data 200 in 207ms :: [{"id":"ea0b644a-ab8e-4cfb-a2c8-95da534a73…
+[자재비 API] Excel 데이터: {
+  id: '1369775e-7832-42b9-ae59-bbccca9987e1',
+  title: '1',
+  headerType: 'object',
+  headersRaw: '["공종","공사명","자재항목(공사명에 종속)","단위"," 단가 "]',
+  dataRows: 45
+}
+[자재비 API] 헤더: [ '공종', '공사명', '자재항목(공사명에 종속)', '단위', ' 단가 ' ]
+[자재비 API] 인덱스: {
+  categoryIdx: 0,
+  workNameIdx: 1,
+  materialItemIdx: 2,
+  unitIdx: 3,
+  priceIdx: 4
+}
+Parsed 자재비 catalog items: 45
+12:28:24 AM [express] GET /api/materials-by-workname 200 in 213ms :: [{"공종":"원인공사","공사명":"방수","자재항목":…
+Labor catalog headers: [ '공종', '공사명(공종에 종속)', '노임항목(공종에 종속)', '금액', '' ]
+Is new format: true
+NEW FORMAT column indices: { categoryIdx: 0, workNameIdx: 1, laborItemIdx: 2, priceIdx: 3 }
+========== LABOR CATALOG DEBUG ==========
+Parsed catalog items count: 45
+첫 5개 항목: [
+  {
+    "공종": "누수탐지",
+    "공사명": "누수탐지",
+    "세부공사": "노무비",
+    "세부항목": "육안탐지",
+    "단위": "인",
+    "단가_인": 150000,
+    "단가_천장": null,
+    "단가_벽체": null,
+    "단가_바닥": null,
+    "단가_길이": null
+  },
+  {
+    "공종": "누수탐지",
+    "공사명": "누수탐지",
+    "세부공사": "노무비",
+    "세부항목": "누수탐지1회",
+    "단위": "인",
+    "단가_인": 300000,
+    "단가_천장": null,
+    "단가_벽체": null,
+    "단가_바닥": null,
+    "단가_길이": null
+  },
+  {
+    "공종": "누수탐지",
+    "공사명": "누수탐지",
+    "세부공사": "노무비",
+    "세부항목": "누수탐지2회",
+    "단위": "인",
+    "단가_인": 400000,
+    "단가_천장": null,
+    "단가_벽체": null,
+    "단가_바닥": null,
+    "단가_길이": null
+  },
+  {
+    "공종": "원인철거",
+    "공사명": "철거",
+    "세부공사": "노무비",
+    "세부항목": "보통인부",
+    "단위": "인",
+    "단가_인": 167081,
+    "단가_천장": null,
+    "단가_벽체": null,
+    "단가_바닥": null,
+    "단가_길이": null
+  },
+  {
+    "공종": "원인공사",
+    "공사명": "방수",
+    "세부공사": "노무비",
+    "세부항목": "방수공",
+    "단위": "인",
+    "단가_인": 219996,
+    "단가_천장": null,
+    "단가_벽체": null,
+    "단가_바닥": null,
+    "단가_길이": null
+  }
+]
+전체 공종 목록: [
+  '누수탐지', '원인철거',
+  '원인공사', '철거공사',
+  '가설공사', '목공사',
+  '수장공사', '도장공사',
+  '전기공사', '타일공사',
+  '가구공사', '욕실공사',
+  '폐기물',   '기타'
+]
+==========================================
+12:28:25 AM [express] GET /api/labor-catalog 200 in 814ms :: [{"공종":"누수탐지","공사명":"누수탐지","세부공사":"노무비",…
+[일위대가 API] 조회 결과: 1 개
+[일위대가 API] 사용할 데이터: 6232743d-3a03-45bf-afbf-1c2e5f5b7134 1
+[일위대가 API] 행 수: 23
+일위대가 headers: [ '공종', '공사명', '노임항목', '기준작업량', '노임단가(인당)', '일위대가(노임담가/기준작업량)' ]
+일위대가 column indices: {
+  categoryIdx: 0,
+  workNameIdx: 1,
+  laborItemIdx: 2,
+  standardWorkQuantityIdx: 3,
+  laborUnitPriceIdx: 4,
+  ilwidaegaIdx: 5
+}
+Parsed 일위대가 catalog items: 23 → 중복 제거 후: 23
+12:28:25 AM [express] GET /api/ilwidaega-catalog 200 in 842ms :: [{"공종":"가설공사","공사명":"건축물현장정리","노임항목"…
+12:28:25 AM [express] GET /api/drawings/case/82f6bfd3-5f59-4895-b677-06e296951508 404 in 205ms :: {"e…
+[GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508] Partner info: {
+  caseNumber: '260127001-1',
+  assignedPartner: '협력사',
+  assignedPartnerManager: 'test협력자!',
+  assignedPartnerContact: '01043035855'
+}
+12:28:25 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/estimate-exclusions 304 in …
+========================================
+[D] 서버: GET /api/estimates/:caseId/latest 응답 직전
+케이스 ID: 82f6bfd3-5f59-4895-b677-06e296951508
+첫 번째 행 DB에서 조회된 값:
+  repairWidth: 3 타입: number
+  repairHeight: 3 타입: number
+  repairArea: 9 타입: number
+========================================
+12:28:25 AM [express] GET /api/estimates/82f6bfd3-5f59-4895-b677-06e296951508/latest 304 in 405ms :: …
+12:28:25 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508 304 in 630ms :: {"id":"82f6…
+[Exclusion] Adding: caseId=82f6bfd3-5f59-4895-b677-06e296951508, type=linked_labor_deletion, key=row-57d5fbe2-ef9a-4ff1-a1c3-8917c235e392|철거공사|합판|보통인부
+12:28:33 AM [express] POST /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/estimate-exclusions 200 in…
+[Exclusion] Adding: caseId=82f6bfd3-5f59-4895-b677-06e296951508, type=linked_labor_deletion, key=row-57d5fbe2-ef9a-4ff1-a1c3-8917c235e392|목공사|합판|보통인부
+12:28:34 AM [express] POST /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/estimate-exclusions 200 in…
+[Exclusion] Adding: caseId=82f6bfd3-5f59-4895-b677-06e296951508, type=linked_labor_deletion, key=row-57d5fbe2-ef9a-4ff1-a1c3-8917c235e392|목공사|합판|내장공
+12:28:34 AM [express] POST /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/estimate-exclusions 200 in…
+========================================
+[B] 서버: request body 수신 직후
+케이스 ID: 82f6bfd3-5f59-4895-b677-06e296951508
+Raw row from request:
+  repairWidth: 3 타입: number
+  repairHeight: 3 타입: number
+  repairArea: 9 타입: number
+  damageWidth: 0 타입: number
+  damageHeight: 0 타입: number
+  damageArea: 0 타입: number
+Validated row:
+  repairWidth: 3
+  repairHeight: 3
+  repairArea: 9
+========================================
+[Estimate Debug] After toNumber conversion: { repairWidth: 3, repairHeight: 3, repairArea: 9 }
+========================================
+[C] 서버: DB insert 직전
+첫 번째 행 데이터:
+  repairWidth: 3 타입: number
+  repairHeight: 3 타입: number
+  repairArea: 9 타입: number
+  damageWidth: 0 타입: number
+  damageHeight: 0 타입: number
+  damageArea: 0 타입: number
+========================================
+========================================
+[C-2] 서버: Raw SQL INSERT 완료
+  repairWidth: 3 → DB: 3.0000
+  repairHeight: 3 → DB: 3.0000
+  repairArea: 9 → DB: 9.0000
+========================================
+12:28:41 AM [express] POST /api/estimates/82f6bfd3-5f59-4895-b677-06e296951508 200 in 2102ms :: {"est…
+========================================
+[D] 서버: GET /api/estimates/:caseId/latest 응답 직전
+케이스 ID: 82f6bfd3-5f59-4895-b677-06e296951508
+첫 번째 행 DB에서 조회된 값:
+  repairWidth: 3 타입: number
+  repairHeight: 3 타입: number
+  repairArea: 9 타입: number
+========================================
+12:28:42 AM [express] GET /api/estimates/82f6bfd3-5f59-4895-b677-06e296951508/latest 200 in 420ms :: …
+========================================
+[D] 서버: GET /api/estimates/:caseId/latest 응답 직전
+케이스 ID: 82f6bfd3-5f59-4895-b677-06e296951508
+첫 번째 행 DB에서 조회된 값:
+  repairWidth: 3 타입: number
+  repairHeight: 3 타입: number
+  repairArea: 9 타입: number
+========================================
+12:28:43 AM [express] GET /api/estimates/82f6bfd3-5f59-4895-b677-06e296951508/latest 304 in 418ms :: …
+[MY-PERMISSIONS] Request: { userId: 'fd348116-8723-4b1c-a1ad-09bdd2547515', userRole: '협력사' }
+12:28:44 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/related-documents 304 in 63…
+12:28:44 AM [express] GET /api/drawings/case/82f6bfd3-5f59-4895-b677-06e296951508 404 in 826ms :: {"e…
+12:28:44 AM [express] GET /api/my-permissions 304 in 827ms :: {"id":"8ac5d016-4f81-42aa-be89-3acfe126…
+[GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508] Partner info: {
+  caseNumber: '260127001-1',
+  assignedPartner: '협력사',
+  assignedPartnerManager: 'test협력자!',
+  assignedPartnerContact: '01043035855'
+}
+12:28:44 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/estimate-exclusions 200 in …
+========================================
+[D] 서버: GET /api/estimates/:caseId/latest 응답 직전
+케이스 ID: 82f6bfd3-5f59-4895-b677-06e296951508
+첫 번째 행 DB에서 조회된 값:
+  repairWidth: 3 타입: number
+  repairHeight: 3 타입: number
+  repairArea: 9 타입: number
+========================================
+12:28:44 AM [express] GET /api/estimates/82f6bfd3-5f59-4895-b677-06e296951508/latest 304 in 1045ms ::…
+12:28:45 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508 200 in 1241ms :: {"id":"82f…
+12:28:45 AM [express] GET /api/cases/82f6bfd3-5f59-4895-b677-06e296951508/estimate-exclusions 304 in …

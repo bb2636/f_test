@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INVOICE</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #000;
+      background: #fff;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm 15mm;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 180mm;
+      margin: 0 auto;
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #000;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 3px;
+    }
+    
+    /* Info Section */
+    .info-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40px;
+    }
+    
+    .info-left, .info-right {
+      width: 48%;
+    }
+    
+    .info-row {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    
+    .info-label {
+      width: 80px;
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .info-colon {
+      width: 20px;
+      text-align: center;
+    }
+    
+    .info-value {
+      flex: 1;
+      color: #0066cc;
+      font-weight: 500;
+    }
+    
+    /* Particulars Table */
+    .table-section {
+      margin-bottom: 40px;
+    }
+    
+    .particulars-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #000;
+    }
+    
+    .particulars-table th {
+      background: #f5f5f5;
+      padding: 12px 16px;
+      text-align: center;
+      font-weight: 600;
+      border: 1px solid #000;
+      font-size: 13px;
+    }
+    
+    .particulars-table td {
+      padding: 16px;
+      border: 1px solid #000;
+      vertical-align: top;
+    }
+    
+    .particulars-table .col-particulars {
+      width: 65%;
+    }
+    
+    .particulars-table .col-amount {
+      width: 35%;
+      text-align: right;
+    }
+    
+    .particulars-content {
+      min-height: 80px;
+    }
+    
+    .particulars-item {
+      margin-bottom: 8px;
+    }
+    
+    .particulars-item-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .particulars-item-detail {
+      color: #666;
+      font-size: 11px;
+      margin-left: 16px;
+    }
+    
+    .amount-item {
+      margin-bottom: 8px;
+      color: #cc0000;
+      font-weight: 500;
+    }
+    
+    .total-row td {
+      background: #fafafa;
+      font-weight: 700;
+    }
+    
+    .total-label {
+      text-align: left !important;
+      padding-left: 16px !important;
+    }
+    
+    .total-amount {
+      color: #cc0000;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    
+    /* Account Info Box */
+    .account-section {
+      border: 1px solid #000;
+      margin-bottom: 40px;
+    }
+    
+    .account-header {
+      text-align: center;
+      padding: 12px;
+      background: #f9f9f9;
+      border-bottom: 1px solid #000;
+      font-weight: 600;
+    }
+    
+    .account-body {
+      padding: 16px;
+    }
+    
+    .account-row {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    
+    .account-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .account-label {
+      width: 120px;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .account-value {
+      flex: 1;
+      text-align: center;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 2px solid #000;
+      margin-top: 40px;
+    }
+    
+    .footer-text {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+    
+    @media print {
+      body {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>INVOICE</h1>
+    </div>
+    
+    <!-- Info Section -->
+    <div class="info-section">
+      <div class="info-left">
+        <div class="info-row">
+          <span class="info-label">수 신</span>
+          <span class="info-colon">:</span>
+          <span class="info-value">{{recipientName}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">사고번호</span>
+          <span class="info-colon">:</span>
+          <span class="info-value">{{caseNumber}}</span>
+        </div>
+      </div>
+      <div class="info-right">
+        <div class="info-row">
+          <span class="info-label">수임일자</span>
+          <span class="info-colon">:</span>
+          <span class="info-value">{{acceptanceDate}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">제출일자</span>
+          <span class="info-colon">:</span>
+          <span class="info-value">{{submissionDate}}</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Particulars Table -->
+    <div class="table-section">
+      <table class="particulars-table">
+        <thead>
+          <tr>
+            <th class="col-particulars">PARTICULARS</th>
+            <th class="col-amount">AMOUNT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-particulars">
+              <div class="particulars-content">
+                {{particularsContent}}
+              </div>
+            </td>
+            <td class="col-amount">
+              <div class="particulars-content">
+                {{amountContent}}
+              </div>
+            </td>
+          </tr>
+          <tr class="total-row">
+            <td class="total-label">TOTAL AMOUNT</td>
+            <td class="col-amount">
+              <span class="total-amount">{{totalAmount}}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Account Info Box -->
+    <div class="account-section">
+      <div class="account-header">
+        아래의 계좌로 입금 부탁드립니다.
+      </div>
+      <div class="account-body">
+        <div class="account-row">
+          <span class="account-label">은행명</span>
+          <span class="account-value">신한은행</span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">계좌번호</span>
+          <span class="account-value">140-015-744120</span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">예금주</span>
+          <span class="account-value">주식회사 플록슨</span>
+        </div>
+        <div class="account-row">
+          <span class="account-label">사업자등록번호</span>
+          <span class="account-value">517-89-03490</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <span class="footer-text">FLOXN., Inc</span>
+    </div>
+  </div>
+</body>
+</html>

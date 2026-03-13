@@ -1,0 +1,180 @@
+/* Frame 1707483157 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+align-items: center;
+padding: 20px 24px;
+
+position: absolute;
+width: 1596px;
+height: 104px;
+left: calc(50% - 1596px/2);
+bottom: 0px;
+
+background: rgba(255, 255, 255, 0.2);
+box-shadow: 0px 0px 60px #AAB1C2;
+backdrop-filter: blur(17px);
+/* Note: backdrop-filter has minimal browser support */
+border-radius: 12px 12px 0px 0px;
+
+
+/* Frame 1707490449 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px 32px;
+gap: 10px;
+
+margin: 0 auto;
+width: 106px;
+height: 64px;
+
+/* main2 */
+filter: drop-shadow(2px 4px 30px #BDD1F0);
+border-radius: 12px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 초기화 */
+
+width: 62px;
+height: 31px;
+
+/* pretendard/semibold/24 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 24px;
+line-height: 128%;
+/* identical to box height, or 31px */
+letter-spacing: -0.02em;
+
+color: #D02B20;
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707490451 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: flex-end;
+align-items: center;
+padding: 0px;
+gap: 8px;
+
+margin: 0 auto;
+width: 260px;
+height: 64px;
+
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* Frame 1707490451 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px 32px;
+gap: 10px;
+
+width: 106px;
+height: 64px;
+
+background: rgba(12, 12, 12, 0.1);
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* 저장 */
+
+width: 42px;
+height: 31px;
+
+/* pretendard/semibold/24 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 24px;
+line-height: 128%;
+/* identical to box height, or 31px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.8);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+
+/* Frame 1707490450 */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 10px 32px;
+gap: 10px;
+
+width: 146px;
+height: 64px;
+
+background: rgba(12, 12, 12, 0.4);
+/* main2 */
+box-shadow: 2px 4px 30px #BDD1F0;
+border-radius: 10px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+/* 접수완료 */
+
+width: 82px;
+height: 31px;
+
+/* pretendard/semibold/24 */
+font-family: 'Pretendard';
+font-style: normal;
+font-weight: 600;
+font-size: 24px;
+line-height: 128%;
+/* identical to box height, or 31px */
+letter-spacing: -0.02em;
+
+color: rgba(12, 12, 12, 0.3);
+
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;

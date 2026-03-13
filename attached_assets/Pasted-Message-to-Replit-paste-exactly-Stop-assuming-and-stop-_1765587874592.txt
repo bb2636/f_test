@@ -1,0 +1,100 @@
+Message to Replit (paste exactly)
+
+Stop assuming and stop asking me to run SQL in Neon first.
+You CAN debug this from the deployed app by adding safe server-side diagnostics and by checking the deployed environment config.
+
+What we know (facts)
+
+We use Neon DB.
+
+In production Neon DB, cases (접수건) are being created (I can see rows in Neon).
+
+But in the deployed site UI, cases are not visible.
+
+So the problem is NOT “cases not created”.
+The problem is production UI cannot READ / DISPLAY them.
+
+Your “cannot see prod logs” is not acceptable
+
+Even if you cannot view platform logs directly, you still can:
+
+add server-side logging to the HTTP response (temporarily, admin-only)
+
+add a debug endpoint that returns counts and the effective DB connection target
+
+verify the production env variables used by the deployed server
+
+Do this now (no refactor, minimal code changes)
+
+Confirm deployed backend is actually connected to the SAME production Neon database/branch:
+
+Log (server-side) the following for ONE admin-only request:
+
+DATABASE_URL host (masked)
+
+Neon project/branch identifier if available
+
+NODE_ENV and any “ENV=production” flag
+
+Return a safe debug JSON under a protected route, for example:
+
+GET /api/debug/db-status (admin only)
+
+Verify the LIST/READ endpoint used by the UI:
+
+Which endpoint loads cases? (e.g. GET /api/cases)
+
+In that endpoint, add temporary instrumentation:
+
+the final SQL query (or query builder filters)
+
+returned row count
+
+the userId/role used for filtering
+
+Make sure you are not filtering to zero (common bug):
+
+wrong user id
+
+wrong role
+
+wrong status field
+
+default WHERE clauses that exclude all rows
+
+Check for these concrete root causes (most likely):
+
+Deployed server is pointing to a different Neon branch / different DATABASE_URL than the one I checked.
+
+The UI query uses filters that do not match production data (status, deleted flag, tenantId, assignedTo, etc.).
+
+RLS / permissions in Postgres/Neon are enabled and blocking SELECT for the app role.
+
+The deployed build is reading from a cached/stale API base URL (hitting a dev backend).
+
+The API response shape changed and the UI fails to render (silent error). Add error logging in the UI to show why it renders empty.
+
+Deliverables you must provide (no “possible reasons”)
+
+The exact endpoint name(s) the UI calls to fetch cases
+
+The exact filters applied in production
+
+The row count returned by the production API call
+
+Proof the deployed server is connected to the intended production Neon DB/branch
+
+Rule
+
+Do NOT ask me for Neon SQL results yet.
+First produce evidence from the deployed app: DB target + query + row count.
+
+덧붙임(당신이 확인해야 할 핵심 포인트 3개)
+
+Replit이 위 작업을 하면, 거의 항상 여기서 갈립니다.
+
+배포 환경 DATABASE_URL이 다른 DB/브랜치를 보고 있음
+
+조회 쿼리에 필터가 과해서 0건 (status/tenant/role/삭제플래그 등)
+
+API는 데이터 주는데 UI 렌더링이 실패 (response shape 불일치/프론트 에러)

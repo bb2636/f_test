@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FLOXN - 새로운 접수</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-white text-slate-900">
+
+
+    <!-- Page -->
+    <main class="mx-auto max-w-[1400px] px-6 pb-24 pt-6">
+      <!-- Title -->
+      <div class="mb-4 flex items-center gap-2">
+        <h1 class="text-xl font-semibold">새로운 접수</h1>
+        <button
+          class="inline-flex h-8 items-center justify-center rounded-md border border-slate-200 px-3 text-sm text-slate-600 hover:bg-slate-50"
+          type="button"
+        >
+          ★
+        </button>
+      </div>
+
+      <!-- Tabs / Section label -->
+      <div class="mb-6 border-b">
+        <button class="border-b-2 border-sky-500 px-2 pb-3 text-sm font-semibold text-sky-600">
+          기본 정보
+        </button>
+      </div>
+
+      <!-- Helpers -->
+      <!-- Input style: -->
+      <!-- class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" -->
+
+      <!-- Form -->
+      <form class="space-y-10">
+        <!-- 기본 정보 -->
+        <section>
+          <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-slate-900">기본 정보</h2>
+          </div>
+
+          <div class="grid grid-cols-12 gap-x-6 gap-y-4">
+            <!-- 접수번호 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">접수번호</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="접수번호"
+                type="text"
+              />
+            </div>
+
+            <!-- 접수일자 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">접수일자</label>
+              <div class="relative">
+                <input
+                  class="h-10 w-full rounded-md border border-slate-200 px-3 pr-10 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                  placeholder="접수일자"
+                  type="text"
+                />
+                <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                  <!-- calendar icon -->
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="opacity-80">
+                    <path
+                      d="M8 7V3M16 7V3M4 11H20M6 5H18C19.1046 5 20 5.89543 20 7V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V7C4 5.89543 4.89543 5 6 5Z"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- 담당자명(드롭다운) -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">담당자명</label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>담당자명</option>
+              </select>
+            </div>
+
+            <!-- 담당자 연락처 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">담당자 연락처</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="연락처"
+                type="text"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- 보험 정보 -->
+        <section>
+          <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-slate-900">보험 정보</h2>
+          </div>
+
+          <div class="grid grid-cols-12 gap-x-6 gap-y-4">
+            <!-- 보험사 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                보험사 <span class="text-sky-600">*</span>
+              </label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>보험사 선택</option>
+              </select>
+            </div>
+
+            <!-- 보험사 증권번호 -->
+            <div class="col-span-12 md:col-span-5">
+              <label class="mb-1 block text-xs font-medium text-slate-600">보험사 증권번호</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="보험사 증권번호"
+                type="text"
+              />
+            </div>
+
+            <!-- 보험사 사고번호 -->
+            <div class="col-span-12 md:col-span-4">
+              <label class="mb-1 block text-xs font-medium text-slate-600">보험사 사고번호</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="보험사 사고번호"
+                type="text"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- 의뢰자/심사자/조사자 정보 -->
+        <section>
+          <div class="mb-3">
+            <h2 class="text-sm font-semibold text-slate-900">의뢰자/심사자/조사자 정보</h2>
+          </div>
+
+          <div class="grid grid-cols-12 gap-x-6 gap-y-4">
+            <!-- 의뢰사 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                의뢰사 <span class="text-sky-600">*</span>
+              </label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>의뢰사 선택</option>
+              </select>
+            </div>
+
+            <!-- 소속부서명 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">소속부서명</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="소속부서명"
+                type="text"
+              />
+            </div>
+
+            <!-- 의뢰자 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                의뢰자 <span class="text-sky-600">*</span>
+              </label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>의뢰자 성함</option>
+              </select>
+            </div>
+
+            <!-- 의뢰자 연락처 (disabled 느낌) -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">의뢰자 연락처</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-400 outline-none"
+                placeholder="의뢰사 담당자 연락처"
+                type="text"
+                disabled
+              />
+            </div>
+
+            <!-- 심사사 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                심사사 <span class="text-sky-600">*</span>
+              </label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>심사사 선택</option>
+              </select>
+            </div>
+
+            <!-- 소속부서명 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">소속부서명</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="소속부서명"
+                type="text"
+              />
+            </div>
+
+            <!-- 심사자 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                심사자 <span class="text-sky-600">*</span>
+              </label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>심사자 성함</option>
+              </select>
+            </div>
+
+            <!-- 심사자 연락처 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">심사자 연락처</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-400 outline-none"
+                placeholder="심사자 연락처"
+                type="text"
+                disabled
+              />
+            </div>
+
+            <!-- 손사명 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">손사명</label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>손사명</option>
+              </select>
+            </div>
+
+            <!-- 소속부서명 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">소속부서명</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="소속부서명"
+                type="text"
+              />
+            </div>
+
+            <!-- 조사자 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                조사자 <span class="text-sky-600">*</span>
+              </label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>조사자 성함</option>
+              </select>
+            </div>
+
+            <!-- 조사자 연락처 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">조사자 연락처</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-400 outline-none"
+                placeholder="조사자 연락처"
+                type="text"
+                disabled
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- 보험계약자 및 피보험자 정보 -->
+        <section>
+          <div class="mb-3">
+            <h2 class="text-sm font-semibold text-slate-900">보험계약자 및 피보험자 정보</h2>
+          </div>
+
+          <div class="grid grid-cols-12 gap-x-6 gap-y-4">
+            <!-- 보험계약자 -->
+            <div class="col-span-12 md:col-span-6">
+              <label class="mb-1 block text-xs font-medium text-slate-600">보험계약자</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="보험계약자 성함"
+                type="text"
+              />
+            </div>
+
+            <!-- 피보험자 -->
+            <div class="col-span-12 md:col-span-6">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                피보험자 <span class="text-sky-600">*</span>
+              </label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="피보험자 성함"
+                type="text"
+              />
+            </div>
+
+            <!-- 피보험자 주소 (검색 아이콘) -->
+            <div class="col-span-12 md:col-span-7">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                피보험자 주소 <span class="text-sky-600">*</span>
+              </label>
+              <div class="relative">
+                <input
+                  class="h-10 w-full rounded-md border border-slate-200 px-3 pr-10 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                  placeholder="도로명 주소, 동/호 포함"
+                  type="text"
+                />
+                <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                  <!-- search icon -->
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="opacity-80">
+                    <path
+                      d="M21 21L16.65 16.65M10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5C18 14.6421 14.6421 18 10.5 18Z"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- 상세주소 -->
+            <div class="col-span-12 md:col-span-5">
+              <label class="mb-1 block text-xs font-medium text-slate-600">상세주소</label>
+              <div class="relative">
+                <input
+                  class="h-10 w-full rounded-md border border-slate-200 px-3 pr-10 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                  placeholder="상세주소"
+                  type="text"
+                />
+                <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="opacity-80">
+                    <path
+                      d="M21 21L16.65 16.65M10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5C18 14.6421 14.6421 18 10.5 18Z"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 피해자 정보 -->
+        <section>
+          <div class="mb-3">
+            <h2 class="text-sm font-semibold text-slate-900">피해자 정보</h2>
+          </div>
+
+          <div class="grid grid-cols-12 gap-x-6 gap-y-4">
+            <div class="col-span-12 md:col-span-4">
+              <label class="mb-1 block text-xs font-medium text-slate-600">피해자</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="피해자 성함"
+                type="text"
+              />
+            </div>
+
+            <div class="col-span-12 md:col-span-4">
+              <label class="mb-1 block text-xs font-medium text-slate-600">피해자 연락처</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="피해자 연락처"
+                type="text"
+              />
+            </div>
+
+            <div class="col-span-12 md:col-span-4">
+              <label class="mb-1 block text-xs font-medium text-slate-600">상세주소</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                placeholder="상세주소"
+                type="text"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- 배당사항 -->
+        <section class="rounded-lg bg-slate-50 p-6">
+          <div class="mb-4">
+            <h2 class="text-sm font-semibold text-slate-900">배당사항</h2>
+            <p class="mt-1 text-xs text-slate-500">손상 및 대물 선택(중복 가능)</p>
+          </div>
+
+          <div class="mb-5 flex flex-wrap items-center gap-6">
+            <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+              <input class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-200" type="checkbox" checked />
+              손해확정
+            </label>
+            <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+              <input class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-200" type="checkbox" />
+              피해세대복구
+            </label>
+          </div>
+
+          <div class="grid grid-cols-12 gap-x-6 gap-y-4">
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                사고 유형 <span class="text-sky-600">*</span>
+              </label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>사고 유형 선택</option>
+              </select>
+            </div>
+
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">
+                복구 유형 <span class="text-sky-600">*</span>
+              </label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>복구 유형 선택</option>
+              </select>
+            </div>
+
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">사고 원인</label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>사고 원인 선택</option>
+              </select>
+            </div>
+
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">타업체 접수 여부</label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>타업체 접수 여부 선택</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- 배당 협력사 정보 -->
+        <section>
+          <div class="mb-3">
+            <h2 class="text-sm font-semibold text-slate-900">배당 협력사 정보</h2>
+          </div>
+
+          <div class="grid grid-cols-12 gap-x-6 gap-y-4">
+            <!-- 협력사 선택(검색) -->
+            <div class="col-span-12 md:col-span-6">
+              <label class="mb-1 block text-xs font-medium text-slate-600">협력사</label>
+              <div class="relative">
+                <input
+                  class="h-10 w-full rounded-md border border-slate-200 px-3 pr-10 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                  placeholder="협력사 선택"
+                  type="text"
+                />
+                <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="opacity-80">
+                    <path
+                      d="M21 21L16.65 16.65M10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5C18 14.6421 14.6421 18 10.5 18Z"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- 담당자 -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">담당자</label>
+              <select
+                class="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+              >
+                <option>담당자</option>
+              </select>
+            </div>
+
+            <!-- 담당자 연락처(disabled 느낌) -->
+            <div class="col-span-12 md:col-span-3">
+              <label class="mb-1 block text-xs font-medium text-slate-600">담당자 연락처</label>
+              <input
+                class="h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 text-sm text-slate-400 outline-none"
+                placeholder="담당자 연락처"
+                type="text"
+                disabled
+              />
+            </div>
+
+            <!-- 특이사항 -->
+            <div class="col-span-12">
+              <label class="mb-1 block text-xs font-medium text-slate-600">특이사항 및 요청사항</label>
+              <div class="relative">
+                <textarea
+                  class="min-h-[120px] w-full resize-none rounded-md border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                  placeholder="현장 특이사항, 요청사항 등"
+                ></textarea>
+                <div class="absolute bottom-2 right-3 text-xs text-slate-400">0/800</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Bottom Actions -->
+        <div class="fixed inset-x-0 bottom-0 border-t bg-white/95 backdrop-blur">
+          <div class="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4">
+            <button class="text-sm font-semibold text-rose-600 hover:text-rose-700" type="button">
+              초기화
+            </button>
+
+            <div class="flex items-center gap-3">
+              <button
+                class="inline-flex h-10 items-center justify-center rounded-md bg-slate-100 px-5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+                type="button"
+              >
+                저장
+              </button>
+              <button
+                class="inline-flex h-10 items-center justify-center rounded-md bg-slate-300 px-5 text-sm font-semibold text-white"
+                type="button"
+                disabled
+              >
+                접수완료
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spacer for fixed bar -->
+        <div class="h-20"></div>
+      </form>
+    </main>
+  </body>
+</html>
