@@ -123,6 +123,17 @@ The system is a full-stack web application utilizing a React-based frontend and 
   - 배당사항 section has gray background for visual distinction
   - All existing functionality preserved: search modals, data binding, form validation, SMS notifications
 
+## Recent Changes (2026-03-13)
+- **Document Upload: Direct DB Storage (Base64)**: Replaced Object Storage presign+PUT+upload-complete flow with direct base64 upload to database.
+  - New endpoint: `POST /api/documents/direct-upload` — accepts base64 `fileData` and saves directly to `caseDocuments.fileData` column
+  - Frontend `uploadSingleFile()` now reads files via `FileReader.readAsDataURL`, strips prefix, sends base64 to server
+  - Image serving (`GET /api/documents/:id/image`) already supports `fileData` fallback — works seamlessly
+  - Download (`GET /api/documents/:id/download-url`) updated to return image endpoint URL for fileData-based docs
+  - Added authorization checks: image endpoint now checks user role/ownership; direct-upload validates case access
+  - Added server-side file size limit (50MB decoded) on direct-upload
+  - Object Storage presign endpoint kept as fallback but not actively used
+  - Reason: Object Storage sidecar returns persistent 401 errors for all signed URL requests
+
 ## Recent Changes (2026-01-03)
 - **Field Survey Status Workflow Update**: Updated the field survey approval workflow
   - 심사 (Review) → status "1차승인" (unchanged)

@@ -5150,22 +5150,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ===== Object Storage 기반 문서 업로드 API =====
+  // ===== 문서 업로드 API =====
 
-  // Step 1: Presigned URL 발급만 (DB 저장 없음)
+  // 직접 업로드 (base64): Object Storage 우회, DB에 직접 저장
+  app.post("/api/documents/direct-upload", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+
+    try {
+      const { caseId, category, fileName, fileType, fileSize, fileData } = req.body;
+
+      if (!caseId || !category || !fileName || !fileType || !fileSize || !fileData) {
+        return res.status(400).json({
+          error: "필수 필드가 누락되었습니다 (caseId, category, fileName, fileType, fileSize, fileData)",
+        });
+      }
+
+      const MAX_FILE_SIZE = 50 * 1024 * 1024;
+      const decodedSize = Math.ceil((fileData.length * 3) / 4);
+      if (decodedSize > MAX_FILE_SIZE) {
+        return res.status(400).json({
+          error: `파일 크기가 제한(${MAX_FILE_SIZE / 1024 / 1024}MB)을 초과합니다`,
+        });
+      }
+
+      const caseData = await storage.getCase(caseId);
+      if (!caseData) {
+        return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
+      }
+
+      const userRole = req.session.userRole;
+      const isPrivilegedRole = userRole === "관리자" || userRole === "심사사";
+      if (!isPrivilegedRole && caseData.assignedTo !== req.session.userId) {
+        return res.status(403).json({ error: "해당 케이스에 대한 권한이 없습니다" });
+      }
+
+      console.log(
+        `[direct-upload] Saving document for case ${caseId}, file: ${fileName}, size: ${fileSize}`,
+      );
+
+      const document = await storage.saveDocument({
+        caseId,
+        category,
+        fileName,
+        fileType,
+        fileSize,
+        fileData,
+        createdBy: req.session.userId,
+      });
+
+      console.log(
+        `[direct-upload] Document saved successfully: ${document.id}`,
+      );
+
+      res.json({
+        success: true,
+        documentId: document.id,
+      });
+    } catch (error: any) {
+      console.error("[direct-upload] Error:", error.message);
+      res.status(500).json({
+        error: "문서 업로드 중 오류가 발생했습니다",
+        details: error.message,
+      });
+    }
+  });
+
+  // Presigned URL 발급 (Object Storage 사용 시 - 폴백용)
   app.post("/api/documents/presign", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
     }
 
     try {
-      // 요청 바디 크기 로그
       const contentLength = req.headers["content-length"];
       console.log(`[presign] Content-Length: ${contentLength} bytes`);
 
       const { caseId, fileName, fileType, fileSize } = req.body;
 
-      // 파일 바이너리/base64가 포함되지 않았는지 확인
       if (req.body.fileData || req.body.data || req.body.base64) {
         console.error("[presign] ERROR: 파일 바이너리/base64가 요청에 포함됨!");
         return res
@@ -5184,13 +5247,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `[presign] Generating presigned URL for case ${caseId}, file: ${fileName}, size: ${fileSize}`,
       );
 
-      // storageKey 생성: documents/{caseId}/{timestamp}_{uuid}_{fileName}
       const timestamp = Date.now();
       const uuid = crypto.randomUUID();
       const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
       const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
 
-      // PRIVATE_OBJECT_DIR에서 bucket 정보 추출
       const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
       if (!privateObjectDir) {
         console.error("[presign] PRIVATE_OBJECT_DIR not set");
@@ -5199,7 +5260,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .json({ error: "Object Storage가 설정되지 않았습니다" });
       }
 
-      // Full path: /{bucket}/.../{storageKey}
       const fullPath = `${privateObjectDir}/${storageKey}`;
       const pathParts = fullPath.split("/").filter((p) => p);
       if (pathParts.length < 2) {
@@ -5210,7 +5270,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`[presign] Bucket: ${bucketName}, Object: ${objectName}`);
 
-      // Presigned URL 발급 (15분 TTL)
       const uploadURL = await signObjectURL({
         bucketName,
         objectName,
@@ -5222,7 +5281,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `[presign] Generated presigned URL successfully for storageKey: ${storageKey}`,
       );
 
-      // DB 저장 없이 presigned URL만 반환
       res.json({
         uploadURL,
         storageKey,
@@ -5644,6 +5702,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "권한이 없습니다" });
       }
 
+      // fileData 기반 문서인 경우 이미지 엔드포인트로 리다이렉트
+      if (!document.storageKey && document.fileData) {
+        return res.json({
+          downloadURL: `/api/documents/${id}/image`,
+          fileName: document.fileName,
+        });
+      }
+
       // Object Storage 문서인지 확인
       if (!document.storageKey) {
         return res.status(400).json({
@@ -5710,6 +5776,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const document = await storage.getDocument(id);
       if (!document) {
         return res.status(404).json({ error: "문서를 찾을 수 없습니다" });
+      }
+
+      const userRole = req.session.userRole;
+      const isPrivilegedRole = userRole === "관리자" || userRole === "심사사";
+      if (!isPrivilegedRole && document.createdBy !== req.session.userId) {
+        return res.status(403).json({ error: "권한이 없습니다" });
       }
 
       // Object Storage 문서인 경우 signed URL로 리다이렉트

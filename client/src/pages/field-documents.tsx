@@ -321,27 +321,23 @@ export default function FieldDocuments() {
   // 파일 다운로드 (Object Storage 또는 레거시)
   const handleDownload = useCallback(
     async (doc: CaseDocument) => {
-      if (doc.storageKey && doc.status === "ready") {
-        try {
-          const response = await apiRequest(
-            "GET",
-            `/api/documents/${doc.id}/download-url`,
-          );
-          if (!response.ok) {
-            throw new Error("다운로드 URL 생성 실패");
-          }
-          const { downloadURL } = await response.json();
-          window.open(downloadURL, "_blank");
-        } catch (error) {
-          console.error("Download error:", error);
-          toast({
-            title: "다운로드 실패",
-            description: "파일을 다운로드할 수 없습니다",
-            variant: "destructive",
-          });
+      try {
+        const response = await apiRequest(
+          "GET",
+          `/api/documents/${doc.id}/download-url`,
+        );
+        if (!response.ok) {
+          throw new Error("다운로드 URL 생성 실패");
         }
-      } else if (doc.fileData) {
-        downloadFile(doc.fileName, doc.fileType, doc.fileData);
+        const { downloadURL } = await response.json();
+        window.open(downloadURL, "_blank");
+      } catch (error) {
+        console.error("Download error:", error);
+        toast({
+          title: "다운로드 실패",
+          description: "파일을 다운로드할 수 없습니다",
+          variant: "destructive",
+        });
       }
     },
     [toast],
@@ -781,88 +777,48 @@ export default function FieldDocuments() {
       );
     };
 
-    // 1단계: presign 호출 (DB 저장 없음, 메타데이터만 전송)
     updateProgress(5, "uploading");
 
-    const presignResponse = await apiRequest("POST", "/api/documents/presign", {
+    // 파일을 base64로 변환
+    const fileData = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(",")[1];
+        resolve(base64);
+      };
+      reader.onerror = () => reject(new Error("파일 읽기 실패"));
+      reader.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 40) + 5;
+          updateProgress(percentComplete);
+        }
+      };
+      reader.readAsDataURL(uploadingFile.file);
+    });
+
+    updateProgress(50);
+
+    // DB에 직접 저장
+    const uploadResponse = await apiRequest("POST", "/api/documents/direct-upload", {
       caseId: selectedCaseId,
+      category: uploadingFile.category,
       fileName: uploadingFile.file.name,
       fileType: uploadingFile.file.type,
       fileSize: uploadingFile.file.size,
+      fileData,
     });
 
-    if (!presignResponse.ok) {
-      const errorData = await presignResponse
+    if (!uploadResponse.ok) {
+      const errorData = await uploadResponse
         .json()
-        .catch(() => ({ error: "presigned URL 발급 실패" }));
+        .catch(() => ({ error: "업로드 실패" }));
       throw new Error(
-        errorData.error || errorData.details || "presigned URL 발급 실패",
+        errorData.error || errorData.details || "업로드 실패",
       );
     }
 
-    const { uploadURL, storageKey } = await presignResponse.json();
-    updateProgress(15);
-
-    // 2단계: PUT으로 파일 직접 업로드 (XMLHttpRequest로 진행률 추적)
-    await new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          const percentComplete =
-            Math.round((event.loaded / event.total) * 65) + 15;
-          updateProgress(percentComplete);
-        }
-      });
-
-      xhr.addEventListener("load", () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve();
-        } else {
-          reject(new Error(`업로드 실패: ${xhr.status} ${xhr.statusText}`));
-        }
-      });
-
-      xhr.addEventListener("error", () => {
-        reject(new Error("네트워크 오류로 업로드 실패"));
-      });
-
-      xhr.addEventListener("abort", () => {
-        reject(new Error("업로드가 취소되었습니다"));
-      });
-
-      xhr.open("PUT", uploadURL);
-      xhr.setRequestHeader("Content-Type", uploadingFile.file.type);
-      xhr.send(uploadingFile.file);
-    });
-
-    updateProgress(85);
-
-    // 3단계: upload-complete 호출 (업로드 확인 후 DB 저장)
-    const completeResponse = await apiRequest(
-      "POST",
-      "/api/documents/upload-complete",
-      {
-        caseId: selectedCaseId,
-        category: uploadingFile.category,
-        fileName: uploadingFile.file.name,
-        fileType: uploadingFile.file.type,
-        fileSize: uploadingFile.file.size,
-        storageKey,
-        displayOrder: 0,
-      },
-    );
-
-    if (!completeResponse.ok) {
-      const errorData = await completeResponse
-        .json()
-        .catch(() => ({ error: "업로드 완료 처리 실패" }));
-      throw new Error(
-        errorData.error || errorData.details || "업로드 완료 처리 실패",
-      );
-    }
-
-    const { documentId } = await completeResponse.json();
+    const { documentId } = await uploadResponse.json();
     updateProgress(100, "completed", undefined, documentId);
   };
 
