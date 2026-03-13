@@ -2372,7 +2372,7 @@ export default function FieldReport() {
                     try {
                       await apiRequest(
                         "PATCH",
-                        `/api/cases/${selectedCaseId}`,
+                        `/api/cases/${selectedCaseId}/status`,
                         {
                           status: "현장정보제출",
                         },
@@ -2852,7 +2852,7 @@ export default function FieldReport() {
                     try {
                       await apiRequest(
                         "PATCH",
-                        `/api/cases/${selectedCaseId}`,
+                        `/api/cases/${selectedCaseId}/status`,
                         {
                           status: "현장정보제출",
                         },
