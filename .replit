@@ -47,3 +47,15 @@ SMTP_FROM = "master@floxn.co.kr"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-3a197262-446f-4f16-bd21-669a78015258"
+
+[[ports]]
+localPort = 5173
+externalPort = 5173
+
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[[ports]]
+localPort = 22965
+externalPort = 3000
