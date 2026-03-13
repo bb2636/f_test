@@ -67,17 +67,13 @@ ENCRYPTION_KEY = "1adf72254c5eaea5178e13468dd27dac15d6e39a40b92ba592cad084edb8d0
 defaultBucketID = "replit-objstore-3a197262-446f-4f16-bd21-669a78015258"
 
 [[ports]]
+localPort = 3333
+externalPort = 3000
+
+[[ports]]
 localPort = 5000
-externalPort = 5000
-
-[[ports]]
-localPort = 5173
-externalPort = 5173
-
-[[ports]]
-localPort = 8080
 externalPort = 80
 
 [[ports]]
-localPort = 22965
-externalPort = 3000
+localPort = 5904
+externalPort = 3001
