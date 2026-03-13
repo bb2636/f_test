@@ -1348,13 +1348,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               existingPrefix = existingCaseNumber;
             }
 
-            // 접수번호 prefix가 없으면 새로 생성
+            // 접수번호 prefix가 없으면 새로 생성 (접수일자 = 오늘 날짜 기준)
             if (needsNewPrefix || !existingPrefix) {
-              const draftDate =
-                validatedData.accidentDate ||
+              const receptionDate =
                 new Date().toISOString().split("T")[0];
               const { prefix } = await storage.getNextCaseSequence(
-                draftDate,
+                receptionDate,
                 validatedData.insuranceAccidentNo || undefined,
               );
               existingPrefix = prefix;
@@ -1544,11 +1543,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
-        // 새 임시저장 생성
-        const draftDate =
-          validatedData.accidentDate || new Date().toISOString().split("T")[0];
+        // 새 임시저장 생성 (접수일자 = 오늘 날짜 기준)
+        const receptionDate = new Date().toISOString().split("T")[0];
         const { prefix, suffix } = await storage.getNextCaseSequence(
-          draftDate,
+          receptionDate,
           validatedData.insuranceAccidentNo || undefined,
         );
 
@@ -2101,10 +2099,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
       } else if (!caseNumber) {
         console.log(`[Case Create] Fallback - generating new case number`);
-        const fallbackDate =
-          validatedData.accidentDate || new Date().toISOString().split("T")[0];
+        const receptionDate = new Date().toISOString().split("T")[0];
         const { prefix, suffix } = await storage.getNextCaseSequence(
-          fallbackDate,
+          receptionDate,
           validatedData.insuranceAccidentNo || undefined,
         );
         caseNumber = `${prefix}-${suffix === 0 ? 1 : suffix}`;
@@ -2580,14 +2577,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         existingPrefix = existingCaseNumber;
       }
 
-      // prefix가 없으면 새로 생성
+      // prefix가 없으면 새로 생성 (접수일자 = 기존 접수일자 또는 오늘 날짜 기준)
       if (needsNewPrefix || !existingPrefix) {
-        const accDate =
-          updateData.accidentDate ||
-          existingCase.accidentDate ||
+        const receptionDate =
+          existingCase.receptionDate ||
           new Date().toISOString().split("T")[0];
         const { prefix } = await storage.getNextCaseSequence(
-          accDate,
+          receptionDate,
           updateData.insuranceAccidentNo ||
             existingCase.insuranceAccidentNo ||
             undefined,

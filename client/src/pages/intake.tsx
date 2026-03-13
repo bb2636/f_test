@@ -587,9 +587,9 @@ export default function Intake({
 
   useEffect(() => {
     const fetchPredictedCaseNumber = async () => {
-      if (!formData.accidentDate) return;
       try {
-        const params = new URLSearchParams({ date: formData.accidentDate });
+        const todayDate = getTodayDate();
+        const params = new URLSearchParams({ date: todayDate });
         if (formData.insuranceAccidentNo) {
           params.append("insuranceAccidentNo", formData.insuranceAccidentNo);
         }
@@ -605,7 +605,7 @@ export default function Intake({
       }
     };
     fetchPredictedCaseNumber();
-  }, [formData.accidentDate, formData.insuranceAccidentNo]);
+  }, [formData.insuranceAccidentNo]);
 
   useEffect(() => {
     if (!initialCaseId) return;
@@ -959,7 +959,7 @@ export default function Intake({
       const payload = {
         ...cleanedData,
         status: "배당대기",
-        receptionDate: data.accidentDate || getTodayDate(),
+        receptionDate: getTodayDate(),
         assignedTo: user?.id || null,
         ...(editCaseId ? { id: editCaseId } : {}),
       };
@@ -1023,7 +1023,7 @@ export default function Intake({
       const payload = {
         ...cleanedData,
         status: "접수완료",
-        receptionDate: data.accidentDate || getTodayDate(),
+        receptionDate: getTodayDate(),
         assignedTo: user?.id || null,
         ...(editCaseId ? { id: editCaseId } : {}),
       };
