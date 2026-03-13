@@ -3235,14 +3235,15 @@ async function renderEstimatePage(
         Number(row.repairArea) ||
         Number(row.area) ||
         0;
-      const unitPrice =
-        Number(row.standardPrice) ||
-        Number(row.pricePerSqm) ||
-        Number(row.unitPrice) ||
-        0;
+      const isIlwidaega = row.detailWork === '일위대가';
+      const unitPrice = isIlwidaega
+        ? (Number(row.pricePerSqm) || 0)
+        : (Number(row.standardPrice) || Number(row.pricePerSqm) || Number(row.unitPrice) || 0);
       const amount = Number(row.amount) || 0;
-      // 수량 = 합계 / 적용단가 (견적서 작성 페이지와 동일한 계산 방식)
-      const quantity = unitPrice > 0 ? amount / unitPrice : 0;
+      const rawStandardPrice = Number(row.standardPrice) || 0;
+      const quantity = isIlwidaega
+        ? (rawStandardPrice > 0 ? amount / rawStandardPrice : 0)
+        : (unitPrice > 0 ? amount / unitPrice : 0);
       // includeInEstimate=false → 경비 항목 (화면에 표시)
       const expense = !row.includeInEstimate ? amount : 0;
       laborTotal += amount;

@@ -4,7 +4,7 @@ import { Case, MasterData, LaborCost, User, LaborRateTier, UnitPriceOverride } f
 import {
   useLaborRateTiers,
   calculateIWithTiers,
-  calculateAppliedUnitPriceWithTiers,
+  calculateFWithTiers,
   DEFAULT_LABOR_RATE_TIERS_FALLBACK,
 } from "@/hooks/use-labor-rate-tiers";
 import { Button } from "@/components/ui/button";
@@ -614,8 +614,8 @@ export default function FieldEstimate() {
     if (D > 0 && E > 0 && C > 0) {
       // I 계산 (최종 노임비 = 합계) - DB 요율 사용
       calculatedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
-      // 적용단가 = I / C
-      calculatedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+      // 적용단가 = F (구간별 요율 적용된 노임단가)
+      calculatedPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
     }
     
     return {
@@ -1053,7 +1053,7 @@ export default function FieldEstimate() {
             let totalAmount = 0;
             if (D > 0 && E > 0 && C > 0) {
               const I = calculateIWithTiers(C, D, E, laborRateTiers);
-              appliedUnitPrice = Math.round(I / C); // 적용단가 = I / C
+              appliedUnitPrice = calculateFWithTiers(C, D, E, laborRateTiers); // 적용단가 = F (구간별 요율 적용)
               totalAmount = I; // 합계 = I
             }
             
@@ -1908,7 +1908,7 @@ export default function FieldEstimate() {
             
             if (D > 0 && E > 0 && C > 0) {
               calculatedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
-              calculatedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+              calculatedPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
             }
             
             newLaborRows.push({
@@ -2115,7 +2115,7 @@ export default function FieldEstimate() {
             let newStandardPrice = E;
             
             if (D > 0 && E > 0 && C > 0) {
-              newPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+              newPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
               newQuantity = Math.round((C / D) * 100) / 100;
               newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
             }
@@ -2174,7 +2174,7 @@ export default function FieldEstimate() {
             let newStandardPrice = E;
             
             if (D > 0 && E > 0 && C > 0) {
-              newPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+              newPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
               newQuantity = Math.round((C / D) * 100) / 100;
               newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
             }
@@ -2477,7 +2477,7 @@ export default function FieldEstimate() {
           let calculatedPricePerSqm = 0;
           if (D > 0 && E > 0 && C > 0) {
             calculatedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
-            calculatedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+            calculatedPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
           }
           
           // ID 형식: demolition-<matchedWorkName>-<detailItem> (공사명별 1개)

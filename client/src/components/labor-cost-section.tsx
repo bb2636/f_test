@@ -24,7 +24,6 @@ import {
   calculateFWithTiers,
   calculateHWithTiers,
   calculateIWithTiers,
-  calculateAppliedUnitPriceWithTiers,
   DEFAULT_LABOR_RATE_TIERS_FALLBACK,
 } from "@/hooks/use-labor-rate-tiers";
 
@@ -372,13 +371,8 @@ export function LaborCostSection({
         if (D > 0 && E > 0 && C > 0) {
           // I 계산 (최종 노임비 = 합계) - DB 요율 사용
           newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
-          // 적용단가 = I / C
-          newPricePerSqm = calculateAppliedUnitPriceWithTiers(
-            C,
-            D,
-            E,
-            laborRateTiers,
-          );
+          // 적용단가 = F (구간별 요율 적용된 노임단가)
+          newPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
         } else {
           newAmount = 0;
           newPricePerSqm = 0;
@@ -703,13 +697,8 @@ export function LaborCostSection({
     if (D > 0 && E > 0 && C > 0) {
       // I 계산 (최종 노임비) - DB 요율 사용
       const I = calculateIWithTiers(C, D, E, laborRateTiers);
-      // 적용단가 = I / C
-      const appliedUnitPrice = calculateAppliedUnitPriceWithTiers(
-        C,
-        D,
-        E,
-        laborRateTiers,
-      );
+      // 적용단가 = F (구간별 요율 적용된 노임단가)
+      const appliedUnitPrice = calculateFWithTiers(C, D, E, laborRateTiers);
 
       newRow.pricePerSqm = appliedUnitPrice;
       newRow.amount = I;
@@ -1275,13 +1264,8 @@ export function LaborCostSection({
           if (D > 0 && E > 0 && C > 0) {
             // I 계산 (최종 노임비) - DB 요율 사용
             const I = calculateIWithTiers(C, D, E, laborRateTiers);
-            // 적용단가 = I / C
-            const appliedUnitPrice = calculateAppliedUnitPriceWithTiers(
-              C,
-              D,
-              E,
-              laborRateTiers,
-            );
+            // 적용단가 = F (구간별 요율 적용된 노임단가)
+            const appliedUnitPrice = calculateFWithTiers(C, D, E, laborRateTiers);
 
             updated.pricePerSqm = appliedUnitPrice;
             updated.amount = I;
@@ -1356,8 +1340,8 @@ export function LaborCostSection({
               E,
               laborRateTiers,
             );
-            // 적용단가도 재계산: I / C
-            existing.pricePerSqm = calculateAppliedUnitPriceWithTiers(
+            // 적용단가도 재계산: F (구간별 요율 적용된 노임단가)
+            existing.pricePerSqm = calculateFWithTiers(
               C,
               D,
               E,
@@ -2302,7 +2286,7 @@ export function LaborCostSection({
                     );
                   })()}
 
-                  {/* 적용단가 - DB 노임단가(E) 표시, 연동 행은 수정 불가, 천단위 콤마 표시 */}
+                  {/* 적용단가 - 일위대가: F(구간별 요율 적용), 노무비: 기준가(단가_인) 표시 */}
                   <td
                     style={{
                       padding: "0 8px",
@@ -2311,44 +2295,51 @@ export function LaborCostSection({
                         : undefined,
                     }}
                   >
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      defaultValue={
-                        (row.standardPrice || 0) > 0
-                          ? (row.standardPrice || 0).toLocaleString()
-                          : "0"
-                      }
-                      key={`price-${row.id}-${row.standardPrice}`}
-                      onFocus={(e) => {
-                        // 포커스 시 콤마 제거하여 편집 용이하게
-                        const rawValue = e.target.value.replace(/[,\s]/g, "");
-                        e.target.value = rawValue;
-                      }}
-                      onBlur={(e) => {
-                        // blur 시 콤마 추가 및 상태 업데이트
-                        const rawValue = e.target.value.replace(/[,\s]/g, "");
-                        const val = parseInt(rawValue, 10) || 0;
-                        e.target.value = val > 0 ? val.toLocaleString() : "0";
-                        updateRow(row.id, "standardPrice", val);
-                      }}
-                      onKeyDown={(e) => {
-                        // Enter 키로도 blur 트리거
-                        if (e.key === "Enter") {
-                          e.currentTarget.blur();
-                        }
-                      }}
-                      className="h-9 border text-center"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        color: isLinkedRow
-                          ? "rgba(59, 130, 246, 0.9)"
-                          : undefined,
-                      }}
-                      disabled={isLinkedRow || isReadOnly}
-                      data-testid={`input-unitPrice-labor-${globalIndex}`}
-                    />
+                    {(() => {
+                      const isIlwidaega = row.detailWork === "일위대가";
+                      const displayPrice = isIlwidaega
+                        ? Math.round(row.pricePerSqm || 0)
+                        : (row.standardPrice || 0);
+                      return (
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          defaultValue={
+                            displayPrice > 0
+                              ? displayPrice.toLocaleString()
+                              : "0"
+                          }
+                          key={`price-${row.id}-${isIlwidaega ? row.pricePerSqm : row.standardPrice}`}
+                          onFocus={(e) => {
+                            const rawValue = e.target.value.replace(/[,\s]/g, "");
+                            e.target.value = rawValue;
+                          }}
+                          onBlur={(e) => {
+                            const rawValue = e.target.value.replace(/[,\s]/g, "");
+                            const val = parseInt(rawValue, 10) || 0;
+                            e.target.value = val > 0 ? val.toLocaleString() : "0";
+                            if (!isIlwidaega) {
+                              updateRow(row.id, "standardPrice", val);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.currentTarget.blur();
+                            }
+                          }}
+                          className="h-9 border text-center"
+                          style={{
+                            fontFamily: "Pretendard",
+                            fontSize: "14px",
+                            color: isLinkedRow
+                              ? "rgba(59, 130, 246, 0.9)"
+                              : undefined,
+                          }}
+                          disabled={isLinkedRow || isIlwidaega || isReadOnly}
+                          data-testid={`input-unitPrice-labor-${globalIndex}`}
+                        />
+                      );
+                    })()}
                   </td>
 
                   {/* 수량(인) - 연동행: I÷E (합계÷노임단가), 직접추가행: 화살표/수기 입력 가능 (소수점 1자리, 음수 불가) */}
