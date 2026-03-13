@@ -753,8 +753,8 @@ export default function FieldDocuments() {
     }
   };
 
-  // 동시 업로드 제한 (2개 - presign 요청 포함)
-  const uploadLimit = pLimit(2);
+  // 동시 업로드 제한 (5개 - presign 요청 포함)
+  const uploadLimit = pLimit(5);
 
   // 단일 파일 업로드 함수 (2단계 API: presign → PUT → upload-complete)
   const uploadSingleFile = async (
@@ -876,9 +876,9 @@ export default function FieldDocuments() {
           await uploadSingleFile(uploadingFile);
         },
         {
-          retries: 3,
-          minTimeout: 1000,
-          maxTimeout: 5000,
+          retries: 5,
+          minTimeout: 2000,
+          maxTimeout: 10000,
           factor: 2,
           onFailedAttempt: (error: {
             attemptNumber: number;
