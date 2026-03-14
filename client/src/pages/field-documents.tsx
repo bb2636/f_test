@@ -79,8 +79,10 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-const MAX_UPLOAD_SIZE = 20 * 1024 * 1024;
-const MAX_UPLOAD_SIZE_MB = 20;
+const MAX_IMAGE_UPLOAD_SIZE = 20 * 1024 * 1024;
+const MAX_IMAGE_UPLOAD_SIZE_MB = 20;
+const MAX_FILE_UPLOAD_SIZE = 50 * 1024 * 1024;
+const MAX_FILE_UPLOAD_SIZE_MB = 50;
 
 const isHeicFile = (file: File): boolean => {
   if (file.type === "image/heic" || file.type === "image/heif") return true;
@@ -789,9 +791,12 @@ export default function FieldDocuments() {
 
     updateProgress(5, "uploading");
 
-    if (uploadingFile.file.size > MAX_UPLOAD_SIZE) {
+    const isImage = uploadingFile.file.type.startsWith("image/");
+    const sizeLimit = isImage ? MAX_IMAGE_UPLOAD_SIZE : MAX_FILE_UPLOAD_SIZE;
+    const sizeLimitMB = isImage ? MAX_IMAGE_UPLOAD_SIZE_MB : MAX_FILE_UPLOAD_SIZE_MB;
+    if (uploadingFile.file.size > sizeLimit) {
       throw new Error(
-        `파일 크기(${(uploadingFile.file.size / 1024 / 1024).toFixed(1)}MB)가 ${MAX_UPLOAD_SIZE_MB}MB 제한을 초과합니다`,
+        `파일 크기(${(uploadingFile.file.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다`,
       );
     }
 
@@ -947,11 +952,22 @@ export default function FieldDocuments() {
         continue;
       }
 
+      const isImage = file.type.startsWith("image/");
+      const sizeLimit = isImage ? MAX_IMAGE_UPLOAD_SIZE : MAX_FILE_UPLOAD_SIZE;
+      const sizeLimitMB = isImage ? MAX_IMAGE_UPLOAD_SIZE_MB : MAX_FILE_UPLOAD_SIZE_MB;
+
+      if (!isImage && file.size > sizeLimit) {
+        rejectedFiles.push(
+          `${file.name}: 파일 크기(${(file.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
+        );
+        continue;
+      }
+
       try {
         const compressed = await compressImage(file);
-        if (compressed.size > MAX_UPLOAD_SIZE) {
+        if (compressed.size > sizeLimit) {
           rejectedFiles.push(
-            `${file.name}: 파일 크기(${(compressed.size / 1024 / 1024).toFixed(1)}MB)가 ${MAX_UPLOAD_SIZE_MB}MB 제한을 초과합니다.`,
+            `${file.name}: 파일 크기(${(compressed.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
           );
           continue;
         }
@@ -959,9 +975,9 @@ export default function FieldDocuments() {
       } catch (error) {
         const msg =
           error instanceof Error ? error.message : "알 수 없는 오류";
-        if (file.size > MAX_UPLOAD_SIZE) {
+        if (file.size > sizeLimit) {
           rejectedFiles.push(
-            `${file.name}: 파일 크기(${(file.size / 1024 / 1024).toFixed(1)}MB)가 ${MAX_UPLOAD_SIZE_MB}MB 제한을 초과합니다.`,
+            `${file.name}: 파일 크기(${(file.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
           );
         } else {
           rejectedFiles.push(`${file.name}: ${msg}`);
