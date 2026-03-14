@@ -597,7 +597,7 @@ export default function FieldEstimate() {
     
     // 수량 계산: 복구면적 ÷ 기준작업량
     const calculatedQuantity = standardWorkQty > 0 
-      ? Math.round((safeDamageArea / standardWorkQty) * 100) / 100 
+      ? Math.round((safeDamageArea / standardWorkQty) * 10) / 10 
       : 1;
     
     // 새 공식 적용 (C, D, E → I)
@@ -1040,7 +1040,7 @@ export default function FieldEstimate() {
             const standardWorkQty = catalogItem.기준작업량 || 0;
             // 수량 계산: 복구면적 ÷ 기준작업량
             const calculatedQuantity = standardWorkQty > 0 
-              ? Math.round((totalArea / standardWorkQty) * 100) / 100 
+              ? Math.round((totalArea / standardWorkQty) * 10) / 10 
               : 1;
             
             // I = F + H 공식으로 적용단가/합계 계산
@@ -1899,7 +1899,7 @@ export default function FieldEstimate() {
             
             // 수량 계산: 복구면적 ÷ 기준작업량
             const calculatedQuantity = D > 0 
-              ? Math.round((C / D) * 100) / 100 
+              ? Math.round((C / D) * 10) / 10 
               : 1;
             
             // 새 공식으로 적용단가와 합계 계산
@@ -2116,7 +2116,7 @@ export default function FieldEstimate() {
             
             if (D > 0 && E > 0 && C > 0) {
               newPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
-              newQuantity = Math.round((C / D) * 100) / 100;
+              newQuantity = Math.round((C / D) * 10) / 10;
               newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
             }
             
@@ -2175,7 +2175,7 @@ export default function FieldEstimate() {
             
             if (D > 0 && E > 0 && C > 0) {
               newPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
-              newQuantity = Math.round((C / D) * 100) / 100;
+              newQuantity = Math.round((C / D) * 10) / 10;
               newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
             }
             
@@ -2503,7 +2503,7 @@ export default function FieldEstimate() {
             unit: '㎡',
             standardPrice: E,
             standardWorkQuantity: D,
-            quantity: D > 0 ? Math.round((C / D) * 100) / 100 : 1,
+            quantity: D > 0 ? Math.round((C / D) * 10) / 10 : 1,
             applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
             salesMarkupRate: 0,
             pricePerSqm: calculatedPricePerSqm,

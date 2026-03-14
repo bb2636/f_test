@@ -2363,7 +2363,7 @@ export function LaborCostSection({
                       // 연동행은 자동계산된 값 표시, 직접추가행은 row.quantity 사용
                       const displayQuantity = isLinkedRow
                         ? E > 0
-                          ? Math.round((I / E) * 100) / 100
+                          ? Math.round((I / E) * 10) / 10
                           : 0
                         : row.quantity || 0;
 
