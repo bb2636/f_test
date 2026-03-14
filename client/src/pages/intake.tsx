@@ -959,7 +959,7 @@ export default function Intake({
       const payload = {
         ...cleanedData,
         status: "배당대기",
-        receptionDate: getTodayDate(),
+        ...(editCaseId ? {} : { receptionDate: getTodayDate() }),
         assignedTo: user?.id || null,
         ...(editCaseId ? { id: editCaseId } : {}),
       };
@@ -1023,7 +1023,7 @@ export default function Intake({
       const payload = {
         ...cleanedData,
         status: "접수완료",
-        receptionDate: getTodayDate(),
+        ...(editCaseId ? {} : { receptionDate: getTodayDate() }),
         assignedTo: user?.id || null,
         ...(editCaseId ? { id: editCaseId } : {}),
       };
