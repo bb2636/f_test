@@ -79,10 +79,26 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-// 이미지 압축 함수: PNG/JPEG → JPEG, 최대 1600px, quality 35-40
+const MAX_UPLOAD_SIZE = 20 * 1024 * 1024;
+const MAX_UPLOAD_SIZE_MB = 20;
+
+const isHeicFile = (file: File): boolean => {
+  if (file.type === "image/heic" || file.type === "image/heif") return true;
+  const ext = file.name.toLowerCase().split(".").pop();
+  return ext === "heic" || ext === "heif";
+};
+
 const compressImage = (file: File): Promise<File> => {
   return new Promise((resolve, reject) => {
-    // 이미지 파일이 아니면 원본 반환
+    if (isHeicFile(file)) {
+      reject(
+        new Error(
+          "HEIC/HEIF 형식은 지원되지 않습니다. iPhone 설정 > 카메라 > 포맷에서 '높은 호환성'으로 변경하거나, 사진앱에서 JPEG로 변환 후 업로드해주세요.",
+        ),
+      );
+      return;
+    }
+
     if (!file.type.startsWith("image/") || file.type === "image/gif") {
       resolve(file);
       return;
@@ -94,7 +110,6 @@ const compressImage = (file: File): Promise<File> => {
 
     img.onload = () => {
       try {
-        // 최대 가로폭 1600px로 리사이즈
         const MAX_WIDTH = 1600;
         let width = img.width;
         let height = img.height;
@@ -112,12 +127,10 @@ const compressImage = (file: File): Promise<File> => {
           return;
         }
 
-        // 이미지 그리기
         ctx.fillStyle = "#FFFFFF";
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
 
-        // JPEG로 변환 (quality 0.38 = 약 38%)
         canvas.toBlob(
           (blob) => {
             if (!blob) {
@@ -125,7 +138,6 @@ const compressImage = (file: File): Promise<File> => {
               return;
             }
 
-            // 파일명에서 확장자 변경 (.png → .jpg)
             const originalName = file.name;
             const nameWithoutExt = originalName.replace(/\.[^/.]+$/, "");
             const newFileName = `${nameWithoutExt}.jpg`;
@@ -141,7 +153,7 @@ const compressImage = (file: File): Promise<File> => {
             resolve(compressedFile);
           },
           "image/jpeg",
-          0.38, // JPEG quality 38%
+          0.38,
         );
       } catch (error) {
         reject(error);
@@ -152,7 +164,6 @@ const compressImage = (file: File): Promise<File> => {
       reject(new Error("이미지 로드 실패"));
     };
 
-    // 파일을 이미지로 로드
     const reader = new FileReader();
     reader.onload = (e) => {
       img.src = e.target?.result as string;
@@ -752,7 +763,6 @@ export default function FieldDocuments() {
   // 동시 업로드 제한 (5개 - presign 요청 포함)
   const uploadLimit = pLimit(5);
 
-  // 단일 파일 업로드 함수 (2단계 API: presign → PUT → upload-complete)
   const uploadSingleFile = async (
     uploadingFile: UploadingFile,
   ): Promise<void> => {
@@ -779,7 +789,12 @@ export default function FieldDocuments() {
 
     updateProgress(5, "uploading");
 
-    // 파일을 base64로 변환
+    if (uploadingFile.file.size > MAX_UPLOAD_SIZE) {
+      throw new Error(
+        `파일 크기(${(uploadingFile.file.size / 1024 / 1024).toFixed(1)}MB)가 ${MAX_UPLOAD_SIZE_MB}MB 제한을 초과합니다`,
+      );
+    }
+
     const fileData = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -799,30 +814,46 @@ export default function FieldDocuments() {
 
     updateProgress(50);
 
-    // DB에 직접 저장
-    const uploadResponse = await apiRequest("POST", "/api/documents/direct-upload", {
-      caseId: selectedCaseId,
-      category: uploadingFile.category,
-      fileName: uploadingFile.file.name,
-      fileType: uploadingFile.file.type,
-      fileSize: uploadingFile.file.size,
-      fileData,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
-    if (!uploadResponse.ok) {
-      const errorData = await uploadResponse
-        .json()
-        .catch(() => ({ error: "업로드 실패" }));
-      throw new Error(
-        errorData.error || errorData.details || "업로드 실패",
-      );
+    try {
+      const uploadResponse = await fetch("/api/documents/direct-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          caseId: selectedCaseId,
+          category: uploadingFile.category,
+          fileName: uploadingFile.file.name,
+          fileType: uploadingFile.file.type,
+          fileSize: uploadingFile.file.size,
+          fileData,
+        }),
+        credentials: "include",
+        signal: controller.signal,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse
+          .json()
+          .catch(() => ({ error: "업로드 실패" }));
+        throw new Error(
+          errorData.error || errorData.details || "업로드 실패",
+        );
+      }
+
+      const { documentId } = await uploadResponse.json();
+      updateProgress(100, "completed", undefined, documentId);
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        throw new Error("업로드 시간이 초과되었습니다. 네트워크 상태를 확인 후 다시 시도해주세요.");
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    const { documentId } = await uploadResponse.json();
-    updateProgress(100, "completed", undefined, documentId);
   };
 
-  // 파일 업로드 재시도 래퍼
   const uploadWithRetry = async (
     uploadingFile: UploadingFile,
   ): Promise<void> => {
@@ -832,10 +863,17 @@ export default function FieldDocuments() {
           await uploadSingleFile(uploadingFile);
         },
         {
-          retries: 5,
+          retries: 3,
           minTimeout: 2000,
           maxTimeout: 10000,
           factor: 2,
+          shouldRetry: (error: any) => {
+            const msg = error?.message || "";
+            if (msg.includes("제한을 초과") || msg.includes("HEIC") || msg.includes("HEIF")) {
+              return false;
+            }
+            return true;
+          },
           onFailedAttempt: (error: {
             attemptNumber: number;
             retriesLeft: number;
@@ -889,23 +927,57 @@ export default function FieldDocuments() {
     }
   };
 
-  // 파일 선택 핸들러 (Object Storage 기반 + 이미지 자동 압축)
   const handleFileSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
     const defaultSubCategory = getCurrentSubFilter();
 
-    // 1단계: 이미지 압축 변환 (PNG/JPEG → JPEG 1600px, quality 38%)
-    const compressedFiles = await Promise.all(
-      Array.from(files).map(async (file) => {
-        try {
-          return await compressImage(file);
-        } catch (error) {
-          console.error(`[압축 실패] ${file.name}:`, error);
-          return file; // 압축 실패 시 원본 사용
+    const rejectedFiles: string[] = [];
+    const compressedFiles: File[] = [];
+
+    for (const file of Array.from(files)) {
+      if (isHeicFile(file)) {
+        rejectedFiles.push(
+          `${file.name}: HEIC/HEIF 형식은 지원되지 않습니다. JPEG로 변환 후 업로드해주세요.`,
+        );
+        continue;
+      }
+
+      try {
+        const compressed = await compressImage(file);
+        if (compressed.size > MAX_UPLOAD_SIZE) {
+          rejectedFiles.push(
+            `${file.name}: 파일 크기(${(compressed.size / 1024 / 1024).toFixed(1)}MB)가 ${MAX_UPLOAD_SIZE_MB}MB 제한을 초과합니다.`,
+          );
+          continue;
         }
-      }),
-    );
+        compressedFiles.push(compressed);
+      } catch (error) {
+        const msg =
+          error instanceof Error ? error.message : "알 수 없는 오류";
+        if (file.size > MAX_UPLOAD_SIZE) {
+          rejectedFiles.push(
+            `${file.name}: 파일 크기(${(file.size / 1024 / 1024).toFixed(1)}MB)가 ${MAX_UPLOAD_SIZE_MB}MB 제한을 초과합니다.`,
+          );
+        } else {
+          rejectedFiles.push(`${file.name}: ${msg}`);
+        }
+      }
+    }
+
+    if (rejectedFiles.length > 0) {
+      toast({
+        title: "업로드 불가 파일",
+        description: rejectedFiles.join("\n"),
+        variant: "destructive",
+      });
+    }
+
+    if (compressedFiles.length === 0) return;
 
     const newFiles: UploadingFile[] = compressedFiles.map((file) => ({
       id: `${Date.now()}-${Math.random()}`,
