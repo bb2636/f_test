@@ -3135,16 +3135,27 @@ export default function FieldEstimate() {
     // 노무비 총합 - 경비 여부에 따라 분리
     // includeInEstimate === true → 경비가 아닌 항목 (관리비/이윤에 포함)
     // includeInEstimate === false → 경비 항목 (관리비/이윤에서 제외)
+    const getRowAmount = (row: LaborCostRow) => {
+      const isIlw = row.detailWork === "일위대가";
+      const C = row.damageArea || 0;
+      const D = row.standardWorkQuantity || 0;
+      const E = row.standardPrice || 0;
+      if (isIlw && C > 0 && D > 0 && E > 0) {
+        return calculateIWithTiers(C, D, E, laborRateTiers);
+      }
+      return row.amount || 0;
+    };
+
     const laborTotalNonExpense = laborCostRows.reduce((sum, row) => {
       if (row.includeInEstimate) {
-        return sum + (row.amount || 0);
+        return sum + getRowAmount(row);
       }
       return sum;
     }, 0);
 
     const laborTotalExpense = laborCostRows.reduce((sum, row) => {
       if (!row.includeInEstimate) {
-        return sum + (row.amount || 0);
+        return sum + getRowAmount(row);
       }
       return sum;
     }, 0);
@@ -3187,7 +3198,7 @@ export default function FieldEstimate() {
       truncation,
       total,
     };
-  }, [laborCostRows, materialRows, vatIncluded]);
+  }, [laborCostRows, materialRows, vatIncluded, laborRateTiers]);
 
   // 초기화
   const handleReset = () => {
@@ -4084,10 +4095,24 @@ export default function FieldEstimate() {
         }));
 
       // 노무비 데이터 (id 제외, rowIndex 추가)
-      const laborCostData = laborCostRows.map(({ id, ...rest }, index) => ({
-        ...rest,
-        rowIndex: index,
-      }));
+      const laborCostData = laborCostRows.map(({ id, ...rest }, index) => {
+        const isIlw = rest.detailWork === "일위대가";
+        const C = rest.damageArea || 0;
+        const D = rest.standardWorkQuantity || 0;
+        const E = rest.standardPrice || 0;
+        const correctedAmount = (isIlw && C > 0 && D > 0 && E > 0)
+          ? calculateIWithTiers(C, D, E, laborRateTiers)
+          : (rest.amount || 0);
+        const correctedPricePerSqm = (isIlw && C > 0 && D > 0 && E > 0)
+          ? calculateFWithTiers(C, D, E, laborRateTiers)
+          : rest.pricePerSqm;
+        return {
+          ...rest,
+          amount: correctedAmount,
+          pricePerSqm: correctedPricePerSqm,
+          rowIndex: index,
+        };
+      });
 
       // 자재비 데이터 (id 제외, sourceLaborRowIndex 추가)
       const materialCostData = materialRows.map(({ id, sourceLaborRowId, ...rest }) => {

@@ -2286,7 +2286,7 @@ export function LaborCostSection({
                     );
                   })()}
 
-                  {/* 적용단가 - 일위대가: F(구간별 요율 적용), 노무비: 기준가(단가_인) 표시 */}
+                  {/* 적용단가 - 일위대가: F(구간별 요율 적용, 동적 계산), 노무비: 기준가(단가_인) 표시 */}
                   <td
                     style={{
                       padding: "0 8px",
@@ -2297,8 +2297,14 @@ export function LaborCostSection({
                   >
                     {(() => {
                       const isIlwidaega = row.detailWork === "일위대가";
+                      const C = row.damageArea || 0;
+                      const D = row.standardWorkQuantity || 0;
+                      const E = row.standardPrice || 0;
+                      const computedF = (isIlwidaega && C > 0 && D > 0 && E > 0)
+                        ? Math.round(calculateFWithTiers(C, D, E, laborRateTiers))
+                        : 0;
                       const displayPrice = isIlwidaega
-                        ? Math.round(row.pricePerSqm || 0)
+                        ? (computedF > 0 ? computedF : Math.round(row.pricePerSqm || 0))
                         : (row.standardPrice || 0);
                       return (
                         <Input
@@ -2309,7 +2315,7 @@ export function LaborCostSection({
                               ? displayPrice.toLocaleString()
                               : "0"
                           }
-                          key={`price-${row.id}-${isIlwidaega ? row.pricePerSqm : row.standardPrice}`}
+                          key={`price-${row.id}-${displayPrice}`}
                           onFocus={(e) => {
                             const rawValue = e.target.value.replace(/[,\s]/g, "");
                             e.target.value = rawValue;
@@ -2426,11 +2432,16 @@ export function LaborCostSection({
                         : "rgba(12, 12, 12, 0.02)",
                     }}
                   >
-                    {(
-                      (row as MergedLaborCostRow).mergedAmount ??
-                      row.amount ??
-                      0
-                    ).toLocaleString()}
+                    {(() => {
+                      const isIlwidaegaRow = row.detailWork === "일위대가";
+                      const Cv = row.damageArea || 0;
+                      const Dv = row.standardWorkQuantity || 0;
+                      const Ev = row.standardPrice || 0;
+                      const computedAmount = (isIlwidaegaRow && Cv > 0 && Dv > 0 && Ev > 0)
+                        ? calculateIWithTiers(Cv, Dv, Ev, laborRateTiers)
+                        : ((row as MergedLaborCostRow).mergedAmount ?? row.amount ?? 0);
+                      return computedAmount.toLocaleString();
+                    })()}
                   </td>
 
                   {/* 경비 여부 - 연동 행도 수정 가능 */}
@@ -2510,7 +2521,16 @@ export function LaborCostSection({
               data-testid="text-labor-total-in-table"
             >
               {rows
-                .reduce((sum, row) => sum + (row.amount || 0), 0)
+                .reduce((sum, row) => {
+                  const isIlw = row.detailWork === "일위대가";
+                  const Cv = row.damageArea || 0;
+                  const Dv = row.standardWorkQuantity || 0;
+                  const Ev = row.standardPrice || 0;
+                  if (isIlw && Cv > 0 && Dv > 0 && Ev > 0) {
+                    return sum + calculateIWithTiers(Cv, Dv, Ev, laborRateTiers);
+                  }
+                  return sum + (row.amount || 0);
+                }, 0)
                 .toLocaleString()}
             </td>
             <td colSpan={2}></td>
