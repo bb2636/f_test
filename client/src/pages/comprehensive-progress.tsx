@@ -245,7 +245,7 @@ export default function ComprehensiveProgress() {
     if (!allCases) return false;
 
     // 해당 케이스가 "청구" 또는 청구자료제출 관련 상태인 경우에만 체크
-    const claimStatuses = ["청구", "청구자료제출(복구)", "출동비청구(선견적)"];
+    const claimStatuses = ["청구", "청구자료제출(복구)", "출동비청구(선견적)", "직접복구"];
 
     // 현재 케이스가 청구 상태가 아니면 버튼 숨김
     if (!claimStatuses.includes(caseItem.status || "")) {
