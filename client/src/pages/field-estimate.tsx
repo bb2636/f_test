@@ -4100,16 +4100,20 @@ export default function FieldEstimate() {
         const C = rest.damageArea || 0;
         const D = rest.standardWorkQuantity || 0;
         const E = rest.standardPrice || 0;
-        const correctedAmount = (isIlw && C > 0 && D > 0 && E > 0)
-          ? calculateIWithTiers(C, D, E, laborRateTiers)
-          : (rest.amount || 0);
-        const correctedPricePerSqm = (isIlw && C > 0 && D > 0 && E > 0)
-          ? calculateFWithTiers(C, D, E, laborRateTiers)
-          : rest.pricePerSqm;
+        if (isIlw && C > 0 && D > 0 && E > 0) {
+          const correctedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
+          const correctedPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
+          const correctedQuantity = Math.round((correctedAmount / E) * 10) / 10;
+          return {
+            ...rest,
+            amount: correctedAmount,
+            pricePerSqm: correctedPricePerSqm,
+            quantity: correctedQuantity,
+            rowIndex: index,
+          };
+        }
         return {
           ...rest,
-          amount: correctedAmount,
-          pricePerSqm: correctedPricePerSqm,
           rowIndex: index,
         };
       });
