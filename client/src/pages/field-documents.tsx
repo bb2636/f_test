@@ -90,6 +90,18 @@ const isHeicFile = (file: File): boolean => {
   return ext === "heic" || ext === "heif";
 };
 
+const COMPRESS_TIMEOUT_MS = 30000;
+
+const SKIP_COMPRESS_TYPES = [
+  "image/tiff",
+  "image/bmp",
+  "image/x-ms-bmp",
+  "image/svg+xml",
+  "image/webp",
+  "image/x-icon",
+  "image/vnd.microsoft.icon",
+];
+
 const compressImage = (file: File): Promise<File> => {
   return new Promise((resolve, reject) => {
     if (isHeicFile(file)) {
@@ -101,10 +113,31 @@ const compressImage = (file: File): Promise<File> => {
       return;
     }
 
-    if (!file.type.startsWith("image/") || file.type === "image/gif") {
+    if (
+      !file.type.startsWith("image/") ||
+      file.type === "image/gif" ||
+      SKIP_COMPRESS_TYPES.includes(file.type)
+    ) {
       resolve(file);
       return;
     }
+
+    let settled = false;
+    const settle = (fn: () => void) => {
+      if (!settled) {
+        settled = true;
+        fn();
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      settle(() => {
+        console.warn(`[압축] 타임아웃: ${file.name} (${COMPRESS_TIMEOUT_MS}ms 초과, 원본 사용)`);
+        resolve(file);
+      });
+    }, COMPRESS_TIMEOUT_MS);
+
+    const cleanup = () => clearTimeout(timeoutId);
 
     const img = new Image();
     const canvas = document.createElement("canvas");
@@ -125,7 +158,8 @@ const compressImage = (file: File): Promise<File> => {
         canvas.height = height;
 
         if (!ctx) {
-          reject(new Error("Canvas context not available"));
+          cleanup();
+          settle(() => resolve(file));
           return;
         }
 
@@ -135,8 +169,9 @@ const compressImage = (file: File): Promise<File> => {
 
         canvas.toBlob(
           (blob) => {
+            cleanup();
             if (!blob) {
-              reject(new Error("이미지 변환 실패"));
+              settle(() => resolve(file));
               return;
             }
 
@@ -152,25 +187,30 @@ const compressImage = (file: File): Promise<File> => {
             console.log(
               `[압축] ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) → ${newFileName} (${(compressedFile.size / 1024 / 1024).toFixed(2)}MB)`,
             );
-            resolve(compressedFile);
+            settle(() => resolve(compressedFile));
           },
           "image/jpeg",
           0.38,
         );
       } catch (error) {
-        reject(error);
+        cleanup();
+        settle(() => resolve(file));
       }
     };
 
     img.onerror = () => {
-      reject(new Error("이미지 로드 실패"));
+      cleanup();
+      settle(() => resolve(file));
     };
 
     const reader = new FileReader();
     reader.onload = (e) => {
       img.src = e.target?.result as string;
     };
-    reader.onerror = () => reject(new Error("파일 읽기 실패"));
+    reader.onerror = () => {
+      cleanup();
+      settle(() => reject(new Error("파일 읽기 실패")));
+    };
     reader.readAsDataURL(file);
   });
 };
@@ -823,37 +863,48 @@ export default function FieldDocuments() {
     const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     try {
-      const uploadResponse = await fetch("/api/documents/direct-upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          caseId: selectedCaseId,
-          category: uploadingFile.category,
-          fileName: uploadingFile.file.name,
-          fileType: uploadingFile.file.type,
-          fileSize: uploadingFile.file.size,
-          fileData,
-        }),
-        credentials: "include",
-        signal: controller.signal,
-      });
+      let uploadResponse: Response;
+      try {
+        uploadResponse = await fetch("/api/documents/direct-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            caseId: selectedCaseId,
+            category: uploadingFile.category,
+            fileName: uploadingFile.file.name,
+            fileType: uploadingFile.file.type,
+            fileSize: uploadingFile.file.size,
+            fileData,
+          }),
+          credentials: "include",
+          signal: controller.signal,
+        });
+      } catch (fetchErr: any) {
+        if (fetchErr.name === "AbortError") {
+          throw new Error("업로드 시간이 초과되었습니다 (120초). 네트워크 상태를 확인 후 다시 시도해주세요.");
+        }
+        throw new Error(
+          `서버 연결 실패: ${fetchErr.message || "네트워크 오류"}. 인터넷 연결을 확인해주세요.`,
+        );
+      }
 
       if (!uploadResponse.ok) {
+        if (uploadResponse.status === 401) {
+          throw new Error("로그인이 만료되었습니다. 다시 로그인 후 시도해주세요.");
+        }
+        if (uploadResponse.status === 413) {
+          throw new Error("파일이 너무 큽니다. 더 작은 파일로 시도해주세요.");
+        }
         const errorData = await uploadResponse
           .json()
-          .catch(() => ({ error: "업로드 실패" }));
+          .catch(() => ({ error: `업로드 실패 (${uploadResponse.status})` }));
         throw new Error(
-          errorData.error || errorData.details || "업로드 실패",
+          errorData.error || errorData.details || `업로드 실패 (${uploadResponse.status})`,
         );
       }
 
       const { documentId } = await uploadResponse.json();
       updateProgress(100, "completed", undefined, documentId);
-    } catch (err: any) {
-      if (err.name === "AbortError") {
-        throw new Error("업로드 시간이 초과되었습니다. 네트워크 상태를 확인 후 다시 시도해주세요.");
-      }
-      throw err;
     } finally {
       clearTimeout(timeoutId);
     }
@@ -874,7 +925,13 @@ export default function FieldDocuments() {
           factor: 2,
           shouldRetry: (error: any) => {
             const msg = error?.message || "";
-            if (msg.includes("제한을 초과") || msg.includes("HEIC") || msg.includes("HEIF")) {
+            if (
+              msg.includes("제한을 초과") ||
+              msg.includes("HEIC") ||
+              msg.includes("HEIF") ||
+              msg.includes("로그인이 만료") ||
+              msg.includes("너무 큽니다")
+            ) {
               return false;
             }
             return true;

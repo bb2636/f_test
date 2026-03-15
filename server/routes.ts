@@ -5168,22 +5168,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { caseId, category, fileName, fileType, fileSize, fileData } = req.body;
 
-      if (!caseId || !category || !fileName || !fileType || !fileSize || !fileData) {
+      console.log(
+        `[direct-upload] Request received - user: ${req.session.userId}, caseId: ${caseId || "MISSING"}, fileName: ${fileName || "MISSING"}, fileSize: ${fileSize || "MISSING"}, hasFileData: ${!!fileData}, fileDataLen: ${fileData ? fileData.length : 0}`,
+      );
+
+      if (!caseId || !category || !fileName || !fileType || !fileData) {
+        const missing = [];
+        if (!caseId) missing.push("caseId");
+        if (!category) missing.push("category");
+        if (!fileName) missing.push("fileName");
+        if (!fileType) missing.push("fileType");
+        if (!fileData) missing.push("fileData");
+        console.error(`[direct-upload] Missing fields: ${missing.join(", ")}`);
         return res.status(400).json({
-          error: "필수 필드가 누락되었습니다 (caseId, category, fileName, fileType, fileSize, fileData)",
+          error: `필수 필드가 누락되었습니다: ${missing.join(", ")}`,
         });
       }
 
       const MAX_FILE_SIZE = 50 * 1024 * 1024;
       const decodedSize = Math.ceil((fileData.length * 3) / 4);
       if (decodedSize > MAX_FILE_SIZE) {
-        return res.status(400).json({
-          error: `파일 크기가 제한(${MAX_FILE_SIZE / 1024 / 1024}MB)을 초과합니다`,
+        return res.status(413).json({
+          error: `파일 크기(${(decodedSize / 1024 / 1024).toFixed(1)}MB)가 제한(${MAX_FILE_SIZE / 1024 / 1024}MB)을 초과합니다`,
         });
       }
 
       console.log(
-        `[direct-upload] Saving document for case ${caseId}, file: ${fileName}, size: ${fileSize}`,
+        `[direct-upload] Saving document for case ${caseId}, file: ${fileName}, decodedSize: ${(decodedSize / 1024 / 1024).toFixed(2)}MB`,
       );
 
       const document = await storage.saveDocument({
@@ -5191,7 +5202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category,
         fileName,
         fileType,
-        fileSize,
+        fileSize: fileSize || decodedSize,
         fileData,
         createdBy: req.session.userId,
       });
@@ -5200,12 +5211,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `[direct-upload] Document saved successfully: ${document.id}`,
       );
 
+      if (req.rawBody) {
+        delete (req as any).rawBody;
+      }
+
       res.json({
         success: true,
         documentId: document.id,
       });
     } catch (error: any) {
-      console.error("[direct-upload] Error:", error.message);
+      console.error("[direct-upload] Error:", error.message, error.stack?.split("\n").slice(0, 3).join(" | "));
       res.status(500).json({
         error: "문서 업로드 중 오류가 발생했습니다",
         details: error.message,
