@@ -7373,8 +7373,7 @@ export class DbStorage implements IStorage {
       .from(laborRateTiers)
       .orderBy(asc(laborRateTiers.sortOrder));
     
-    // 데이터가 없으면 초기화
-    if (tiers.length === 0) {
+    if (tiers.length === 0 || tiers.length < 13) {
       await this.initializeLaborRateTiers();
       return await db
         .select()
@@ -7402,17 +7401,16 @@ export class DbStorage implements IStorage {
   }
 
   async initializeLaborRateTiers(): Promise<void> {
-    // 기존 데이터 확인
     const existing = await db.select().from(laborRateTiers);
-    if (existing.length > 0) {
-      return; // 이미 데이터가 있으면 초기화하지 않음
+    if (existing.length > 0 && existing.length >= 13) {
+      return;
     }
 
-    // 기본 요율 데이터 삽입
+    await db.delete(laborRateTiers);
     for (const tier of DEFAULT_LABOR_RATE_TIERS) {
       await db.insert(laborRateTiers).values(tier);
     }
-    console.log("[Storage] Labor rate tiers initialized with default values");
+    console.log(`[Storage] Labor rate tiers updated to 13-tier system (was ${existing.length} tiers)`);
   }
 
   // Invoice methods

@@ -994,14 +994,19 @@ export type UpdateLaborRateTier = z.infer<typeof updateLaborRateTierSchema>;
 
 // 기본 노임단가 적용비율 (초기 시드 데이터)
 export const DEFAULT_LABOR_RATE_TIERS: InsertLaborRateTier[] = [
-  { minRatio: 85, rateMultiplier: 100, sortOrder: 1 }, // ≥85%: 100%
-  { minRatio: 80, rateMultiplier: 95, sortOrder: 2 },  // ≥80%: 95%
-  { minRatio: 75, rateMultiplier: 82, sortOrder: 3 },  // ≥75%: 82%
-  { minRatio: 70, rateMultiplier: 74, sortOrder: 4 },  // ≥70%: 74%
-  { minRatio: 65, rateMultiplier: 66, sortOrder: 5 },  // ≥65%: 66%
-  { minRatio: 60, rateMultiplier: 58, sortOrder: 6 },  // ≥60%: 58%
-  { minRatio: 50, rateMultiplier: 50, sortOrder: 7 },  // ≥50%: 50%
-  { minRatio: 0, rateMultiplier: 45, sortOrder: 8 },   // <50%: 45%
+  { minRatio: 85, rateMultiplier: 100, sortOrder: 1 },
+  { minRatio: 80, rateMultiplier: 95, sortOrder: 2 },
+  { minRatio: 75, rateMultiplier: 90, sortOrder: 3 },
+  { minRatio: 70, rateMultiplier: 85, sortOrder: 4 },
+  { minRatio: 65, rateMultiplier: 80, sortOrder: 5 },
+  { minRatio: 60, rateMultiplier: 75, sortOrder: 6 },
+  { minRatio: 55, rateMultiplier: 70, sortOrder: 7 },
+  { minRatio: 50, rateMultiplier: 65, sortOrder: 8 },
+  { minRatio: 45, rateMultiplier: 60, sortOrder: 9 },
+  { minRatio: 40, rateMultiplier: 55, sortOrder: 10 },
+  { minRatio: 35, rateMultiplier: 50, sortOrder: 11 },
+  { minRatio: 30, rateMultiplier: 45, sortOrder: 12 },
+  { minRatio: 0, rateMultiplier: 40, sortOrder: 13 },
 ];
 
 // 일위대가 기준작업량(D값) 오버라이드 테이블
