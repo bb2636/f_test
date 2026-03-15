@@ -416,8 +416,7 @@ export default function UnsettledCaseStatistics() {
         const damagePrevention = rep.damagePreventionCost === "true" || (rep.damagePreventionCost as any) === true;
         const victimIncident = rep.victimIncidentAssistance === "true" || (rep.victimIncidentAssistance as any) === true;
         const address = rep.insuredAddress || rep.victimAddress || "";
-        // 청구액: 그룹 내 대표 케이스의 청구액만 사용 (더블 계산 방지)
-        const claimAmount = getClaimAmount(rep);
+        const claimAmount = g.totalClaim;
         return [
           rep.insuranceCompany || "",
           rep.insurancePolicyNo || "",
@@ -501,7 +500,7 @@ export default function UnsettledCaseStatistics() {
         <td style={cellStyle}>{formatDate(rep.siteInvestigationSubmitDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(g.totalApproved)}</td>
         <td style={cellStyle}>{formatDate(rep.secondApprovalDate)}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(getClaimAmount(rep))}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(g.totalClaim)}</td>
         <td style={cellStyle}>{formatDate(rep.claimDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
         <td style={cellStyle}>{formatDate(deposit.date)}</td>
