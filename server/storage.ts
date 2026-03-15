@@ -4430,6 +4430,14 @@ export class DbStorage implements IStorage {
     // id는 업데이트 대상에서 제외 (duplicate key 오류 방지)
     delete updateData.id;
     
+    // receptionDate 보호: 기존 케이스에 이미 접수일이 있으면 절대 변경하지 않음
+    if (existingCase && existingCase.receptionDate) {
+      if (updateData.receptionDate && updateData.receptionDate !== existingCase.receptionDate) {
+        console.log(`[updateCase] ⚠️ Blocked receptionDate change: ${existingCase.receptionDate} → ${updateData.receptionDate} (caseId: ${caseId})`);
+      }
+      delete updateData.receptionDate;
+    }
+    
     // managerId가 빈 문자열이면 null로 변환 (외래 키 제약 조건 방지)
     if (updateData.managerId === '') {
       updateData.managerId = null;

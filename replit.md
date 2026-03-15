@@ -123,6 +123,12 @@ The system is a full-stack web application utilizing a React-based frontend and 
   - 배당사항 section has gray background for visual distinction
   - All existing functionality preserved: search modals, data binding, form validation, SMS notifications
 
+## Recent Changes (2026-03-15)
+- **접수일자(receptionDate) 보호 강화**: `updateCase` storage 함수에 최종 안전장치 추가
+  - 기존 케이스에 이미 접수일이 있으면 어떤 코드 경로로든 절대 변경 불가
+  - 변경 시도 시 경고 로그 기록 후 자동 차단
+  - 기존 보호: PATCH handler에서 delete updateData.receptionDate, POST handler에서 기존 receptionDate 보존
+
 ## Recent Changes (2026-03-13)
 - **Document Upload: Direct DB Storage (Base64)**: Replaced Object Storage presign+PUT+upload-complete flow with direct base64 upload to database.
   - New endpoint: `POST /api/documents/direct-upload` — accepts base64 `fileData` and saves directly to `caseDocuments.fileData` column
