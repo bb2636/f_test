@@ -5,6 +5,7 @@ import {
   useLaborRateTiers,
   calculateIWithTiers,
   calculateAppliedUnitPriceWithTiers,
+  calculateQuantityWithTiers,
   DEFAULT_LABOR_RATE_TIERS_FALLBACK,
 } from "@/hooks/use-labor-rate-tiers";
 import { Button } from "@/components/ui/button";
@@ -595,26 +596,18 @@ export default function FieldEstimate() {
     const standardWorkQty = catalogItem?.기준작업량 || 0;
     const laborPrice = catalogItem?.노임단가 || 0;
     
-    // 수량 계산: 복구면적 ÷ 기준작업량
-    const calculatedQuantity = standardWorkQty > 0 
-      ? Math.round((safeDamageArea / standardWorkQty) * 10) / 10 
-      : 1;
-    
-    // 새 공식 적용 (C, D, E → I)
-    // C = 복구면적 (safeDamageArea)
-    // D = 기준작업량 (standardWorkQty)
-    // E = 노임단가 (laborPrice)
     const C = safeDamageArea;
     const D = standardWorkQty;
     const E = laborPrice;
     
+    let calculatedQuantity = 1;
     let calculatedAmount = 0;
     let calculatedPricePerSqm = 0;
     
     if (D > 0 && E > 0 && C > 0) {
-      // I 계산 (최종 노임비 = 합계) - DB 요율 사용
       calculatedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
       calculatedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+      calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
     }
     
     return {
@@ -1035,25 +1028,18 @@ export default function FieldEstimate() {
               return; // 모든 원본 행이 삭제된 경우에만 재생성하지 않음
             }
             
-            // 기준작업량 가져오기
             const standardWorkQty = catalogItem.기준작업량 || 0;
-            // 수량 계산: 복구면적 ÷ 기준작업량
-            const calculatedQuantity = standardWorkQty > 0 
-              ? Math.round((totalArea / standardWorkQty) * 10) / 10 
-              : 1;
+            const C = totalArea;
+            const D = standardWorkQty;
+            const E = catalogItem.노임단가 || 0;
             
-            // I = F + H 공식으로 적용단가/합계 계산
-            const C = totalArea; // 복구면적
-            const D = standardWorkQty; // 기준작업량
-            const E = catalogItem.노임단가 || 0; // 노임단가(인당)
-            
-            // I 계산 (최종 노임비) - DB 요율 사용
             let appliedUnitPrice = 0;
             let totalAmount = 0;
+            let calculatedQuantity = 1;
             if (D > 0 && E > 0 && C > 0) {
-              const I = calculateIWithTiers(C, D, E, laborRateTiers);
+              totalAmount = calculateIWithTiers(C, D, E, laborRateTiers);
               appliedUnitPrice = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
-              totalAmount = I; // 합계 = I
+              calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
             }
             
             newLaborRows.push({
@@ -1896,18 +1882,14 @@ export default function FieldEstimate() {
             const D = catalogItem.기준작업량 || 0; // 기준작업량
             const E = catalogItem.노임단가 || 0; // 노임단가(인당)
             
-            // 수량 계산: 복구면적 ÷ 기준작업량
-            const calculatedQuantity = D > 0 
-              ? Math.round((C / D) * 10) / 10 
-              : 1;
-            
-            // 새 공식으로 적용단가와 합계 계산
+            let calculatedQuantity = 1;
             let calculatedAmount = 0;
             let calculatedPricePerSqm = 0;
             
             if (D > 0 && E > 0 && C > 0) {
               calculatedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
               calculatedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+              calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
             }
             
             newLaborRows.push({
@@ -2115,7 +2097,7 @@ export default function FieldEstimate() {
             
             if (D > 0 && E > 0 && C > 0) {
               newPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
-              newQuantity = Math.round((C / D) * 10) / 10;
+              newQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
               newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
             }
             
@@ -2174,7 +2156,7 @@ export default function FieldEstimate() {
             
             if (D > 0 && E > 0 && C > 0) {
               newPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
-              newQuantity = Math.round((C / D) * 10) / 10;
+              newQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
               newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
             }
             
@@ -2474,35 +2456,35 @@ export default function FieldEstimate() {
           
           let calculatedAmount = 0;
           let calculatedPricePerSqm = 0;
+          let calculatedQuantity = 1;
           if (D > 0 && E > 0 && C > 0) {
             calculatedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
             calculatedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+            calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
           }
           
-          // ID 형식: demolition-<matchedWorkName>-<detailItem> (공사명별 1개)
           const uniqueId = `demolition-${matchedWorkName}-${detailItem.replace(/\s+/g, '')}`;
           
-          // 중복 ID 체크 (이미 존재하면 건너뛰기)
           if (updatedRows.some(r => r.id === uniqueId) || newDemolitionRows.some(r => r.id === uniqueId)) {
-            return; // 이미 존재
+            return;
           }
           
           newDemolitionRows.push({
             id: uniqueId,
-            sourceAreaRowId: `demolition-${sourceRowIds.join(',')}`, // 관련된 모든 sourceRowId
+            sourceAreaRowId: `demolition-${sourceRowIds.join(',')}`,
             isLinkedFromRecovery: true,
             sourceWorkType: '철거공사',
             place: '',
             position: '',
             category: '철거공사',
-            workName: matchedWorkName, // 표준화된 공사명 사용
+            workName: matchedWorkName,
             detailWork: '일위대가',
             detailItem: detailItem,
             priceStandard: '',
             unit: '㎡',
             standardPrice: E,
             standardWorkQuantity: D,
-            quantity: D > 0 ? Math.round((C / D) * 10) / 10 : 1,
+            quantity: calculatedQuantity,
             applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
             salesMarkupRate: 0,
             pricePerSqm: calculatedPricePerSqm,
@@ -4102,7 +4084,7 @@ export default function FieldEstimate() {
         if (isIlw && C > 0 && D > 0 && E > 0) {
           const correctedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
           const correctedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
-          const correctedQuantity = Math.round((C / D) * 10) / 10;
+          const correctedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
           return {
             ...rest,
             amount: correctedAmount,

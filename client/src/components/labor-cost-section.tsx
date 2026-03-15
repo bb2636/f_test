@@ -23,6 +23,7 @@ import type { LaborRateTier } from "@shared/schema";
 import {
   calculateIWithTiers,
   calculateAppliedUnitPriceWithTiers,
+  calculateQuantityWithTiers,
   DEFAULT_LABOR_RATE_TIERS_FALLBACK,
 } from "@/hooks/use-labor-rate-tiers";
 
@@ -332,17 +333,12 @@ export function LaborCostSection({
           standardWorkQty = ilwidaegaItem.기준작업량;
         }
       }
-      // 수량 반올림: 0.1 이상은 소수점 1자리, 미만은 유효숫자 1자리
-      const rawQuantity = newDamageArea / standardWorkQty;
+      const E_val = Number(row.standardPrice) || 0;
       const newQuantity =
-        standardWorkQty > 0
-          ? rawQuantity >= 0.1
-            ? Math.round(rawQuantity * 10) / 10
-            : parseFloat(rawQuantity.toPrecision(1))
+        standardWorkQty > 0 && E_val > 0 && newDamageArea > 0
+          ? calculateQuantityWithTiers(newDamageArea, standardWorkQty, E_val, laborRateTiers)
           : row.quantity;
 
-      // 기존 값과 동일하고, 가격이 이미 계산되어 있으면 업데이트하지 않음
-      // pricePerSqm이 0이면 재계산 필요 (새로 추가된 행)
       const needsPriceRecalc =
         row.pricePerSqm === 0 &&
         row.detailWork === "일위대가" &&
@@ -357,18 +353,15 @@ export function LaborCostSection({
 
       hasChanges = true;
 
-      // 금액 재계산: 일위대가 공식 (C, D, E → I)
       let newPricePerSqm = row.pricePerSqm;
       let newAmount = row.amount;
 
       if (row.detailWork === "일위대가") {
-        // C = 복구면적, D = 기준작업량, E = 노임단가 (standardPrice)
         const C = newDamageArea;
         const D = standardWorkQty;
-        const E = Number(row.standardPrice) || 0;
+        const E = E_val;
 
         if (D > 0 && E > 0 && C > 0) {
-          // I 계산 (최종 노임비 = 합계) - DB 요율 사용
           newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
           newPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
         } else {
@@ -633,15 +626,10 @@ export function LaborCostSection({
       laborUnitPrice,
     );
 
-    // 피해면적과 수량 계산 (수량 = 피해면적 / 기준작업량)
-    // 수량 반올림: 0.1 이상은 소수점 1자리, 미만은 유효숫자 1자리
     const damageArea = sourceRow.damageArea || 0;
-    const rawQuantity = standardWorkQty > 0 ? damageArea / standardWorkQty : 1;
     const quantity =
-      standardWorkQty > 0
-        ? rawQuantity >= 0.1
-          ? Math.round(rawQuantity * 10) / 10
-          : parseFloat(rawQuantity.toPrecision(1))
+      standardWorkQty > 0 && laborUnitPrice > 0 && damageArea > 0
+        ? calculateQuantityWithTiers(damageArea, standardWorkQty, laborUnitPrice, laborRateTiers)
         : 1;
 
     const newRow: LaborCostRow = {
@@ -1342,12 +1330,7 @@ export function LaborCostSection({
               E,
               laborRateTiers,
             );
-            // 수량도 재계산: C / D (0.1 이상은 소수점 1자리, 미만은 유효숫자 1자리)
-            const rawMergedQty = C / D;
-            existing.mergedQuantity =
-              rawMergedQty >= 0.1
-                ? Math.round(rawMergedQty * 10) / 10
-                : parseFloat(rawMergedQty.toPrecision(1));
+            existing.mergedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
           } else {
             // 일위대가 공식 적용 불가 시: 기존 방식
             existing.mergedQuantity =
@@ -2356,9 +2339,10 @@ export function LaborCostSection({
                       const C = (row as MergedLaborCostRow).damageArea ?? row.damageArea ?? 0;
                       const D = row.standardWorkQuantity || 0;
 
+                      const E = row.standardPrice || 0;
                       const displayQuantity = isLinkedRow
-                        ? (D > 0 && C > 0)
-                          ? Math.round((C / D) * 10) / 10
+                        ? (D > 0 && C > 0 && E > 0)
+                          ? calculateQuantityWithTiers(C, D, E, laborRateTiers)
                           : 0
                         : row.quantity || 0;
 

@@ -79,10 +79,24 @@ export function calculateAppliedUnitPriceWithTiers(
   E: number,
   tiers: LaborRateTier[]
 ): number {
-  if (C <= 0 || D <= 0) return 0;
+  if (D <= 0 || E <= 0) return 0;
+  return Math.round(E / D);
+}
 
+export function calculateQuantityWithTiers(
+  C: number,
+  D: number,
+  E: number,
+  tiers: LaborRateTier[]
+): number {
+  if (D <= 0 || E <= 0 || C <= 0) return 0;
   const I = calculateIWithTiers(C, D, E, tiers);
-  return Math.round(I / C);
+  const unitPrice = E / D;
+  if (unitPrice <= 0) return 0;
+  const raw = I / unitPrice;
+  return raw >= 0.1
+    ? Math.round(raw * 10) / 10
+    : parseFloat(raw.toPrecision(1));
 }
 
 export const DEFAULT_LABOR_RATE_TIERS_FALLBACK: LaborRateTier[] = [
