@@ -79,8 +79,8 @@ export function calculateAppliedUnitPriceWithTiers(
   E: number,
   tiers: LaborRateTier[]
 ): number {
-  if (D <= 0 || E <= 0) return 0;
-  return Math.round(E / D);
+  if (E <= 0) return 0;
+  return Math.round(E);
 }
 
 export function calculateQuantityWithTiers(
@@ -91,9 +91,8 @@ export function calculateQuantityWithTiers(
 ): number {
   if (D <= 0 || E <= 0 || C <= 0) return 0;
   const I = calculateIWithTiers(C, D, E, tiers);
-  const unitPrice = E / D;
-  if (unitPrice <= 0) return 0;
-  const raw = I / unitPrice;
+  if (E <= 0) return 0;
+  const raw = I / E;
   return raw >= 0.1
     ? Math.round(raw * 10) / 10
     : parseFloat(raw.toPrecision(1));

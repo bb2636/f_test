@@ -96,7 +96,8 @@ interface MaterialByWorknameCatalogItem {
 // F = C/D 비율에 따른 적용단가 (E 기준 할인율 적용) - DB에서 가져온 요율 사용
 // H = C≥D: (C-D)×(E÷D) / C<D: 0
 // I = F + H (최종 노임비)
-// 적용단가 = I / C
+// 적용단가 = E (노임단가, DB 값)
+// 수량(인) = I / E (합계 / 적용단가)
 // 합계 = I
 // (calculateF, calculateH, calculateI, calculateAppliedUnitPrice는 use-labor-rate-tiers.ts에서 import)
 
@@ -633,7 +634,7 @@ export default function FieldEstimate() {
         molding: false,
       },
       salesMarkupRate: 0,
-      pricePerSqm: calculatedPricePerSqm, // 적용단가 (I/C)
+      pricePerSqm: calculatedPricePerSqm, // 적용단가 (E)
       damageArea: safeDamageArea, // 복구면적 (C)
       deduction: 0,
       includeInEstimate: true,
@@ -1059,7 +1060,7 @@ export default function FieldEstimate() {
               quantity: calculatedQuantity, // 자동 계산된 수량
               applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
               salesMarkupRate: 0,
-              pricePerSqm: appliedUnitPrice, // 적용단가 = I / C
+              pricePerSqm: appliedUnitPrice, // 적용단가 = E (노임단가)
               damageArea: totalArea,
               deduction: 0,
               includeInEstimate: true,
@@ -1909,7 +1910,7 @@ export default function FieldEstimate() {
               quantity: calculatedQuantity, // 수량 (C/D)
               applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
               salesMarkupRate: 0,
-              pricePerSqm: calculatedPricePerSqm, // 적용단가 (I/C)
+              pricePerSqm: calculatedPricePerSqm, // 적용단가 (E)
               damageArea: C, // 복구면적 (C)
               deduction: 0,
               includeInEstimate: true,
@@ -3750,7 +3751,7 @@ export default function FieldEstimate() {
             quantity: 1, // 초기값 1, useEffect에서 복구면적 기준으로 재계산됨
             applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
             salesMarkupRate: 0,
-            pricePerSqm: 0, // 초기값 0, useEffect에서 I/C로 계산됨
+            pricePerSqm: 0, // 초기값 0, useEffect에서 E 기준으로 계산됨
             damageArea: currentRepairArea, // 복구면적 (C) - repairArea 사용
             deduction: 0,
             includeInEstimate: true,
@@ -6402,9 +6403,9 @@ export default function FieldEstimate() {
                         <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB" }}>단가 기준</th>
                         <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB" }}>단위</th>
                         <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB" }}>기준가(단위)</th>
-                        <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB" }}>수량</th>
+                        <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB" }}>수량(인)</th>
                         <th style={{ width: "200px", padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB" }}>적용률</th>
-                        <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB" }}>기준가(m²)</th>
+                        <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB" }}>적용단가</th>
                         <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB" }}>피해면적</th>
                         <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB" }}>공제(원)</th>
                         <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB" }}>경비여부</th>
@@ -6554,7 +6555,7 @@ export default function FieldEstimate() {
                             {Number(row.standardPrice).toLocaleString()}
                           </td>
                           
-                          {/* 수량 - Editable Input */}
+                          {/* 수량(인) - Editable Input */}
                           <td style={{ padding: "0 8px", background: "#EFF6FF" }}>
                             <Input
                               value={row.quantity}
@@ -6634,7 +6635,7 @@ export default function FieldEstimate() {
                             </div>
                           </td>
                           
-                          {/* 기준가(m²) - Editable Input with comma formatting */}
+                          {/* 적용단가 - Editable Input with comma formatting */}
                           <td style={{ padding: "0 8px", background: "#EFF6FF" }}>
                             <Input
                               type="text"
