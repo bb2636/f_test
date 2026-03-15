@@ -990,84 +990,116 @@ export default function FieldDocuments() {
   };
 
   const handleFileSelect = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
+    console.log("[파일선택] handleFileSelect 호출됨", { filesCount: files?.length || 0, selectedCaseId });
+    if (!files || files.length === 0) {
+      console.warn("[파일선택] 파일이 없습니다");
+      return;
+    }
+
+    if (!selectedCaseId) {
+      toast({
+        title: "케이스를 먼저 선택해주세요",
+        description: "파일을 업로드하려면 케이스를 선택해야 합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
 
-    const defaultSubCategory = getCurrentSubFilter();
+    try {
+      const defaultSubCategory = getCurrentSubFilter();
+      console.log("[파일선택] 카테고리:", defaultSubCategory, "파일수:", files.length);
 
-    const rejectedFiles: string[] = [];
-    const compressedFiles: File[] = [];
+      const rejectedFiles: string[] = [];
+      const compressedFiles: File[] = [];
 
-    for (const file of Array.from(files)) {
-      if (isHeicFile(file)) {
-        rejectedFiles.push(
-          `${file.name}: HEIC/HEIF 형식은 지원되지 않습니다. JPEG로 변환 후 업로드해주세요.`,
-        );
-        continue;
-      }
+      for (const file of Array.from(files)) {
+        console.log("[파일선택] 파일 처리 시작:", file.name, file.type, `${(file.size / 1024 / 1024).toFixed(2)}MB`);
 
-      const isImage = file.type.startsWith("image/");
-      const sizeLimit = isImage ? MAX_IMAGE_UPLOAD_SIZE : MAX_FILE_UPLOAD_SIZE;
-      const sizeLimitMB = isImage ? MAX_IMAGE_UPLOAD_SIZE_MB : MAX_FILE_UPLOAD_SIZE_MB;
-
-      if (!isImage && file.size > sizeLimit) {
-        rejectedFiles.push(
-          `${file.name}: 파일 크기(${(file.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
-        );
-        continue;
-      }
-
-      try {
-        const compressed = await compressImage(file);
-        if (compressed.size > sizeLimit) {
+        if (isHeicFile(file)) {
           rejectedFiles.push(
-            `${file.name}: 파일 크기(${(compressed.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
+            `${file.name}: HEIC/HEIF 형식은 지원되지 않습니다. JPEG로 변환 후 업로드해주세요.`,
           );
           continue;
         }
-        compressedFiles.push(compressed);
-      } catch (error) {
-        const msg =
-          error instanceof Error ? error.message : "알 수 없는 오류";
-        if (file.size > sizeLimit) {
+
+        const isImage = file.type.startsWith("image/");
+        const sizeLimit = isImage ? MAX_IMAGE_UPLOAD_SIZE : MAX_FILE_UPLOAD_SIZE;
+        const sizeLimitMB = isImage ? MAX_IMAGE_UPLOAD_SIZE_MB : MAX_FILE_UPLOAD_SIZE_MB;
+
+        if (!isImage && file.size > sizeLimit) {
           rejectedFiles.push(
             `${file.name}: 파일 크기(${(file.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
           );
-        } else {
-          rejectedFiles.push(`${file.name}: ${msg}`);
+          continue;
+        }
+
+        try {
+          const compressed = await compressImage(file);
+          console.log("[파일선택] 압축 완료:", file.name, `${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressed.size / 1024 / 1024).toFixed(2)}MB`);
+          if (compressed.size > sizeLimit) {
+            rejectedFiles.push(
+              `${file.name}: 파일 크기(${(compressed.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
+            );
+            continue;
+          }
+          compressedFiles.push(compressed);
+        } catch (error) {
+          console.error("[파일선택] 압축 오류:", file.name, error);
+          const msg =
+            error instanceof Error ? error.message : "알 수 없는 오류";
+          if (file.size > sizeLimit) {
+            rejectedFiles.push(
+              `${file.name}: 파일 크기(${(file.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
+            );
+          } else {
+            rejectedFiles.push(`${file.name}: ${msg}`);
+          }
         }
       }
-    }
 
-    if (rejectedFiles.length > 0) {
+      if (rejectedFiles.length > 0) {
+        toast({
+          title: "업로드 불가 파일",
+          description: rejectedFiles.join("\n"),
+          variant: "destructive",
+        });
+      }
+
+      if (compressedFiles.length === 0) {
+        console.warn("[파일선택] 압축된 파일이 없습니다 (모두 거부됨)");
+        return;
+      }
+
+      console.log("[파일선택] 업로드 시작:", compressedFiles.length, "개 파일");
+
+      const newFiles: UploadingFile[] = compressedFiles.map((file) => ({
+        id: `${Date.now()}-${Math.random()}`,
+        file,
+        category: defaultSubCategory,
+        progress: 0,
+        uploaded: false,
+        status: "pending" as UploadStatus,
+      }));
+
+      setUploadingFiles((prev) => [...prev, ...newFiles]);
+
+      const uploadPromises = newFiles.map((uploadingFile) =>
+        uploadLimit(() => uploadWithRetry(uploadingFile)),
+      );
+
+      await Promise.allSettled(uploadPromises);
+    } catch (err) {
+      console.error("[파일선택] 예상치 못한 오류:", err);
       toast({
-        title: "업로드 불가 파일",
-        description: rejectedFiles.join("\n"),
+        title: "업로드 오류",
+        description: err instanceof Error ? err.message : "파일 처리 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     }
-
-    if (compressedFiles.length === 0) return;
-
-    const newFiles: UploadingFile[] = compressedFiles.map((file) => ({
-      id: `${Date.now()}-${Math.random()}`,
-      file,
-      category: defaultSubCategory,
-      progress: 0,
-      uploaded: false,
-      status: "pending" as UploadStatus,
-    }));
-
-    setUploadingFiles((prev) => [...prev, ...newFiles]);
-
-    const uploadPromises = newFiles.map((uploadingFile) =>
-      uploadLimit(() => uploadWithRetry(uploadingFile)),
-    );
-
-    await Promise.allSettled(uploadPromises);
   };
 
   // 실패한 파일 재업로드
@@ -2216,6 +2248,19 @@ export default function FieldDocuments() {
         </div>
       )}
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.hwp,.hwpx,.zip"
+        onChange={(e) => {
+          console.log("[파일선택] onChange 이벤트 발생", e.target.files?.length);
+          handleFileSelect(e.target.files);
+        }}
+        style={{ position: "absolute", width: 0, height: 0, opacity: 0, overflow: "hidden", pointerEvents: "none" }}
+        data-testid="file-input"
+      />
+
       {/* 파일 업로드 영역 - 전체 탭이 아닐 때와 하위탭이 전체가 아닐 때만 표시 */}
       {selectedCategory !== "전체" &&
         !(
@@ -2238,14 +2283,6 @@ export default function FieldDocuments() {
             onClick={() => fileInputRef.current?.click()}
             data-testid="upload-area"
           >
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              onChange={(e) => handleFileSelect(e.target.files)}
-              className="hidden"
-              data-testid="file-input"
-            />
             <div className="flex flex-col items-center gap-4">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center"
