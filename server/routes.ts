@@ -1156,7 +1156,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertCaseRequestSchema.parse(req.body);
 
       if (validatedData.id) {
-        delete (validatedData as any).receptionDate;
+        const existingCaseForDate = await storage.getCaseById(validatedData.id);
+        if (existingCaseForDate?.receptionDate) {
+          (validatedData as any).receptionDate = existingCaseForDate.receptionDate;
+        }
       }
 
       // Debug: log validated sameAsPolicyHolder with type
