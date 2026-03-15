@@ -735,16 +735,16 @@ export default function Intake({
   }, [initialCaseId, administrators]);
 
   // 새로운 접수 화면에 들어갈 때 localStorage 클리어 및 폼 초기화 (크롬 브라우저 호환성)
-  // 이 useEffect는 다른 localStorage 읽기 useEffect보다 먼저 실행되어야 함
+  // editCaseId가 있으면 이어서 작성하기이므로 초기화하지 않음
   useEffect(() => {
-    // 모달이 아니고 initialCaseId가 null인 경우 = 새로운 접수 화면
     if (!isModal && !initialCaseId) {
-      // localStorage 먼저 클리어
+      const storedEditCaseId = localStorage.getItem("editCaseId");
+      if (storedEditCaseId) {
+        return;
+      }
       localStorage.removeItem("intakeFormDraft");
-      localStorage.removeItem("editCaseId");
       setEditCaseId(null);
       
-      // 폼 데이터도 초기화 (이전 접수 정보가 남아있지 않도록)
       setFormData({
         managerId: "",
         managerDepartment: "",
@@ -809,8 +809,6 @@ export default function Intake({
 
   useEffect(() => {
     if (initialCaseId) return;
-    // 모달이 아닌 경우 (새로운 접수 화면) localStorage를 읽지 않음
-    if (!isModal) return;
     const storedEditCaseId = localStorage.getItem("editCaseId");
     if (storedEditCaseId) {
       setEditCaseId(storedEditCaseId);
