@@ -54,7 +54,7 @@ The system is a full-stack web application utilizing a React-based frontend and 
   - **Documents Upload**: Document and photo upload system with persistent storage, categorization, download, and delete functionalities. Each case manages its own documents individually (no auto-sync between related cases).
   - **Estimate Management**: Create and submit restoration cost estimates with dynamic calculation tables linked to master data, version tracking, and PDF/Excel export.
     - **Recovery Area Table (복구면적 산출표)**: Grouped layout by location (장소) with rowspan, +/- buttons for adding/removing rows within each location group, columns: 장소, +/-, 위치, 공종, 공사명, 피해면적(가로/세로/면적), 복구면적(가로/세로/면적), 비고.
-    - **Labor Rate Tiers (노임단가 적용비율)**: Configurable 8-tier rate structure based on C/D ratio stored in database. Accessible via "적용비율 설정" button in labor cost section. Tiers determine rate multipliers (e.g., 85%+ = 100%, 50%+ = 115%, etc.) with edit/reset functionality.
+    - **Labor Rate Tiers (노임단가 적용비율)**: Configurable 8-tier rate structure based on C/D ratio stored in database. Accessible via "적용비율 설정" button in labor cost section. Tiers determine rate multipliers (e.g., 85%+ = 100%, 50%+ = 115%, etc.) with edit/reset functionality. 적용단가(pricePerSqm) = I/C (총 노임비 ÷ 복구면적, ㎡당 단가). 수량 = C/D. 합계 = I = F + H.
   - **Field Reports**: Generate comprehensive reports integrating all collected field survey data.
 - **Master Data Management**: Administrator-only feature for managing dropdown options (e.g., room categories, locations, work names) used throughout the system, with API endpoints for management and real-time updates.
 - **Progress Management**: Track case progress, manage approvals/rejections, and send notifications.

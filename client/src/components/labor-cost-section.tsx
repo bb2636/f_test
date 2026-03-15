@@ -21,9 +21,8 @@ import {
 } from "lucide-react";
 import type { LaborRateTier } from "@shared/schema";
 import {
-  calculateFWithTiers,
-  calculateHWithTiers,
   calculateIWithTiers,
+  calculateAppliedUnitPriceWithTiers,
   DEFAULT_LABOR_RATE_TIERS_FALLBACK,
 } from "@/hooks/use-labor-rate-tiers";
 
@@ -31,10 +30,10 @@ import {
 // D = 기준작업량 (일위대가 DB)
 // C = 복구면적 (노무비 계산값)
 // E = 노임단가 (일위대가 DB)
-// F = C/D 비율에 따른 적용단가 (E 기준 할인율 적용) - DB에서 가져온 요율 사용
+// F = C/D 비율에 따른 조정 일당 (E 기준 할인율 적용) - DB에서 가져온 요율 사용
 // H = C≥D: (C-D)×(E÷D) / C<D: 0
 // I = F + H (최종 노임비)
-// 적용단가 = I / C
+// 적용단가 = I / C (㎡당 단가)
 // 합계 = I
 
 // 복구면적 산출표 행 인터페이스
@@ -371,8 +370,7 @@ export function LaborCostSection({
         if (D > 0 && E > 0 && C > 0) {
           // I 계산 (최종 노임비 = 합계) - DB 요율 사용
           newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
-          // 적용단가 = F (구간별 요율 적용된 노임단가)
-          newPricePerSqm = calculateFWithTiers(C, D, E, laborRateTiers);
+          newPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
         } else {
           newAmount = 0;
           newPricePerSqm = 0;
@@ -697,8 +695,7 @@ export function LaborCostSection({
     if (D > 0 && E > 0 && C > 0) {
       // I 계산 (최종 노임비) - DB 요율 사용
       const I = calculateIWithTiers(C, D, E, laborRateTiers);
-      // 적용단가 = F (구간별 요율 적용된 노임단가)
-      const appliedUnitPrice = calculateFWithTiers(C, D, E, laborRateTiers);
+      const appliedUnitPrice = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
 
       newRow.pricePerSqm = appliedUnitPrice;
       newRow.amount = I;
@@ -1264,8 +1261,7 @@ export function LaborCostSection({
           if (D > 0 && E > 0 && C > 0) {
             // I 계산 (최종 노임비) - DB 요율 사용
             const I = calculateIWithTiers(C, D, E, laborRateTiers);
-            // 적용단가 = F (구간별 요율 적용된 노임단가)
-            const appliedUnitPrice = calculateFWithTiers(C, D, E, laborRateTiers);
+            const appliedUnitPrice = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
 
             updated.pricePerSqm = appliedUnitPrice;
             updated.amount = I;
@@ -1340,8 +1336,7 @@ export function LaborCostSection({
               E,
               laborRateTiers,
             );
-            // 적용단가도 재계산: F (구간별 요율 적용된 노임단가)
-            existing.pricePerSqm = calculateFWithTiers(
+            existing.pricePerSqm = calculateAppliedUnitPriceWithTiers(
               C,
               D,
               E,
@@ -2300,11 +2295,11 @@ export function LaborCostSection({
                       const C = row.damageArea || 0;
                       const D = row.standardWorkQuantity || 0;
                       const E = row.standardPrice || 0;
-                      const computedF = (isIlwidaega && C > 0 && D > 0 && E > 0)
-                        ? Math.round(calculateFWithTiers(C, D, E, laborRateTiers))
+                      const computedUnitPrice = (isIlwidaega && C > 0 && D > 0 && E > 0)
+                        ? calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers)
                         : 0;
                       const displayPrice = isIlwidaega
-                        ? (computedF > 0 ? computedF : Math.round(row.pricePerSqm || 0))
+                        ? (computedUnitPrice > 0 ? computedUnitPrice : Math.round(row.pricePerSqm || 0))
                         : (row.standardPrice || 0);
                       return (
                         <Input
@@ -2348,7 +2343,7 @@ export function LaborCostSection({
                     })()}
                   </td>
 
-                  {/* 수량(인) - 연동행: I÷E (합계÷노임단가), 직접추가행: 화살표/수기 입력 가능 (소수점 1자리, 음수 불가) */}
+                  {/* 수량(인) - 연동행: C÷D (복구면적÷기준작업량), 직접추가행: 화살표/수기 입력 가능 (소수점 1자리, 음수 불가) */}
                   <td
                     style={{
                       padding: "0 8px",
@@ -2358,18 +2353,12 @@ export function LaborCostSection({
                     }}
                   >
                     {(() => {
-                      // 연동행: 수량 = I ÷ E (합계 ÷ 노임단가)
-                      // 직접추가행: 수기/화살표 입력 가능
-                      const I =
-                        (row as MergedLaborCostRow).mergedAmount ??
-                        row.amount ??
-                        0;
-                      const E = row.standardPrice || 0;
+                      const C = (row as MergedLaborCostRow).damageArea ?? row.damageArea ?? 0;
+                      const D = row.standardWorkQuantity || 0;
 
-                      // 연동행은 자동계산된 값 표시, 직접추가행은 row.quantity 사용
                       const displayQuantity = isLinkedRow
-                        ? E > 0
-                          ? Math.round((I / E) * 10) / 10
+                        ? (D > 0 && C > 0)
+                          ? Math.round((C / D) * 10) / 10
                           : 0
                         : row.quantity || 0;
 
