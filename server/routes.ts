@@ -1153,8 +1153,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.assignedPartnerManager,
       );
 
-      // Validate request body with Zod
       const validatedData = insertCaseRequestSchema.parse(req.body);
+
+      if (validatedData.id) {
+        delete (validatedData as any).receptionDate;
+      }
 
       // Debug: log validated sameAsPolicyHolder with type
       console.log(
@@ -2303,7 +2306,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updateData = req.body;
 
-      // 케이스 존재 여부 확인
+      delete updateData.receptionDate;
+
       const existingCase = await storage.getCaseById(id);
       if (!existingCase) {
         return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
