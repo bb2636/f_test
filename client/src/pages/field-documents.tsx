@@ -996,6 +996,12 @@ export default function FieldDocuments() {
       return;
     }
 
+    const fileArray = Array.from(files);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
     if (!selectedCaseId) {
       toast({
         title: "케이스를 먼저 선택해주세요",
@@ -1005,18 +1011,14 @@ export default function FieldDocuments() {
       return;
     }
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
     try {
       const defaultSubCategory = getCurrentSubFilter();
-      console.log("[파일선택] 카테고리:", defaultSubCategory, "파일수:", files.length);
+      console.log("[파일선택] 카테고리:", defaultSubCategory, "파일수:", fileArray.length);
 
       const rejectedFiles: string[] = [];
       const compressedFiles: File[] = [];
 
-      for (const file of Array.from(files)) {
+      for (const file of fileArray) {
         console.log("[파일선택] 파일 처리 시작:", file.name, file.type, `${(file.size / 1024 / 1024).toFixed(2)}MB`);
 
         if (isHeicFile(file)) {
