@@ -22,16 +22,13 @@ const isPreEstimate = (c: Case): boolean => {
 };
 
 const getClaimAmount = (c: Case): number => {
+  if (isDirectRecovery(c)) {
+    return parseFloat(c.approvedAmount || "0") || 0;
+  }
   if (isPreEstimate(c)) {
     return 100000;
   }
   const approved = parseFloat(c.approvedAmount || "0") || 0;
-  if (approved > 0) return approved;
-  if (isDirectRecovery(c)) {
-    const prevention = parseFloat(c.invoiceDamagePreventionAmount || "0") || 0;
-    const property = parseFloat(c.invoicePropertyRepairAmount || "0") || 0;
-    if (prevention + property > 0) return prevention + property;
-  }
   return approved;
 };
 
