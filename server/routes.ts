@@ -4666,7 +4666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const drawing = await storage.getDrawingByCaseId(caseId);
 
       if (!drawing) {
-        return res.status(404).json({ error: "도면을 찾을 수 없습니다" });
+        return res.json(null);
       }
 
       res.json(drawing);
