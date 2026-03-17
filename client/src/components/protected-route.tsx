@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useIdleTimeout } from "@/hooks/use-idle-timeout";
 
 interface ProtectedRouteProps {
   category: string;
@@ -31,6 +32,7 @@ export function ProtectedRoute({ category, item, children }: ProtectedRouteProps
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isRedirectingRef = useRef(false);
+  useIdleTimeout();
 
   const hasAccess = hasCategory(category) && (!item || hasItem(category, item));
 

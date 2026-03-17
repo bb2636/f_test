@@ -12,7 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useIdleTimeout } from "@/hooks/use-idle-timeout";
+
 import {
   Home,
   Star,
@@ -74,8 +74,6 @@ export default function Dashboard() {
   const { toast } = useToast();
   const [activeMenu, setActiveMenu] = useState("홈");
 
-  // 30분 비활동 시 자동 로그아웃
-  useIdleTimeout();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const pdfContentRef = useRef<HTMLDivElement>(null);

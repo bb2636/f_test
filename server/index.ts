@@ -152,6 +152,7 @@ app.use(session({
   })(),
   resave: false,
   saveUninitialized: false,
+  rolling: true,
   proxy: isProduction,
   store: pgStore,
   cookie: {
