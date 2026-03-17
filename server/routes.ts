@@ -5254,6 +5254,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      const MAX_FILE_SIZE = 50 * 1024 * 1024;
+      if (fileSize > MAX_FILE_SIZE) {
+        return res.status(413).json({
+          error: `파일 크기(${(fileSize / 1024 / 1024).toFixed(1)}MB)가 제한(${MAX_FILE_SIZE / 1024 / 1024}MB)을 초과합니다`,
+        });
+      }
+
       console.log(
         `[presign] Generating presigned URL for case ${caseId}, file: ${fileName}, size: ${fileSize}`,
       );
