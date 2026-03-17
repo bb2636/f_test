@@ -964,18 +964,6 @@ export default function FieldEstimate() {
     });
     if (isReadOnly || rows.length === 0) return;
     
-    // 수동 버튼: 사용자가 명시적으로 가져오기를 요청 → 삭제 키 초기화 (자동 동기화와 차별화)
-    const currentCaseId = estimateCase?.id || selectedCaseId;
-    if (deletedLinkedLaborKeys.size > 0) {
-      console.log('[복구면적가져오기] 삭제 키 초기화:', Array.from(deletedLinkedLaborKeys));
-      setDeletedLinkedLaborKeys(new Set());
-      if (currentCaseId) {
-        apiRequest('DELETE', `/api/cases/${currentCaseId}/estimate-exclusions?type=linked_labor_deletion`).catch(err => {
-          console.error('[복구면적가져오기] 삭제 키 DB 초기화 오류:', err);
-        });
-      }
-    }
-    
     // 기존 독립 추가 행 (isLinkedFromRecovery = false) 보존
     const independentRows = laborCostRows.filter(row => !row.isLinkedFromRecovery);
     
