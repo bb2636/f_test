@@ -959,18 +959,26 @@ export default function FieldEstimate() {
     // 기존 독립 추가 행 (isLinkedFromRecovery = false) 보존
     const independentRows = laborCostRows.filter(row => !row.isLinkedFromRecovery);
     
+    // 기존 연동 행을 키(공종|공사명|노임항목)로 매핑하여 보존용
+    const existingLinkedRows = laborCostRows.filter(row => row.isLinkedFromRecovery);
+    const existingLinkedMap = new Map<string, LaborCostRow>();
+    existingLinkedRows.forEach(row => {
+      const key = `${normalizeForMatch(row.category || '')}|${normalizeForMatch(row.workName || '')}|${normalizeForMatch(row.detailItem || '')}`;
+      existingLinkedMap.set(key, row);
+    });
+    
+    // 철거공사 연동 행 보존 (별도 reconcile에서 관리되므로 그대로 유지)
+    const demolitionLinkedRows = existingLinkedRows.filter(row => row.category === '철거공사');
+    
     // 복구면적 산출표에서 고유한 공종+공사명 조합 추출 및 면적 합산
     const workTypeMap = new Map<string, Map<string, { totalArea: number; areaRows: AreaCalculationRow[] }>>();
     
     rows.forEach(row => {
       const workType = row.workType || '';
       const workName = row.workName || '';
-      if (!workType) return; // 공종이 없으면 건너뜀
+      if (!workType) return;
       
-      // 연동 제외 공종은 노무비 연동 제외
       if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(workType)) return;
-      
-      // 산출표 표기 전용 공사명은 노무비 연동 제외
       if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(workName)) return;
       
       if (!workTypeMap.has(workType)) {
@@ -987,7 +995,6 @@ export default function FieldEstimate() {
       workNameData.areaRows.push(row);
     });
     
-    // 공종별로 정렬된 노무비 행 생성 (일위대가DB 기반)
     const newLaborRows: LaborCostRow[] = [];
     const sortedWorkTypes = Array.from(workTypeMap.keys()).sort();
     
@@ -1000,24 +1007,18 @@ export default function FieldEstimate() {
         const sourceAreaRowId = workNameData.areaRows[0]?.id || '';
         const totalArea = Math.round(workNameData.totalArea * 10) / 10;
         
-        // 일위대가DB에서 공종+공사명으로 ALL matching 노임항목 조회 (오버라이드 적용된 값 사용)
         const matchingCatalogItems = mergedIlwidaegaCatalog.filter(
           item => normalizeForMatch(item.공종 || '') === normalizeForMatch(workType) && 
                  normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
         );
         
-        // 복구면적 행에서 장소/위치 조합 추출 (모든 행의 데이터 반영)
         const uniquePlaces = Array.from(new Set(workNameData.areaRows.map(r => r.category).filter(Boolean)));
         const combinedPlace = uniquePlaces.join('/') || '';
-        // 위치는 여러 행의 위치를 조합 (중복 제거)
         const uniqueLocations = Array.from(new Set(workNameData.areaRows.map(r => r.location).filter(Boolean)));
         const combinedPosition = uniqueLocations.join('/') || '';
         
         if (matchingCatalogItems.length > 0) {
-          // 일위대가DB에서 매칭된 모든 노임항목으로 행 생성
           matchingCatalogItems.forEach((catalogItem, idx) => {
-            // 삭제된 노무비인지 체크 - ALL sourceAreaRowIds가 삭제되어야만 skip
-            // 여러 복구면적 행이 merge된 경우, 모든 행이 삭제되어야만 재생성 안 함
             const detailItem = catalogItem.노임항목 || '';
             const allSourceAreaRowIds = workNameData.areaRows.map(r => r.id);
             const allDeleted = allSourceAreaRowIds.length > 0 && allSourceAreaRowIds.every(areaRowId => {
@@ -1026,7 +1027,7 @@ export default function FieldEstimate() {
             });
             if (allDeleted) {
               console.log('SKIP_SYNC_LABOR_DELETED', { sourceAreaRowIds: allSourceAreaRowIds, category: workType, workName, detailItem });
-              return; // 모든 원본 행이 삭제된 경우에만 재생성하지 않음
+              return;
             }
             
             const standardWorkQty = catalogItem.기준작업량 || 0;
@@ -1043,33 +1044,52 @@ export default function FieldEstimate() {
               calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
             }
             
-            newLaborRows.push({
-              id: `labor-linked-${Date.now()}-${Math.random()}-${idx}`,
-              sourceAreaRowId: sourceAreaRowId,
-              isLinkedFromRecovery: true, // 복구면적에서 연동 생성된 행
-              place: combinedPlace,
-              position: combinedPosition,
-              category: workType,
-              workName: workName,
-              detailWork: '일위대가',
-              detailItem: catalogItem.노임항목,
-              priceStandard: '',
-              unit: '㎡',
-              standardPrice: E, // 노임단가 (E)
-              standardWorkQuantity: standardWorkQty, // 기준작업량 (D)
-              quantity: calculatedQuantity, // 자동 계산된 수량
-              applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
-              salesMarkupRate: 0,
-              pricePerSqm: appliedUnitPrice, // 적용단가 = E (노임단가)
-              damageArea: totalArea,
-              deduction: 0,
-              includeInEstimate: true,
-              request: '',
-              amount: totalAmount, // 합계 = I
-            });
+            const linkedKey = `${normalizeForMatch(workType)}|${normalizeForMatch(workName)}|${normalizeForMatch(detailItem)}`;
+            const existingRow = existingLinkedMap.get(linkedKey);
+            
+            if (existingRow) {
+              // 기존 행 보존: ID 유지, 면적/수량/금액만 업데이트, 사용자 수정 필드 보존
+              newLaborRows.push({
+                ...existingRow,
+                sourceAreaRowId: sourceAreaRowId,
+                place: combinedPlace,
+                position: combinedPosition,
+                damageArea: totalArea,
+                standardPrice: E,
+                standardWorkQuantity: standardWorkQty,
+                quantity: calculatedQuantity,
+                pricePerSqm: appliedUnitPrice,
+                amount: totalAmount,
+              });
+              existingLinkedMap.delete(linkedKey);
+            } else {
+              newLaborRows.push({
+                id: `labor-linked-${Date.now()}-${Math.random()}-${idx}`,
+                sourceAreaRowId: sourceAreaRowId,
+                isLinkedFromRecovery: true,
+                place: combinedPlace,
+                position: combinedPosition,
+                category: workType,
+                workName: workName,
+                detailWork: '일위대가',
+                detailItem: catalogItem.노임항목,
+                priceStandard: '',
+                unit: '㎡',
+                standardPrice: E,
+                standardWorkQuantity: standardWorkQty,
+                quantity: calculatedQuantity,
+                applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
+                salesMarkupRate: 0,
+                pricePerSqm: appliedUnitPrice,
+                damageArea: totalArea,
+                deduction: 0,
+                includeInEstimate: true,
+                request: '',
+                amount: totalAmount,
+              });
+            }
           });
         } else {
-          // 삭제된 노무비인지 체크 (빈 행용) - ALL sourceAreaRowIds가 삭제되어야만 skip
           const allSourceAreaRowIds = workNameData.areaRows.map(r => r.id);
           const allDeleted = allSourceAreaRowIds.length > 0 && allSourceAreaRowIds.every(areaRowId => {
             const key = makeLinkedLaborDeletionKey(areaRowId, workType, workName, '');
@@ -1078,33 +1098,42 @@ export default function FieldEstimate() {
           if (allDeleted) {
             console.log('SKIP_SYNC_LABOR_BLANK_DELETED', { sourceAreaRowIds: allSourceAreaRowIds, category: workType, workName });
           } else {
-            // 일위대가DB에 없으면 빈 행 생성 (수동 입력용)
-            newLaborRows.push(createBlankLaborRow({
-              sourceAreaRowId,
-              isLinkedFromRecovery: true,
-              place: combinedPlace,
-              position: combinedPosition,
-              category: workType,
-              workName: workName,
-              damageArea: totalArea,
-            }));
+            const linkedKey = `${normalizeForMatch(workType)}|${normalizeForMatch(workName)}|`;
+            const existingRow = existingLinkedMap.get(linkedKey);
+            
+            if (existingRow) {
+              newLaborRows.push({
+                ...existingRow,
+                sourceAreaRowId,
+                place: combinedPlace,
+                position: combinedPosition,
+                damageArea: totalArea,
+              });
+              existingLinkedMap.delete(linkedKey);
+            } else {
+              newLaborRows.push(createBlankLaborRow({
+                sourceAreaRowId,
+                isLinkedFromRecovery: true,
+                place: combinedPlace,
+                position: combinedPosition,
+                category: workType,
+                workName: workName,
+                damageArea: totalArea,
+              }));
+            }
           }
         }
-        
-        // 철거공사는 별도 Reconcile useEffect에서 자동 생성됨 (중복 방지)
-        // 철거공사 Reconcile useEffect가 rows 변경 감지하여 생성함
       });
     });
     
-    // 연동 행 + 독립 행 합치기
-    const allRows = [...newLaborRows, ...independentRows];
+    const allRows = [...newLaborRows, ...demolitionLinkedRows, ...independentRows];
     
     if (allRows.length > 0) {
       setLaborCostRows(allRows);
       setSelectedLaborRows(new Set());
       toast({
         title: "노무비 동기화 완료",
-        description: `복구면적 산출표에서 ${newLaborRows.length}개 항목이 자동 생성되었습니다.`,
+        description: `복구면적 산출표에서 ${newLaborRows.length}개 항목이 동기화되었습니다.`,
       });
     }
   };
