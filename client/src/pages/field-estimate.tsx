@@ -985,6 +985,18 @@ export default function FieldEstimate() {
     });
     if (isReadOnly || rows.length === 0) return;
     
+    // ★ 삭제 키 초기화 — 수동 삭제했던 연동 행도 다시 복구 가능
+    if (deletedLinkedLaborKeys.size > 0) {
+      console.log('[복구면적가져오기] deletedLinkedLaborKeys 초기화:', deletedLinkedLaborKeys.size, '개 키 제거');
+      setDeletedLinkedLaborKeys(new Set());
+      const currentCaseId = estimateCase?.id || selectedCaseId;
+      if (currentCaseId) {
+        apiRequest('DELETE', `/api/cases/${currentCaseId}/estimate-exclusions?type=linked_labor_deletion`)
+          .then(() => console.log('[복구면적가져오기] DB exclusions 일괄 삭제 완료'))
+          .catch(err => console.error('[복구면적가져오기] DB exclusions 삭제 실패:', err));
+      }
+    }
+    
     // 기존 독립 추가 행 (isLinkedFromRecovery = false) 보존
     const independentRows = laborCostRows.filter(row => !row.isLinkedFromRecovery);
     
@@ -995,9 +1007,6 @@ export default function FieldEstimate() {
       const key = `${normalizeForMatch(row.category || '')}|${normalizeForMatch(row.workName || '')}|${normalizeForMatch(row.detailItem || '')}`;
       existingLinkedMap.set(key, row);
     });
-    
-    // 철거공사 연동 행 보존 (별도 reconcile에서 관리되므로 그대로 유지)
-    const demolitionLinkedRows = existingLinkedRows.filter(row => row.category === '철거공사');
     
     // 복구면적 산출표에서 고유한 공종+공사명 조합 추출 및 면적 합산
     const workTypeMap = new Map<string, Map<string, { totalArea: number; areaRows: AreaCalculationRow[] }>>();
@@ -1147,6 +1156,9 @@ export default function FieldEstimate() {
         }
       });
     });
+    
+    // 철거공사 연동 행 보존 (별도 reconcile에서 관리되므로 그대로 유지)
+    const demolitionLinkedRows = existingLinkedRows.filter(row => row.category === '철거공사');
     
     console.log('[복구면적가져오기] RESULT', {
       newLaborRowsCount: newLaborRows.length,
