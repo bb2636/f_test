@@ -985,16 +985,11 @@ export default function FieldEstimate() {
     });
     if (isReadOnly || rows.length === 0) return;
     
-    // ★ 삭제 키 초기화 — 수동 삭제했던 연동 행도 다시 복구 가능
+    // ★ 메모리 삭제 키 초기화 — 수동 삭제했던 연동 행도 다시 가져올 수 있도록
+    // DB 삭제 키는 유지 (자동 동기화에서 계속 보호)
     if (deletedLinkedLaborKeys.size > 0) {
-      console.log('[복구면적가져오기] deletedLinkedLaborKeys 초기화:', deletedLinkedLaborKeys.size, '개 키 제거');
+      console.log('[복구면적가져오기] deletedLinkedLaborKeys 메모리 초기화:', deletedLinkedLaborKeys.size, '개 키 (DB 유지)');
       setDeletedLinkedLaborKeys(new Set());
-      const currentCaseId = estimateCase?.id || selectedCaseId;
-      if (currentCaseId) {
-        apiRequest('DELETE', `/api/cases/${currentCaseId}/estimate-exclusions?type=linked_labor_deletion`)
-          .then(() => console.log('[복구면적가져오기] DB exclusions 일괄 삭제 완료'))
-          .catch(err => console.error('[복구면적가져오기] DB exclusions 삭제 실패:', err));
-      }
     }
     
     // 기존 독립 추가 행 (isLinkedFromRecovery = false) 보존
