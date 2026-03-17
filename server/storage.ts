@@ -511,6 +511,7 @@ export interface IStorage {
   getEstimateExclusions(caseId: string, exclusionType: string): Promise<EstimateExclusion[]>;
   addEstimateExclusion(data: InsertEstimateExclusion): Promise<EstimateExclusion>;
   removeEstimateExclusion(caseId: string, exclusionType: string, deletionKey: string): Promise<boolean>;
+  removeAllEstimateExclusions(caseId: string, exclusionType: string): Promise<number>;
   recordStatusChange(caseId: string, previousStatus: string, newStatus: string): Promise<CaseStatusHistory>;
   getStatusHistoryByCaseId(caseId: string): Promise<CaseStatusHistory[]>;
   getAllStatusHistory(): Promise<CaseStatusHistory[]>;
@@ -2929,6 +2930,10 @@ export class MemStorage implements IStorage {
 
   async removeEstimateExclusion(caseId: string, exclusionType: string, deletionKey: string): Promise<boolean> {
     throw new Error("removeEstimateExclusion not implemented in MemStorage");
+  }
+
+  async removeAllEstimateExclusions(caseId: string, exclusionType: string): Promise<number> {
+    throw new Error("removeAllEstimateExclusions not implemented in MemStorage");
   }
 
   async recordStatusChange(caseId: string, previousStatus: string, newStatus: string): Promise<CaseStatusHistory> {
@@ -7636,6 +7641,17 @@ export class DbStorage implements IStorage {
       ))
       .returning();
     return result.length > 0;
+  }
+
+  async removeAllEstimateExclusions(caseId: string, exclusionType: string): Promise<number> {
+    const result = await db
+      .delete(estimateExclusions)
+      .where(and(
+        eq(estimateExclusions.caseId, caseId),
+        eq(estimateExclusions.exclusionType, exclusionType)
+      ))
+      .returning();
+    return result.length;
   }
 
   async recordStatusChange(caseId: string, previousStatus: string, newStatus: string): Promise<CaseStatusHistory> {

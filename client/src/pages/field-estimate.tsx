@@ -954,7 +954,27 @@ export default function FieldEstimate() {
   // 복구면적 산출표에서 노무비로 동기화 (일위대가DB 기반 자동 생성)
   // 일위대가DB에서 공종+공사명으로 조회하여 ALL matching 노임항목 행을 자동 생성
   const syncLaborFromRecoveryArea = () => {
+    console.log('[복구면적가져오기] START', {
+      isReadOnly,
+      rowsCount: rows.length,
+      laborCostRowsCount: laborCostRows.length,
+      catalogCount: mergedIlwidaegaCatalog.length,
+      deletedKeysCount: deletedLinkedLaborKeys.size,
+      deletedKeysSample: Array.from(deletedLinkedLaborKeys).slice(0, 10),
+    });
     if (isReadOnly || rows.length === 0) return;
+    
+    // 수동 버튼: 사용자가 명시적으로 가져오기를 요청 → 삭제 키 초기화 (자동 동기화와 차별화)
+    const currentCaseId = estimateCase?.id || selectedCaseId;
+    if (deletedLinkedLaborKeys.size > 0) {
+      console.log('[복구면적가져오기] 삭제 키 초기화:', Array.from(deletedLinkedLaborKeys));
+      setDeletedLinkedLaborKeys(new Set());
+      if (currentCaseId) {
+        apiRequest('DELETE', `/api/cases/${currentCaseId}/estimate-exclusions?type=linked_labor_deletion`).catch(err => {
+          console.error('[복구면적가져오기] 삭제 키 DB 초기화 오류:', err);
+        });
+      }
+    }
     
     // 기존 독립 추가 행 (isLinkedFromRecovery = false) 보존
     const independentRows = laborCostRows.filter(row => !row.isLinkedFromRecovery);
@@ -995,6 +1015,17 @@ export default function FieldEstimate() {
       workNameData.areaRows.push(row);
     });
     
+    console.log('[복구면적가져오기] workTypeMap', {
+      entries: Array.from(workTypeMap.entries()).map(([wt, wn]) => ({
+        workType: wt,
+        workNames: Array.from(wn.keys()),
+        areas: Array.from(wn.entries()).map(([n, d]) => ({ name: n, area: d.totalArea })),
+      })),
+      independentCount: independentRows.length,
+      existingLinkedCount: existingLinkedRows.length,
+      demolitionLinkedCount: demolitionLinkedRows.length,
+    });
+    
     const newLaborRows: LaborCostRow[] = [];
     const sortedWorkTypes = Array.from(workTypeMap.keys()).sort();
     
@@ -1020,15 +1051,6 @@ export default function FieldEstimate() {
         if (matchingCatalogItems.length > 0) {
           matchingCatalogItems.forEach((catalogItem, idx) => {
             const detailItem = catalogItem.노임항목 || '';
-            const allSourceAreaRowIds = workNameData.areaRows.map(r => r.id);
-            const allDeleted = allSourceAreaRowIds.length > 0 && allSourceAreaRowIds.every(areaRowId => {
-              const key = makeLinkedLaborDeletionKey(areaRowId, workType, workName, detailItem);
-              return deletedLinkedLaborKeys.has(key);
-            });
-            if (allDeleted) {
-              console.log('SKIP_SYNC_LABOR_DELETED', { sourceAreaRowIds: allSourceAreaRowIds, category: workType, workName, detailItem });
-              return;
-            }
             
             const standardWorkQty = catalogItem.기준작업량 || 0;
             const C = totalArea;
@@ -1090,40 +1112,40 @@ export default function FieldEstimate() {
             }
           });
         } else {
-          const allSourceAreaRowIds = workNameData.areaRows.map(r => r.id);
-          const allDeleted = allSourceAreaRowIds.length > 0 && allSourceAreaRowIds.every(areaRowId => {
-            const key = makeLinkedLaborDeletionKey(areaRowId, workType, workName, '');
-            return deletedLinkedLaborKeys.has(key);
-          });
-          if (allDeleted) {
-            console.log('SKIP_SYNC_LABOR_BLANK_DELETED', { sourceAreaRowIds: allSourceAreaRowIds, category: workType, workName });
+          const linkedKey = `${normalizeForMatch(workType)}|${normalizeForMatch(workName)}|`;
+          const existingRow = existingLinkedMap.get(linkedKey);
+          
+          if (existingRow) {
+            newLaborRows.push({
+              ...existingRow,
+              sourceAreaRowId,
+              place: combinedPlace,
+              position: combinedPosition,
+              damageArea: totalArea,
+            });
+            existingLinkedMap.delete(linkedKey);
           } else {
-            const linkedKey = `${normalizeForMatch(workType)}|${normalizeForMatch(workName)}|`;
-            const existingRow = existingLinkedMap.get(linkedKey);
-            
-            if (existingRow) {
-              newLaborRows.push({
-                ...existingRow,
-                sourceAreaRowId,
-                place: combinedPlace,
-                position: combinedPosition,
-                damageArea: totalArea,
-              });
-              existingLinkedMap.delete(linkedKey);
-            } else {
-              newLaborRows.push(createBlankLaborRow({
-                sourceAreaRowId,
-                isLinkedFromRecovery: true,
-                place: combinedPlace,
-                position: combinedPosition,
-                category: workType,
-                workName: workName,
-                damageArea: totalArea,
-              }));
-            }
+            newLaborRows.push(createBlankLaborRow({
+              sourceAreaRowId,
+              isLinkedFromRecovery: true,
+              place: combinedPlace,
+              position: combinedPosition,
+              category: workType,
+              workName: workName,
+              damageArea: totalArea,
+            }));
           }
         }
       });
+    });
+    
+    console.log('[복구면적가져오기] RESULT', {
+      newLaborRowsCount: newLaborRows.length,
+      demolitionLinkedCount: demolitionLinkedRows.length,
+      independentCount: independentRows.length,
+      newLaborRowsSample: newLaborRows.slice(0, 5).map(r => ({
+        id: r.id, category: r.category, workName: r.workName, detailItem: r.detailItem, isLinked: r.isLinkedFromRecovery
+      })),
     });
     
     const allRows = [...newLaborRows, ...demolitionLinkedRows, ...independentRows];
@@ -1135,6 +1157,8 @@ export default function FieldEstimate() {
         title: "노무비 동기화 완료",
         description: `복구면적 산출표에서 ${newLaborRows.length}개 항목이 동기화되었습니다.`,
       });
+    } else {
+      console.log('[복구면적가져오기] WARNING: allRows is empty, not updating');
     }
   };
 

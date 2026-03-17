@@ -15332,7 +15332,14 @@ FLOXN`;
       }
 
       const { caseId } = req.params;
-      const { exclusionType, deletionKey } = req.body;
+      const typeFromQuery = req.query.type as string | undefined;
+      const { exclusionType, deletionKey } = req.body || {};
+
+      if (typeFromQuery && !deletionKey) {
+        console.log(`[Exclusion] Bulk remove by type: caseId=${caseId}, type=${typeFromQuery}`);
+        const removed = await storage.removeAllEstimateExclusions(caseId, typeFromQuery);
+        return res.json({ success: true, removedCount: removed });
+      }
 
       if (!exclusionType || !deletionKey) {
         return res
