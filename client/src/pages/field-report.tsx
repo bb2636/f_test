@@ -5159,24 +5159,30 @@ export default function FieldReport() {
                                   rows.sort((a: any, b: any) => (a.workName || "").localeCompare(b.workName || ""));
                                 });
 
-                                const usedIndependent = new Set<string>();
+                                const usedIndependentIndices = new Set<number>();
                                 linkedCategories.forEach((cat) => {
-                                  independentRows.filter((r: any) => (r.category || "미지정") === cat).forEach((row: any) => {
-                                    categoryRowsMap.get(cat)!.push(row);
-                                    usedIndependent.add(row.id || "");
+                                  independentRows.forEach((row: any, idx: number) => {
+                                    if ((row.category || "미지정") === cat) {
+                                      categoryRowsMap.get(cat)!.push(row);
+                                      usedIndependentIndices.add(idx);
+                                    }
                                   });
                                 });
 
-                                independentRows.filter((r: any) => !usedIndependent.has(r.id || "")).forEach((row: any) => {
-                                  const cat = row.category || "미지정";
-                                  if (!categoryRowsMap.has(cat)) categoryRowsMap.set(cat, []);
-                                  categoryRowsMap.get(cat)!.push(row);
+                                independentRows.forEach((row: any, idx: number) => {
+                                  if (!usedIndependentIndices.has(idx)) {
+                                    const cat = row.category || "미지정";
+                                    if (!categoryRowsMap.has(cat)) categoryRowsMap.set(cat, []);
+                                    categoryRowsMap.get(cat)!.push(row);
+                                  }
                                 });
 
                                 const independentOnlyCategories: string[] = [];
-                                independentRows.filter((r: any) => !usedIndependent.has(r.id || "")).forEach((r: any) => {
-                                  const cat = r.category || "미지정";
-                                  if (!linkedCategories.includes(cat) && !independentOnlyCategories.includes(cat)) independentOnlyCategories.push(cat);
+                                independentRows.forEach((row: any, idx: number) => {
+                                  if (!usedIndependentIndices.has(idx)) {
+                                    const cat = row.category || "미지정";
+                                    if (!linkedCategories.includes(cat) && !independentOnlyCategories.includes(cat)) independentOnlyCategories.push(cat);
+                                  }
                                 });
 
                                 const allCategories = [...linkedCategories, ...independentOnlyCategories];
