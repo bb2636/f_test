@@ -828,127 +828,46 @@ export default function FieldDocuments() {
 
     updateProgress(10);
 
-    const presignController = new AbortController();
-    const presignTimeout = setTimeout(() => presignController.abort(), 30000);
+    const formData = new FormData();
+    formData.append("file", uploadingFile.file);
+    formData.append("caseId", selectedCaseId);
+    formData.append("category", uploadingFile.category);
+    formData.append("fileName", uploadingFile.file.name);
+    formData.append("fileType", uploadingFile.file.type);
 
-    let storageKey: string;
-    let uploadURL: string;
-    try {
-      let presignResponse: Response;
-      try {
-        presignResponse = await fetch("/api/documents/presign", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            caseId: selectedCaseId,
-            fileName: uploadingFile.file.name,
-            fileType: uploadingFile.file.type,
-            fileSize: uploadingFile.file.size,
-          }),
-          credentials: "include",
-          signal: presignController.signal,
-        });
-      } catch (fetchErr: any) {
-        if (fetchErr.name === "AbortError") {
-          throw new Error("업로드 준비 시간이 초과되었습니다. 네트워크 상태를 확인 후 다시 시도해주세요.");
+    const xhr = new XMLHttpRequest();
+    const result = await new Promise<{ documentId: string }>((resolve, reject) => {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 85) + 10;
+          updateProgress(percent);
         }
-        throw new Error(
-          `서버 연결 실패: ${fetchErr.message || "네트워크 오류"}. 인터넷 연결을 확인해주세요.`,
-        );
-      }
-
-      if (!presignResponse.ok) {
-        if (presignResponse.status === 401) {
-          throw new Error("로그인이 만료되었습니다. 다시 로그인 후 시도해주세요.");
-        }
-        if (presignResponse.status === 413) {
-          throw new Error("파일이 너무 큽니다. 더 작은 파일로 시도해주세요.");
-        }
-        const errorData = await presignResponse
-          .json()
-          .catch(() => ({ error: `Presign 실패 (${presignResponse.status})` }));
-        throw new Error(errorData.error || `Presign 실패 (${presignResponse.status})`);
-      }
-
-      const presignData = await presignResponse.json();
-      uploadURL = presignData.uploadURL;
-      storageKey = presignData.storageKey;
-    } finally {
-      clearTimeout(presignTimeout);
-    }
-
-    updateProgress(20);
-
-    try {
-      const xhr = new XMLHttpRequest();
-      await new Promise<void>((resolve, reject) => {
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 60) + 20;
-            updateProgress(percent);
-          }
-        };
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve();
+      };
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300 && data.documentId) {
+            resolve(data);
+          } else if (xhr.status === 401) {
+            reject(new Error("로그인이 만료되었습니다. 다시 로그인 후 시도해주세요."));
+          } else if (xhr.status === 413) {
+            reject(new Error("파일이 너무 큽니다. 더 작은 파일로 시도해주세요."));
           } else {
-            reject(new Error(`스토리지 업로드 실패 (${xhr.status})`));
+            reject(new Error(data.error || data.details || `업로드 실패 (${xhr.status})`));
           }
-        };
-        xhr.onerror = () => reject(new Error("스토리지 연결 실패. 인터넷 연결을 확인해주세요."));
-        xhr.ontimeout = () => reject(new Error("업로드 시간이 초과되었습니다."));
-        xhr.timeout = 180000;
-        xhr.open("PUT", uploadURL);
-        xhr.setRequestHeader("Content-Type", uploadingFile.file.type || "application/octet-stream");
-        xhr.send(uploadingFile.file);
-      });
-    } catch (uploadErr: any) {
-      throw new Error(uploadErr.message || "파일 업로드 실패");
-    }
-
-    updateProgress(85);
-
-    const completeController = new AbortController();
-    const completeTimeout = setTimeout(() => completeController.abort(), 120000);
-
-    try {
-      let completeResponse: Response;
-      try {
-        completeResponse = await fetch("/api/documents/upload-complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            caseId: selectedCaseId,
-            category: uploadingFile.category,
-            fileName: uploadingFile.file.name,
-            fileType: uploadingFile.file.type,
-            fileSize: uploadingFile.file.size,
-            storageKey,
-          }),
-          credentials: "include",
-          signal: completeController.signal,
-        });
-      } catch (fetchErr: any) {
-        if (fetchErr.name === "AbortError") {
-          throw new Error("업로드 완료 처리 시간이 초과되었습니다.");
+        } catch {
+          reject(new Error(`업로드 실패 (${xhr.status})`));
         }
-        throw new Error(`업로드 완료 처리 실패: ${fetchErr.message || "네트워크 오류"}`);
-      }
+      };
+      xhr.onerror = () => reject(new Error("서버 연결 실패. 인터넷 연결을 확인해주세요."));
+      xhr.ontimeout = () => reject(new Error("업로드 시간이 초과되었습니다 (120초)."));
+      xhr.timeout = 120000;
+      xhr.open("POST", "/api/documents/multipart-upload");
+      xhr.withCredentials = true;
+      xhr.send(formData);
+    });
 
-      if (!completeResponse.ok) {
-        const errorData = await completeResponse
-          .json()
-          .catch(() => ({ error: `업로드 완료 실패 (${completeResponse.status})` }));
-        throw new Error(
-          errorData.error || errorData.details || `업로드 완료 실패 (${completeResponse.status})`,
-        );
-      }
-
-      const { documentId } = await completeResponse.json();
-      updateProgress(100, "completed", undefined, documentId);
-    } finally {
-      clearTimeout(completeTimeout);
-    }
+    updateProgress(100, "completed", undefined, result.documentId);
   };
 
   const uploadWithRetry = async (

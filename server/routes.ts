@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import multer from "multer";
 import { storage } from "./storage";
 import { activeUserSessions, sessionStore } from "./session-store";
 import {
@@ -5160,6 +5161,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ===== 문서 업로드 API =====
 
   // 직접 업로드 (base64): Object Storage 우회, DB에 직접 저장
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 },
+  });
+
+  app.post("/api/documents/multipart-upload", (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+
+    upload.single("file")(req, res, async (multerErr) => {
+      if (multerErr) {
+        console.error("[multipart-upload] Multer error:", multerErr.message);
+        if (multerErr.code === "LIMIT_FILE_SIZE") {
+          return res.status(413).json({ error: "파일이 너무 큽니다 (50MB 제한)" });
+        }
+        return res.status(400).json({ error: multerErr.message || "파일 처리 오류" });
+      }
+
+      try {
+        const { caseId, category, fileName, fileType } = req.body;
+        const file = req.file;
+
+        if (!caseId || !category || !fileName || !fileType || !file) {
+          const missing = [];
+          if (!caseId) missing.push("caseId");
+          if (!category) missing.push("category");
+          if (!fileName) missing.push("fileName");
+          if (!fileType) missing.push("fileType");
+          if (!file) missing.push("file");
+          return res.status(400).json({
+            error: `필수 필드가 누락되었습니다: ${missing.join(", ")}`,
+          });
+        }
+
+        console.log(
+          `[multipart-upload] user: ${req.session.userId}, caseId: ${caseId}, file: ${fileName}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
+        );
+
+        const fileData = file.buffer.toString("base64");
+
+        const document = await storage.saveDocument({
+          caseId,
+          category,
+          fileName,
+          fileType,
+          fileSize: file.size,
+          fileData,
+          createdBy: req.session.userId,
+        });
+
+        console.log(`[multipart-upload] Document saved: ${document.id}`);
+
+        res.json({
+          success: true,
+          documentId: document.id,
+        });
+      } catch (error: any) {
+        console.error("[multipart-upload] Error:", error.message);
+        res.status(500).json({
+          error: "문서 업로드 중 오류가 발생했습니다",
+          details: error.message,
+        });
+      }
+    });
+  });
+
   app.post("/api/documents/direct-upload", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
