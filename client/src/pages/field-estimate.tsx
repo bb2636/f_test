@@ -233,6 +233,25 @@ export default function FieldEstimate() {
   // 자재비 동기화 중복 호출 방지 ref (공종+공사명별 진행 중인 동기화 추적)
   const materialSyncInProgressRef = useRef<Set<string>>(new Set());
   
+  // 수동 동기화(복구면적 가져오기) 실행 중 가드 — 다른 useEffect가 간섭하지 않도록 보호
+  const syncGuardRef = useRef<boolean>(false);
+  const lastLaborSetSourceRef = useRef<string>('init');
+  
+  useEffect(() => {
+    const linkedCount = laborCostRows.filter(r => r.isLinkedFromRecovery).length;
+    const independentCount = laborCostRows.filter(r => !r.isLinkedFromRecovery).length;
+    const demolitionCount = laborCostRows.filter(r => r.category === '철거공사').length;
+    console.log('[LABOR_STATE_TRACKER]', {
+      source: lastLaborSetSourceRef.current,
+      total: laborCostRows.length,
+      linked: linkedCount,
+      independent: independentCount,
+      demolition: demolitionCount,
+      syncGuard: syncGuardRef.current,
+      ids: laborCostRows.slice(0, 5).map(r => r.id?.substring(0, 25)),
+    });
+  }, [laborCostRows]);
+
   // 노무비 행 중복 자동 제거 (React 배치 처리로 인한 중복 방지)
   // 연동된 행(isLinkedFromRecovery=true)에서 같은 키 조합은 첫 번째만 유지
   // 철거공사 행: sourceAreaRowId|공종|공사명|노임항목 (각 복구면적 행별 개별 관리)
@@ -241,14 +260,16 @@ export default function FieldEstimate() {
   useEffect(() => {
     if (laborCostRows.length === 0) return;
     
-    // 중복 체크: 연동된 행에서 같은 key가 여러 개인지 확인
+    if (syncGuardRef.current) {
+      console.log('[노무비 중복 제거] syncGuard 활성 — 건너뛰기');
+      return;
+    }
+    
     const linkedRows = laborCostRows.filter(r => r.isLinkedFromRecovery);
     const keyCount: Record<string, number> = {};
     let hasDuplicates = false;
     
     for (const row of linkedRows) {
-      // 철거공사 행만 sourceAreaRowId를 포함하여 각 복구면적 행별로 개별 관리
-      // 가설공사(건축물현장정리)는 다른 공사명처럼 면적 합산되어야 하므로 제외
       const needsSourceRowKey = row.category === '철거공사' && row.sourceAreaRowId;
       const key = needsSourceRowKey
         ? `${row.sourceAreaRowId}|${row.category}|${row.workName}|${row.detailItem}`
@@ -261,7 +282,6 @@ export default function FieldEstimate() {
     
     if (!hasDuplicates) return;
     
-    // 중복 제거 (무한 루프 방지를 위해 key 비교)
     const currentStateKey = laborCostRows.map(r => r.id).join(',');
     if (currentStateKey === lastDeduplicationRef.current) return;
     
@@ -269,9 +289,8 @@ export default function FieldEstimate() {
     
     const seen = new Set<string>();
     const deduplicatedRows = laborCostRows.filter(row => {
-      if (!row.isLinkedFromRecovery) return true; // 수동 행은 유지
+      if (!row.isLinkedFromRecovery) return true;
       
-      // 철거공사 행만 sourceAreaRowId 포함 키 사용 (가설공사는 합산되어야 하므로 제외)
       const needsSourceRowKey = row.category === '철거공사' && row.sourceAreaRowId;
       const key = needsSourceRowKey
         ? `${row.sourceAreaRowId}|${row.category}|${row.workName}|${row.detailItem}`
@@ -286,6 +305,7 @@ export default function FieldEstimate() {
     
     if (deduplicatedRows.length !== laborCostRows.length) {
       lastDeduplicationRef.current = deduplicatedRows.map(r => r.id).join(',');
+      lastLaborSetSourceRef.current = 'deduplication';
       setLaborCostRows(deduplicatedRows);
     }
   }, [laborCostRows]);
@@ -948,6 +968,7 @@ export default function FieldEstimate() {
       }
     }
     
+    lastLaborSetSourceRef.current = 'handleLaborRowsChange';
     setLaborCostRows(sortLaborRowsByCategory(newRows));
   };
 
@@ -1139,8 +1160,20 @@ export default function FieldEstimate() {
     const allRows = [...newLaborRows, ...demolitionLinkedRows, ...independentRows];
     
     if (allRows.length > 0) {
+      syncGuardRef.current = true;
+      lastLaborSetSourceRef.current = 'syncLaborFromRecoveryArea';
+      console.log('[복구면적가져오기] GUARD_ON, setting laborCostRows', {
+        allRowsCount: allRows.length,
+        newLinked: newLaborRows.length,
+        demolition: demolitionLinkedRows.length,
+        independent: independentRows.length,
+      });
       setLaborCostRows(allRows);
       setSelectedLaborRows(new Set());
+      setTimeout(() => {
+        syncGuardRef.current = false;
+        console.log('[복구면적가져오기] GUARD_OFF');
+      }, 1500);
       toast({
         title: "노무비 동기화 완료",
         description: `복구면적 산출표에서 ${newLaborRows.length}개 항목이 동기화되었습니다.`,
@@ -1859,12 +1892,15 @@ export default function FieldEstimate() {
   // 일위대가DB에서 공종+공사명으로 조회하여 ALL matching 노임항목 행을 자동 생성
   // 복구면적 → 피해면적 추가 복사
   useEffect(() => {
-    // Hydration 완료 전에는 동기화 건너뛰기 (중복 행 방지)
     if (!isHydratedRef.current) {
       return;
     }
 
-    // 일위대가 카탈로그가 로드되지 않았으면 대기 (오버라이드 적용된 값 사용)
+    if (syncGuardRef.current) {
+      console.log('[자동동기화] syncGuard 활성 — 건너뛰기');
+      return;
+    }
+
     if (!mergedIlwidaegaCatalog || mergedIlwidaegaCatalog.length === 0) {
       return;
     }
@@ -1977,7 +2013,7 @@ export default function FieldEstimate() {
         // 철거공사 Reconcile useEffect가 rows 변경 감지하여 자동 생성함
       });
 
-      // 빈 행 하나만 있는 경우 제거하고 새 행 추가
+      lastLaborSetSourceRef.current = 'autoSync-addNewRows';
       setLaborCostRows(prev => {
         // 빈 행 필터링 (첫 행이 완전히 비어있으면 제거)
         const nonEmptyRows = prev.filter(row => 
@@ -1988,23 +2024,16 @@ export default function FieldEstimate() {
       });
     }
 
-    // 이미 연동된 행의 데이터 업데이트 (변경 시 동기화)
-    // Reconcile 로직: 공사명 변경 시 기존 행 삭제 후 재생성 (일위대가DB 노임항목 재조회 필요)
+    lastLaborSetSourceRef.current = 'autoSync-reconcile';
     setLaborCostRows(prev => {
-      // 1. Reconcile: 삭제 대상 행 필터링
-      // - 연동된 복구면적 행이 삭제되었거나
-      // - 공사명이 변경된 경우 기존 행 삭제 (새로 생성됨)
       const filteredRows = prev.filter(laborRow => {
-        // 독립 행(수동 추가)은 유지
         if (!laborRow.isLinkedFromRecovery || !laborRow.sourceAreaRowId) return true;
         
-        // 피해철거공사 행인지 확인 (demolition- 접두사)
         const isDemolitionRow = laborRow.sourceAreaRowId.startsWith('demolition-');
         const originalAreaRowId = isDemolitionRow 
           ? laborRow.sourceAreaRowId.replace('demolition-', '') 
           : laborRow.sourceAreaRowId;
         
-        // 원본 복구면적 산출표 행 찾기
         let linkedAreaRow = rows.find(r => r.id === originalAreaRowId);
         
         if (!linkedAreaRow && laborRow.workName) {
@@ -2025,25 +2054,20 @@ export default function FieldEstimate() {
           }
         }
         
-        // 원본 행이 삭제된 경우 → 노무비 행도 삭제
         if (!linkedAreaRow) {
-          console.log('[Reconcile] 원본 복구면적 행 삭제됨 → 노무비 행 삭제:', laborRow.workName);
+          console.log('[Reconcile] 원본 복구면적 행 삭제됨 → 노무비 행 삭제:', laborRow.workName, '| sourceAreaRowId:', laborRow.sourceAreaRowId);
           return false;
         }
         
         if (isDemolitionRow) {
-          // 철거공사 행: 원본 행이 더 이상 철거공사가 필요 없는 공사명이면 제거
-          // 또한 공사명이 변경되었으면 제거 (새로 생성됨)
           const { demolitionWorkName } = getDemolitionMapping(linkedAreaRow.workType, linkedAreaRow.workName);
           const needsDemolition = needsDemolitionRow(linkedAreaRow.workType, linkedAreaRow.workName);
           
-          // 공사명 변경 여부 확인 (철거공사의 workName은 demolitionWorkName과 매칭)
-          if (laborRow.workName !== demolitionWorkName) {
+          if (normalizeForMatch(laborRow.workName || '') !== normalizeForMatch(demolitionWorkName || '')) {
             console.log('[Reconcile] 철거공사 공사명 변경 → 기존 행 삭제:', laborRow.workName, '→', demolitionWorkName);
             return false;
           }
           
-          // 더 이상 철거공사 필요 없으면 삭제
           if (!needsDemolition) {
             console.log('[Reconcile] 철거공사 불필요 → 기존 행 삭제:', laborRow.workName);
             return false;
@@ -2051,14 +2075,12 @@ export default function FieldEstimate() {
           
           return true;
         } else {
-          // 연동 제외 공종/공사명으로 변경된 경우 → 노무비 행 삭제
           if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(linkedAreaRow.workType || '') || 
               AREA_DISPLAY_ONLY_WORK_NAMES.includes(linkedAreaRow.workName || '')) {
             console.log('[Reconcile] 연동 제외 대상 → 기존 행 삭제:', linkedAreaRow.workType, linkedAreaRow.workName);
             return false;
           }
-          // 일반 연동 행: 공사명이 변경되었으면 삭제 (새로 생성됨)
-          if (laborRow.workName !== linkedAreaRow.workName) {
+          if (normalizeForMatch(laborRow.workName || '') !== normalizeForMatch(linkedAreaRow.workName || '')) {
             console.log('[Reconcile] 공사명 변경 → 기존 행 삭제:', laborRow.workName, '→', linkedAreaRow.workName);
             return false;
           }
@@ -2243,13 +2265,17 @@ export default function FieldEstimate() {
       return;
     }
     
-    // 일위대가 카탈로그가 로드되지 않았으면 대기 (오버라이드 적용된 값 사용)
     if (!mergedIlwidaegaCatalog || mergedIlwidaegaCatalog.length === 0) {
       demolitionPendingRef.current = false;
       return;
     }
     
-    // [증거 3] RECONCILE_START - Reconcile 시작 시
+    if (syncGuardRef.current) {
+      console.log('[철거공사 Reconcile] syncGuard 활성 — 건너뛰기');
+      demolitionPendingRef.current = false;
+      return;
+    }
+    
     console.log('RECONCILE_START', { 
       exclusionsLoaded: true, 
       excludedCount: deletedLinkedLaborKeys.size, 
@@ -2467,10 +2493,10 @@ export default function FieldEstimate() {
     demolitionReconcileRef.current = stateKey;
     demolitionPendingRef.current = true;
     
-    // queueMicrotask로 상태 업데이트 스케줄 (확정적 상태 시그니처)
     queueMicrotask(() => {
-      demolitionPendingRef.current = false; // 항상 리셋
+      demolitionPendingRef.current = false;
       
+      lastLaborSetSourceRef.current = 'demolitionReconcile';
       setLaborCostRows(prev => {
         let updatedRows = [...prev];
         
@@ -2736,6 +2762,7 @@ export default function FieldEstimate() {
           }
           return laborRow;
         });
+        lastLaborSetSourceRef.current = 'hydration';
         setLaborCostRows(sortLaborRowsByCategory(remappedLaborRows));
         
         // 자재비 데이터 불러오기 (노무비 ID 매핑 후)
