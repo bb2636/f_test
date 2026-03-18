@@ -974,7 +974,7 @@ export default function ComprehensiveProgress() {
     const insuredAddressDetail = (
       (caseItem as any).insuredAddressDetail || ""
     ).toLowerCase();
-    const policyNumber = (caseItem.policyNumber || "").toLowerCase();
+    const policyNumber = (caseItem.insurancePolicyNo || "").toLowerCase();
     const assignedPartner = (caseItem.assignedPartner || "").toLowerCase();
 
     return (
@@ -1607,7 +1607,7 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
-                    
+                    ...(col.label === "담당자" ? { borderLeft: "1px solid rgba(12, 12, 12, 0.15)", paddingLeft: "8px" } : {}),
                   }}
                 >
                   {col.label}
@@ -1765,7 +1765,7 @@ export default function ComprehensiveProgress() {
                         
                       }}
                     >
-                      {caseItem.policyNumber || "-"}
+                      {caseItem.insurancePolicyNo || "-"}
                     </div>
                     <div
                       style={{
@@ -1879,8 +1879,8 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        
-                        
+                        borderLeft: "1px solid rgba(12, 12, 12, 0.15)",
+                        paddingLeft: "8px",
                       }}
                     >
                       {caseItem.managerName || "-"}
