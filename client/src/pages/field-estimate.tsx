@@ -1028,8 +1028,68 @@ export default function FieldEstimate() {
       workNameData.areaRows.push(row);
     });
     
-    // 철거공사 연동 행 보존 (별도 reconcile에서 관리되므로 그대로 유지)
-    const demolitionLinkedRows = existingLinkedRows.filter(row => row.category === '철거공사');
+    // 철거공사 행: 기존 보존 + 삭제된 항목 복구
+    const existingDemolitionRows = existingLinkedRows.filter(row => row.category === '철거공사');
+    const demolitionKeySet = new Set(existingDemolitionRows.map(row =>
+      `${normalizeForMatch(row.workName || '')}|${normalizeForMatch(row.detailItem || '')}`
+    ));
+    const demolitionLinkedRows: LaborCostRow[] = [...existingDemolitionRows];
+
+    rows.forEach(row => {
+      if (!row.workType || !row.workName || row.workType === '철거공사') return;
+      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType)) return;
+      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName)) return;
+      const matchedName = matchDemolitionWorkName(row.workName);
+      if (!matchedName) return;
+
+      const catalogItems = mergedIlwidaegaCatalog.filter(
+        item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
+               normalizeForMatch(item.공사명 || '') === normalizeForMatch(matchedName)
+      );
+
+      const itemsToProcess = catalogItems.length > 0
+        ? catalogItems.map(c => ({ detailItem: c.노임항목 || '보통인부', D: c.기준작업량 || 0, E: c.노임단가 || 0 }))
+        : [{ detailItem: '보통인부', D: 0, E: 0 }];
+
+      itemsToProcess.forEach((item, idx) => {
+        const demoKey = `${normalizeForMatch(matchedName)}|${normalizeForMatch(item.detailItem)}`;
+        if (demolitionKeySet.has(demoKey)) return;
+        demolitionKeySet.add(demoKey);
+
+        const repairArea = Number(row.repairArea) || 0;
+        let qty = 1, amt = 0, ppsqm = 0;
+        if (item.D > 0 && item.E > 0 && repairArea > 0) {
+          amt = calculateIWithTiers(repairArea, item.D, item.E, laborRateTiers);
+          ppsqm = calculateAppliedUnitPriceWithTiers(repairArea, item.D, item.E, laborRateTiers);
+          qty = calculateQuantityWithTiers(repairArea, item.D, item.E, laborRateTiers);
+        }
+
+        demolitionLinkedRows.push({
+          id: `labor-demolition-sync-${Date.now()}-${Math.random()}-${idx}`,
+          sourceAreaRowId: `demolition-${row.id}`,
+          isLinkedFromRecovery: true,
+          place: row.category || '',
+          position: row.location || '',
+          category: '철거공사',
+          workName: matchedName,
+          detailWork: '일위대가',
+          detailItem: item.detailItem,
+          priceStandard: '',
+          unit: '㎡',
+          standardPrice: item.E,
+          standardWorkQuantity: item.D,
+          quantity: qty,
+          applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
+          salesMarkupRate: 0,
+          pricePerSqm: ppsqm,
+          damageArea: repairArea,
+          deduction: 0,
+          includeInEstimate: true,
+          request: '',
+          amount: amt,
+        });
+      });
+    });
     
     console.log('[복구면적가져오기] workTypeMap', {
       entries: Array.from(workTypeMap.entries()).map(([wt, wn]) => ({
