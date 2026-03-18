@@ -3952,7 +3952,7 @@ export default function AdminSettings() {
                   borderBottom: "1px solid rgba(12, 12, 12, 0.12)",
                 }}
               >
-                <div className="px-2" style={{ width: "90px" }}>
+                <div className="px-2" style={{ width: "90px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -3965,7 +3965,7 @@ export default function AdminSettings() {
                     역할
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "155px" }}>
+                <div className="px-2" style={{ width: "155px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -3978,7 +3978,7 @@ export default function AdminSettings() {
                     회사명
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "80px" }}>
+                <div className="px-2" style={{ width: "80px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -3991,7 +3991,7 @@ export default function AdminSettings() {
                     성함
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "100px" }}>
+                <div className="px-2" style={{ width: "100px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -4004,7 +4004,7 @@ export default function AdminSettings() {
                     소속부서
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "70px" }}>
+                <div className="px-2" style={{ width: "70px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -4017,7 +4017,7 @@ export default function AdminSettings() {
                     직급
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "220px" }}>
+                <div className="px-2" style={{ width: "220px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -4030,7 +4030,7 @@ export default function AdminSettings() {
                     이메일 주소
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "230px" }}>
+                <div className="px-2" style={{ width: "230px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -4043,7 +4043,7 @@ export default function AdminSettings() {
                     ID
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "163px" }}>
+                <div className="px-2" style={{ width: "163px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -4056,7 +4056,7 @@ export default function AdminSettings() {
                     연락처
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "163px" }}>
+                <div className="px-2" style={{ width: "163px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -4069,7 +4069,7 @@ export default function AdminSettings() {
                     사무실 전화
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "120px" }}>
+                <div className="px-2" style={{ width: "120px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -4082,7 +4082,7 @@ export default function AdminSettings() {
                     계정 생성일
                   </span>
                 </div>
-                <div className="px-2" style={{ width: "120px" }}>
+                <div className="px-2" style={{ width: "120px", borderRight: user?.isSuperAdmin ? "1px solid rgba(12, 12, 12, 0.08)" : "none" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
@@ -4125,7 +4125,7 @@ export default function AdminSettings() {
                 >
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "90px" }}
+                    style={{ width: "90px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
@@ -4142,7 +4142,7 @@ export default function AdminSettings() {
                   </div>
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "155px" }}
+                    style={{ width: "155px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
@@ -4159,7 +4159,7 @@ export default function AdminSettings() {
                   </div>
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "80px" }}
+                    style={{ width: "80px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
@@ -4176,7 +4176,7 @@ export default function AdminSettings() {
                   </div>
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "100px" }}
+                    style={{ width: "100px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
@@ -4193,7 +4193,7 @@ export default function AdminSettings() {
                   </div>
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "70px" }}
+                    style={{ width: "70px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
@@ -4210,7 +4210,7 @@ export default function AdminSettings() {
                   </div>
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                    style={{ width: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
@@ -4227,7 +4227,7 @@ export default function AdminSettings() {
                   </div>
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "230px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                    style={{ width: "230px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
@@ -4244,7 +4244,7 @@ export default function AdminSettings() {
                   </div>
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "163px" }}
+                    style={{ width: "163px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
@@ -4261,7 +4261,7 @@ export default function AdminSettings() {
                   </div>
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "163px" }}
+                    style={{ width: "163px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
@@ -4278,7 +4278,7 @@ export default function AdminSettings() {
                   </div>
                   <div
                     className="px-2 cursor-pointer"
-                    style={{ width: "120px" }}
+                    style={{ width: "120px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
                     onClick={() => setSelectedUser(user)}
                   >
                     <span
