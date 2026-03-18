@@ -3942,13 +3942,14 @@ export default function AdminSettings() {
             </div>
 
             {/* User Table */}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col">
               {/* Table Header */}
               <div
                 className="flex items-center px-3 rounded-lg"
                 style={{
                   height: "54px",
                   background: "rgba(12, 12, 12, 0.04)",
+                  borderBottom: "1px solid rgba(12, 12, 12, 0.12)",
                 }}
               >
                 <div className="px-2" style={{ width: "90px" }}>
@@ -4118,6 +4119,7 @@ export default function AdminSettings() {
                   className="flex items-center px-3 hover:bg-black/5 transition-colors"
                   style={{
                     height: "44px",
+                    borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                   }}
                   data-testid={`user-row-${user.id}`}
                 >
