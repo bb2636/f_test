@@ -1546,7 +1546,7 @@ export default function ComprehensiveProgress() {
                     ? "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 90px 160px"
                     : "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 160px",
                 padding: "14px 20px",
-                background: "rgba(12, 12, 12, 0.04)",
+                background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                 gap: "8px",
                 position: "sticky",
