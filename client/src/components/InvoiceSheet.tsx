@@ -866,7 +866,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
             <div style={infoBoxStyle}>
               <div style={infoRowStyle}>
                 <span style={labelStyle}>수임일자</span>
-                <span style={valueStyle}>{caseData?.receptionDate?.replace(/-/g, ".") || "0000.00.00"}</span>
+                <span style={valueStyle}>{(caseData?.assignmentDate || caseData?.receptionDate)?.replace(/-/g, ".") || "0000.00.00"}</span>
               </div>
               <div style={dividerStyle} />
               <div style={infoRowStyle}>

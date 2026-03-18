@@ -971,7 +971,7 @@ export function InvoiceManagementPopup({
         } else {
           setSubmissionDate(undefined);
         }
-        setAcceptanceDate(caseData.receptionDate || "");
+        setAcceptanceDate(caseData.assignmentDate || caseData.receptionDate || "");
 
         setPreventionApprovedAmount(
           caseData.invoiceDamagePreventionAmount ||

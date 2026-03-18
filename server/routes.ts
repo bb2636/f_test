@@ -9137,7 +9137,7 @@ FLOXN`;
       const invoiceData = {
         recipientName: caseData.insuranceCompany || "-",
         caseNumber: caseData.caseNumber || "-",
-        acceptanceDate: caseData.accidentDate || new Date().toISOString(),
+        acceptanceDate: caseData.assignmentDate || caseData.receptionDate || new Date().toISOString(),
         submissionDate:
           caseData.invoicePdfGenerated || new Date().toISOString(),
         insuranceAccidentNo: accidentNo || undefined,
@@ -9436,7 +9436,7 @@ FLOXN`;
       const invoiceData = {
         recipientName: recipientName || caseData.insuranceCompany || "-",
         caseNumber: caseData.caseNumber || "-",
-        acceptanceDate: caseData.accidentDate || new Date().toISOString(),
+        acceptanceDate: caseData.assignmentDate || caseData.receptionDate || new Date().toISOString(),
         submissionDate: new Date().toISOString(),
         insuranceAccidentNo: accidentNo || undefined,
         particulars,
@@ -10444,7 +10444,7 @@ FLOXN`;
       const invoiceData = {
         recipientName: recipientName || caseData.insuranceCompany || "-",
         caseNumber: caseData.caseNumber || "-",
-        acceptanceDate: caseData.accidentDate || new Date().toISOString(),
+        acceptanceDate: caseData.assignmentDate || caseData.receptionDate || new Date().toISOString(),
         submissionDate: new Date().toISOString(),
         insuranceAccidentNo: accidentNo || undefined,
         particulars,
@@ -14295,10 +14295,11 @@ https://www.floxn.co.kr/
       const col3Width = 80; // 수임일자/취소일자
       const col4Width = tableWidth - col1Width - col2Width - col3Width; // 나머지
 
-      // 수임일자
+      // 수임일자 (배당일자 우선, 없으면 접수일자)
       let receptionDateStr = "-";
-      if (caseData.receptionDate) {
-        const rd = new Date(caseData.receptionDate);
+      const acceptanceDateSource = caseData.assignmentDate || caseData.receptionDate;
+      if (acceptanceDateSource) {
+        const rd = new Date(acceptanceDateSource);
         receptionDateStr = `${rd.getFullYear()}-${String(rd.getMonth() + 1).padStart(2, "0")}-${String(rd.getDate()).padStart(2, "0")}`;
       }
 
