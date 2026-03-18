@@ -4268,14 +4268,7 @@ export default function AdminSettings() {
                 }}
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full" style={{ tableLayout: "fixed" }}>
-                    <colgroup>
-                      <col style={{ width: "130px" }} />
-                      <col style={{ width: "80px" }} />
-                      <col style={{ width: "150px" }} />
-                      <col style={{ width: "180px" }} />
-                      <col />
-                    </colgroup>
+                  <table className="w-full" style={{ tableLayout: "auto" }}>
                     <thead>
                       <tr style={{ background: "rgba(12, 12, 12, 0.04)", borderBottom: "1px solid rgba(12, 12, 12, 0.12)" }}>
                         {["사고번호", "변경자", "변경일시", "변경 항목", "변경 내용"].map((label) => (
@@ -4344,6 +4337,7 @@ export default function AdminSettings() {
                                 color: "#008FED",
                                 borderRight: "1px solid rgba(12, 12, 12, 0.08)",
                                 verticalAlign: "top",
+                                whiteSpace: "nowrap",
                               }}
                             >
                               {log.caseNumber || "-"}
@@ -4357,6 +4351,7 @@ export default function AdminSettings() {
                                 color: "rgba(12, 12, 12, 0.8)",
                                 borderRight: "1px solid rgba(12, 12, 12, 0.08)",
                                 verticalAlign: "top",
+                                whiteSpace: "nowrap",
                               }}
                             >
                               {log.changedByName || "-"}
@@ -4411,7 +4406,7 @@ export default function AdminSettings() {
                               {log.changes && log.changes.length > 0 ? (
                                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                   {log.changes.map((change, idx) => (
-                                    <div key={idx} style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                                    <div key={idx} style={{ display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
                                       <span style={{ fontWeight: 500, color: "rgba(12, 12, 12, 0.8)" }}>{change.fieldLabel}:</span>
                                       <span style={{ color: "#ED1C00", textDecoration: "line-through" }}>
                                         {change.before || "(없음)"}
