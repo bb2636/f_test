@@ -2794,6 +2794,50 @@ export default function FieldReport() {
                   }
 
                   if (response.ok) {
+                    // 이메일 전송 성공 시 케이스 상태를 "현장정보제출"로 변경
+                    try {
+                      await apiRequest(
+                        "PATCH",
+                        `/api/cases/${selectedCaseId}/status`,
+                        {
+                          status: "현장정보제출",
+                        },
+                      );
+                      // 케이스 데이터 새로고침
+                      queryClient.invalidateQueries({
+                        queryKey: [
+                          "/api/field-surveys",
+                          selectedCaseId,
+                          "report",
+                        ],
+                      });
+                      queryClient.invalidateQueries({
+                        queryKey: ["/api/cases"],
+                      });
+
+                      // 현장정보제출 상태 변경 시 심사자/조사자에게 SMS 발송
+                      try {
+                        await apiRequest(
+                          "POST",
+                          "/api/send-stage-notification",
+                          {
+                            caseId: selectedCaseId,
+                            stage: "현장정보제출",
+                            recipients: {
+                              partner: false,
+                              manager: false,
+                              assessorInvestigator: true,
+                            },
+                          },
+                        );
+                        console.log("현장정보제출 SMS 발송 완료");
+                      } catch (smsError) {
+                        console.error("SMS 발송 오류:", smsError);
+                      }
+                    } catch (statusError) {
+                      console.error("상태 업데이트 오류:", statusError);
+                    }
+
                     const recipientList = emailRecipients.join(", ");
                     toast({
                       title: "전송 완료",
