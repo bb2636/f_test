@@ -1545,7 +1545,7 @@ export default function ComprehensiveProgress() {
                   user?.role === "협력사"
                     ? "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 90px 160px"
                     : "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 160px",
-                padding: "14px 20px",
+                padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                 position: "sticky",
@@ -1560,6 +1560,8 @@ export default function ComprehensiveProgress() {
                     alignItems: "center",
                     justifyContent: "center",
                     borderRight: "1px solid rgba(12, 12, 12, 0.15)",
+                    paddingTop: "14px",
+                    paddingBottom: "14px",
                   }}
                 >
                   <Checkbox
@@ -1609,6 +1611,8 @@ export default function ComprehensiveProgress() {
                     borderRight: col.isLast ? "none" : "1px solid rgba(12, 12, 12, 0.15)",
                     paddingRight: "4px",
                     paddingLeft: "4px",
+                    paddingTop: "14px",
+                    paddingBottom: "14px",
                   }}
                 >
                   {col.label}
@@ -1721,9 +1725,9 @@ export default function ComprehensiveProgress() {
                         user?.role === "협력사"
                           ? "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 90px 160px"
                           : "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 160px",
-                      padding: "14px 20px",
+                      padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
-                      alignItems: "center",
+                      alignItems: "stretch",
                       cursor: "pointer",
                     }}
                     data-testid={`case-row-${caseItem.id}`}
@@ -1735,6 +1739,8 @@ export default function ComprehensiveProgress() {
                           alignItems: "center",
                           justifyContent: "center",
                           borderRight: "1px solid rgba(12, 12, 12, 0.15)",
+                          paddingTop: "14px",
+                          paddingBottom: "14px",
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -1765,6 +1771,10 @@ export default function ComprehensiveProgress() {
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       {caseItem.insurancePolicyNo || "-"}
@@ -1777,6 +1787,10 @@ export default function ComprehensiveProgress() {
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       {caseItem.insuranceAccidentNo || "-"}
@@ -1789,6 +1803,10 @@ export default function ComprehensiveProgress() {
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       {formatCaseNumber(caseItem.caseNumber) || "-"}
@@ -1801,6 +1819,10 @@ export default function ComprehensiveProgress() {
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       {caseItem.insuranceCompany || "-"}
@@ -1813,6 +1835,10 @@ export default function ComprehensiveProgress() {
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       {caseItem.insuredName || "-"}
@@ -1873,6 +1899,8 @@ export default function ComprehensiveProgress() {
                             borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                             paddingRight: "4px",
                             paddingLeft: "4px",
+                            paddingTop: "14px",
+                            paddingBottom: "14px",
                           }}
                           title={addressText}
                           data-testid={`text-address-${caseItem.id}`}
@@ -1889,6 +1917,10 @@ export default function ComprehensiveProgress() {
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       {caseItem.managerName || "-"}
@@ -1901,6 +1933,10 @@ export default function ComprehensiveProgress() {
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       {caseItem.assignedPartner || "-"}
@@ -1910,10 +1946,14 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        textAlign: "right",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
                       }}
                     >
                       {formatAmount(caseItem.approvedAmount)}
@@ -1923,15 +1963,19 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        textAlign: "center",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       {calculateDays(caseItem.createdAt)}
                     </div>
-                    <div onClick={(e) => e.stopPropagation()} style={{ borderRight: "1px solid rgba(12, 12, 12, 0.15)", paddingRight: "4px", paddingLeft: "4px" }}>
+                    <div onClick={(e) => e.stopPropagation()} style={{ borderRight: "1px solid rgba(12, 12, 12, 0.15)", paddingRight: "4px", paddingLeft: "4px", paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {/* 관리자: 모든 상태에서 변경 가능, 협력사: 현장정보제출/복구요청(2차승인) 상태에서만 변경 가능 */}
                       {user?.role === "관리자" ||
                       (user?.role === "협력사" &&
@@ -2048,6 +2092,8 @@ export default function ComprehensiveProgress() {
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
                       }}
                     >
                       {/* 협력사 특이사항 빨간색 점 (협력사 메모가 1개라도 있으면 항상 표시) */}
@@ -2094,6 +2140,8 @@ export default function ComprehensiveProgress() {
                           borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                           paddingRight: "4px",
                           paddingLeft: "4px",
+                          paddingTop: "14px",
+                          paddingBottom: "14px",
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -2120,7 +2168,7 @@ export default function ComprehensiveProgress() {
                             : "현장조사 입력"}
                       </div>
                     )}
-                    <div>
+                    <div style={{ paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {caseItem.status === "배당대기" ? (
                         // 배당대기 상태 - 임시 저장 건이므로 이어서 작성하기 버튼
                         (<button
