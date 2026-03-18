@@ -1038,9 +1038,8 @@ export default function ComprehensiveProgress() {
 
   // 협력사가 변경 가능한 상태 목록
   const PARTNER_ALLOWED_STATUSES = ["직접복구", "선견적요청"];
-  // 협력사가 상태 변경 가능한 현재 상태들
+  // 협력사가 상태 변경 가능한 현재 상태들 (2차승인부터 변경 가능)
   const PARTNER_CHANGEABLE_FROM_STATUSES = [
-    "현장정보제출",
     "복구요청(2차승인)",
   ];
 
