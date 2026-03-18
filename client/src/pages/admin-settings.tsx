@@ -4049,7 +4049,7 @@ export default function AdminSettings() {
                       </span>
                     </div>
                   ))}
-                  <div className="px-2 flex items-center" style={{ width: "120px", borderRight: "1px solid rgba(12, 12, 12, 0.15)" }}>
+                  <div className="px-2 flex items-center" style={{ width: "120px", borderRight: loggedInUser?.isSuperAdmin ? "1px solid rgba(12, 12, 12, 0.15)" : "none" }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
