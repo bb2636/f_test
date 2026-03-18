@@ -1479,7 +1479,7 @@ export default function ComprehensiveProgress() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "0 4px",
+            
             marginBottom: "16px",
           }}
         >
@@ -1607,7 +1607,7 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
-                    padding: "0 4px",
+                    
                   }}
                 >
                   {col.label}
@@ -1762,7 +1762,7 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {caseItem.policyNumber || "-"}
@@ -1773,7 +1773,7 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {caseItem.insuranceAccidentNo || "-"}
@@ -1784,7 +1784,7 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {formatCaseNumber(caseItem.caseNumber) || "-"}
@@ -1795,7 +1795,7 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {caseItem.insuranceCompany || "-"}
@@ -1806,7 +1806,7 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {caseItem.insuredName || "-"}
@@ -1865,7 +1865,7 @@ export default function ComprehensiveProgress() {
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden",
                             borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                            padding: "0 4px",
+                            
                           }}
                           title={addressText}
                           data-testid={`text-address-${caseItem.id}`}
@@ -1880,7 +1880,7 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {caseItem.managerName || "-"}
@@ -1891,7 +1891,7 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {caseItem.assignedPartner || "-"}
@@ -1903,7 +1903,7 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         textAlign: "right",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {formatAmount(caseItem.approvedAmount)}
@@ -1915,12 +1915,12 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         textAlign: "center",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {calculateDays(caseItem.createdAt)}
                     </div>
-                    <div onClick={(e) => e.stopPropagation()} style={{ borderRight: "1px solid rgba(12, 12, 12, 0.15)", padding: "0 4px" }}>
+                    <div onClick={(e) => e.stopPropagation()} style={{ borderRight: "1px solid rgba(12, 12, 12, 0.15)", }}>
                       {/* 관리자: 모든 상태에서 변경 가능, 협력사: 현장정보제출/복구요청(2차승인) 상태에서만 변경 가능 */}
                       {user?.role === "관리자" ||
                       (user?.role === "협력사" &&
@@ -2035,7 +2035,7 @@ export default function ComprehensiveProgress() {
                         alignItems: "center",
                         gap: "4px",
                         borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                        padding: "0 4px",
+                        
                       }}
                     >
                       {/* 협력사 특이사항 빨간색 점 (협력사 메모가 1개라도 있으면 항상 표시) */}
@@ -2080,7 +2080,7 @@ export default function ComprehensiveProgress() {
                           cursor: "pointer",
                           textDecoration: "underline",
                           borderRight: "1px solid rgba(12, 12, 12, 0.15)",
-                          padding: "0 4px",
+                          
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
