@@ -4384,9 +4384,32 @@ export class DbStorage implements IStorage {
           ? userMap.get(caseItem.managerId)
           : null;
 
+        // 심사사/조사사 이메일 자동 조회 (DB에 저장되지 않은 경우 users 테이블에서 찾기)
+        let assessorEmail = caseItem.assessorEmail || null;
+        let investigatorEmail = caseItem.investigatorEmail || null;
+
+        if (!assessorEmail && caseItem.assessorTeam) {
+          const assessorUser = allUsers.find(
+            (u) => u.role === "심사사" && u.name === caseItem.assessorTeam,
+          );
+          if (assessorUser?.email) {
+            assessorEmail = assessorUser.email;
+          }
+        }
+
+        if (!investigatorEmail && caseItem.investigatorTeamName) {
+          const investigatorUser = allUsers.find(
+            (u) => u.role === "조사사" && u.name === caseItem.investigatorTeamName,
+          );
+          if (investigatorUser?.email) {
+            investigatorEmail = investigatorUser.email;
+          }
+        }
 
         return {
           ...caseItem,
+          assessorEmail,
+          investigatorEmail,
           latestProgress: latestUpdate
             ? {
                 content: latestUpdate.content,
