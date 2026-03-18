@@ -3044,30 +3044,6 @@ export default function FieldReport() {
                     color: "rgba(12, 12, 12, 0.5)",
                   }}
                 >
-                  계약자
-                </span>
-                <span
-                  style={{
-                    fontFamily: "Pretendard",
-                    fontSize: "16px",
-                    fontWeight: 400,
-                    letterSpacing: "-0.02em",
-                    color: "rgba(12, 12, 12, 0.7)",
-                  }}
-                >
-                  {caseData.policyHolderName || caseData.clientName || "미정"}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span
-                  style={{
-                    fontFamily: "Pretendard",
-                    fontSize: "16px",
-                    fontWeight: 400,
-                    letterSpacing: "-0.02em",
-                    color: "rgba(12, 12, 12, 0.5)",
-                  }}
-                >
                   피보험자
                 </span>
                 <span
@@ -3391,28 +3367,6 @@ export default function FieldReport() {
                       }}
                     >
                       {caseData.assignedPartner || "-"}
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <span
-                      className="w-32"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        color: "rgba(12, 12, 12, 0.6)",
-                      }}
-                    >
-                      피보험자
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        color: "#0C0C0C",
-                      }}
-                    >
-                      {caseData.insuredName || "-"}
                     </span>
                   </div>
                   <div className="flex items-center">
