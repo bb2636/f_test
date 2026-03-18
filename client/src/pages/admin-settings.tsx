@@ -4268,64 +4268,32 @@ export default function AdminSettings() {
                 }}
               >
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full" style={{ tableLayout: "fixed" }}>
+                    <colgroup>
+                      <col style={{ width: "130px" }} />
+                      <col style={{ width: "80px" }} />
+                      <col style={{ width: "150px" }} />
+                      <col style={{ width: "180px" }} />
+                      <col />
+                    </colgroup>
                     <thead>
-                      <tr style={{ background: "rgba(12, 12, 12, 0.04)" }}>
-                        <th
-                          className="px-4 py-3 text-left"
-                          style={{
-                            fontFamily: "Pretendard",
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            color: "#0C0C0C",
-                          }}
-                        >
-                          사고번호
-                        </th>
-                        <th
-                          className="px-4 py-3 text-left"
-                          style={{
-                            fontFamily: "Pretendard",
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            color: "#0C0C0C",
-                          }}
-                        >
-                          변경자
-                        </th>
-                        <th
-                          className="px-4 py-3 text-left"
-                          style={{
-                            fontFamily: "Pretendard",
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            color: "#0C0C0C",
-                          }}
-                        >
-                          변경일시
-                        </th>
-                        <th
-                          className="px-4 py-3 text-left"
-                          style={{
-                            fontFamily: "Pretendard",
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            color: "#0C0C0C",
-                          }}
-                        >
-                          변경 항목
-                        </th>
-                        <th
-                          className="px-4 py-3 text-left"
-                          style={{
-                            fontFamily: "Pretendard",
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            color: "#0C0C0C",
-                          }}
-                        >
-                          변경 내용
-                        </th>
+                      <tr style={{ background: "rgba(12, 12, 12, 0.04)", borderBottom: "1px solid rgba(12, 12, 12, 0.12)" }}>
+                        {["사고번호", "변경자", "변경일시", "변경 항목", "변경 내용"].map((label) => (
+                          <th
+                            key={label}
+                            className="px-4 py-3 text-left"
+                            style={{
+                              fontFamily: "Pretendard",
+                              fontSize: "14px",
+                              fontWeight: 600,
+                              color: "#0C0C0C",
+                              borderRight: label !== "변경 내용" ? "1px solid rgba(12, 12, 12, 0.08)" : "none",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {label}
+                          </th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
@@ -4363,8 +4331,8 @@ export default function AdminSettings() {
                         changeLogs.map((log) => (
                           <tr
                             key={log.id}
-                            className="border-b hover:bg-gray-50 transition-colors"
-                            style={{ borderColor: "rgba(12, 12, 12, 0.08)" }}
+                            className="hover:bg-gray-50 transition-colors"
+                            style={{ borderBottom: "1px solid rgba(12, 12, 12, 0.08)" }}
                             data-testid={`row-changelog-${log.id}`}
                           >
                             <td
@@ -4374,6 +4342,8 @@ export default function AdminSettings() {
                                 fontSize: "14px",
                                 fontWeight: 500,
                                 color: "#008FED",
+                                borderRight: "1px solid rgba(12, 12, 12, 0.08)",
+                                verticalAlign: "top",
                               }}
                             >
                               {log.caseNumber || "-"}
@@ -4385,6 +4355,8 @@ export default function AdminSettings() {
                                 fontSize: "14px",
                                 fontWeight: 400,
                                 color: "rgba(12, 12, 12, 0.8)",
+                                borderRight: "1px solid rgba(12, 12, 12, 0.08)",
+                                verticalAlign: "top",
                               }}
                             >
                               {log.changedByName || "-"}
@@ -4396,6 +4368,9 @@ export default function AdminSettings() {
                                 fontSize: "14px",
                                 fontWeight: 400,
                                 color: "rgba(12, 12, 12, 0.8)",
+                                borderRight: "1px solid rgba(12, 12, 12, 0.08)",
+                                verticalAlign: "top",
+                                whiteSpace: "nowrap",
                               }}
                             >
                               {log.changedAt
@@ -4412,9 +4387,11 @@ export default function AdminSettings() {
                               className="px-4 py-3"
                               style={{
                                 fontFamily: "Pretendard",
-                                fontSize: "14px",
+                                fontSize: "13px",
                                 fontWeight: 400,
-                                color: "rgba(12, 12, 12, 0.8)",
+                                color: "rgba(12, 12, 12, 0.7)",
+                                borderRight: "1px solid rgba(12, 12, 12, 0.08)",
+                                verticalAlign: "top",
                               }}
                             >
                               {log.changes && log.changes.length > 0
@@ -4428,18 +4405,19 @@ export default function AdminSettings() {
                                 fontSize: "13px",
                                 fontWeight: 400,
                                 color: "rgba(12, 12, 12, 0.7)",
+                                verticalAlign: "top",
                               }}
                             >
                               {log.changes && log.changes.length > 0 ? (
-                                <div className="space-y-1">
+                                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                   {log.changes.map((change, idx) => (
-                                    <div key={idx} className="flex items-center gap-2">
-                                      <span className="font-medium">{change.fieldLabel}:</span>
-                                      <span className="text-red-500 line-through">
+                                    <div key={idx} style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                                      <span style={{ fontWeight: 500, color: "rgba(12, 12, 12, 0.8)" }}>{change.fieldLabel}:</span>
+                                      <span style={{ color: "#ED1C00", textDecoration: "line-through" }}>
                                         {change.before || "(없음)"}
                                       </span>
-                                      <span>→</span>
-                                      <span className="text-green-600">
+                                      <span style={{ color: "rgba(12, 12, 12, 0.4)" }}>→</span>
+                                      <span style={{ color: "#00A651" }}>
                                         {change.after || "(없음)"}
                                       </span>
                                     </div>
