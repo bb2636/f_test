@@ -1532,21 +1532,27 @@ export default function ComprehensiveProgress() {
             boxShadow: "0px 0px 20px #DBE9F5",
             borderRadius: "12px",
             overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            maxHeight: "calc(100vh - 260px)",
           }}
         >
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             {/* Table Header */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns:
                   user?.role === "협력사"
-                    ? "40px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 90px 160px"
-                    : "40px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 160px",
+                    ? "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 90px 160px"
+                    : "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 160px",
                 padding: "14px 20px",
                 background: "rgba(12, 12, 12, 0.04)",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                 gap: "8px",
+                position: "sticky",
+                top: 0,
+                zIndex: 10,
               }}
             >
               {canDeleteCases && (
@@ -1574,6 +1580,16 @@ export default function ComprehensiveProgress() {
                 </div>
               )}
               {!canDeleteCases && <div style={{ width: "40px" }} />}
+              <div
+                style={{
+                  fontFamily: "Pretendard",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  color: "rgba(12, 12, 12, 0.6)",
+                }}
+              >
+                증권번호
+              </div>
               <div
                 style={{
                   fontFamily: "Pretendard",
@@ -1621,6 +1637,8 @@ export default function ComprehensiveProgress() {
                   fontSize: "13px",
                   color: "rgba(12, 12, 12, 0.6)",
                   textAlign: "center",
+                  borderRight: "1px solid rgba(12, 12, 12, 0.12)",
+                  paddingRight: "8px",
                 }}
               >
                 주소
@@ -1816,8 +1834,8 @@ export default function ComprehensiveProgress() {
                       display: "grid",
                       gridTemplateColumns:
                         user?.role === "협력사"
-                          ? "40px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 90px 160px"
-                          : "40px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 160px",
+                          ? "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 90px 160px"
+                          : "40px 90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 50px 160px",
                       padding: "14px 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       gap: "8px",
@@ -1854,6 +1872,15 @@ export default function ComprehensiveProgress() {
                       </div>
                     )}
                     {!canDeleteCases && <div style={{ width: "40px" }} />}
+                    <div
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "13px",
+                        color: "rgba(12, 12, 12, 0.8)",
+                      }}
+                    >
+                      {caseItem.policyNumber || "-"}
+                    </div>
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -1956,6 +1983,8 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
+                        borderLeft: "1px solid rgba(12, 12, 12, 0.12)",
+                        paddingLeft: "8px",
                       }}
                     >
                       {caseItem.managerName || "-"}
