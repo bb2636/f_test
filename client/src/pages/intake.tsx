@@ -96,6 +96,7 @@ export default function Intake({
   const [predictedPrefix, setPredictedPrefix] = useState<string>("");
   const [predictedSuffix, setPredictedSuffix] = useState<number>(0);
   const [loadedCaseNumber, setLoadedCaseNumber] = useState<string | null>(null);
+  const [loadedReceptionDate, setLoadedReceptionDate] = useState<string | null>(null);
 
   const [isPartnerSearchOpen, setIsPartnerSearchOpen] = useState(false);
   const [partnerSearchQuery, setPartnerSearchQuery] = useState("");
@@ -625,6 +626,7 @@ export default function Intake({
           investigatorContact: caseData.investigatorContact,
         });
         if (caseData.caseNumber) setLoadedCaseNumber(caseData.caseNumber);
+        if (caseData.receptionDate) setLoadedReceptionDate(caseData.receptionDate);
         const manager = administrators?.find(
           (a) => a.id === caseData.managerId,
         );
@@ -804,6 +806,7 @@ export default function Intake({
       setSameAsPolicyHolder(false);
       setAdditionalVictims([]);
       setLoadedCaseNumber(null);
+      setLoadedReceptionDate(null);
     }
   }, [isModal, initialCaseId]);
 
@@ -816,6 +819,7 @@ export default function Intake({
         .then((res) => res.json())
         .then((caseData: any) => {
           if (caseData.caseNumber) setLoadedCaseNumber(caseData.caseNumber);
+          if (caseData.receptionDate) setLoadedReceptionDate(caseData.receptionDate);
           const manager = administrators?.find(
             (a) => a.id === caseData.managerId,
           );
@@ -1682,45 +1686,55 @@ export default function Intake({
               <div className="col-span-6 md:col-span-2">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>접수일자</label>
-                  <Popover
-                    open={datePickerOpen}
-                    onOpenChange={setDatePickerOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        disabled={readOnly}
-                        className={`${inputClasses} flex items-center justify-between ${readOnly ? "cursor-default" : "cursor-pointer"}`}
-                        data-testid="button-date-picker"
-                      >
-                        <span>
-                          {accidentDate
-                            ? format(accidentDate, "yyyy-MM-dd", { locale: ko })
-                            : "날짜 선택"}
-                        </span>
-                        <CalendarIcon
-                          size={18}
-                          className="text-slate-400 opacity-80"
+                  {editCaseId && loadedReceptionDate ? (
+                    <input
+                      className={disabledInputClasses}
+                      value={loadedReceptionDate}
+                      readOnly
+                      type="text"
+                      data-testid="input-reception-date"
+                    />
+                  ) : (
+                    <Popover
+                      open={datePickerOpen}
+                      onOpenChange={setDatePickerOpen}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          disabled={readOnly}
+                          className={`${inputClasses} flex items-center justify-between ${readOnly ? "cursor-default" : "cursor-pointer"}`}
+                          data-testid="button-date-picker"
+                        >
+                          <span>
+                            {accidentDate
+                              ? format(accidentDate, "yyyy-MM-dd", { locale: ko })
+                              : "날짜 선택"}
+                          </span>
+                          <CalendarIcon
+                            size={18}
+                            className="text-slate-400 opacity-80"
+                          />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={accidentDate}
+                          onSelect={(date) => {
+                            setAccidentDate(date);
+                            if (date)
+                              handleInputChange(
+                                "accidentDate",
+                                format(date, "yyyy-MM-dd"),
+                              );
+                            setDatePickerOpen(false);
+                          }}
+                          locale={ko}
                         />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={accidentDate}
-                        onSelect={(date) => {
-                          setAccidentDate(date);
-                          if (date)
-                            handleInputChange(
-                              "accidentDate",
-                              format(date, "yyyy-MM-dd"),
-                            );
-                          setDatePickerOpen(false);
-                        }}
-                        locale={ko}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                      </PopoverContent>
+                    </Popover>
+                  )}
                 </div>
               </div>
 
