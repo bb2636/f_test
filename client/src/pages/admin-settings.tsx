@@ -3945,158 +3945,49 @@ export default function AdminSettings() {
             <div className="flex flex-col">
               {/* Table Header */}
               <div
-                className="flex items-center px-3 rounded-lg"
+                className="flex items-stretch px-3 rounded-lg"
                 style={{
                   height: "54px",
                   background: "rgba(12, 12, 12, 0.04)",
                   borderBottom: "1px solid rgba(12, 12, 12, 0.12)",
                 }}
               >
-                <div className="px-2" style={{ width: "90px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
+                {[
+                  { label: "역할", width: "90px" },
+                  { label: "회사명", width: "155px" },
+                  { label: "성함", width: "80px" },
+                  { label: "소속부서", width: "100px" },
+                  { label: "직급", width: "70px" },
+                  { label: "이메일 주소", width: "220px" },
+                  { label: "ID", width: "230px" },
+                  { label: "연락처", width: "163px" },
+                  { label: "사무실 전화", width: "163px" },
+                  { label: "계정 생성일", width: "120px" },
+                  { label: "요청", width: "120px" },
+                ].map((col, idx, arr) => (
+                  <div
+                    key={col.label}
+                    className="px-2 flex items-center"
                     style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
+                      width: col.width,
+                      borderRight: (idx < arr.length - 1 || user?.isSuperAdmin) ? "1px solid rgba(12, 12, 12, 0.15)" : "none",
                     }}
                   >
-                    역할
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "155px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    회사명
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "80px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    성함
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "100px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    소속부서
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "70px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    직급
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "220px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    이메일 주소
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "230px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    ID
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "163px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    연락처
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "163px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    사무실 전화
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "120px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    계정 생성일
-                  </span>
-                </div>
-                <div className="px-2" style={{ width: "120px", borderRight: user?.isSuperAdmin ? "1px solid rgba(12, 12, 12, 0.08)" : "none" }}>
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.6)",
-                    }}
-                  >
-                    요청
-                  </span>
-                </div>
+                    <span
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "15px",
+                        fontWeight: 600,
+                        letterSpacing: "-0.02em",
+                        color: "rgba(12, 12, 12, 0.6)",
+                      }}
+                    >
+                      {col.label}
+                    </span>
+                  </div>
+                ))}
                 {user?.isSuperAdmin && (
-                  <div className="px-2 flex-1">
+                  <div className="px-2 flex-1 flex items-center">
                     <span
                       style={{
                         fontFamily: "Pretendard",
@@ -4116,184 +4007,49 @@ export default function AdminSettings() {
               {filteredUsers.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center px-3 hover:bg-black/5 transition-colors"
+                  className="flex items-stretch px-3 hover:bg-black/5 transition-colors"
                   style={{
-                    height: "44px",
+                    minHeight: "44px",
                     borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                   }}
                   data-testid={`user-row-${user.id}`}
                 >
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "90px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
+                  {[
+                    { value: user.role, width: "90px" },
+                    { value: user.company, width: "155px" },
+                    { value: user.name, width: "80px" },
+                    { value: user.department, width: "100px" },
+                    { value: user.position, width: "70px" },
+                    { value: user.email, width: "220px", ellipsis: true },
+                    { value: user.username, width: "230px", ellipsis: true },
+                    { value: user.phone, width: "163px" },
+                    { value: user.office, width: "163px" },
+                    { value: user.createdAt, width: "120px" },
+                  ].map((col, idx, arr) => (
+                    <div
+                      key={idx}
+                      className="px-2 cursor-pointer flex items-center"
                       style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
+                        width: col.width,
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
+                        ...(col.ellipsis ? { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const } : {}),
                       }}
+                      onClick={() => setSelectedUser(user)}
                     >
-                      {user.role}
-                    </span>
-                  </div>
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "155px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
-                      }}
-                    >
-                      {user.company}
-                    </span>
-                  </div>
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "80px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
-                      }}
-                    >
-                      {user.name}
-                    </span>
-                  </div>
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "100px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
-                      }}
-                    >
-                      {user.department}
-                    </span>
-                  </div>
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "70px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
-                      }}
-                    >
-                      {user.position}
-                    </span>
-                  </div>
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
-                      }}
-                    >
-                      {user.email}
-                    </span>
-                  </div>
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "230px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
-                      }}
-                    >
-                      {user.username}
-                    </span>
-                  </div>
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "163px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
-                      }}
-                    >
-                      {user.phone}
-                    </span>
-                  </div>
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "163px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
-                      }}
-                    >
-                      {user.office}
-                    </span>
-                  </div>
-                  <div
-                    className="px-2 cursor-pointer"
-                    style={{ width: "120px", borderRight: "1px solid rgba(12, 12, 12, 0.08)" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 400,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.8)",
-                      }}
-                    >
-                      {user.createdAt}
-                    </span>
-                  </div>
-                  <div className="px-2" style={{ width: "120px" }}>
+                      <span
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 400,
+                          letterSpacing: "-0.02em",
+                          color: "rgba(12, 12, 12, 0.8)",
+                        }}
+                      >
+                        {col.value}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="px-2 flex items-center" style={{ width: "120px", borderRight: "1px solid rgba(12, 12, 12, 0.15)" }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
