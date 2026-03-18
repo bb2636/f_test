@@ -4924,9 +4924,13 @@ export class DbStorage implements IStorage {
       additionalUpdates.status = "검토중";
     }
 
+    // receptionDate 보호: 현장입력에서 절대 접수일자를 변경하지 않음
+    const safeFieldData = { ...fieldData };
+    delete (safeFieldData as any).receptionDate;
+
     const result = await db
       .update(cases)
-      .set({ ...fieldData, ...additionalUpdates, updatedAt: getKSTTimestamp() })
+      .set({ ...safeFieldData, ...additionalUpdates, updatedAt: getKSTTimestamp() })
       .where(eq(cases.id, caseId))
       .returning();
 
@@ -6595,13 +6599,17 @@ export class DbStorage implements IStorage {
       relatedCases.map((c) => c.caseNumber).join(", "),
     );
 
+    // receptionDate 보호: 동기화 시에도 접수일자를 절대 변경하지 않음
+    const safeFieldData = { ...fieldData };
+    delete (safeFieldData as any).receptionDate;
+
     // Update all related cases with the field survey data
     let updatedCount = 0;
     for (const relatedCase of relatedCases) {
       try {
         await db
           .update(cases)
-          .set(fieldData)
+          .set(safeFieldData)
           .where(eq(cases.id, relatedCase.id));
         updatedCount++;
         console.log(
@@ -7016,8 +7024,11 @@ export class DbStorage implements IStorage {
     for (const relatedCase of relatedCases) {
       try {
         // 기본 동기화 데이터 (null/빈 값 제외)
+        // receptionDate 보호: 동기화 시에도 접수일자를 절대 변경하지 않음
+        const safeSyncData = { ...filteredSyncData };
+        delete (safeSyncData as any).receptionDate;
         const updateData: Partial<Case> = {
-          ...filteredSyncData,
+          ...safeSyncData,
           updatedAt: getKSTDate(),
         };
         
