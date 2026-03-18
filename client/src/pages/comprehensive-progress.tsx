@@ -1560,6 +1560,7 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                   }}
                 >
                   <Checkbox
@@ -1578,156 +1579,40 @@ export default function ComprehensiveProgress() {
                   />
                 </div>
               )}
-              {!canDeleteCases && <div style={{ width: "40px" }} />}
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                }}
-              >
-                증권번호
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                }}
-              >
-                사고번호
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                }}
-              >
-                접수번호
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                }}
-              >
-                보험사
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                }}
-              >
-                피보험자
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                  textAlign: "center",
-                  borderRight: "1px solid rgba(12, 12, 12, 0.12)",
-                  paddingRight: "8px",
-                }}
-              >
-                주소
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                }}
-              >
-                담당자
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                }}
-              >
-                협력사
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                  textAlign: "center",
-                }}
-              >
-                승인금액
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                  textAlign: "center",
-                }}
-              >
-                경과일
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                  textAlign: "center",
-                }}
-              >
-                진행상태
-              </div>
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                }}
-              >
-                특이사항
-              </div>
-              {user?.role === "협력사" && (
+              {!canDeleteCases && <div style={{ width: "40px", borderRight: "1px solid rgba(12, 12, 12, 0.15)" }} />}
+              {[
+                { label: "증권번호" },
+                { label: "사고번호" },
+                { label: "접수번호" },
+                { label: "보험사" },
+                { label: "피보험자" },
+                { label: "주소", textAlign: "center" as const },
+                { label: "담당자" },
+                { label: "협력사" },
+                { label: "승인금액", textAlign: "center" as const },
+                { label: "경과일", textAlign: "center" as const },
+                { label: "진행상태", textAlign: "center" as const },
+                { label: "특이사항" },
+                ...(user?.role === "협력사" ? [{ label: "수행업무" }] : []),
+                { label: "자세히 보기", textAlign: "center" as const, isLast: true },
+              ].map((col, idx) => (
                 <div
+                  key={col.label}
                   style={{
                     fontFamily: "Pretendard",
                     fontWeight: 600,
                     fontSize: "13px",
                     color: "rgba(12, 12, 12, 0.6)",
+                    textAlign: col.textAlign || "left",
+                    borderRight: col.isLast ? "none" : "1px solid rgba(12, 12, 12, 0.15)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: col.textAlign === "center" ? "center" : "flex-start",
                   }}
                 >
-                  수행업무
+                  {col.label}
                 </div>
-              )}
-              <div
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  color: "rgba(12, 12, 12, 0.6)",
-                  textAlign: "center",
-                }}
-              >
-                자세히 보기
-              </div>
+              ))}
             </div>
 
             {/* Table Body */}
@@ -1849,6 +1734,7 @@ export default function ComprehensiveProgress() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
+                          borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -1870,12 +1756,13 @@ export default function ComprehensiveProgress() {
                         />
                       </div>
                     )}
-                    {!canDeleteCases && <div style={{ width: "40px" }} />}
+                    {!canDeleteCases && <div style={{ width: "40px", borderRight: "1px solid rgba(12, 12, 12, 0.15)" }} />}
                     <div
                       style={{
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {caseItem.policyNumber || "-"}
@@ -1885,6 +1772,7 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {caseItem.insuranceAccidentNo || "-"}
@@ -1894,6 +1782,7 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {formatCaseNumber(caseItem.caseNumber) || "-"}
@@ -1903,6 +1792,7 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {caseItem.insuranceCompany || "-"}
@@ -1912,6 +1802,7 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {caseItem.insuredName || "-"}
@@ -1969,6 +1860,7 @@ export default function ComprehensiveProgress() {
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden",
+                            borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                           }}
                           title={addressText}
                           data-testid={`text-address-${caseItem.id}`}
@@ -1982,8 +1874,7 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        borderLeft: "1px solid rgba(12, 12, 12, 0.12)",
-                        paddingLeft: "8px",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {caseItem.managerName || "-"}
@@ -1993,6 +1884,7 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {caseItem.assignedPartner || "-"}
@@ -2003,6 +1895,7 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
                         textAlign: "right",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {formatAmount(caseItem.approvedAmount)}
@@ -2013,11 +1906,12 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
                         textAlign: "center",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {calculateDays(caseItem.createdAt)}
                     </div>
-                    <div onClick={(e) => e.stopPropagation()}>
+                    <div onClick={(e) => e.stopPropagation()} style={{ borderRight: "1px solid rgba(12, 12, 12, 0.15)" }}>
                       {/* 관리자: 모든 상태에서 변경 가능, 협력사: 현장정보제출/복구요청(2차승인) 상태에서만 변경 가능 */}
                       {user?.role === "관리자" ||
                       (user?.role === "협력사" &&
@@ -2131,6 +2025,7 @@ export default function ComprehensiveProgress() {
                         justifyContent: "center",
                         alignItems: "center",
                         gap: "4px",
+                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                       }}
                     >
                       {/* 협력사 특이사항 빨간색 점 (협력사 메모가 1개라도 있으면 항상 표시) */}
@@ -2174,6 +2069,7 @@ export default function ComprehensiveProgress() {
                           fontWeight: 500,
                           cursor: "pointer",
                           textDecoration: "underline",
+                          borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
