@@ -1616,6 +1616,7 @@ export default function ComprehensiveProgress() {
                     paddingLeft: "4px",
                     paddingTop: "14px",
                     paddingBottom: "14px",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {col.label}
