@@ -3970,7 +3970,6 @@ export default function AdminSettings() {
                     className="px-2 flex items-center"
                     style={{
                       width: col.width,
-                      borderRight: (idx < arr.length - 1 || user?.isSuperAdmin) ? "1px solid rgba(12, 12, 12, 0.15)" : "none",
                     }}
                   >
                     <span
@@ -4031,7 +4030,6 @@ export default function AdminSettings() {
                       className="px-2 cursor-pointer flex items-center"
                       style={{
                         width: col.width,
-                        borderRight: "1px solid rgba(12, 12, 12, 0.15)",
                         ...(col.ellipsis ? { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const } : {}),
                       }}
                       onClick={() => setSelectedUser(user)}
@@ -4049,7 +4047,7 @@ export default function AdminSettings() {
                       </span>
                     </div>
                   ))}
-                  <div className="px-2 flex items-center" style={{ width: "120px", borderRight: loggedInUser?.isSuperAdmin ? "1px solid rgba(12, 12, 12, 0.15)" : "none" }}>
+                  <div className="px-2 flex items-center" style={{ width: "120px" }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
