@@ -898,6 +898,8 @@ export default function ComprehensiveProgress() {
   const FILTER_STATUSES = [
     "배당대기",
     "접수완료",
+    "검토중",
+    "1차승인",
     "현장정보제출",
     "복구요청(2차승인)",
     "청구자료제출(복구)",
