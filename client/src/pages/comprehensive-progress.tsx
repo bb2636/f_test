@@ -2040,6 +2040,8 @@ export default function ComprehensiveProgress() {
                             {(user?.role === "협력사"
                               ? PARTNER_ALLOWED_STATUSES
                               : ([
+                                  "접수완료",
+                                  "검토중",
                                   "반려",
                                   "직접복구",
                                   "선견적요청",
