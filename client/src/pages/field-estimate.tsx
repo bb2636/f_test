@@ -1028,6 +1028,9 @@ export default function FieldEstimate() {
       workNameData.areaRows.push(row);
     });
     
+    // 철거공사 연동 행 보존 (별도 reconcile에서 관리되므로 그대로 유지)
+    const demolitionLinkedRows = existingLinkedRows.filter(row => row.category === '철거공사');
+    
     console.log('[복구면적가져오기] workTypeMap', {
       entries: Array.from(workTypeMap.entries()).map(([wt, wn]) => ({
         workType: wt,
@@ -1151,9 +1154,6 @@ export default function FieldEstimate() {
         }
       });
     });
-    
-    // 철거공사 연동 행 보존 (별도 reconcile에서 관리되므로 그대로 유지)
-    const demolitionLinkedRows = existingLinkedRows.filter(row => row.category === '철거공사');
     
     console.log('[복구면적가져오기] RESULT', {
       newLaborRowsCount: newLaborRows.length,
