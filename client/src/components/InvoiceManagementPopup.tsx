@@ -606,21 +606,21 @@ export function InvoiceManagementPopup({
         ? format(taxInvoiceDate, "yyyy-MM-dd")
         : null;
 
-      const hasMaxPayment = paymentEntries.some(
+      const activePaymentEntries = paymentEntries.filter((e) => e.paymentCategory);
+      const hasMaxPayment = activePaymentEntries.some(
         (e) => e.paymentCategory === "최종액",
       );
       const hasPartialPaymentOnly =
-        paymentEntries.length > 0 &&
-        paymentEntries.some((e) => e.paymentCategory === "일부") &&
-        !paymentEntries.some((e) => e.paymentCategory === "최종액");
+        activePaymentEntries.length > 0 &&
+        activePaymentEntries.every((e) => e.paymentCategory === "일부");
 
-      const hasMaxDeposit = depositEntries.some(
+      const activeDepositEntries = depositEntries.filter((e) => e.depositCategory);
+      const hasMaxDeposit = activeDepositEntries.some(
         (e) => e.depositCategory === "최종액",
       );
       const hasPartialDepositOnly =
-        depositEntries.length > 0 &&
-        depositEntries.some((e) => e.depositCategory === "일부") &&
-        !depositEntries.some((e) => e.depositCategory === "최종액");
+        activeDepositEntries.length > 0 &&
+        activeDepositEntries.every((e) => e.depositCategory === "일부");
 
       if (
         settlementStatus === "정산" ||
@@ -906,6 +906,45 @@ export function InvoiceManagementPopup({
         });
       }
 
+      const finalPayment = paymentEntries.find(
+        (entry) => entry.paymentCategory === "최종액",
+      );
+      const hasPartialPayment = paymentEntries.some(
+        (entry) => entry.paymentCategory === "일부",
+      );
+      const todayDate = format(new Date(), "yyyy-MM-dd");
+
+      if (finalPayment && caseData.id) {
+        const updateData: Record<string, unknown> = {
+          status: "지급완료",
+          partialPaymentDate: finalPayment.paymentDate || todayDate,
+        };
+        await apiRequest("PATCH", `/api/cases/${caseData.id}`, updateData);
+        if (relatedCases && relatedCases.length > 0) {
+          const rcPromises = relatedCases
+            .filter((rc) => rc.id !== caseData.id)
+            .map((rc) =>
+              apiRequest("PATCH", `/api/cases/${rc.id}`, updateData),
+            );
+          await Promise.all(rcPromises);
+        }
+      } else if (hasPartialPayment && caseData.id) {
+        const updateData: Record<string, unknown> = {
+          status: "부분지급",
+          partialPaymentDate: todayDate,
+        };
+        await apiRequest("PATCH", `/api/cases/${caseData.id}`, updateData);
+        if (relatedCases && relatedCases.length > 0) {
+          const rcPromises = relatedCases
+            .filter((rc) => rc.id !== caseData.id)
+            .map((rc) =>
+              apiRequest("PATCH", `/api/cases/${rc.id}`, updateData),
+            );
+          await Promise.all(rcPromises);
+        }
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
       queryClient.invalidateQueries({ queryKey: ["/api/settlements"] });
 
       toast({

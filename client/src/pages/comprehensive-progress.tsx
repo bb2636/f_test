@@ -905,7 +905,6 @@ export default function ComprehensiveProgress() {
     "청구자료제출(복구)",
     "출동비청구(선견적)",
     "청구",
-    "부분입금",
   ] as const;
 
   const statusOptions = [
