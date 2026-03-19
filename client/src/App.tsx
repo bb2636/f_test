@@ -20,6 +20,7 @@ const ClosedCaseStatistics = lazy(() => import("@/pages/closed-case-statistics")
 const UnsettledCaseStatistics = lazy(() => import("@/pages/unsettled-case-statistics"));
 const SettlementsInquiry = lazy(() => import("@/pages/settlements-inquiry"));
 const SettlementAction = lazy(() => import("@/pages/settlement-action"));
+const CancelledCases = lazy(() => import("@/pages/cancelled-cases"));
 const FieldManagement = lazy(() => import("@/pages/field-management"));
 const FieldDrawing = lazy(() => import("@/pages/field-drawing"));
 const FieldDocuments = lazy(() => import("@/pages/field-documents"));
@@ -145,6 +146,16 @@ function Router() {
             <ProtectedRoute category="정산 및 통계" item="정산조회">
               <StatisticsLayout>
                 <SettlementsInquiry filterMode="closed" />
+              </StatisticsLayout>
+            </ProtectedRoute>
+          )}
+        </Route>
+
+        <Route path="/settlements/cancelled">
+          {() => (
+            <ProtectedRoute category="정산 및 통계" item="정산조회">
+              <StatisticsLayout>
+                <CancelledCases />
               </StatisticsLayout>
             </ProtectedRoute>
           )}

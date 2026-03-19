@@ -123,6 +123,16 @@ The system is a full-stack web application utilizing a React-based frontend and 
   - 배당사항 section has gray background for visual distinction
   - All existing functionality preserved: search modals, data binding, form validation, SMS notifications
 
+## Recent Changes (2026-03-19)
+- **접수취소 탭 추가 (정산 및 통계)**: 정산 조회 > 정산 종결 아래에 접수취소 탭 추가
+  - Route: `/settlements/cancelled` - 접수취소된 케이스만 필터링하여 표시
+  - 종합진행관리 UI 스타일 그대로 사용 (grid 기반 테이블)
+  - 컬럼: 증권번호, 사고번호, 접수번호, 보험사, 피보험자, 주소, 담당자, 협력사, 승인금액, 경과일, 진행상태, 취소일자, 특이사항, 자세히 보기
+  - 검색 필터: 보험사, 심사자, 담당자(관리자), 날짜선택(접수취소일자 기준), 초기화, 선택된 조건 검색하기, 검색창
+  - 취소일자는 `cancellationDate` 필드 연동 (접수취소 상태로 변경 시 자동 기록)
+  - 자세히 보기 가운데 정렬
+  - Files: `client/src/pages/cancelled-cases.tsx`, `client/src/App.tsx`, `client/src/components/app-sidebar-statistics.tsx`
+
 ## Recent Changes (2026-03-15)
 - **접수일자(receptionDate) 보호 강화**: `updateCase` storage 함수에 최종 안전장치 추가
   - 기존 케이스에 이미 접수일이 있으면 어떤 코드 경로로든 절대 변경 불가

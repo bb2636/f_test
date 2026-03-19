@@ -27,6 +27,11 @@ const allMenuItems: MenuItem[] = [
         url: "/settlements/closed",
         testId: "submenu-settlement-closed",
       },
+      {
+        title: "접수취소",
+        url: "/settlements/cancelled",
+        testId: "submenu-settlement-cancelled",
+      },
     ],
   },
   {
