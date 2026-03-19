@@ -4790,10 +4790,17 @@ export default function ComprehensiveProgress() {
               onClick={() => {
                 if (cancelTargetCase) {
                   setCancelConfirmDialogOpen(false);
-                  updateStatusMutation.mutate({
-                    caseId: cancelTargetCase.id,
-                    status: "접수취소",
-                  });
+                  updateStatusMutation.mutate(
+                    {
+                      caseId: cancelTargetCase.id,
+                      status: "접수취소",
+                    },
+                    {
+                      onSuccess: () => {
+                        setLocation("/settlements/cancelled");
+                      },
+                    },
+                  );
                   setCancelTargetCase(null);
                 }
               }}

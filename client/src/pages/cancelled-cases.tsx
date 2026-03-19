@@ -97,13 +97,13 @@ export default function CancelledCases() {
   }, [cancelledCases]);
 
   const assessorOptions = useMemo(() => {
-    const companies = new Set<string>();
+    const names = new Set<string>();
     allUsers.forEach((u) => {
-      if (u.role === "심사사" && u.company) {
-        companies.add(u.company);
+      if (u.role === "심사사" && u.name) {
+        names.add(u.name);
       }
     });
-    return Array.from(companies).sort();
+    return Array.from(names).sort();
   }, [allUsers]);
 
   const managerOptions = useMemo(() => {
@@ -111,6 +111,18 @@ export default function CancelledCases() {
       .filter((u) => u.role === "관리자" && u.name)
       .map((u) => u.name!)
       .sort();
+  }, [allUsers]);
+
+  const assessorNameToIdMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    allUsers.forEach((u) => {
+      if (u.role === "심사사" && u.name && u.company) {
+        const existing = map.get(u.name) || [];
+        existing.push(u.company);
+        map.set(u.name, existing);
+      }
+    });
+    return map;
   }, [allUsers]);
 
   const filteredData = useMemo(() => {
@@ -121,7 +133,8 @@ export default function CancelledCases() {
     }
 
     if (assessor !== "전체") {
-      filtered = filtered.filter((c) => c.assessorId === assessor);
+      const companies = assessorNameToIdMap.get(assessor) || [];
+      filtered = filtered.filter((c) => companies.includes(c.assessorId || ""));
     }
 
     if (manager !== "전체") {
