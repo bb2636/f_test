@@ -611,14 +611,25 @@ export function InvoiceManagementPopup({
       );
       const hasPartialPaymentOnly =
         paymentEntries.length > 0 &&
-        paymentEntries.every((e) => e.paymentCategory === "일부");
+        paymentEntries.some((e) => e.paymentCategory === "일부") &&
+        !paymentEntries.some((e) => e.paymentCategory === "최종액");
+
+      const hasMaxDeposit = depositEntries.some(
+        (e) => e.depositCategory === "최종액",
+      );
+      const hasPartialDepositOnly =
+        depositEntries.length > 0 &&
+        depositEntries.some((e) => e.depositCategory === "일부") &&
+        !depositEntries.some((e) => e.depositCategory === "최종액");
 
       if (
         settlementStatus === "정산" ||
         settlementStatus === "부분입금" ||
         hasTaxInvoiceDate ||
         hasMaxPayment ||
-        hasPartialPaymentOnly
+        hasPartialPaymentOnly ||
+        hasMaxDeposit ||
+        hasPartialDepositOnly
       ) {
         let newStatus: string;
         if (hasTaxInvoiceDate) {
@@ -627,8 +638,10 @@ export function InvoiceManagementPopup({
           newStatus = "지급완료";
         } else if (hasPartialPaymentOnly) {
           newStatus = "부분지급";
-        } else if (settlementStatus === "정산") {
+        } else if (hasMaxDeposit || settlementStatus === "정산") {
           newStatus = "입금완료";
+        } else if (hasPartialDepositOnly || settlementStatus === "부분입금") {
+          newStatus = "부분입금";
         } else {
           newStatus = "부분입금";
         }
@@ -796,23 +809,42 @@ export function InvoiceManagementPopup({
       const finalEntry = depositEntries.find(
         (entry) => entry.depositCategory === "최종액",
       );
+      const hasPartialDeposit = depositEntries.some(
+        (entry) => entry.depositCategory === "일부",
+      );
+      const todayDate = format(new Date(), "yyyy-MM-dd");
+
       if (finalEntry && finalEntry.depositDate && caseData.id) {
-        await apiRequest("PATCH", `/api/cases/${caseData.id}`, {
+        const updateData: Record<string, unknown> = {
+          status: "입금완료",
           paymentCompletedDate: finalEntry.depositDate,
-        });
+        };
+        await apiRequest("PATCH", `/api/cases/${caseData.id}`, updateData);
         if (relatedCases && relatedCases.length > 0) {
           const rcPromises = relatedCases
             .filter((rc) => rc.id !== caseData.id)
             .map((rc) =>
-              apiRequest("PATCH", `/api/cases/${rc.id}`, {
-                paymentCompletedDate: finalEntry.depositDate,
-              }),
+              apiRequest("PATCH", `/api/cases/${rc.id}`, updateData),
             );
           await Promise.all(rcPromises);
         }
-        queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      } else if (hasPartialDeposit && caseData.id) {
+        const updateData: Record<string, unknown> = {
+          status: "부분입금",
+          partialPaymentDate: todayDate,
+        };
+        await apiRequest("PATCH", `/api/cases/${caseData.id}`, updateData);
+        if (relatedCases && relatedCases.length > 0) {
+          const rcPromises = relatedCases
+            .filter((rc) => rc.id !== caseData.id)
+            .map((rc) =>
+              apiRequest("PATCH", `/api/cases/${rc.id}`, updateData),
+            );
+          await Promise.all(rcPromises);
+        }
       }
 
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
       queryClient.invalidateQueries({ queryKey: ["/api/settlements"] });
 
       toast({
