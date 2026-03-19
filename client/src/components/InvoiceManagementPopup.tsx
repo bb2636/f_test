@@ -443,40 +443,30 @@ export function InvoiceManagementPopup({
   const validateBeforeSave = (): string[] => {
     const messages: string[] = [];
 
-    const hasDepositData = depositEntries.some(
-      (entry) => entry.depositAmount > 0 || entry.depositDate || entry.depositCategory,
-    );
-    if (hasDepositData) {
+    if (depositEntries.length > 0) {
       const missingDepositDate = depositEntries.some(
-        (entry) => (entry.depositAmount > 0 || entry.depositCategory) && !entry.depositDate,
+        (entry) => !entry.depositDate,
       );
       if (missingDepositDate) {
         messages.push("입금일자가 입력되지 않은 항목이 있습니다.");
       }
       const missingDepositCategory = depositEntries.some(
-        (entry) => (entry.depositAmount > 0 || entry.depositDate) && !entry.depositCategory,
+        (entry) => !entry.depositCategory,
       );
       if (missingDepositCategory) {
         messages.push("입금구분이 선택되지 않은 항목이 있습니다.");
       }
     }
 
-    const hasPaymentData = paymentEntries.some(
-      (entry) => entry.paymentAmount > 0 || entry.commission > 0 || entry.paymentDate || entry.paymentCategory,
-    );
-    if (hasPaymentData) {
+    if (paymentEntries.length > 0) {
       const missingPaymentDate = paymentEntries.some(
-        (entry) =>
-          (entry.paymentAmount > 0 || entry.commission > 0 || entry.paymentCategory) &&
-          !entry.paymentDate,
+        (entry) => !entry.paymentDate,
       );
       if (missingPaymentDate) {
         messages.push("지급일자가 입력되지 않은 항목이 있습니다.");
       }
       const missingPaymentCategory = paymentEntries.some(
-        (entry) =>
-          (entry.paymentAmount > 0 || entry.commission > 0 || entry.paymentDate) &&
-          !entry.paymentCategory,
+        (entry) => !entry.paymentCategory,
       );
       if (missingPaymentCategory) {
         messages.push("지급구분이 선택되지 않은 항목이 있습니다.");
@@ -750,30 +740,25 @@ export function InvoiceManagementPopup({
   const handleSaveDeposits = async () => {
     if (!caseData) return;
 
-    const missingCategory = depositEntries.some(
-      (entry) =>
-        (entry.depositDate || entry.depositAmount > 0) &&
-        !entry.depositCategory,
-    );
-    if (missingCategory) {
-      toast({
-        title: "입력 오류",
-        description: "입금구분을 선택해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const missingDate = depositEntries.some(
-      (entry) => entry.depositAmount > 0 && !entry.depositDate,
-    );
-    if (missingDate) {
-      toast({
-        title: "입력 오류",
-        description: "입금일자를 입력해주세요.",
-        variant: "destructive",
-      });
-      return;
+    if (depositEntries.length > 0) {
+      const missingDate = depositEntries.some((entry) => !entry.depositDate);
+      if (missingDate) {
+        toast({
+          title: "입력 오류",
+          description: "입금일자를 입력해주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const missingCategory = depositEntries.some((entry) => !entry.depositCategory);
+      if (missingCategory) {
+        toast({
+          title: "입력 오류",
+          description: "입금구분을 선택해주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -848,32 +833,25 @@ export function InvoiceManagementPopup({
   const handleSavePayments = async () => {
     if (!caseData) return;
 
-    const missingCategory = paymentEntries.some(
-      (entry) =>
-        (entry.paymentAmount > 0 || entry.commission > 0) &&
-        !entry.paymentCategory,
-    );
-    if (missingCategory) {
-      toast({
-        title: "입력 오류",
-        description: "지급구분을 선택해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const missingDate = paymentEntries.some(
-      (entry) =>
-        (entry.paymentAmount > 0 || entry.commission > 0) &&
-        !entry.paymentDate,
-    );
-    if (missingDate) {
-      toast({
-        title: "입력 오류",
-        description: "지급일자를 입력해주세요.",
-        variant: "destructive",
-      });
-      return;
+    if (paymentEntries.length > 0) {
+      const missingDate = paymentEntries.some((entry) => !entry.paymentDate);
+      if (missingDate) {
+        toast({
+          title: "입력 오류",
+          description: "지급일자를 입력해주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const missingCategory = paymentEntries.some((entry) => !entry.paymentCategory);
+      if (missingCategory) {
+        toast({
+          title: "입력 오류",
+          description: "지급구분을 선택해주세요.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
