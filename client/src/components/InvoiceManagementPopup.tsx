@@ -264,6 +264,8 @@ export function InvoiceManagementPopup({
     useState<string | null>(null);
   const [showApprovalConfirm, setShowApprovalConfirm] = useState(false);
   const [showClosingConfirm, setShowClosingConfirm] = useState(false);
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
+  const [validationMessages, setValidationMessages] = useState<string[]>([]);
   const [invoiceIssued, setInvoiceIssued] = useState(false);
   const [closingProcessDate, setClosingProcessDate] = useState<
     Date | undefined
@@ -435,6 +437,64 @@ export function InvoiceManagementPopup({
 
     updated[index] = entry;
     setPaymentEntries(updated);
+  };
+
+  const validateBeforeSave = (): string[] => {
+    const messages: string[] = [];
+
+    const hasDepositData = depositEntries.some(
+      (entry) => entry.depositAmount > 0 || entry.depositDate,
+    );
+    if (hasDepositData) {
+      const missingDepositDate = depositEntries.some(
+        (entry) => entry.depositAmount > 0 && !entry.depositDate,
+      );
+      if (missingDepositDate) {
+        messages.push("입금일자가 입력되지 않은 항목이 있습니다.");
+      }
+    }
+
+    const hasPaymentData = paymentEntries.some(
+      (entry) => entry.paymentAmount > 0 || entry.commission > 0 || entry.paymentDate,
+    );
+    if (hasPaymentData) {
+      const missingPaymentCategory = paymentEntries.some(
+        (entry) =>
+          (entry.paymentAmount > 0 || entry.commission > 0) &&
+          !entry.paymentCategory,
+      );
+      if (missingPaymentCategory) {
+        messages.push("지급구분이 선택되지 않은 항목이 있습니다.");
+      }
+
+      const missingPaymentDate = paymentEntries.some(
+        (entry) =>
+          (entry.paymentAmount > 0 || entry.commission > 0) &&
+          !entry.paymentDate,
+      );
+      if (missingPaymentDate) {
+        messages.push("지급일자가 입력되지 않은 항목이 있습니다.");
+      }
+    }
+
+    return messages;
+  };
+
+  const handleSaveWithValidation = () => {
+    if (!caseData) return;
+
+    const messages = validateBeforeSave();
+    if (messages.length > 0) {
+      setValidationMessages(messages);
+      setShowValidationAlert(true);
+      return;
+    }
+
+    if (invoiceIssued && closingProcessDate) {
+      setShowClosingConfirm(true);
+    } else {
+      handleSaveComplete();
+    }
   };
 
   const handleSaveComplete = async () => {
@@ -698,6 +758,18 @@ export function InvoiceManagementPopup({
       return;
     }
 
+    const missingDate = depositEntries.some(
+      (entry) => entry.depositAmount > 0 && !entry.depositDate,
+    );
+    if (missingDate) {
+      toast({
+        title: "입력 오류",
+        description: "입금일자를 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const settlementResponse = await fetch(
@@ -779,6 +851,20 @@ export function InvoiceManagementPopup({
       toast({
         title: "입력 오류",
         description: "지급구분을 선택해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const missingDate = paymentEntries.some(
+      (entry) =>
+        (entry.paymentAmount > 0 || entry.commission > 0) &&
+        !entry.paymentDate,
+    );
+    if (missingDate) {
+      toast({
+        title: "입력 오류",
+        description: "지급일자를 입력해주세요.",
         variant: "destructive",
       });
       return;
@@ -2752,13 +2838,7 @@ export function InvoiceManagementPopup({
           <div className="flex items-center gap-3">
             {isAdmin && (
               <Button
-                onClick={() => {
-                  if (invoiceIssued && closingProcessDate) {
-                    setShowClosingConfirm(true);
-                  } else {
-                    handleSaveComplete();
-                  }
-                }}
+                onClick={() => handleSaveWithValidation()}
                 disabled={
                   isSubmitting || (invoiceIssued && !closingProcessDate)
                 }
@@ -2931,6 +3011,79 @@ export function InvoiceManagementPopup({
               }}
             >
               확인
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={showValidationAlert}
+        onOpenChange={setShowValidationAlert}
+      >
+        <AlertDialogContent
+          style={{
+            fontFamily: "Pretendard",
+            borderRadius: "12px",
+            maxWidth: "420px",
+          }}
+        >
+          <AlertDialogHeader>
+            <AlertDialogTitle
+              style={{
+                fontSize: "18px",
+                fontWeight: 600,
+                color: "#E53935",
+              }}
+            >
+              입력 확인
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div
+                style={{
+                  fontSize: "14px",
+                  color: "rgba(12, 12, 12, 0.7)",
+                  lineHeight: "1.6",
+                }}
+              >
+                {validationMessages.map((msg, idx) => (
+                  <div key={idx} style={{ marginBottom: idx < validationMessages.length - 1 ? "4px" : 0 }}>
+                    {msg}
+                  </div>
+                ))}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter style={{ justifyContent: "center" }}>
+            <AlertDialogCancel
+              style={{
+                padding: "10px 24px",
+                height: "44px",
+                borderRadius: "6px",
+                fontWeight: 500,
+                fontSize: "14px",
+              }}
+            >
+              돌아가기
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowValidationAlert(false);
+                if (invoiceIssued && closingProcessDate) {
+                  setShowClosingConfirm(true);
+                } else {
+                  handleSaveComplete();
+                }
+              }}
+              style={{
+                padding: "10px 24px",
+                height: "44px",
+                background: "#008FED",
+                borderRadius: "6px",
+                fontWeight: 600,
+                fontSize: "14px",
+                color: "#FFFFFF",
+              }}
+            >
+              그래도 저장
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
