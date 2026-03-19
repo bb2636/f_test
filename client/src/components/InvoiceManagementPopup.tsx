@@ -60,6 +60,7 @@ interface InvoiceManagementPopupProps {
     insuranceCompany?: string | null;
     insuranceAccidentNo?: string | null;
     receptionDate?: string | null;
+    assignmentDate?: string | null;
     clientName?: string | null;
     clientContact?: string | null;
     recoveryType?: string | null;

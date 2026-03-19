@@ -4541,8 +4541,10 @@ export class DbStorage implements IStorage {
   async updateCaseStatus(caseId: string, status: string): Promise<Case | null> {
     const currentDate = getKSTDate();
 
-    // 미복구 선택 시 자동으로 출동비 청구로 정규화 (모든 경로에서 일관성 보장)
-    const normalizedStatus = status === "미복구" ? "출동비 청구" : status;
+    // 미복구/선견적요청 선택 시 자동으로 출동비청구(선견적)로 정규화 (모든 경로에서 일관성 보장)
+    let normalizedStatus = status;
+    if (status === "미복구") normalizedStatus = "출동비 청구";
+    if (status === "선견적요청") normalizedStatus = "출동비청구(선견적)";
 
     // 먼저 기존 케이스 데이터를 가져와서 일자가 이미 설정되어 있는지 확인
     const existingCase = await this.getCaseById(caseId);
