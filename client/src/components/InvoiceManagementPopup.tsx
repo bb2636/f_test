@@ -444,37 +444,42 @@ export function InvoiceManagementPopup({
     const messages: string[] = [];
 
     const hasDepositData = depositEntries.some(
-      (entry) => entry.depositAmount > 0 || entry.depositDate,
+      (entry) => entry.depositAmount > 0 || entry.depositDate || entry.depositCategory,
     );
     if (hasDepositData) {
       const missingDepositDate = depositEntries.some(
-        (entry) => entry.depositAmount > 0 && !entry.depositDate,
+        (entry) => (entry.depositAmount > 0 || entry.depositCategory) && !entry.depositDate,
       );
       if (missingDepositDate) {
         messages.push("입금일자가 입력되지 않은 항목이 있습니다.");
       }
+      const missingDepositCategory = depositEntries.some(
+        (entry) => (entry.depositAmount > 0 || entry.depositDate) && !entry.depositCategory,
+      );
+      if (missingDepositCategory) {
+        messages.push("입금구분이 선택되지 않은 항목이 있습니다.");
+      }
     }
 
     const hasPaymentData = paymentEntries.some(
-      (entry) => entry.paymentAmount > 0 || entry.commission > 0 || entry.paymentDate,
+      (entry) => entry.paymentAmount > 0 || entry.commission > 0 || entry.paymentDate || entry.paymentCategory,
     );
     if (hasPaymentData) {
-      const missingPaymentCategory = paymentEntries.some(
-        (entry) =>
-          (entry.paymentAmount > 0 || entry.commission > 0) &&
-          !entry.paymentCategory,
-      );
-      if (missingPaymentCategory) {
-        messages.push("지급구분이 선택되지 않은 항목이 있습니다.");
-      }
-
       const missingPaymentDate = paymentEntries.some(
         (entry) =>
-          (entry.paymentAmount > 0 || entry.commission > 0) &&
+          (entry.paymentAmount > 0 || entry.commission > 0 || entry.paymentCategory) &&
           !entry.paymentDate,
       );
       if (missingPaymentDate) {
         messages.push("지급일자가 입력되지 않은 항목이 있습니다.");
+      }
+      const missingPaymentCategory = paymentEntries.some(
+        (entry) =>
+          (entry.paymentAmount > 0 || entry.commission > 0 || entry.paymentDate) &&
+          !entry.paymentCategory,
+      );
+      if (missingPaymentCategory) {
+        messages.push("지급구분이 선택되지 않은 항목이 있습니다.");
       }
     }
 
@@ -3035,7 +3040,7 @@ export function InvoiceManagementPopup({
                 color: "#E53935",
               }}
             >
-              입력 확인
+              필수 항목 미입력
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div
@@ -3045,37 +3050,20 @@ export function InvoiceManagementPopup({
                   lineHeight: "1.6",
                 }}
               >
+                <div style={{ marginBottom: "8px" }}>다음 항목을 입력해야 저장할 수 있습니다:</div>
                 {validationMessages.map((msg, idx) => (
-                  <div key={idx} style={{ marginBottom: idx < validationMessages.length - 1 ? "4px" : 0 }}>
-                    {msg}
+                  <div key={idx} style={{ marginBottom: "4px", paddingLeft: "8px" }}>
+                    - {msg}
                   </div>
                 ))}
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter style={{ justifyContent: "center" }}>
-            <AlertDialogCancel
-              style={{
-                padding: "10px 24px",
-                height: "44px",
-                borderRadius: "6px",
-                fontWeight: 500,
-                fontSize: "14px",
-              }}
-            >
-              돌아가기
-            </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                setShowValidationAlert(false);
-                if (invoiceIssued && closingProcessDate) {
-                  setShowClosingConfirm(true);
-                } else {
-                  handleSaveComplete();
-                }
-              }}
+              onClick={() => setShowValidationAlert(false)}
               style={{
-                padding: "10px 24px",
+                padding: "10px 32px",
                 height: "44px",
                 background: "#008FED",
                 borderRadius: "6px",
@@ -3084,7 +3072,7 @@ export function InvoiceManagementPopup({
                 color: "#FFFFFF",
               }}
             >
-              그래도 저장
+              확인
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
