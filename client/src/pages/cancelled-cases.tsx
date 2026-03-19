@@ -749,16 +749,23 @@ export default function CancelledCases() {
                     {calculateDays(caseItem.createdAt)}
                   </div>
                   <div style={{ ...cellStyle, justifyContent: "center" }}>
-                    <span
+                    <div
                       style={{
+                        padding: "6px 12px",
+                        background: "rgba(12, 12, 12, 0.05)",
+                        borderRadius: "6px",
                         fontFamily: "Pretendard",
-                        fontSize: "13px",
+                        fontSize: "12px",
                         fontWeight: 600,
                         color: "#ED1C00",
+                        textAlign: "center",
+                        lineHeight: "1.4",
+                        maxWidth: "140px",
+                        wordBreak: "keep-all",
                       }}
                     >
                       접수취소
-                    </span>
+                    </div>
                   </div>
                   <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {formatDate(caseItem.cancellationDate)}
