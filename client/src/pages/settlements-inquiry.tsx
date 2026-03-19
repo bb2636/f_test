@@ -75,6 +75,7 @@ interface SettlementRow {
   settlementInvoiceDate: string;
   settlementMemo: string;
   status: string;
+  allStatuses: string[];
   // 협력업체 지급 정보
   partnerPaymentAmount: number; // 협력업체 지급금액
   partnerPaymentDate: string; // 협력업체 지급일
@@ -715,7 +716,14 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         settlementDeductible: totalSettlementDeductible,
         settlementInvoiceDate: casesInGroup.find((c) => c.settlementInvoiceDate && c.settlementInvoiceDate !== "-")?.settlementInvoiceDate || primaryCase.settlementInvoiceDate,
         settlementMemo: casesInGroup.find((c) => c.settlementMemo)?.settlementMemo || primaryCase.settlementMemo,
-        status: primaryCase.status,
+        status: (() => {
+          const statusPriority = ["정산완료", "지급완료", "부분지급", "입금완료", "부분입금", "청구"];
+          for (const s of statusPriority) {
+            if (casesInGroup.some((c) => c.status === s)) return s;
+          }
+          return primaryCase.status;
+        })(),
+        allStatuses: [...new Set(casesInGroup.map((c) => c.status))],
         partnerPaymentAmount: totalPartnerPaymentAmount,
         partnerPaymentDate: casesInGroup.find((c) => c.partnerPaymentDate && c.partnerPaymentDate !== "-")?.partnerPaymentDate || primaryCase.partnerPaymentDate,
         insuredName: primaryCase.insuredName || "-",
@@ -753,9 +761,9 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
   const filteredRows = useMemo(() => {
     let filtered = tableRows;
 
-    // 정산여부 필터 적용
+    // 정산여부 필터 적용 (그룹 내 모든 케이스의 상태를 확인)
     if (settlementStatus !== "전체") {
-      filtered = filtered.filter((row) => row.status === settlementStatus);
+      filtered = filtered.filter((row) => row.allStatuses.includes(settlementStatus));
     }
 
     // 보험사 필터 적용
