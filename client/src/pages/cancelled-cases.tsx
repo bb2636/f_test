@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
   User,
@@ -23,7 +23,54 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatCaseNumber } from "@/lib/utils";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+
+const safeParseNotesHistory = (
+  json: string | null | undefined,
+): Array<{ content: string; createdAt: string; createdByName?: string }> => {
+  if (!json) return [];
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const getStatusColor = (status: string | null | undefined) => {
+  if (status === "1차승인") return "#008FED";
+  if (status === "복구요청(2차승인)") return "#00C853";
+  if (status === "접수취소" || status === "반려") return "#ED1C00";
+  if (
+    status === "입금완료" ||
+    status === "부분지급" ||
+    status === "지급완료" ||
+    status === "정산완료" ||
+    status === "종결"
+  )
+    return "#4CAF50";
+  return "rgba(12, 12, 12, 0.7)";
+};
+
+const getStatusDisplayText = (status: string | null | undefined): string => {
+  if (!status) return "배당대기";
+  return status;
+};
 
 const formatAmount = (amount: string | number | null | undefined): string => {
   if (!amount) return "-";
@@ -71,6 +118,9 @@ export default function CancelledCases() {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [dateRangeOpen, setDateRangeOpen] = useState(false);
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
+  const [detailTab, setDetailTab] = useState("기본정보");
+  const [newNoteContent, setNewNoteContent] = useState("");
+  const { toast } = useToast();
 
   const { data: user, isLoading: userLoading } = useQuery<User>({
     queryKey: ["/api/user"],
@@ -82,6 +132,46 @@ export default function CancelledCases() {
 
   const { data: allUsers = [] } = useQuery<BasicUser[]>({
     queryKey: ["/api/users/basic"],
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ caseId, status }: { caseId: string; status: string }) => {
+      return await apiRequest("PATCH", `/api/cases/${caseId}/status`, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      toast({ title: "상태 변경 완료", description: "진행상태가 성공적으로 변경되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "상태 변경 실패", description: "상태 변경 중 오류가 발생했습니다.", variant: "destructive" });
+    },
+  });
+
+  const addNotesHistoryMutation = useMutation({
+    mutationFn: async ({ caseId, content }: { caseId: string; content: string }) => {
+      return await apiRequest("POST", `/api/cases/${caseId}/notes-history`, { content });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      setNewNoteContent("");
+      toast({ variant: "snackbar", title: "메모가 저장되었습니다" });
+    },
+    onError: () => {
+      toast({ title: "저장 실패", description: "메모 저장 중 오류가 발생했습니다.", variant: "destructive" });
+    },
+  });
+
+  const ackNotesMutation = useMutation({
+    mutationFn: async (caseId: string) => {
+      return await apiRequest("POST", `/api/cases/${caseId}/notes-ack`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      toast({ variant: "snackbar", title: "특이사항이 확인되었습니다" });
+    },
+    onError: () => {
+      toast({ title: "확인 실패", description: "특이사항 확인 중 오류가 발생했습니다.", variant: "destructive" });
+    },
   });
 
   const cancelledCases = useMemo(() => {
@@ -695,7 +785,7 @@ export default function CancelledCases() {
               return (
                 <div
                   key={caseItem.id}
-                  onClick={() => setSelectedCaseId(caseItem.id)}
+                  onClick={() => { setDetailTab("기본정보"); setSelectedCaseId(caseItem.id); }}
                   style={{
                     display: "grid",
                     gridTemplateColumns,
@@ -748,24 +838,96 @@ export default function CancelledCases() {
                   <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {calculateDays(caseItem.createdAt)}
                   </div>
-                  <div style={{ ...cellStyle, justifyContent: "center" }}>
-                    <div
-                      style={{
-                        padding: "6px 12px",
-                        background: "rgba(12, 12, 12, 0.05)",
-                        borderRadius: "6px",
-                        fontFamily: "Pretendard",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        color: "#ED1C00",
-                        textAlign: "center",
-                        lineHeight: "1.4",
-                        maxWidth: "140px",
-                        wordBreak: "keep-all",
-                      }}
-                    >
-                      접수취소
-                    </div>
+                  <div onClick={(e) => e.stopPropagation()} style={{ ...cellStyle, justifyContent: "center" }}>
+                    {user?.role === "관리자" ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild disabled={updateStatusMutation.isPending}>
+                          <div
+                            style={{
+                              padding: "6px 12px",
+                              background: "rgba(12, 12, 12, 0.05)",
+                              borderRadius: "6px",
+                              fontFamily: "Pretendard",
+                              fontSize: "12px",
+                              fontWeight: 600,
+                              color: getStatusColor(caseItem.status),
+                              textAlign: "center",
+                              lineHeight: "1.4",
+                              maxWidth: "140px",
+                              wordBreak: "keep-all",
+                              cursor: updateStatusMutation.isPending ? "not-allowed" : "pointer",
+                              opacity: updateStatusMutation.isPending ? 0.6 : 1,
+                            }}
+                          >
+                            {getStatusDisplayText(caseItem.status)}
+                          </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="start"
+                          style={{
+                            width: "200px",
+                            background: "rgba(200, 200, 200, 0.95)",
+                            backdropFilter: "blur(10px)",
+                            border: "none",
+                            borderRadius: "8px",
+                            padding: "8px",
+                          }}
+                        >
+                          {([
+                            "접수완료",
+                            "검토중",
+                            "반려",
+                            "직접복구",
+                            "선견적요청",
+                            "청구",
+                            "종결",
+                            "접수취소",
+                          ] as const).map((status) => (
+                            <DropdownMenuItem
+                              key={status}
+                              onClick={() => {
+                                const targetStatus = status === "선견적요청" ? "출동비청구(선견적)" : status;
+                                updateStatusMutation.mutate({ caseId: caseItem.id, status: targetStatus });
+                              }}
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                padding: "10px 12px",
+                                margin: "0",
+                                cursor: "pointer",
+                                fontFamily: "Pretendard",
+                                fontSize: "14px",
+                                fontWeight: 500,
+                                color: getStatusColor(status),
+                                background: "transparent",
+                                borderRadius: "4px",
+                              }}
+                            >
+                              {getStatusDisplayText(status)}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <div
+                        style={{
+                          padding: "6px 12px",
+                          background: "rgba(12, 12, 12, 0.05)",
+                          borderRadius: "6px",
+                          fontFamily: "Pretendard",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: getStatusColor(caseItem.status),
+                          textAlign: "center",
+                          lineHeight: "1.4",
+                          maxWidth: "140px",
+                          wordBreak: "keep-all",
+                        }}
+                      >
+                        {getStatusDisplayText(caseItem.status)}
+                      </div>
+                    )}
                   </div>
                   <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {formatDate(caseItem.cancellationDate)}
@@ -788,7 +950,8 @@ export default function CancelledCases() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setLocation(`/progress?caseId=${caseItem.id}`);
+                        setDetailTab("기본정보");
+                        setSelectedCaseId(caseItem.id);
                       }}
                       style={{
                         fontFamily: "Pretendard",
@@ -811,6 +974,424 @@ export default function CancelledCases() {
           )}
         </div>
       </div>
+
+      <Sheet
+        open={selectedCaseId !== null}
+        onOpenChange={(open) => !open && setSelectedCaseId(null)}
+      >
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-[600px] overflow-y-auto"
+          style={{
+            background: "rgba(253, 253, 253, 0.95)",
+            backdropFilter: "blur(17px)",
+            padding: "50px 20px 32px 20px",
+          }}
+        >
+          <SheetHeader
+            style={{
+              padding: "24px 20px",
+              borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
+              marginBottom: "0",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <SheetTitle
+                style={{
+                  fontFamily: "Pretendard",
+                  fontWeight: 600,
+                  fontSize: "22px",
+                  letterSpacing: "-0.02em",
+                  color: "#0C0C0C",
+                }}
+              >
+                진행건 상세보기
+              </SheetTitle>
+            </div>
+          </SheetHeader>
+
+          {selectedCaseId &&
+            (() => {
+              const selectedCase = cases?.find((c) => c.id === selectedCaseId);
+              if (!selectedCase) return null;
+
+              return (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "0px",
+                      borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
+                      padding: "0 20px",
+                    }}
+                  >
+                    {(user?.role === "심사사" || user?.role === "조사사"
+                      ? ["기본정보", "일자", "진행단계"]
+                      : ["기본정보", "일자", "진행단계", "진행메모"]
+                    ).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setDetailTab(tab)}
+                        style={{
+                          padding: "16px 24px",
+                          background: "transparent",
+                          border: "none",
+                          borderBottom:
+                            detailTab === tab
+                              ? "2px solid #008FED"
+                              : "2px solid transparent",
+                          fontFamily: "Pretendard",
+                          fontSize: "16px",
+                          fontWeight: detailTab === tab ? 600 : 400,
+                          color:
+                            detailTab === tab
+                              ? "#008FED"
+                              : "rgba(12, 12, 12, 0.6)",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+                  <ScrollArea className="h-[calc(100vh-220px)]">
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "16px",
+                        padding: "16px 20px 20px 20px",
+                      }}
+                    >
+                      {detailTab === "기본정보" && (
+                        <>
+                          <div
+                            style={{
+                              background: "rgba(12, 12, 12, 0.02)",
+                              borderRadius: "8px",
+                              padding: "16px",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "0px",
+                            }}
+                          >
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
+                              <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>진행상태</div>
+                              <div style={{ padding: "6px 16px", background: getStatusColor(selectedCase.status) || "#008FED", borderRadius: "4px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "#FFFFFF" }}>
+                                {selectedCase.status || "접수완료"}
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
+                              <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>담당자</div>
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: "14px", color: "rgba(12, 12, 12, 0.9)" }}>{selectedCase.managerName || "-"}</div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
+                              <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>협력사</div>
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: "14px", color: "rgba(12, 12, 12, 0.9)" }}>{selectedCase.assignedPartner || "-"}</div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
+                              <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>경과일수</div>
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: "14px", color: "rgba(12, 12, 12, 0.9)" }}>{calculateDays(selectedCase.createdAt)}</div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
+                              <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>견적금액</div>
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: "14px", color: "rgba(12, 12, 12, 0.9)" }}>{formatAmount(selectedCase.initialEstimateAmount)}</div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
+                              <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>승인금액</div>
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: "14px", color: "rgba(12, 12, 12, 0.9)" }}>{formatAmount(selectedCase.approvedAmount)}</div>
+                            </div>
+                          </div>
+
+                          <div style={{ width: "100%", height: "1px", background: "rgba(12, 12, 12, 0.1)", margin: "8px 0" }}></div>
+
+                          <div style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
+                              <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>의뢰사</div>
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: "14px", color: "rgba(12, 12, 12, 0.9)" }}>{selectedCase.insuranceCompany || "-"}</div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
+                              <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>심사사</div>
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: "14px", color: "rgba(12, 12, 12, 0.9)" }}>{selectedCase.assessorId || "-"}</div>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
+                              <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>심사 담당자</div>
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 400, fontSize: "14px", color: "rgba(12, 12, 12, 0.9)" }}>
+                                {selectedCase.assessorDepartment && selectedCase.assessorTeam
+                                  ? `${selectedCase.assessorDepartment} ${selectedCase.assessorTeam}`
+                                  : selectedCase.assessorId || "-"}
+                              </div>
+                            </div>
+                          </div>
+
+                          {user?.role === "심사사" || user?.role === "조사사" ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(`/api/view-field-report-pdf/${selectedCase.id}`, { credentials: "include" });
+                                    if (!response.ok) throw new Error("PDF 생성 실패");
+                                    const blob = await response.blob();
+                                    const url = URL.createObjectURL(blob);
+                                    window.open(url, "_blank");
+                                  } catch {
+                                    toast({ title: "PDF 열기 실패", variant: "destructive" });
+                                  }
+                                }}
+                                style={{
+                                  width: "100%", padding: "14px", background: "#008FED", borderRadius: "8px",
+                                  border: "none", fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px",
+                                  color: "#FFFFFF", cursor: "pointer",
+                                }}
+                              >
+                                현장출동보고서 PDF보기
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                localStorage.setItem("selectedFieldSurveyCaseId", selectedCase.id);
+                                localStorage.setItem("returnToComprehensiveProgress", "true");
+                                setLocation("/field-survey/report");
+                              }}
+                              style={{
+                                width: "100%", padding: "14px", background: "#008FED", borderRadius: "8px",
+                                border: "none", fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px",
+                                color: "#FFFFFF", cursor: "pointer", marginTop: "16px",
+                              }}
+                            >
+                              보고서 열람
+                            </button>
+                          )}
+                        </>
+                      )}
+
+                      {detailTab === "일자" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                          {[
+                            { label: "접수일", value: selectedCase?.receptionDate },
+                            { label: "배당일", value: selectedCase?.assignmentDate },
+                            { label: "현장방문일", value: selectedCase?.visitDate },
+                            { label: "현장자료 제출일", value: selectedCase?.siteInvestigationSubmitDate },
+                            { label: "1차 승인일(내부)", value: selectedCase?.firstApprovalDate },
+                            { label: "2차 승인일(복구 요청일)", value: selectedCase?.secondApprovalDate },
+                            { label: "복구완료일", value: selectedCase?.constructionCompletionDate },
+                            { label: "청구일", value: selectedCase?.claimDate },
+                            { label: "입금완료일", value: selectedCase?.paymentCompletedDate },
+                            { label: "지급완료일(정산)", value: selectedCase?.settlementCompletedDate },
+                          ].map((item) => (
+                            <div
+                              key={item.label}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                paddingBottom: "12px",
+                                borderBottom: "1px solid rgba(12, 12, 12, 0.05)",
+                              }}
+                            >
+                              <span style={{ width: "180px", fontFamily: "Pretendard", fontSize: "16px", fontWeight: 400, letterSpacing: "-0.02em", color: "rgba(12, 12, 12, 0.5)" }}>
+                                {item.label}
+                              </span>
+                              <span style={{ fontFamily: "Pretendard", fontSize: "16px", fontWeight: 400, letterSpacing: "-0.02em", color: "rgba(12, 12, 12, 0.7)" }}>
+                                {formatDate(item.value)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {detailTab === "진행단계" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                          <div style={{ fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px", letterSpacing: "-0.02em", color: "rgba(12, 12, 12, 0.9)" }}>진행단계</div>
+                          <div
+                            style={{
+                              width: "100%", minHeight: "200px", padding: "16px",
+                              background: "rgba(12, 12, 12, 0.04)", border: "1px solid rgba(12, 12, 12, 0.1)",
+                              borderRadius: "8px", fontFamily: "Pretendard", fontSize: "14px", lineHeight: "1.6",
+                              color: selectedCase.latestProgress?.content ? "rgba(12, 12, 12, 0.9)" : "rgba(12, 12, 12, 0.5)",
+                              whiteSpace: "pre-wrap", wordBreak: "break-word",
+                            }}
+                          >
+                            {selectedCase.latestProgress?.content || "관리자가 입력한 진행단계가 없습니다."}
+                          </div>
+                        </div>
+                      )}
+
+                      {detailTab === "진행메모" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#ED1C00" }} />
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px", letterSpacing: "-0.02em", color: "rgba(12, 12, 12, 0.9)" }}>협력사 진행메모</div>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex", flexDirection: "column", gap: "8px", padding: "16px",
+                                background: "rgba(237, 28, 0, 0.04)", border: "1px solid rgba(237, 28, 0, 0.1)",
+                                borderRadius: "8px", minHeight: "80px",
+                              }}
+                            >
+                              {(() => {
+                                const partnerHistory = safeParseNotesHistory(selectedCase.partnerNotesHistory as string);
+                                const legacyNote = selectedCase.specialNotes;
+                                if (partnerHistory.length === 0 && !legacyNote) {
+                                  return <div style={{ fontFamily: "Pretendard", fontSize: "14px", color: "rgba(12, 12, 12, 0.5)" }}>협력사가 입력한 진행메모가 없습니다.</div>;
+                                }
+                                return (
+                                  <>
+                                    {legacyNote && (
+                                      <div style={{ fontFamily: "Pretendard", fontSize: "14px", lineHeight: "1.6", color: "rgba(12, 12, 12, 0.9)", whiteSpace: "pre-wrap", wordBreak: "break-word", paddingBottom: partnerHistory.length > 0 ? "8px" : 0, borderBottom: partnerHistory.length > 0 ? "1px solid rgba(12, 12, 12, 0.1)" : "none" }}>
+                                        {legacyNote}
+                                      </div>
+                                    )}
+                                    {partnerHistory.map((note, idx) => (
+                                      <div key={idx} style={{ fontFamily: "Pretendard", fontSize: "14px", lineHeight: "1.6", color: "rgba(12, 12, 12, 0.9)", whiteSpace: "pre-wrap", wordBreak: "break-word", paddingTop: idx > 0 || legacyNote ? "8px" : 0, borderTop: idx > 0 ? "1px solid rgba(12, 12, 12, 0.1)" : "none" }}>
+                                        <span style={{ color: "rgba(12, 12, 12, 0.5)", fontSize: "12px" }}>[{new Date(note.createdAt).toLocaleDateString("ko-KR")}]</span>{" "}{note.content}
+                                      </div>
+                                    ))}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                            {user?.role === "협력사" && (
+                              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                                <textarea
+                                  value={newNoteContent}
+                                  onChange={(e) => setNewNoteContent(e.target.value)}
+                                  placeholder="추가 특이사항을 입력하세요"
+                                  maxLength={1000}
+                                  style={{
+                                    flex: 1, minHeight: "60px", padding: "12px",
+                                    background: "rgba(12, 12, 12, 0.02)", border: "1px solid rgba(12, 12, 12, 0.15)",
+                                    borderRadius: "8px", fontFamily: "Pretendard", fontSize: "14px", lineHeight: "1.5",
+                                    color: "rgba(12, 12, 12, 0.9)", resize: "vertical",
+                                  }}
+                                />
+                                <button
+                                  onClick={() => {
+                                    if (selectedCase.id && newNoteContent.trim()) {
+                                      addNotesHistoryMutation.mutate({ caseId: selectedCase.id, content: newNoteContent });
+                                    }
+                                  }}
+                                  disabled={addNotesHistoryMutation.isPending || !newNoteContent.trim()}
+                                  style={{
+                                    padding: "12px 20px", background: "#ED1C00", border: "none", borderRadius: "8px",
+                                    fontFamily: "Pretendard", fontWeight: 600, fontSize: "14px", color: "#FFFFFF",
+                                    cursor: addNotesHistoryMutation.isPending || !newNoteContent.trim() ? "not-allowed" : "pointer",
+                                    opacity: addNotesHistoryMutation.isPending || !newNoteContent.trim() ? 0.6 : 1,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {addNotesHistoryMutation.isPending ? "저장 중..." : "저장"}
+                                </button>
+                              </div>
+                            )}
+                            {user?.role === "관리자" &&
+                              (safeParseNotesHistory(selectedCase.partnerNotesHistory as string).length > 0 || selectedCase.specialNotes) &&
+                              selectedCase.partnerNotesAckedByAdmin !== "true" && (
+                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                  <button
+                                    onClick={() => { if (selectedCase.id) ackNotesMutation.mutate(selectedCase.id); }}
+                                    disabled={ackNotesMutation.isPending}
+                                    style={{
+                                      padding: "8px 16px", background: "transparent", border: "1px solid #ED1C00",
+                                      borderRadius: "8px", fontFamily: "Pretendard", fontWeight: 600, fontSize: "13px",
+                                      color: "#ED1C00", cursor: ackNotesMutation.isPending ? "not-allowed" : "pointer",
+                                      opacity: ackNotesMutation.isPending ? 0.6 : 1,
+                                    }}
+                                  >
+                                    {ackNotesMutation.isPending ? "처리 중..." : "확인"}
+                                  </button>
+                                </div>
+                              )}
+                          </div>
+
+                          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#008FED" }} />
+                              <div style={{ fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px", letterSpacing: "-0.02em", color: "rgba(12, 12, 12, 0.9)" }}>관리자 진행메모</div>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex", flexDirection: "column", gap: "8px", padding: "16px",
+                                background: "rgba(0, 143, 237, 0.04)", border: "1px solid rgba(0, 143, 237, 0.1)",
+                                borderRadius: "8px", minHeight: "80px",
+                              }}
+                            >
+                              {(() => {
+                                const adminHistory = safeParseNotesHistory(selectedCase.adminNotesHistory as string);
+                                if (adminHistory.length === 0) {
+                                  return <div style={{ fontFamily: "Pretendard", fontSize: "14px", color: "rgba(12, 12, 12, 0.5)" }}>관리자가 입력한 진행메모가 없습니다.</div>;
+                                }
+                                return adminHistory.map((note, idx) => (
+                                  <div key={idx} style={{ fontFamily: "Pretendard", fontSize: "14px", lineHeight: "1.6", color: "rgba(12, 12, 12, 0.9)", whiteSpace: "pre-wrap", wordBreak: "break-word", paddingTop: idx > 0 ? "8px" : 0, borderTop: idx > 0 ? "1px solid rgba(12, 12, 12, 0.1)" : "none" }}>
+                                    <span style={{ color: "rgba(12, 12, 12, 0.5)", fontSize: "12px" }}>[{new Date(note.createdAt).toLocaleDateString("ko-KR")}]</span>{" "}{note.content}
+                                  </div>
+                                ));
+                              })()}
+                            </div>
+                            {user?.role === "관리자" && (
+                              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                                <textarea
+                                  value={newNoteContent}
+                                  onChange={(e) => setNewNoteContent(e.target.value)}
+                                  placeholder="추가 특이사항을 입력하세요"
+                                  maxLength={1000}
+                                  style={{
+                                    flex: 1, minHeight: "60px", padding: "12px",
+                                    background: "rgba(12, 12, 12, 0.02)", border: "1px solid rgba(12, 12, 12, 0.15)",
+                                    borderRadius: "8px", fontFamily: "Pretendard", fontSize: "14px", lineHeight: "1.5",
+                                    color: "rgba(12, 12, 12, 0.9)", resize: "vertical",
+                                  }}
+                                />
+                                <button
+                                  onClick={() => {
+                                    if (selectedCase.id && newNoteContent.trim()) {
+                                      addNotesHistoryMutation.mutate({ caseId: selectedCase.id, content: newNoteContent });
+                                    }
+                                  }}
+                                  disabled={addNotesHistoryMutation.isPending || !newNoteContent.trim()}
+                                  style={{
+                                    padding: "12px 20px", background: "#008FED", border: "none", borderRadius: "8px",
+                                    fontFamily: "Pretendard", fontWeight: 600, fontSize: "14px", color: "#FFFFFF",
+                                    cursor: addNotesHistoryMutation.isPending || !newNoteContent.trim() ? "not-allowed" : "pointer",
+                                    opacity: addNotesHistoryMutation.isPending || !newNoteContent.trim() ? 0.6 : 1,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {addNotesHistoryMutation.isPending ? "저장중..." : "저장"}
+                                </button>
+                              </div>
+                            )}
+                            {user?.role === "협력사" &&
+                              safeParseNotesHistory(selectedCase.adminNotesHistory as string).length > 0 &&
+                              selectedCase.adminNotesAckedByPartner !== "true" && (
+                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                  <button
+                                    onClick={() => { if (selectedCase.id) ackNotesMutation.mutate(selectedCase.id); }}
+                                    disabled={ackNotesMutation.isPending}
+                                    style={{
+                                      padding: "8px 16px", background: "transparent", border: "1px solid #008FED",
+                                      borderRadius: "8px", fontFamily: "Pretendard", fontWeight: 600, fontSize: "13px",
+                                      color: "#008FED", cursor: ackNotesMutation.isPending ? "not-allowed" : "pointer",
+                                      opacity: ackNotesMutation.isPending ? 0.6 : 1,
+                                    }}
+                                  >
+                                    {ackNotesMutation.isPending ? "처리 중..." : "확인"}
+                                  </button>
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </>
+              );
+            })()}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
