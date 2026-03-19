@@ -206,7 +206,7 @@ export default function CancelledCases() {
     return null;
   }
 
-  const gridTemplateColumns = "90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 100px 130px 120px";
+  const gridTemplateColumns = "90px 100px 110px 100px 80px 1fr 90px 90px 90px 60px 130px 100px 50px 160px";
 
   return (
     <div className="p-8 bg-white min-h-full">
