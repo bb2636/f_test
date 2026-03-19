@@ -918,6 +918,7 @@ export default function ComprehensiveProgress() {
   // 진행상태 필터링 + 협력사 필터링 (모든 케이스 표시)
   const filteredByStatus = (cases || []).filter((caseItem) => {
     if (caseItem.status === "종결") return false;
+    if (caseItem.status === "접수취소") return false;
 
     // 협력사인 경우: 자신에게 배정된 모든 케이스 표시 (배당대기 제외)
     if (user?.role === "협력사") {
