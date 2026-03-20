@@ -1450,7 +1450,13 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                                 const c = cases.find((x) => x.id === caseId);
                                 if (!c) return null;
                                 const suffix = c.caseNumber?.match(/-(\d+)$/)?.[1] ?? "";
-                                const label = suffix === "0" ? "손해방지" : `직접복구${suffix !== "1" ? ` (${suffix})` : ""}`;
+                                const label = (() => {
+                                  if (suffix === "0") return "손해방지";
+                                  if (c.recoveryType === "선견적" || c.status === "선견적요청" || c.status === "출동비청구(선견적)") {
+                                    return `선견적요청${suffix !== "1" ? ` (${suffix})` : ""}`;
+                                  }
+                                  return `직접복구${suffix !== "1" ? ` (${suffix})` : ""}`;
+                                })();
                                 return (
                                   <button
                                     key={caseId}
