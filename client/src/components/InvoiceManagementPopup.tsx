@@ -646,15 +646,48 @@ export function InvoiceManagementPopup({
           newStatus = "부분입금";
         }
 
+        const firstPartialDepositDate = activeDepositEntries
+          .filter((e) => e.depositCategory === "일부")
+          .map((e) => e.depositDate)
+          .filter((d): d is string => !!d)
+          .sort()[0];
+        const finalDepositDate = activeDepositEntries
+          .find((e) => e.depositCategory === "최종액")?.depositDate;
+        const firstPartialPaymentDate = activePaymentEntries
+          .filter((e) => e.paymentCategory === "일부")
+          .map((e) => e.paymentDate)
+          .filter((d): d is string => !!d)
+          .sort()[0];
+        const finalPaymentDate = activePaymentEntries
+          .find((e) => e.paymentCategory === "최종액")?.paymentDate;
+
         const caseUpdateData: Record<string, unknown> = {
           status: newStatus,
-          paymentCompletedDate: caseData.paymentCompletedDate || undefined,
-          partialPaymentDate: caseData.partialPaymentDate || undefined,
-          settlementCompletedDate:
-            caseData.settlementCompletedDate || undefined,
         };
 
-        if (settlementStatus === "정산") {
+        if (newStatus === "부분입금") {
+          caseUpdateData.partialPaymentDate = firstPartialDepositDate || todayDate;
+        } else if (newStatus === "입금완료") {
+          caseUpdateData.paymentCompletedDate = finalDepositDate || todayDate;
+          if (firstPartialDepositDate && !caseData.partialPaymentDate) {
+            caseUpdateData.partialPaymentDate = firstPartialDepositDate;
+          }
+        } else if (newStatus === "부분지급") {
+          if (firstPartialDepositDate && !caseData.partialPaymentDate) {
+            caseUpdateData.partialPaymentDate = firstPartialDepositDate;
+          }
+          if (finalDepositDate && !caseData.paymentCompletedDate) {
+            caseUpdateData.paymentCompletedDate = finalDepositDate;
+          }
+        } else if (newStatus === "지급완료") {
+          caseUpdateData.settlementCompletedDate = finalPaymentDate || todayDate;
+          if (finalDepositDate && !caseData.paymentCompletedDate) {
+            caseUpdateData.paymentCompletedDate = finalDepositDate;
+          }
+          if (firstPartialDepositDate && !caseData.partialPaymentDate) {
+            caseUpdateData.partialPaymentDate = firstPartialDepositDate;
+          }
+        } else if (settlementStatus === "정산") {
           caseUpdateData.paymentCompletedDate = todayDate;
         } else if (settlementStatus === "부분입금") {
           caseUpdateData.partialPaymentDate = todayDate;
@@ -677,29 +710,7 @@ export function InvoiceManagementPopup({
           const updatePromises = relatedCases
             .filter((rc) => rc.id !== caseData.id)
             .map((rc) => {
-              const rcUpdateData: Record<string, unknown> = {
-                status: newStatus,
-              };
-
-              if (settlementStatus === "정산") {
-                rcUpdateData.paymentCompletedDate = todayDate;
-                if (rc.partialPaymentDate) {
-                  rcUpdateData.partialPaymentDate = rc.partialPaymentDate;
-                }
-              } else if (settlementStatus === "부분입금") {
-                rcUpdateData.partialPaymentDate = todayDate;
-                if (rc.paymentCompletedDate) {
-                  rcUpdateData.paymentCompletedDate = rc.paymentCompletedDate;
-                }
-              }
-
-              if (hasTaxInvoiceDate && taxInvoiceDateStr) {
-                rcUpdateData.settlementCompletedDate = taxInvoiceDateStr;
-              } else if (rc.settlementCompletedDate) {
-                rcUpdateData.settlementCompletedDate =
-                  rc.settlementCompletedDate;
-              }
-
+              const rcUpdateData: Record<string, unknown> = { ...caseUpdateData };
               return apiRequest("PATCH", `/api/cases/${rc.id}`, rcUpdateData);
             });
           await Promise.all(updatePromises);
@@ -809,16 +820,22 @@ export function InvoiceManagementPopup({
       const finalEntry = depositEntries.find(
         (entry) => entry.depositCategory === "최종액",
       );
-      const hasPartialDeposit = depositEntries.some(
+      const partialDepositEntries = depositEntries.filter(
         (entry) => entry.depositCategory === "일부",
       );
-      const todayDate = format(new Date(), "yyyy-MM-dd");
+      const firstPartialDepositDate = partialDepositEntries
+        .map((e) => e.depositDate)
+        .filter((d): d is string => !!d)
+        .sort()[0];
 
       if (finalEntry && finalEntry.depositDate && caseData.id) {
         const updateData: Record<string, unknown> = {
           status: "입금완료",
           paymentCompletedDate: finalEntry.depositDate,
         };
+        if (firstPartialDepositDate && !caseData.partialPaymentDate) {
+          updateData.partialPaymentDate = firstPartialDepositDate;
+        }
         await apiRequest("PATCH", `/api/cases/${caseData.id}`, updateData);
         if (relatedCases && relatedCases.length > 0) {
           const rcPromises = relatedCases
@@ -828,10 +845,10 @@ export function InvoiceManagementPopup({
             );
           await Promise.all(rcPromises);
         }
-      } else if (hasPartialDeposit && caseData.id) {
+      } else if (partialDepositEntries.length > 0 && caseData.id) {
         const updateData: Record<string, unknown> = {
           status: "부분입금",
-          partialPaymentDate: todayDate,
+          partialPaymentDate: firstPartialDepositDate || format(new Date(), "yyyy-MM-dd"),
         };
         await apiRequest("PATCH", `/api/cases/${caseData.id}`, updateData);
         if (relatedCases && relatedCases.length > 0) {
@@ -909,15 +926,18 @@ export function InvoiceManagementPopup({
       const finalPayment = paymentEntries.find(
         (entry) => entry.paymentCategory === "최종액",
       );
-      const hasPartialPayment = paymentEntries.some(
+      const partialPaymentItems = paymentEntries.filter(
         (entry) => entry.paymentCategory === "일부",
       );
-      const todayDate = format(new Date(), "yyyy-MM-dd");
+      const firstPartialPaymentDate = partialPaymentItems
+        .map((e) => e.paymentDate)
+        .filter((d): d is string => !!d)
+        .sort()[0];
 
       if (finalPayment && caseData.id) {
         const updateData: Record<string, unknown> = {
           status: "지급완료",
-          partialPaymentDate: finalPayment.paymentDate || todayDate,
+          settlementCompletedDate: finalPayment.paymentDate || format(new Date(), "yyyy-MM-dd"),
         };
         await apiRequest("PATCH", `/api/cases/${caseData.id}`, updateData);
         if (relatedCases && relatedCases.length > 0) {
@@ -928,10 +948,9 @@ export function InvoiceManagementPopup({
             );
           await Promise.all(rcPromises);
         }
-      } else if (hasPartialPayment && caseData.id) {
+      } else if (partialPaymentItems.length > 0 && caseData.id) {
         const updateData: Record<string, unknown> = {
           status: "부분지급",
-          partialPaymentDate: todayDate,
         };
         await apiRequest("PATCH", `/api/cases/${caseData.id}`, updateData);
         if (relatedCases && relatedCases.length > 0) {
