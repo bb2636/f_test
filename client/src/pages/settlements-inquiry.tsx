@@ -698,7 +698,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
           : allNoRepair
             ? "미수리"
             : "-",
-        recoveryType: hasDirectRepair ? "직접복구" : primaryCase.recoveryType,
+        recoveryType: hasDirectRepair ? "직접복구" : allNoRepair ? "선견적요청" : (primaryCase.recoveryType || "직접복구"),
         preventionEstimateAmount,
         preventionApprovedAmount,
         preventionDifference,
@@ -1452,7 +1452,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                                 const suffix = c.caseNumber?.match(/-(\d+)$/)?.[1] ?? "";
                                 const label = (() => {
                                   if (suffix === "0") return "손해방지";
-                                  if (c.recoveryType === "선견적요청") {
+                                  if (c.recoveryType === "선견적요청" || row.recoveryType === "선견적요청") {
                                     return `선견적요청${suffix !== "1" ? ` (${suffix})` : ""}`;
                                   }
                                   return `직접복구${suffix !== "1" ? ` (${suffix})` : ""}`;
