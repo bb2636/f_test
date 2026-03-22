@@ -2958,40 +2958,52 @@ export default function ComprehensiveProgress() {
                                 if (!selectedCase) return undefined;
                                 if (selectedCase.partialPaymentDate)
                                   return selectedCase.partialPaymentDate;
-                                const settlement = allSettlements.find(
-                                  (s) => s.caseId === selectedCase.id,
+                                const prefix = getCaseNumberPrefix(selectedCase.caseNumber);
+                                const groupCaseIds = (cases || [])
+                                  .filter((c) => getCaseNumberPrefix(c.caseNumber) === prefix)
+                                  .map((c) => c.id);
+                                const groupSettlements = allSettlements.filter(
+                                  (s) => groupCaseIds.includes(s.caseId),
                                 );
-                                if (!settlement?.depositEntries)
-                                  return undefined;
-                                const entries =
-                                  settlement.depositEntries as Array<{
-                                    depositDate?: string;
-                                  }>;
-                                const dates = entries
-                                  .map((e) => e.depositDate)
-                                  .filter((d): d is string => !!d)
-                                  .sort();
-                                return dates[0] || undefined;
+                                const allDates: string[] = [];
+                                groupSettlements.forEach((settlement) => {
+                                  if (settlement.depositEntries) {
+                                    const entries = settlement.depositEntries as Array<{
+                                      depositDate?: string;
+                                    }>;
+                                    entries.forEach((e) => {
+                                      if (e.depositDate) allDates.push(e.depositDate);
+                                    });
+                                  }
+                                });
+                                allDates.sort();
+                                return allDates[0] || undefined;
                               })(),
                             },
                             {
                               label: "일부지급일(최초)",
                               value: (() => {
                                 if (!selectedCase) return undefined;
-                                const settlement = allSettlements.find(
-                                  (s) => s.caseId === selectedCase.id,
+                                const prefix = getCaseNumberPrefix(selectedCase.caseNumber);
+                                const groupCaseIds = (cases || [])
+                                  .filter((c) => getCaseNumberPrefix(c.caseNumber) === prefix)
+                                  .map((c) => c.id);
+                                const groupSettlements = allSettlements.filter(
+                                  (s) => groupCaseIds.includes(s.caseId),
                                 );
-                                if (!settlement?.paymentEntries)
-                                  return undefined;
-                                const entries =
-                                  settlement.paymentEntries as Array<{
-                                    paymentDate?: string;
-                                  }>;
-                                const dates = entries
-                                  .map((e) => e.paymentDate)
-                                  .filter((d): d is string => !!d)
-                                  .sort();
-                                return dates[0] || undefined;
+                                const allDates: string[] = [];
+                                groupSettlements.forEach((settlement) => {
+                                  if (settlement.paymentEntries) {
+                                    const entries = settlement.paymentEntries as Array<{
+                                      paymentDate?: string;
+                                    }>;
+                                    entries.forEach((e) => {
+                                      if (e.paymentDate) allDates.push(e.paymentDate);
+                                    });
+                                  }
+                                });
+                                allDates.sort();
+                                return allDates[0] || undefined;
                               })(),
                             },
                             {
