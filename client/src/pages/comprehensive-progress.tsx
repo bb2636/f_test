@@ -1202,10 +1202,34 @@ export default function ComprehensiveProgress() {
   const calculateDays = (createdAt: string | null) => {
     if (!createdAt) return 0;
     const created = new Date(createdAt);
+    created.setHours(0, 0, 0, 0);
     const today = new Date();
-    const diffTime = Math.abs(today.getTime() - created.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    today.setHours(0, 0, 0, 0);
+    const diffTime = today.getTime() - created.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(diffDays, 0);
+  };
+
+  const calculateElapsed2 = (caseItem: CaseWithLatestProgress): string => {
+    if (!caseItem.firstApprovalDate) return "-";
+    if (caseItem.status === "복구요청(2차승인)" || caseItem.secondApprovalDate) return "-";
+    const approvalDate = new Date(caseItem.firstApprovalDate);
+    approvalDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diff = Math.floor((today.getTime() - approvalDate.getTime()) / (1000 * 60 * 60 * 24));
+    return String(Math.max(diff, 0));
+  };
+
+  const calculateElapsed3 = (caseItem: CaseWithLatestProgress): string => {
+    if (!caseItem.claimDate) return "-";
+    if (caseItem.paymentCompletedDate) return "-";
+    const claimDt = new Date(caseItem.claimDate);
+    claimDt.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diff = Math.floor((today.getTime() - claimDt.getTime()) / (1000 * 60 * 60 * 24));
+    return String(Math.max(diff, 0));
   };
 
   // 날짜 포맷팅 (YYYY-MM-DD)
@@ -1545,11 +1569,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 110px 100px 110px 100px 70px 1fr 80px 90px 90px 60px 130px 50px 90px 160px"
-                      : "40px 110px 100px 110px 100px 70px 1fr 80px 90px 90px 60px 130px 50px 160px")
+                      ? "40px 110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 90px 160px"
+                      : "40px 110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 160px")
                     : (user?.role === "협력사"
-                      ? "110px 100px 110px 100px 70px 1fr 80px 90px 90px 60px 130px 50px 90px 160px"
-                      : "110px 100px 110px 100px 70px 1fr 80px 90px 90px 60px 130px 50px 160px"),
+                      ? "110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 90px 160px"
+                      : "110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 160px"),
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1595,7 +1619,9 @@ export default function ComprehensiveProgress() {
                 { label: "담당자" },
                 { label: "협력사" },
                 { label: "승인금액", textAlign: "center" as const },
-                { label: "경과일", textAlign: "center" as const },
+                { label: "경과1", textAlign: "center" as const },
+                { label: "경과2", textAlign: "center" as const },
+                { label: "경과3", textAlign: "center" as const },
                 { label: "진행상태", textAlign: "center" as const },
                 { label: "특이사항" },
                 ...(user?.role === "협력사" ? [{ label: "수행업무" }] : []),
@@ -1728,11 +1754,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 110px 100px 110px 100px 70px 1fr 80px 90px 90px 60px 130px 50px 90px 160px"
-                            : "40px 110px 100px 110px 100px 70px 1fr 80px 90px 90px 60px 130px 50px 160px")
+                            ? "40px 110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 90px 160px"
+                            : "40px 110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 160px")
                           : (user?.role === "협력사"
-                            ? "110px 100px 110px 100px 70px 1fr 80px 90px 90px 60px 130px 50px 90px 160px"
-                            : "110px 100px 110px 100px 70px 1fr 80px 90px 90px 60px 130px 50px 160px"),
+                            ? "110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 90px 160px"
+                            : "110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 160px"),
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -1981,6 +2007,32 @@ export default function ComprehensiveProgress() {
                       }}
                     >
                       {calculateDays(caseItem.createdAt)}
+                    </div>
+                    <div
+                      style={{
+                        paddingRight: "4px",
+                        paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {calculateElapsed2(caseItem)}
+                    </div>
+                    <div
+                      style={{
+                        paddingRight: "4px",
+                        paddingLeft: "4px",
+                        paddingTop: "14px",
+                        paddingBottom: "14px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {calculateElapsed3(caseItem)}
                     </div>
                     <div onClick={(e) => e.stopPropagation()} style={{ paddingRight: "4px", paddingLeft: "4px", paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {/* 관리자: 모든 상태에서 변경 가능, 협력사: 현장정보제출/복구요청(2차승인) 상태에서만 변경 가능 */}
@@ -2508,7 +2560,7 @@ export default function ComprehensiveProgress() {
                               </div>
                             </div>
 
-                            {/* 경과일수 */}
+                            {/* 경과1 */}
                             <div
                               style={{
                                 display: "flex",
@@ -2527,7 +2579,7 @@ export default function ComprehensiveProgress() {
                                   color: "rgba(12, 12, 12, 0.6)",
                                 }}
                               >
-                                경과일수
+                                경과1
                               </div>
                               <div
                                 style={{
@@ -2538,6 +2590,72 @@ export default function ComprehensiveProgress() {
                                 }}
                               >
                                 {calculateDays(selectedCase.createdAt)}
+                              </div>
+                            </div>
+
+                            {/* 경과2 */}
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                padding: "10px 0px",
+                                gap: "16px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: "100px",
+                                  fontFamily: "Pretendard",
+                                  fontWeight: 500,
+                                  fontSize: "14px",
+                                  color: "rgba(12, 12, 12, 0.6)",
+                                }}
+                              >
+                                경과2
+                              </div>
+                              <div
+                                style={{
+                                  fontFamily: "Pretendard",
+                                  fontWeight: 400,
+                                  fontSize: "14px",
+                                  color: "rgba(12, 12, 12, 0.9)",
+                                }}
+                              >
+                                {calculateElapsed2(selectedCase as CaseWithLatestProgress)}
+                              </div>
+                            </div>
+
+                            {/* 경과3 */}
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                alignItems: "center",
+                                padding: "10px 0px",
+                                gap: "16px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: "100px",
+                                  fontFamily: "Pretendard",
+                                  fontWeight: 500,
+                                  fontSize: "14px",
+                                  color: "rgba(12, 12, 12, 0.6)",
+                                }}
+                              >
+                                경과3
+                              </div>
+                              <div
+                                style={{
+                                  fontFamily: "Pretendard",
+                                  fontWeight: 400,
+                                  fontSize: "14px",
+                                  color: "rgba(12, 12, 12, 0.9)",
+                                }}
+                              >
+                                {calculateElapsed3(selectedCase as CaseWithLatestProgress)}
                               </div>
                             </div>
 

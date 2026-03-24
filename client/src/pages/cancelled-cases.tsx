@@ -92,10 +92,12 @@ const formatDate = (dateString: string | null | undefined) => {
 const calculateDays = (createdAt: string | null) => {
   if (!createdAt) return 0;
   const created = new Date(createdAt);
+  created.setHours(0, 0, 0, 0);
   const today = new Date();
-  const diffTime = Math.abs(today.getTime() - created.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
+  today.setHours(0, 0, 0, 0);
+  const diffTime = today.getTime() - created.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  return Math.max(diffDays, 0);
 };
 
 type BasicUser = {
