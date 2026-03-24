@@ -4834,12 +4834,21 @@ export default function ComprehensiveProgress() {
       {smsCaseData && (
         <SmsNotificationDialog
           open={smsDialogOpen}
-          onOpenChange={setSmsDialogOpen}
+          onOpenChange={(open) => {
+            setSmsDialogOpen(open);
+            if (!open && smsStage === "접수취소") {
+              setSmsCaseData(null);
+              setLocation("/settlements/cancelled");
+            }
+          }}
           caseData={smsCaseData as unknown as SchemaCase}
           stage={smsStage}
           onSuccess={() => {
             setSmsDialogOpen(false);
             setSmsCaseData(null);
+            if (smsStage === "접수취소") {
+              setLocation("/settlements/cancelled");
+            }
           }}
         />
       )}
@@ -4920,17 +4929,10 @@ export default function ComprehensiveProgress() {
               onClick={() => {
                 if (cancelTargetCase) {
                   setCancelConfirmDialogOpen(false);
-                  updateStatusMutation.mutate(
-                    {
-                      caseId: cancelTargetCase.id,
-                      status: "접수취소",
-                    },
-                    {
-                      onSuccess: () => {
-                        setLocation("/settlements/cancelled");
-                      },
-                    },
-                  );
+                  updateStatusMutation.mutate({
+                    caseId: cancelTargetCase.id,
+                    status: "접수취소",
+                  });
                   setCancelTargetCase(null);
                 }
               }}
