@@ -5200,6 +5200,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
           `[multipart-upload] user: ${req.session.userId}, caseId: ${caseId}, file: ${fileName}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
         );
 
+        const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
+        if (privateObjectDir) {
+          const timestamp = Date.now();
+          const uuid = crypto.randomUUID();
+          const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
+          const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
+          const fullPath = `${privateObjectDir}/${storageKey}`;
+          const pathParts = fullPath.split("/").filter((p: string) => p);
+          const bucketName = pathParts[0];
+          const objectName = pathParts.slice(1).join("/");
+
+          const bucket = objectStorageClient.bucket(bucketName);
+          const gcsFile = bucket.file(objectName);
+          await gcsFile.save(file.buffer, {
+            metadata: { contentType: fileType },
+          });
+
+          const document = await storage.createPendingDocument({
+            caseId,
+            category,
+            fileName,
+            fileType,
+            fileSize: file.size,
+            storageKey,
+            createdBy: req.session.userId,
+          });
+
+          await storage.updateDocumentStatus(document.id, "ready");
+
+          console.log(`[multipart-upload] Document saved to Object Storage: ${document.id}, key: ${storageKey}`);
+
+          return res.json({
+            success: true,
+            documentId: document.id,
+          });
+        }
+
         const fileData = file.buffer.toString("base64");
 
         const document = await storage.saveDocument({
@@ -5212,7 +5249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdBy: req.session.userId,
         });
 
-        console.log(`[multipart-upload] Document saved: ${document.id}`);
+        console.log(`[multipart-upload] Document saved to DB: ${document.id}`);
 
         res.json({
           success: true,
@@ -5264,6 +5301,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(
         `[direct-upload] Saving document for case ${caseId}, file: ${fileName}, decodedSize: ${(decodedSize / 1024 / 1024).toFixed(2)}MB`,
       );
+
+      const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
+      if (privateObjectDir) {
+        const timestamp = Date.now();
+        const uuid = crypto.randomUUID();
+        const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
+        const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
+        const fullPath = `${privateObjectDir}/${storageKey}`;
+        const pathParts = fullPath.split("/").filter((p: string) => p);
+        const bucketName = pathParts[0];
+        const objectName = pathParts.slice(1).join("/");
+
+        const buffer = Buffer.from(fileData, "base64");
+        const bucket = objectStorageClient.bucket(bucketName);
+        const gcsFile = bucket.file(objectName);
+        await gcsFile.save(buffer, {
+          metadata: { contentType: fileType },
+        });
+
+        const document = await storage.createPendingDocument({
+          caseId,
+          category,
+          fileName,
+          fileType,
+          fileSize: fileSize || decodedSize,
+          storageKey,
+          createdBy: req.session.userId,
+        });
+
+        await storage.updateDocumentStatus(document.id, "ready");
+
+        console.log(`[direct-upload] Document saved to Object Storage: ${document.id}`);
+
+        if (req.rawBody) {
+          delete (req as any).rawBody;
+        }
+
+        return res.json({
+          success: true,
+          documentId: document.id,
+        });
+      }
 
       const document = await storage.saveDocument({
         caseId,
