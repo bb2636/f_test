@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Search, X, ChevronDown, Upload, ChevronRight, Download, Printer, CheckCircle2, Star, ZoomIn, Trash2, Shield } from "lucide-react";
+import { Search, X, ChevronDown, ChevronUp, Upload, ChevronRight, Download, Printer, CheckCircle2, Star, ZoomIn, Trash2, Shield, ArrowUpDown } from "lucide-react";
 import logoIcon from "@assets/Frame 2_1762217940686.png";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -378,6 +378,8 @@ export default function AdminSettings() {
   const [roleFilter, setRoleFilter] = useState("전체");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [sortField, setSortField] = useState<string>("company");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedUser, setSelectedUser] = useState<Omit<
     User,
     "password"
@@ -1203,18 +1205,52 @@ export default function AdminSettings() {
   const roleFilters = ["전체", ...VALID_ROLES];
 
   // Apply filtering and search
-  const filteredUsers = allUsers.filter((u) => {
-    // Role filter
-    const matchesRole = roleFilter === "전체" || u.role === roleFilter;
+  const handleSortClick = (field: string) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
-    // Search filter - improved with trim and lowercase
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    const normalizedName = u.name.toLowerCase();
-    const matchesSearch =
-      normalizedQuery === "" || normalizedName.includes(normalizedQuery);
-
-    return matchesRole && matchesSearch;
-  });
+  const filteredUsers = allUsers
+    .filter((u) => {
+      const matchesRole = roleFilter === "전체" || u.role === roleFilter;
+      const normalizedQuery = searchQuery.trim().toLowerCase();
+      const normalizedName = u.name.toLowerCase();
+      const matchesSearch =
+        normalizedQuery === "" || normalizedName.includes(normalizedQuery);
+      return matchesRole && matchesSearch;
+    })
+    .sort((a, b) => {
+      const dir = sortDirection === "asc" ? 1 : -1;
+      const fieldMap: Record<string, (u: typeof a) => string> = {
+        role: (u) => u.role || "",
+        company: (u) => u.company || "",
+        name: (u) => u.name || "",
+        department: (u) => u.department || "",
+        position: (u) => u.position || "",
+        email: (u) => u.email || "",
+        username: (u) => u.username || "",
+        phone: (u) => u.phone || "",
+        officePhone: (u) => u.officePhone || "",
+        createdAt: (u) => u.createdAt || "",
+      };
+      const getVal = fieldMap[sortField] || fieldMap.company;
+      const valA = getVal(a);
+      const valB = getVal(b);
+      const cmp = valA.localeCompare(valB, "ko");
+      if (cmp !== 0) return cmp * dir;
+      if (sortField !== "company") {
+        const companyCmp = (a.company || "").localeCompare(b.company || "", "ko");
+        if (companyCmp !== 0) return companyCmp;
+      }
+      if (sortField !== "name") {
+        return (a.name || "").localeCompare(b.name || "", "ko");
+      }
+      return 0;
+    });
 
   const handleSearch = () => {
     setSearchQuery(searchInput);
@@ -3953,24 +3989,27 @@ export default function AdminSettings() {
                 }}
               >
                 {[
-                  { label: "역할", width: "90px" },
-                  { label: "회사명", width: "155px" },
-                  { label: "성함", width: "80px" },
-                  { label: "소속부서", width: "100px" },
-                  { label: "직급", width: "70px" },
-                  { label: "이메일 주소", width: "220px" },
-                  { label: "ID", width: "230px" },
-                  { label: "연락처", width: "163px" },
-                  { label: "사무실 전화", width: "163px" },
-                  { label: "계정 생성일", width: "120px" },
-                  { label: "요청", width: "120px" },
-                ].map((col, idx, arr) => (
+                  { label: "역할", width: "90px", field: "role" },
+                  { label: "회사명", width: "155px", field: "company" },
+                  { label: "성함", width: "80px", field: "name" },
+                  { label: "소속부서", width: "100px", field: "department" },
+                  { label: "직급", width: "70px", field: "position" },
+                  { label: "이메일 주소", width: "220px", field: "email" },
+                  { label: "ID", width: "230px", field: "username" },
+                  { label: "연락처", width: "163px", field: "phone" },
+                  { label: "사무실 전화", width: "163px", field: "officePhone" },
+                  { label: "계정 생성일", width: "120px", field: "createdAt" },
+                  { label: "요청", width: "120px", field: "" },
+                ].map((col) => (
                   <div
                     key={col.label}
                     className="px-2 flex items-center"
                     style={{
                       width: col.width,
+                      cursor: col.field ? "pointer" : "default",
+                      userSelect: "none",
                     }}
+                    onClick={() => col.field && handleSortClick(col.field)}
                   >
                     <span
                       style={{
@@ -3978,10 +4017,20 @@ export default function AdminSettings() {
                         fontSize: "15px",
                         fontWeight: 600,
                         letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.6)",
+                        color: sortField === col.field ? "#008FED" : "rgba(12, 12, 12, 0.6)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
                       }}
                     >
                       {col.label}
+                      {col.field && (
+                        sortField === col.field ? (
+                          sortDirection === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                        ) : (
+                          <ArrowUpDown size={12} style={{ opacity: 0.4 }} />
+                        )
+                      )}
                     </span>
                   </div>
                 ))}
