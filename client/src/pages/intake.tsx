@@ -351,14 +351,16 @@ export default function Intake({
     const uniqueCompanies = Array.from(new Set(partners.map((p) => p.company)));
     return uniqueCompanies.map((companyName) => {
       const stats = partnerStats?.find((s) => s.partnerName === companyName);
-      const partnerUser = partners.find((p) => p.company === companyName);
+      const companyAccounts = partners.filter((p) => p.company === companyName);
+      const companyAccount = companyAccounts.find((p) => p.accountType === "회사");
+      const regionSource = companyAccount || companyAccounts.find((p) => p.serviceRegions && p.serviceRegions.length > 0) || companyAccounts[0];
       return {
         name: companyName,
         dailyCount: stats?.dailyCount || 0,
         monthlyCount: stats?.monthlyCount || 0,
         inProgressCount: stats?.inProgressCount || 0,
         pendingCount: stats?.pendingCount || 0,
-        region: partnerUser?.serviceRegions?.join(", ") || "",
+        region: regionSource?.serviceRegions?.join(", ") || "",
       };
     });
   }, [partners, partnerStats]);
