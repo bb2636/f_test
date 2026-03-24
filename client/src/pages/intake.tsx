@@ -935,6 +935,70 @@ export default function Intake({
     return cleaned;
   };
 
+  const resetFormToInitial = () => {
+    setFormData({
+      managerId: "",
+      managerDepartment: "",
+      managerPosition: "",
+      managerContact: "",
+      accidentDate: getTodayDate(),
+      insuranceCompany: "",
+      insurancePolicyNo: "",
+      insuranceAccidentNo: "",
+      clientResidence: "",
+      clientDepartment: "",
+      clientName: "",
+      clientContact: "",
+      assessorId: "",
+      assessorDepartment: "",
+      assessorTeam: "",
+      assessorContact: "",
+      assessorEmail: "",
+      investigatorTeam: "",
+      investigatorDepartment: "",
+      investigatorTeamName: "",
+      investigatorContact: "",
+      investigatorEmail: "",
+      policyHolderName: "",
+      policyHolderIdNumber: "",
+      policyHolderAddress: "",
+      insuredName: "",
+      insuredIdNumber: "",
+      insuredContact: "",
+      insuredAddress: "",
+      insuredAddressDetail: "",
+      victimName: "",
+      victimContact: "",
+      victimAddress: "",
+      victimAddressDetail: "",
+      accompaniedPerson: "",
+      accidentType: "",
+      accidentCause: "",
+      restorationMethod: "",
+      otherVendorEstimate: "",
+      accidentDescription: "",
+      damageItem: "",
+      damageType: "",
+      damageQuantity: "",
+      damageDetails: "",
+      damageItems: [],
+      damagePreventionCost: false,
+      victimIncidentAssistance: false,
+      assignedPartner: "",
+      assignedPartnerManager: "",
+      assignedPartnerContact: "",
+      urgency: "",
+      specialRequests: "",
+    });
+    setAccidentDate(new Date());
+    setSelectedPartner(null);
+    setSameAsPolicyHolder(false);
+    setAdditionalVictims([]);
+    localStorage.removeItem("intakeFormDraft");
+    localStorage.removeItem("editCaseId");
+    setEditCaseId(null);
+  };
+
   const saveMutation = useMutation({
     mutationFn: async ({
       data,
@@ -991,7 +1055,9 @@ export default function Intake({
       if (isModal && onSuccess) {
         onSuccess();
       } else {
-        setTimeout(() => setLocation("/dashboard"), 1000);
+        setTimeout(() => {
+          resetFormToInitial();
+        }, 1000);
       }
     },
     onError: (error: Error) => {
@@ -1168,7 +1234,9 @@ export default function Intake({
       if (isModal && onSuccess) {
         onSuccess();
       } else {
-        setTimeout(() => setLocation("/dashboard"), 1000);
+        setTimeout(() => {
+          resetFormToInitial();
+        }, 1000);
       }
     },
     onError: (error: Error) => {
@@ -1368,67 +1436,7 @@ export default function Intake({
     });
 
   const handleReset = () => {
-    setFormData({
-      managerId: "",
-      managerDepartment: "",
-      managerPosition: "",
-      managerContact: "",
-      accidentDate: getTodayDate(),
-      insuranceCompany: "",
-      insurancePolicyNo: "",
-      insuranceAccidentNo: "",
-      clientResidence: "",
-      clientDepartment: "",
-      clientName: "",
-      clientContact: "",
-      assessorId: "",
-      assessorDepartment: "",
-      assessorTeam: "",
-      assessorContact: "",
-      assessorEmail: "",
-      investigatorTeam: "",
-      investigatorDepartment: "",
-      investigatorTeamName: "",
-      investigatorContact: "",
-      investigatorEmail: "",
-      policyHolderName: "",
-      policyHolderIdNumber: "",
-      policyHolderAddress: "",
-      insuredName: "",
-      insuredIdNumber: "",
-      insuredContact: "",
-      insuredAddress: "",
-      insuredAddressDetail: "",
-      victimName: "",
-      victimContact: "",
-      victimAddress: "",
-      victimAddressDetail: "",
-      accompaniedPerson: "",
-      accidentType: "",
-      accidentCause: "",
-      restorationMethod: "",
-      otherVendorEstimate: "",
-      accidentDescription: "",
-      damageItem: "",
-      damageType: "",
-      damageQuantity: "",
-      damageDetails: "",
-      damageItems: [],
-      damagePreventionCost: false,
-      victimIncidentAssistance: false,
-      assignedPartner: "",
-      assignedPartnerManager: "",
-      assignedPartnerContact: "",
-      urgency: "",
-      specialRequests: "",
-    });
-    setAccidentDate(new Date());
-    setSelectedPartner(null);
-    setSameAsPolicyHolder(false);
-    setAdditionalVictims([]);
-    localStorage.removeItem("intakeFormDraft");
-    localStorage.removeItem("editCaseId");
-    setEditCaseId(null);
+    resetFormToInitial();
     toast({ description: "입력 내용이 초기화되었습니다.", duration: 2000 });
   };
 
