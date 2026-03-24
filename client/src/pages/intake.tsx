@@ -43,16 +43,34 @@ const PROVINCE_MAP: Record<string, string> = {
   "경상남도": "경남",
   "제주도": "제주",
   "제주특별자치도": "제주",
+  "경기": "경기",
+  "강원": "강원",
+  "충북": "충북",
+  "충남": "충남",
+  "전북": "전북",
+  "전남": "전남",
+  "경북": "경북",
+  "경남": "경남",
+  "제주": "제주",
 };
+
+const PROVINCE_SHORTS = ["경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 
 const extractRegionFromAddress = (address: string): { province: string; city: string } => {
   if (!address) return { province: "", city: "" };
   const normalized = address.trim();
 
+  for (const short of PROVINCE_SHORTS) {
+    const cityAfterShort = normalized.match(new RegExp(`^${short}\\s+([가-힣]+(?:시|군))`));
+    if (cityAfterShort) {
+      return { province: short, city: cityAfterShort[1] };
+    }
+  }
+
   for (const [fullName, shortName] of Object.entries(PROVINCE_MAP)) {
-    if (normalized.includes(fullName) || normalized.startsWith(shortName)) {
-      const prefix = normalized.includes(fullName) ? fullName : shortName;
-      const afterProvince = normalized.substring(normalized.indexOf(prefix) + prefix.length).trim();
+    if (fullName.length <= 2) continue;
+    if (normalized.includes(fullName)) {
+      const afterProvince = normalized.substring(normalized.indexOf(fullName) + fullName.length).trim();
       const cityMatch = afterProvince.match(/([가-힣]+(?:시|군))/);
       return { province: shortName, city: cityMatch ? cityMatch[1] : "" };
     }
