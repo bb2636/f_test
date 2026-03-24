@@ -404,6 +404,8 @@ export default function Intake({
   };
 
   const [editCaseId, setEditCaseId] = useState<string | null>(null);
+  const [clientOfficePhone, setClientOfficePhone] = useState("");
+  const [assessorOfficePhone, setAssessorOfficePhone] = useState("");
   const [formData, setFormData] = useState({
     managerId: "",
     managerDepartment: "",
@@ -772,6 +774,16 @@ export default function Intake({
           urgency: caseData.urgency || "",
           specialRequests: caseData.specialRequests || "",
         });
+        if (allUsers) {
+          const clientUser = allUsers.find(
+            (u) => u.company === caseData.clientResidence && u.name === caseData.clientName
+          );
+          if (clientUser) setClientOfficePhone(clientUser.office || "");
+          const assessorUser = allUsers.find(
+            (u) => u.company === caseData.assessorId && u.name === caseData.assessorTeam
+          );
+          if (assessorUser) setAssessorOfficePhone(assessorUser.office || "");
+        }
         if (caseData.sameAsPolicyHolder === "true") setSameAsPolicyHolder(true);
         if (caseData.additionalVictims) {
           try {
@@ -813,6 +825,22 @@ export default function Intake({
         });
       });
   }, [initialCaseId, administrators]);
+
+  useEffect(() => {
+    if (!allUsers || (!formData.clientName && !formData.assessorTeam)) return;
+    if (formData.clientName && formData.clientResidence && !clientOfficePhone) {
+      const clientUser = allUsers.find(
+        (u) => u.company === formData.clientResidence && u.name === formData.clientName
+      );
+      if (clientUser?.office) setClientOfficePhone(clientUser.office);
+    }
+    if (formData.assessorTeam && formData.assessorId && !assessorOfficePhone) {
+      const assessorUser = allUsers.find(
+        (u) => u.company === formData.assessorId && u.name === formData.assessorTeam
+      );
+      if (assessorUser?.office) setAssessorOfficePhone(assessorUser.office);
+    }
+  }, [allUsers, formData.clientName, formData.clientResidence, formData.assessorTeam, formData.assessorId]);
 
   // 새로운 접수 화면에 들어갈 때 localStorage 클리어 및 폼 초기화 (크롬 브라우저 호환성)
   // editCaseId가 있으면 이어서 작성하기이므로 초기화하지 않음
@@ -885,6 +913,8 @@ export default function Intake({
       setAdditionalVictims([]);
       setLoadedCaseNumber(null);
       setLoadedReceptionDate(null);
+      setClientOfficePhone("");
+      setAssessorOfficePhone("");
     }
   }, [isModal, initialCaseId]);
 
@@ -965,6 +995,16 @@ export default function Intake({
             urgency: caseData.urgency || "",
             specialRequests: caseData.specialRequests || "",
           });
+          if (allUsers) {
+            const clientUser = allUsers.find(
+              (u) => u.company === caseData.clientResidence && u.name === caseData.clientName
+            );
+            if (clientUser) setClientOfficePhone(clientUser.office || "");
+            const assessorUser = allUsers.find(
+              (u) => u.company === caseData.assessorId && u.name === caseData.assessorTeam
+            );
+            if (assessorUser) setAssessorOfficePhone(assessorUser.office || "");
+          }
           if (caseData.sameAsPolicyHolder === "true")
             setSameAsPolicyHolder(true);
           if (caseData.additionalVictims) {
@@ -1014,6 +1054,8 @@ export default function Intake({
   };
 
   const resetFormToInitial = () => {
+    setClientOfficePhone("");
+    setAssessorOfficePhone("");
     setFormData({
       managerId: "",
       managerDepartment: "",
@@ -1438,6 +1480,7 @@ export default function Intake({
         updated.clientDepartment = companyUser?.department || "";
         updated.clientName = "";
         updated.clientContact = "";
+        setClientOfficePhone("");
       }
 
       if (field === "clientName" && value && typeof value === "string") {
@@ -1446,6 +1489,7 @@ export default function Intake({
         );
         if (selectedEmployee) {
           updated.clientContact = selectedEmployee.phone || "";
+          setClientOfficePhone(selectedEmployee.office || "");
         }
       }
 
@@ -1454,12 +1498,14 @@ export default function Intake({
         updated.assessorTeam = "";
         updated.assessorContact = "";
         updated.assessorEmail = "";
+        setAssessorOfficePhone("");
       }
 
       if (field === "assessorDepartment") {
         updated.assessorTeam = "";
         updated.assessorContact = "";
         updated.assessorEmail = "";
+        setAssessorOfficePhone("");
       }
 
       if (field === "assessorTeam" && value) {
@@ -1469,6 +1515,7 @@ export default function Intake({
         if (selectedAssessor) {
           updated.assessorContact = selectedAssessor.phone || "";
           updated.assessorEmail = selectedAssessor.email || "";
+          setAssessorOfficePhone(selectedAssessor.office || "");
         }
       }
 
@@ -2060,7 +2107,7 @@ export default function Intake({
                   <label className={labelClasses}>의뢰자 연락처</label>
                   <input
                     className={disabledInputClasses}
-                    value={formData.clientContact}
+                    value={clientOfficePhone || formData.clientContact}
                     readOnly
                     placeholder="의뢰사 담당자 연락처"
                     type="text"
@@ -2125,7 +2172,7 @@ export default function Intake({
                   <label className={labelClasses}>심사자 연락처</label>
                   <input
                     className={disabledInputClasses}
-                    value={formData.assessorContact}
+                    value={assessorOfficePhone || formData.assessorContact}
                     readOnly
                     placeholder="심사자 연락처"
                     type="text"
@@ -3082,6 +3129,7 @@ export default function Intake({
                           clientDepartment: tempSelectedClient.department || "",
                           clientContact: tempSelectedClient.phone || "",
                         }));
+                        setClientOfficePhone(tempSelectedClient.office || "");
                         setIsClientSearchOpen(false);
                         setTempSelectedClient(null);
                         setClientSearchQuery("");
@@ -3235,6 +3283,7 @@ export default function Intake({
                           assessorContact: tempSelectedAssessor.phone || "",
                           assessorEmail: tempSelectedAssessor.email || "",
                         }));
+                        setAssessorOfficePhone(tempSelectedAssessor.office || "");
                         setIsAssessorSearchOpen(false);
                         setTempSelectedAssessor(null);
                         setAssessorSearchQuery("");
