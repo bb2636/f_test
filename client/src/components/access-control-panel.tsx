@@ -96,7 +96,21 @@ export function AccessControlPanel() {
       const loadedPermissions: RolePermissions = {};
       allPermissions.forEach((perm) => {
         try {
-          loadedPermissions[perm.roleName] = JSON.parse(perm.permissions);
+          const parsed = JSON.parse(perm.permissions) as PermissionState;
+          for (const category of categories) {
+            const schemaItems = PERMISSION_CATEGORIES[category];
+            if (parsed[category] && schemaItems.length > 0) {
+              if (!parsed[category].items) {
+                parsed[category].items = {};
+              }
+              for (const item of schemaItems) {
+                if (!(item in parsed[category].items)) {
+                  parsed[category].items[item] = parsed[category].enabled ?? false;
+                }
+              }
+            }
+          }
+          loadedPermissions[perm.roleName] = parsed;
         } catch (e) {
           console.error("Failed to parse permissions for role:", perm.roleName, e);
         }

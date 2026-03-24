@@ -39,6 +39,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatCaseNumber } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/use-permissions";
 
 const safeParseNotesHistory = (
   json: string | null | undefined,
@@ -125,6 +126,10 @@ export default function CancelledCases() {
   const { data: user, isLoading: userLoading } = useQuery<User>({
     queryKey: ["/api/user"],
   });
+  const { hasCategory: hasPermCategory, hasItem: hasPermItem } = usePermissions();
+  const hasFieldSurveyAccess = hasPermCategory("현장조사");
+  const canEditStatus = hasFieldSurveyAccess && hasPermItem("정산 및 통계", "진행상태 수정");
+  const canViewDetail = hasFieldSurveyAccess && hasPermItem("정산 및 통계", "자세히 보기");
 
   const { data: cases = [], isLoading } = useQuery<CaseWithLatestProgress[]>({
     queryKey: ["/api/cases"],
@@ -785,14 +790,14 @@ export default function CancelledCases() {
               return (
                 <div
                   key={caseItem.id}
-                  onClick={() => { setDetailTab("기본정보"); setSelectedCaseId(caseItem.id); }}
+                  onClick={() => { if (canViewDetail) { setDetailTab("기본정보"); setSelectedCaseId(caseItem.id); } }}
                   style={{
                     display: "grid",
                     gridTemplateColumns,
                     padding: "0 20px",
                     borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                     alignItems: "stretch",
-                    cursor: "pointer",
+                    cursor: canViewDetail ? "pointer" : "default",
                   }}
                   data-testid={`cancelled-case-row-${caseItem.id}`}
                 >
@@ -839,7 +844,7 @@ export default function CancelledCases() {
                     {calculateDays(caseItem.createdAt)}
                   </div>
                   <div onClick={(e) => e.stopPropagation()} style={{ ...cellStyle, justifyContent: "center" }}>
-                    {user?.role === "관리자" ? (
+                    {user?.role === "관리자" && canEditStatus ? (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild disabled={updateStatusMutation.isPending}>
                           <div
@@ -947,26 +952,30 @@ export default function CancelledCases() {
                     {latestNote}
                   </div>
                   <div style={{ ...cellStyle, justifyContent: "center" }}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDetailTab("기본정보");
-                        setSelectedCaseId(caseItem.id);
-                      }}
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        color: "#008FED",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
-                      data-testid={`button-detail-${caseItem.id}`}
-                    >
-                      자세히 보기
-                    </button>
+                    {canViewDetail ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDetailTab("기본정보");
+                          setSelectedCaseId(caseItem.id);
+                        }}
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "#008FED",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                        data-testid={`button-detail-${caseItem.id}`}
+                      >
+                        자세히 보기
+                      </button>
+                    ) : (
+                      <span style={{ fontFamily: "Pretendard", fontSize: "12px", color: "rgba(12,12,12,0.3)" }}>-</span>
+                    )}
                   </div>
                 </div>
               );

@@ -33,6 +33,7 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { formatCaseNumber } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/use-permissions";
 import { InvoiceSheet, getCaseNumberPrefix } from "@/components/InvoiceSheet";
 import { FieldDispatchCostSheet } from "@/components/FieldDispatchCostSheet";
 import { InvoiceManagementPopup } from "@/components/InvoiceManagementPopup";
@@ -120,6 +121,8 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
     queryKey: ["/api/user"],
   });
   const isPartner = currentUser?.role === "협력사";
+  const { hasItem: hasPermItem } = usePermissions();
+  const canViewReport = hasPermItem("정산 및 통계", "보고서열람");
   const [selectedEstimateData, setSelectedEstimateData] = useState<{
     preventionEstimate: number;
     preventionApproved: number;
@@ -1233,7 +1236,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
       {/* Wide Table with Horizontal Scroll and Sticky Header/Columns */}
       {(() => {
         const stickyHeaders = ["보험사", "사고번호", "피보험자", "담당자(플록슨)", "접수번호", "협력업체"];
-        const scrollHeaders = ["청구일", "청구액", "자기부담금", "입금일", "입금액", "협력업체 지급액", "수수료", "계산서 발행일", ...(isPartner ? [] : ["관리"]), ...(filterMode === "closed" && !isPartner ? ["보고서열람"] : [])];
+        const scrollHeaders = ["청구일", "청구액", "자기부담금", "입금일", "입금액", "협력업체 지급액", "수수료", "계산서 발행일", ...(isPartner ? [] : ["관리"]), ...(filterMode === "closed" && !isPartner && canViewReport ? ["보고서열람"] : [])];
         const allHeaders = [...stickyHeaders, ...scrollHeaders];
         const stickyColWidths = [100, 130, 90, 110, 150, 110];
         const stickyColLefts = stickyColWidths.map((_, i) => stickyColWidths.slice(0, i).reduce((a, b) => a + b, 0));
@@ -1412,7 +1415,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                           </Button>
                         </td>
                       )}
-                      {filterMode === "closed" && !isPartner && (
+                      {filterMode === "closed" && !isPartner && canViewReport && (
                         <td style={{ ...cellStyle, borderRight: "none" }}>
                           <Popover
                             open={!!reportPopoverOpen[row.id]}
