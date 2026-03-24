@@ -358,14 +358,13 @@ export default function Intake({
       const stats = partnerStats?.find((s) => s.partnerName === companyName);
       const companyAccounts = partners.filter((p) => p.company === companyName);
       const companyAccount = companyAccounts.find((p) => p.accountType === "회사");
-      const regionSource = companyAccount || companyAccounts.find((p) => p.serviceRegions && p.serviceRegions.length > 0) || companyAccounts[0];
       return {
         name: companyName,
         dailyCount: stats?.dailyCount || 0,
         monthlyCount: stats?.monthlyCount || 0,
         inProgressCount: stats?.inProgressCount || 0,
         pendingCount: stats?.pendingCount || 0,
-        region: regionSource?.serviceRegions?.join(", ") || "",
+        region: (companyAccount?.serviceRegions && companyAccount.serviceRegions.length > 0) ? companyAccount.serviceRegions.join(", ") : "",
       };
     });
   }, [partners, partnerStats]);
