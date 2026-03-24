@@ -121,8 +121,8 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
     queryKey: ["/api/user"],
   });
   const isPartner = currentUser?.role === "협력사";
-  const { hasItem: hasPermItem } = usePermissions();
-  const canViewReport = hasPermItem("정산 및 통계", "보고서열람");
+  const { hasCategory: hasPermCategory } = usePermissions();
+  const canViewReport = hasPermCategory("현장조사");
   const [selectedEstimateData, setSelectedEstimateData] = useState<{
     preventionEstimate: number;
     preventionApproved: number;

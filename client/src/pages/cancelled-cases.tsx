@@ -128,10 +128,10 @@ export default function CancelledCases() {
   const { data: user, isLoading: userLoading } = useQuery<User>({
     queryKey: ["/api/user"],
   });
-  const { hasCategory: hasPermCategory, hasItem: hasPermItem } = usePermissions();
+  const { hasCategory: hasPermCategory } = usePermissions();
   const hasFieldSurveyAccess = hasPermCategory("현장조사");
-  const canEditStatus = hasFieldSurveyAccess && hasPermItem("정산 및 통계", "진행상태 수정");
-  const canViewDetail = hasFieldSurveyAccess && hasPermItem("정산 및 통계", "자세히 보기");
+  const canEditStatus = hasFieldSurveyAccess;
+  const canViewDetail = hasFieldSurveyAccess;
 
   const { data: cases = [], isLoading } = useQuery<CaseWithLatestProgress[]>({
     queryKey: ["/api/cases"],
