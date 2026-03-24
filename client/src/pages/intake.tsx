@@ -452,11 +452,11 @@ export default function Intake({
     }
     const { province, city } = extractRegionFromAddress(formData.insuredAddress);
     if (province || city) {
-      const regionFiltered = partnersWithStats.filter((p) => {
+      return partnersWithStats.filter((p) => {
+        if (!p.region) return false;
         const regions = p.region.split(", ");
         return regions.some((r) => matchRegion(r, province, city));
       });
-      if (regionFiltered.length > 0) return regionFiltered;
     }
     return partnersWithStats;
   }, [partnerSearchQuery, partnersWithStats, formData.insuredAddress]);
@@ -2817,7 +2817,9 @@ export default function Intake({
                         <span className="text-sm text-slate-500">
                           {partnerSearchQuery
                             ? "검색 결과가 없습니다"
-                            : "등록된 협력사가 없습니다"}
+                            : formData.insuredAddress
+                              ? "해당 지역에 출동가능한 협력사가 없습니다"
+                              : "등록된 협력사가 없습니다"}
                         </span>
                       </div>
                     ) : (
