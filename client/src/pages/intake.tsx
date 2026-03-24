@@ -49,9 +49,18 @@ const extractRegionFromAddress = (address: string): { province: string; city: st
   if (!address) return { province: "", city: "" };
   const normalized = address.trim();
 
+  for (const [fullName, shortName] of Object.entries(PROVINCE_MAP)) {
+    if (normalized.includes(fullName) || normalized.startsWith(shortName)) {
+      const prefix = normalized.includes(fullName) ? fullName : shortName;
+      const afterProvince = normalized.substring(normalized.indexOf(prefix) + prefix.length).trim();
+      const cityMatch = afterProvince.match(/([가-힣]+(?:시|군))/);
+      return { province: shortName, city: cityMatch ? cityMatch[1] : "" };
+    }
+  }
+
   for (const sc of SPECIAL_CITIES) {
     const scPatterns = [
-      `${sc}특별시`, `${sc}광역시`, `${sc}특별자치시`, sc,
+      `${sc}특별시`, `${sc}광역시`, `${sc}특별자치시`,
     ];
     for (const pat of scPatterns) {
       if (normalized.includes(pat)) {
@@ -59,14 +68,10 @@ const extractRegionFromAddress = (address: string): { province: string; city: st
         return { province: sc, city: guMatch ? guMatch[1] : "" };
       }
     }
-  }
-
-  for (const [fullName, shortName] of Object.entries(PROVINCE_MAP)) {
-    if (normalized.includes(fullName) || normalized.startsWith(shortName)) {
-      const prefix = normalized.includes(fullName) ? fullName : shortName;
-      const afterProvince = normalized.substring(normalized.indexOf(prefix) + prefix.length).trim();
-      const cityMatch = afterProvince.match(/([가-힣]+(?:시|군))/);
-      return { province: shortName, city: cityMatch ? cityMatch[1] : "" };
+    const scSpacePattern = new RegExp(`^${sc}\\s+([가-힣]+(?:구|군))`);
+    const scSpaceMatch = normalized.match(scSpacePattern);
+    if (scSpaceMatch) {
+      return { province: sc, city: scSpaceMatch[1] };
     }
   }
 
