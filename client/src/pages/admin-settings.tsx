@@ -4010,8 +4010,10 @@ export default function AdminSettings() {
                     }}
                   >
                     {opt.label}
-                    {sortField === opt.field && (
+                    {sortField === opt.field ? (
                       sortDirection === "asc" ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                    ) : (
+                      <ChevronDown size={12} style={{ opacity: 0.4 }} />
                     )}
                   </button>
                 ))}
@@ -4069,7 +4071,7 @@ export default function AdminSettings() {
                         sortField === col.field ? (
                           sortDirection === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
                         ) : (
-                          <ArrowUpDown size={12} style={{ opacity: 0.4 }} />
+                          <ChevronDown size={14} style={{ opacity: 0.4 }} />
                         )
                       )}
                     </span>
