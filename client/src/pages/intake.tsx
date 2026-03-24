@@ -2865,11 +2865,11 @@ export default function Intake({
               </div>
             </div>
           );
-          return createPortal(modalContent, document.body);
+          return isModal ? modalContent : createPortal(modalContent, document.body);
         })()}
       {/* 의뢰사 검색 팝업 */}
       {isClientSearchOpen &&
-        createPortal(
+        ((clientPopupEl: React.ReactNode) => isModal ? clientPopupEl : createPortal(clientPopupEl, document.body))(
           <div
             style={{
               position: "fixed",
@@ -3017,12 +3017,11 @@ export default function Intake({
                 </div>
               )}
             </div>
-          </div>,
-          document.body,
+          </div>
         )}
       {/* 심사자 검색 팝업 */}
       {isAssessorSearchOpen &&
-        createPortal(
+        ((assessorPopupEl: React.ReactNode) => isModal ? assessorPopupEl : createPortal(assessorPopupEl, document.body))(
           <div
             style={{
               position: "fixed",
@@ -3171,12 +3170,11 @@ export default function Intake({
                 </div>
               )}
             </div>
-          </div>,
-          document.body,
+          </div>
         )}
       {/* 조사자 검색 팝업 */}
       {isInvestigatorSearchOpen &&
-        createPortal(
+        ((investigatorPopupEl: React.ReactNode) => isModal ? investigatorPopupEl : createPortal(investigatorPopupEl, document.body))(
           <div
             style={{
               position: "fixed",
@@ -3327,8 +3325,7 @@ export default function Intake({
                 </div>
               )}
             </div>
-          </div>,
-          document.body,
+          </div>
         )}
     </div>
   );
