@@ -3977,6 +3977,47 @@ export default function AdminSettings() {
               </button>
             </div>
 
+            {/* Sort Options */}
+            <div className="flex items-center gap-3 mb-3">
+              <span style={{ fontFamily: "Pretendard", fontSize: "13px", fontWeight: 500, color: "#686A6E" }}>
+                정렬 기준
+              </span>
+              <div className="flex items-center gap-2">
+                {[
+                  { label: "역할", field: "role" },
+                  { label: "소속부서", field: "department" },
+                  { label: "직급", field: "position" },
+                  { label: "이메일 주소", field: "email" },
+                  { label: "ID", field: "username" },
+                  { label: "연락처", field: "phone" },
+                  { label: "계정 생성일", field: "createdAt" },
+                ].map((opt) => (
+                  <button
+                    key={opt.field}
+                    onClick={() => handleSortClick(opt.field)}
+                    className="px-3 py-1.5 rounded-md"
+                    style={{
+                      background: sortField === opt.field ? "rgba(0, 143, 237, 0.1)" : "transparent",
+                      border: sortField === opt.field ? "1px solid rgba(0, 143, 237, 0.3)" : "1px solid rgba(12, 12, 12, 0.15)",
+                      fontFamily: "Pretendard",
+                      fontSize: "13px",
+                      fontWeight: sortField === opt.field ? 600 : 400,
+                      color: sortField === opt.field ? "#008FED" : "rgba(12, 12, 12, 0.7)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {opt.label}
+                    {sortField === opt.field && (
+                      sortDirection === "asc" ? <ChevronUp size={12} /> : <ChevronDown size={12} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* User Table */}
             <div className="flex flex-col">
               {/* Table Header */}
@@ -3989,16 +4030,16 @@ export default function AdminSettings() {
                 }}
               >
                 {[
-                  { label: "역할", width: "90px", field: "role" },
+                  { label: "역할", width: "90px", field: "" },
                   { label: "회사명", width: "155px", field: "company" },
                   { label: "성함", width: "80px", field: "name" },
-                  { label: "소속부서", width: "100px", field: "department" },
-                  { label: "직급", width: "70px", field: "position" },
-                  { label: "이메일 주소", width: "220px", field: "email" },
-                  { label: "ID", width: "230px", field: "username" },
-                  { label: "연락처", width: "163px", field: "phone" },
-                  { label: "사무실 전화", width: "163px", field: "officePhone" },
-                  { label: "계정 생성일", width: "120px", field: "createdAt" },
+                  { label: "소속부서", width: "100px", field: "" },
+                  { label: "직급", width: "70px", field: "" },
+                  { label: "이메일 주소", width: "220px", field: "" },
+                  { label: "ID", width: "230px", field: "" },
+                  { label: "연락처", width: "163px", field: "" },
+                  { label: "사무실 전화", width: "163px", field: "" },
+                  { label: "계정 생성일", width: "120px", field: "" },
                   { label: "요청", width: "120px", field: "" },
                 ].map((col) => (
                   <div
@@ -4017,7 +4058,7 @@ export default function AdminSettings() {
                         fontSize: "15px",
                         fontWeight: 600,
                         letterSpacing: "-0.02em",
-                        color: sortField === col.field ? "#008FED" : "rgba(12, 12, 12, 0.6)",
+                        color: sortField === col.field && col.field ? "#008FED" : "rgba(12, 12, 12, 0.6)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",
