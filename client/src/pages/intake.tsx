@@ -30,26 +30,75 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { GlobalHeader } from "@/components/global-header";
 
-const extractCityFromAddress = (address: string): string => {
-  if (!address) return "";
-  const specialCityMatch = address.match(
-    /(서울|부산|대구|인천|광주|대전|울산|세종)/,
-  );
-  if (specialCityMatch) return specialCityMatch[1];
-  const cityMatch = address.match(/([가-힣]+)시/);
-  if (cityMatch) return cityMatch[1];
-  const guMatch = address.match(/([가-힣]+)구/);
-  if (guMatch) return guMatch[1];
-  const parts = address
-    .trim()
-    .split(/[\s/]+/)
-    .filter((p) => p.length > 0);
-  if (parts.length > 1) {
-    const lastPart = parts[parts.length - 1];
-    if (!lastPart.endsWith("도")) return lastPart;
-    if (parts.length > 2) return parts[parts.length - 2];
+const SPECIAL_CITIES = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종"];
+
+const PROVINCE_MAP: Record<string, string> = {
+  "경기도": "경기",
+  "강원도": "강원",
+  "충청북도": "충북",
+  "충청남도": "충남",
+  "전라북도": "전북",
+  "전라남도": "전남",
+  "경상북도": "경북",
+  "경상남도": "경남",
+  "제주도": "제주",
+  "제주특별자치도": "제주",
+};
+
+const extractRegionFromAddress = (address: string): { province: string; city: string } => {
+  if (!address) return { province: "", city: "" };
+  const normalized = address.trim();
+
+  for (const sc of SPECIAL_CITIES) {
+    const scPatterns = [
+      `${sc}특별시`, `${sc}광역시`, `${sc}특별자치시`, sc,
+    ];
+    for (const pat of scPatterns) {
+      if (normalized.includes(pat)) {
+        const guMatch = normalized.match(new RegExp(`${pat}\\s*([가-힣]+(?:구|군))`));
+        return { province: sc, city: guMatch ? guMatch[1] : "" };
+      }
+    }
   }
-  return address.trim();
+
+  for (const [fullName, shortName] of Object.entries(PROVINCE_MAP)) {
+    if (normalized.includes(fullName) || normalized.startsWith(shortName)) {
+      const prefix = normalized.includes(fullName) ? fullName : shortName;
+      const afterProvince = normalized.substring(normalized.indexOf(prefix) + prefix.length).trim();
+      const cityMatch = afterProvince.match(/([가-힣]+(?:시|군))/);
+      return { province: shortName, city: cityMatch ? cityMatch[1] : "" };
+    }
+  }
+
+  const cityMatch = normalized.match(/([가-힣]+)시/);
+  if (cityMatch) return { province: "", city: cityMatch[1] + "시" };
+  const guMatch = normalized.match(/([가-힣]+)구/);
+  if (guMatch) return { province: "", city: guMatch[1] + "구" };
+
+  return { province: "", city: "" };
+};
+
+const matchRegion = (partnerRegion: string, addressProvince: string, addressCity: string): boolean => {
+  if (!partnerRegion || (!addressProvince && !addressCity)) return false;
+  const parts = partnerRegion.trim().split(/\s+/);
+  const regionProvince = parts[0] || "";
+  const regionDistrict = parts.slice(1).join(" ") || "";
+
+  if (addressProvince && regionProvince !== addressProvince) return false;
+
+  if (!addressProvince && addressCity) {
+    if (regionDistrict && regionDistrict.includes(addressCity)) return true;
+    if (regionProvince.includes(addressCity)) return true;
+    return false;
+  }
+
+  if (addressCity && regionDistrict) {
+    if (regionDistrict.includes(addressCity) || addressCity.includes(regionDistrict.replace(/시|군|구/g, ""))) {
+      return true;
+    }
+  }
+
+  return !!addressProvince && regionProvince === addressProvince;
 };
 
 interface IntakeProps {
@@ -394,11 +443,12 @@ export default function Intake({
         p.name.toLowerCase().includes(partnerSearchQuery.toLowerCase()),
       );
     }
-    const city = extractCityFromAddress(formData.insuredAddress);
-    if (city) {
-      const regionFiltered = partnersWithStats.filter((p) =>
-        p.region.includes(city),
-      );
+    const { province, city } = extractRegionFromAddress(formData.insuredAddress);
+    if (province || city) {
+      const regionFiltered = partnersWithStats.filter((p) => {
+        const regions = p.region.split(", ");
+        return regions.some((r) => matchRegion(r, province, city));
+      });
       if (regionFiltered.length > 0) return regionFiltered;
     }
     return partnersWithStats;
