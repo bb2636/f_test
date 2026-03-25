@@ -1569,11 +1569,12 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 90px 160px"
-                      : "40px 110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 160px")
+                      ? "40px 110px 100px 110px 100px 70px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 160px"
+                      : "40px 110px 100px 110px 100px 70px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 160px")
                     : (user?.role === "협력사"
-                      ? "110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 90px 160px"
-                      : "110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 160px"),
+                      ? "110px 100px 110px 100px 70px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 160px"
+                      : "110px 100px 110px 100px 70px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 160px"),
+                minWidth: "1600px",
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1754,11 +1755,12 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 90px 160px"
-                            : "40px 110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 160px")
+                            ? "40px 110px 100px 110px 100px 70px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 160px"
+                            : "40px 110px 100px 110px 100px 70px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 160px")
                           : (user?.role === "협력사"
-                            ? "110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 90px 160px"
-                            : "110px 100px 110px 100px 70px 1fr 80px 90px 50px 50px 50px 60px 130px 50px 160px"),
+                            ? "110px 100px 110px 100px 70px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 160px"
+                            : "110px 100px 110px 100px 70px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 160px"),
+                      minWidth: "1600px",
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -2010,6 +2012,9 @@ export default function ComprehensiveProgress() {
                     </div>
                     <div
                       style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "13px",
+                        color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "14px",
@@ -2023,6 +2028,9 @@ export default function ComprehensiveProgress() {
                     </div>
                     <div
                       style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "13px",
+                        color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "14px",
