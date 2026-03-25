@@ -5159,6 +5159,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== 문서 업로드 API =====
+  let gcsDisabled = false;
+
+  (async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:1106/object-storage/signed-object-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bucket_name: "test", object_name: "test", method: "GET", expires_at: new Date(Date.now() + 60000).toISOString() }),
+        signal: AbortSignal.timeout(3000),
+      });
+      if (!res.ok) {
+        console.log(`[GCS] Sidecar auth check failed (${res.status}), using DB storage for uploads`);
+        gcsDisabled = true;
+      }
+    } catch {
+      console.log("[GCS] Sidecar not available, using DB storage for uploads");
+      gcsDisabled = true;
+    }
+  })();
 
   // 직접 업로드 (base64): Object Storage 우회, DB에 직접 저장
   const upload = multer({
@@ -5204,7 +5223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let savedToGCS = false;
         let storageKey = "";
 
-        if (privateObjectDir) {
+        if (privateObjectDir && !gcsDisabled) {
           try {
             const timestamp = Date.now();
             const uuid = crypto.randomUUID();
@@ -5224,7 +5243,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             savedToGCS = true;
             console.log(`[multipart-upload] File saved to GCS: ${storageKey}`);
           } catch (gcsError: any) {
-            console.warn(`[multipart-upload] GCS upload failed, falling back to DB: ${gcsError.message}`);
+            console.warn(`[multipart-upload] GCS upload failed, disabling GCS for future uploads: ${gcsError.message}`);
+            gcsDisabled = true;
             savedToGCS = false;
           }
         }
