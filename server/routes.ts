@@ -5201,23 +5201,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
 
         const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
+        let savedToGCS = false;
+        let storageKey = "";
+
         if (privateObjectDir) {
-          const timestamp = Date.now();
-          const uuid = crypto.randomUUID();
-          const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
-          const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
-          const fullPath = `${privateObjectDir}/${storageKey}`;
-          const pathParts = fullPath.split("/").filter((p: string) => p);
-          const bucketName = pathParts[0];
-          const objectName = pathParts.slice(1).join("/");
+          try {
+            const timestamp = Date.now();
+            const uuid = crypto.randomUUID();
+            const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
+            storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
+            const fullPath = `${privateObjectDir}/${storageKey}`;
+            const pathParts = fullPath.split("/").filter((p: string) => p);
+            const bucketName = pathParts[0];
+            const objectName = pathParts.slice(1).join("/");
 
-          const bucket = objectStorageClient.bucket(bucketName);
-          const gcsFile = bucket.file(objectName);
-          await gcsFile.save(file.buffer, {
-            metadata: { contentType: fileType },
-          });
+            const bucket = objectStorageClient.bucket(bucketName);
+            const gcsFile = bucket.file(objectName);
+            await gcsFile.save(file.buffer, {
+              metadata: { contentType: fileType },
+            });
 
-          const document = await storage.createPendingDocument({
+            savedToGCS = true;
+            console.log(`[multipart-upload] File saved to GCS: ${storageKey}`);
+          } catch (gcsError: any) {
+            console.warn(`[multipart-upload] GCS upload failed, falling back to DB: ${gcsError.message}`);
+            savedToGCS = false;
+          }
+        }
+
+        let document;
+        if (savedToGCS) {
+          document = await storage.createPendingDocument({
             caseId,
             category,
             fileName,
@@ -5226,30 +5240,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             storageKey,
             createdBy: req.session.userId,
           });
-
           await storage.updateDocumentStatus(document.id, "ready");
-
           console.log(`[multipart-upload] Document saved to Object Storage: ${document.id}, key: ${storageKey}`);
-
-          return res.json({
-            success: true,
-            documentId: document.id,
+        } else {
+          const fileData = file.buffer.toString("base64");
+          document = await storage.saveDocument({
+            caseId,
+            category,
+            fileName,
+            fileType,
+            fileSize: file.size,
+            fileData,
+            createdBy: req.session.userId,
           });
+          console.log(`[multipart-upload] Document saved to DB: ${document.id}`);
         }
-
-        const fileData = file.buffer.toString("base64");
-
-        const document = await storage.saveDocument({
-          caseId,
-          category,
-          fileName,
-          fileType,
-          fileSize: file.size,
-          fileData,
-          createdBy: req.session.userId,
-        });
-
-        console.log(`[multipart-upload] Document saved to DB: ${document.id}`);
 
         res.json({
           success: true,
@@ -5376,95 +5381,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Presigned URL 발급 (Object Storage 사용 시 - 폴백용)
-  app.post("/api/documents/presign", async (req, res) => {
-    if (!req.session?.userId) {
-      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
-    }
-
-    try {
-      const contentLength = req.headers["content-length"];
-      console.log(`[presign] Content-Length: ${contentLength} bytes`);
-
-      const { caseId, fileName, fileType, fileSize } = req.body;
-
-      if (req.body.fileData || req.body.data || req.body.base64) {
-        console.error("[presign] ERROR: 파일 바이너리/base64가 요청에 포함됨!");
-        return res
-          .status(400)
-          .json({ error: "presign 요청에는 파일 데이터를 포함하지 마세요" });
-      }
-
-      if (!caseId || !fileName || !fileType || !fileSize) {
-        return res.status(400).json({
-          error:
-            "필수 필드가 누락되었습니다 (caseId, fileName, fileType, fileSize)",
-        });
-      }
-
-      const MAX_FILE_SIZE = 50 * 1024 * 1024;
-      if (fileSize > MAX_FILE_SIZE) {
-        return res.status(413).json({
-          error: `파일 크기(${(fileSize / 1024 / 1024).toFixed(1)}MB)가 제한(${MAX_FILE_SIZE / 1024 / 1024}MB)을 초과합니다`,
-        });
-      }
-
-      console.log(
-        `[presign] Generating presigned URL for case ${caseId}, file: ${fileName}, size: ${fileSize}`,
-      );
-
-      const timestamp = Date.now();
-      const uuid = crypto.randomUUID();
-      const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
-      const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
-
-      const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
-      if (!privateObjectDir) {
-        console.error("[presign] PRIVATE_OBJECT_DIR not set");
-        return res
-          .status(500)
-          .json({ error: "Object Storage가 설정되지 않았습니다" });
-      }
-
-      const fullPath = `${privateObjectDir}/${storageKey}`;
-      const pathParts = fullPath.split("/").filter((p) => p);
-      if (pathParts.length < 2) {
-        return res.status(500).json({ error: "잘못된 스토리지 경로입니다" });
-      }
-      const bucketName = pathParts[0];
-      const objectName = pathParts.slice(1).join("/");
-
-      console.log(`[presign] Bucket: ${bucketName}, Object: ${objectName}`);
-
-      const uploadURL = await signObjectURL({
-        bucketName,
-        objectName,
-        method: "PUT",
-        ttlSec: 900,
-      });
-
-      console.log(
-        `[presign] Generated presigned URL successfully for storageKey: ${storageKey}`,
-      );
-
-      res.json({
-        uploadURL,
-        storageKey,
-      });
-    } catch (error: any) {
-      console.error("[presign] Error occurred:");
-      console.error("  message:", error.message);
-      console.error("  stack:", error.stack);
-      if (error.code) console.error("  code:", error.code);
-      if (error.statusCode) console.error("  statusCode:", error.statusCode);
-      if (error.response)
-        console.error("  response:", JSON.stringify(error.response));
-      res.status(500).json({
-        error: "presigned URL 발급 중 오류가 발생했습니다",
-        details: error.message,
-      });
-    }
-  });
 
   // Step 2: 업로드 완료 후 DB에 저장
   app.post("/api/documents/upload-complete", async (req, res) => {
@@ -5892,28 +5808,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`[download-url] Generating download URL for document ${id}`);
 
-      // Download URL 생성 (1시간 TTL)
-      const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
-      if (!privateObjectDir) {
-        return res
-          .status(500)
-          .json({ error: "Object Storage가 설정되지 않았습니다" });
-      }
-
-      const fullPath = `${privateObjectDir}/${document.storageKey}`;
-      const pathParts = fullPath.split("/").filter((p) => p);
-      const bucketName = pathParts[0];
-      const objectName = pathParts.slice(1).join("/");
-
-      const downloadURL = await signObjectURL({
-        bucketName,
-        objectName,
-        method: "GET",
-        ttlSec: 3600,
-      });
-
       res.json({
-        downloadURL,
+        downloadURL: `/api/documents/${id}/image`,
         fileName: document.fileName,
         fileType: document.fileType,
         fileSize: document.fileSize,
@@ -5950,7 +5846,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "권한이 없습니다" });
       }
 
-      // Object Storage 문서인 경우 signed URL로 리다이렉트
+      // Object Storage 문서인 경우 서버에서 직접 스트리밍
       if (document.storageKey && document.status === "ready") {
         const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
         if (!privateObjectDir) {
@@ -5959,19 +5855,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .json({ error: "Object Storage가 설정되지 않았습니다" });
         }
 
-        const fullPath = `${privateObjectDir}/${document.storageKey}`;
-        const pathParts = fullPath.split("/").filter((p) => p);
-        const bucketName = pathParts[0];
-        const objectName = pathParts.slice(1).join("/");
+        try {
+          const fullPath = `${privateObjectDir}/${document.storageKey}`;
+          const pathParts = fullPath.split("/").filter((p: string) => p);
+          const bucketName = pathParts[0];
+          const objectName = pathParts.slice(1).join("/");
 
-        const signedUrl = await signObjectURL({
-          bucketName,
-          objectName,
-          method: "GET",
-          ttlSec: 3600,
-        });
+          const bucket = objectStorageClient.bucket(bucketName);
+          const gcsFile = bucket.file(objectName);
+          const [contents] = await gcsFile.download();
 
-        return res.redirect(signedUrl);
+          res.set("Content-Type", document.fileType || "application/octet-stream");
+          res.set("Content-Length", contents.length.toString());
+          res.set("Cache-Control", "private, max-age=3600");
+          res.set("Content-Disposition", `inline; filename="${encodeURIComponent(document.fileName)}"`);
+          return res.send(contents);
+        } catch (gcsError: any) {
+          console.warn(`[image] GCS download failed for ${id}, trying signed URL fallback: ${gcsError.message}`);
+          try {
+            const fullPath = `${privateObjectDir}/${document.storageKey}`;
+            const pathParts = fullPath.split("/").filter((p: string) => p);
+            const bucketName = pathParts[0];
+            const objectName = pathParts.slice(1).join("/");
+            const signedUrl = await signObjectURL({
+              bucketName,
+              objectName,
+              method: "GET",
+              ttlSec: 3600,
+            });
+            return res.redirect(signedUrl);
+          } catch (signError: any) {
+            console.error(`[image] Both GCS and signed URL failed for ${id}: ${signError.message}`);
+            return res.status(500).json({ error: "파일을 불러올 수 없습니다" });
+          }
+        }
       }
 
       // 레거시 문서 (fileData base64)

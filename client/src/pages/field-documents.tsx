@@ -829,75 +829,51 @@ export default function FieldDocuments() {
 
     const fileType = uploadingFile.file.type || "application/octet-stream";
 
-    const presignRes = await fetch("/api/documents/presign", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        caseId: selectedCaseId,
-        fileName: uploadingFile.file.name,
-        fileType,
-        fileSize: uploadingFile.file.size,
-      }),
-    });
-
-    if (!presignRes.ok) {
-      if (presignRes.status === 401) {
-        throw new Error("로그인이 만료되었습니다. 다시 로그인 후 시도해주세요.");
-      }
-      const errData = await presignRes.json().catch(() => ({}));
-      throw new Error(errData.error || `presign 실패 (${presignRes.status})`);
-    }
-
-    const { uploadURL, storageKey } = await presignRes.json();
+    const formData = new FormData();
+    formData.append("file", uploadingFile.file);
+    formData.append("caseId", selectedCaseId);
+    formData.append("category", uploadingFile.category);
+    formData.append("fileName", uploadingFile.file.name);
+    formData.append("fileType", fileType);
 
     updateProgress(15);
 
-    await new Promise<void>((resolve, reject) => {
+    const result = await new Promise<{ success: boolean; documentId: string }>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 70) + 15;
+          const percent = Math.round((event.loaded / event.total) * 80) + 15;
           updateProgress(percent);
         }
       };
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          resolve();
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch {
+            reject(new Error("서버 응답 파싱 실패"));
+          }
+        } else if (xhr.status === 401) {
+          reject(new Error("로그인이 만료되었습니다. 다시 로그인 후 시도해주세요."));
+        } else if (xhr.status === 413) {
+          reject(new Error("파일이 너무 큽니다 (50MB 제한)"));
         } else {
-          reject(new Error(`스토리지 업로드 실패 (${xhr.status})`));
+          try {
+            const errData = JSON.parse(xhr.responseText);
+            reject(new Error(errData.error || `업로드 실패 (${xhr.status})`));
+          } catch {
+            reject(new Error(`업로드 실패 (${xhr.status})`));
+          }
         }
       };
       xhr.onerror = () => reject(new Error("서버 연결 실패. 인터넷 연결을 확인해주세요."));
       xhr.ontimeout = () => reject(new Error("업로드 시간이 초과되었습니다 (300초)."));
       xhr.timeout = 300000;
-      xhr.open("PUT", uploadURL);
-      xhr.setRequestHeader("Content-Type", fileType);
-      xhr.send(uploadingFile.file);
+      xhr.withCredentials = true;
+      xhr.open("POST", "/api/documents/multipart-upload");
+      xhr.send(formData);
     });
 
-    updateProgress(90);
-
-    const completeRes = await fetch("/api/documents/upload-complete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        caseId: selectedCaseId,
-        category: uploadingFile.category,
-        fileName: uploadingFile.file.name,
-        fileType,
-        fileSize: uploadingFile.file.size,
-        storageKey,
-      }),
-    });
-
-    if (!completeRes.ok) {
-      const errData = await completeRes.json().catch(() => ({}));
-      throw new Error(errData.error || `업로드 완료 처리 실패 (${completeRes.status})`);
-    }
-
-    const result = await completeRes.json();
     updateProgress(100, "completed", undefined, result.documentId);
   };
 
@@ -922,7 +898,7 @@ export default function FieldDocuments() {
               msg.includes("HEIF") ||
               msg.includes("로그인이 만료") ||
               msg.includes("너무 큽니다") ||
-              msg.includes("presign 실패") ||
+              msg.includes("업로드 실패") ||
               msg.includes("완료 처리 실패")
             ) {
               return false;

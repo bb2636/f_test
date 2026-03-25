@@ -35,7 +35,7 @@ The system is a full-stack web application utilizing a React-based frontend and 
 - **Reception Management**: New water damage case registration and management, including assigning repair companies, with a read-only mode by default for case details.
 - **Field Survey Workflow**: A sequential process for managing field investigations.
   - **Drawing Creation**: Digital drawing workspace for damage scope with tools for images, rectangles, and leak markers, supporting high-resolution PNG export.
-  - **Documents Upload**: Document and photo upload system with persistent storage (Object Storage preferred, fallback to DB base64), categorization, download, and delete functionalities. Multipart and direct upload endpoints use Object Storage when PRIVATE_OBJECT_DIR is available, storing only metadata in PostgreSQL for faster uploads.
+  - **Documents Upload**: Document and photo upload system with persistent storage. Upload flow uses multipart-upload endpoint (`/api/documents/multipart-upload`) which tries GCS Object Storage first, then falls back to DB base64 storage if GCS fails. Download flow uses `/api/documents/:id/image` which streams from GCS or serves base64 from DB. Presigned URL approach was replaced due to sidecar auth issues in production.
   - **Estimate Management**: Create and submit restoration cost estimates with dynamic calculation tables linked to master data, version tracking, and PDF/Excel export. Includes a Recovery Area Table and configurable Labor Rate Tiers.
   - **Field Reports**: Generate comprehensive reports integrating all collected field survey data.
 - **Master Data Management**: Administrator-only feature for managing dropdown options used throughout the system.
