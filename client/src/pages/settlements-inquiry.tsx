@@ -121,8 +121,9 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
     queryKey: ["/api/user"],
   });
   const isPartner = currentUser?.role === "협력사";
-  const { hasCategory: hasPermCategory } = usePermissions();
+  const { hasCategory: hasPermCategory, hasItem: hasPermItem } = usePermissions();
   const canViewReport = hasPermCategory("현장조사");
+  const canManageSettlement = hasPermItem("정산 및 통계", "관리");
   const [selectedEstimateData, setSelectedEstimateData] = useState<{
     preventionEstimate: number;
     preventionApproved: number;
@@ -1236,7 +1237,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
       {/* Wide Table with Horizontal Scroll and Sticky Header/Columns */}
       {(() => {
         const stickyHeaders = ["보험사", "사고번호", "피보험자", "담당자(플록슨)", "접수번호", "협력업체"];
-        const scrollHeaders = ["청구일", "청구액", "자기부담금", "입금일", "입금액", "협력업체 지급액", "수수료", "계산서 발행일", ...(isPartner ? [] : ["관리"]), ...(filterMode === "closed" && !isPartner && canViewReport ? ["보고서열람"] : [])];
+        const scrollHeaders = ["청구일", "청구액", "자기부담금", "입금일", "입금액", "협력업체 지급액", "수수료", "계산서 발행일", ...(!isPartner && canManageSettlement ? ["관리"] : []), ...(filterMode === "closed" && !isPartner && canViewReport ? ["보고서열람"] : [])];
         const allHeaders = [...stickyHeaders, ...scrollHeaders];
         const stickyColWidths = [100, 130, 90, 110, 150, 110];
         const stickyColLefts = stickyColWidths.map((_, i) => stickyColWidths.slice(0, i).reduce((a, b) => a + b, 0));
@@ -1393,8 +1394,8 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       <td style={amountStyle}>{renderAmount(row.settlementDeposit)}</td>
                       <td style={amountStyle}>{renderAmount(row.partnerPaymentAmount)}</td>
                       <td style={amountStyle}>{renderAmount(row.settlementCommission)}</td>
-                      <td style={{ ...cellStyle, borderRight: isPartner ? "none" : cellStyle.borderRight }}>{row.settlementInvoiceDate}</td>
-                      {!isPartner && (
+                      <td style={{ ...cellStyle, borderRight: (isPartner || (!canManageSettlement && !(filterMode === "closed" && canViewReport))) ? "none" : cellStyle.borderRight }}>{row.settlementInvoiceDate}</td>
+                      {!isPartner && canManageSettlement && (
                         <td style={{ ...cellStyle, borderRight: filterMode === "closed" ? "1px solid rgba(12, 12, 12, 0.08)" : "none" }}>
                           <Button
                             variant="outline"
