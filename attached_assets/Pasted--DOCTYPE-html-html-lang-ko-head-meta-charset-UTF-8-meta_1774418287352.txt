@@ -405,56 +405,6 @@ footer {
   font-size:0.68rem; color:rgba(255,255,255,0.25); text-align:center;
 }
 
-/* ── 개인정보처리방침 모달 ── */
-.privacy-overlay {
-  display:none; position:fixed; inset:0; z-index:9999;
-  background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);
-  justify-content:center; align-items:center;
-}
-.privacy-overlay.open { display:flex; }
-.privacy-modal {
-  background:#fff; border-radius:12px; width:92%; max-width:640px;
-  max-height:80vh; display:flex; flex-direction:column;
-  box-shadow:0 20px 60px rgba(0,0,0,0.25);
-  animation: modalIn 0.25s ease;
-}
-@keyframes modalIn { from{opacity:0;transform:scale(0.96) translateY(12px)} to{opacity:1;transform:none} }
-.privacy-header {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:1.4rem 1.8rem; border-bottom:1px solid #e8e5df;
-  flex-shrink:0;
-}
-.privacy-header h2 { font-size:1.1rem; font-weight:700; color:#042F2E; }
-.privacy-close {
-  width:32px; height:32px; border:none; background:none;
-  font-size:1.3rem; cursor:pointer; color:#6B7280; border-radius:6px;
-  display:flex; align-items:center; justify-content:center;
-  transition:background 0.2s;
-}
-.privacy-close:hover { background:#f2f0eb; }
-.privacy-body {
-  padding:1.5rem 1.8rem; overflow-y:auto; flex:1;
-  font-size:0.85rem; color:#334155; line-height:1.85;
-}
-.privacy-body h4 {
-  font-weight:700; color:#0f172a; margin:1.2rem 0 0.3rem; font-size:0.88rem;
-}
-.privacy-body ul, .privacy-body ol {
-  padding-left:1.5rem; margin-top:0.3rem;
-}
-.privacy-body li { margin-bottom:0.3rem; color:#475569; }
-.privacy-body table {
-  width:100%; border-collapse:collapse; font-size:0.78rem; margin:0.6rem 0;
-}
-.privacy-body th {
-  text-align:left; padding:0.5rem; background:#f8fafc;
-  border-bottom:1px solid #e2e8f0; font-weight:600;
-}
-.privacy-body td {
-  padding:0.5rem; border-bottom:1px solid #f1f5f9;
-}
-.privacy-body .appendix { border-top:1px solid #e2e8f0; padding-top:1rem; margin-top:1rem; }
-
 /* ── REVEAL 애니메이션 ── */
 .reveal { opacity:0; transform:translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.in { opacity:1; transform:translateY(0); }
