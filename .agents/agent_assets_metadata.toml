@@ -1,8 +1,3 @@
 uploads = []
 generated = []
-
-[[outputs]]
-id = "BvxYSHG11Ifh96Iae0uBA"
-uri = "file://attached_assets/Pasted--DOCTYPE-html-html-lang-ko-head-meta-charset-UTF-8-meta_1774418287352.txt"
-type = "text"
-title = "랜딩 페이지 (개인정보처리방침 팝업 추가)"
+outputs = []
