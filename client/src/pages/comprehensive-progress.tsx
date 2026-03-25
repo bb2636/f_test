@@ -492,10 +492,17 @@ export default function ComprehensiveProgress() {
       return { previousCases, targetCase };
     },
     onSuccess: async (data, variables, context) => {
-      // 백엔드에서 반환된 실제 데이터로 업데이트
-      // 서버에서 { success: true, case: updatedCase } 형태로 반환
       let updatedCaseData: CaseWithLatestProgress | null = null;
-      const responseData = data as { success?: boolean; case?: unknown };
+      let responseData: { success?: boolean; case?: unknown } = {};
+      try {
+        if (data instanceof Response) {
+          responseData = await data.json();
+        } else {
+          responseData = data as { success?: boolean; case?: unknown };
+        }
+      } catch {
+        responseData = {};
+      }
       if (
         responseData &&
         responseData.case &&

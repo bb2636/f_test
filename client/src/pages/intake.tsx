@@ -101,27 +101,72 @@ const extractRegionFromAddress = (address: string): { province: string; city: st
   return { province: "", city: "" };
 };
 
+const parsePartnerRegion = (partnerRegion: string): { province: string; district: string } => {
+  const trimmed = partnerRegion.trim();
+  if (trimmed.includes("/")) {
+    const slashIdx = trimmed.indexOf("/");
+    let prov = trimmed.substring(0, slashIdx).trim();
+    prov = prov.replace(/도$/, "").replace(/시$/, "");
+    if (PROVINCE_MAP[prov]) prov = PROVINCE_MAP[prov];
+    else {
+      for (const [full, short] of Object.entries(PROVINCE_MAP)) {
+        if (prov === short || prov === full) { prov = short; break; }
+      }
+    }
+    const dist = trimmed.substring(slashIdx + 1).trim();
+    return { province: prov, district: dist };
+  }
+  const parts = trimmed.split(/\s+/);
+  if (parts.length >= 2) {
+    let prov = parts[0];
+    if (PROVINCE_MAP[prov]) prov = PROVINCE_MAP[prov];
+    return { province: prov, district: parts.slice(1).join(" ") };
+  }
+  const singleVal = parts[0] || "";
+  if (PROVINCE_SHORTS.includes(singleVal) || SPECIAL_CITIES.includes(singleVal)) {
+    return { province: singleVal, district: "" };
+  }
+  return { province: "", district: singleVal };
+};
+
 const matchRegion = (partnerRegion: string, addressProvince: string, addressCity: string): boolean => {
   if (!partnerRegion || (!addressProvince && !addressCity)) return false;
-  const parts = partnerRegion.trim().split(/\s+/);
-  const regionProvince = parts[0] || "";
-  const regionDistrict = parts.slice(1).join(" ") || "";
+  const { province: regionProvince, district: regionDistrict } = parsePartnerRegion(partnerRegion);
 
-  if (addressProvince && regionProvince !== addressProvince) return false;
+  if (addressProvince && regionProvince) {
+    if (regionProvince !== addressProvince) return false;
+  }
+
+  if (addressProvince && !regionProvince && regionDistrict) {
+    return false;
+  }
 
   if (!addressProvince && addressCity) {
-    if (regionDistrict && regionDistrict.includes(addressCity)) return true;
-    if (regionProvince.includes(addressCity)) return true;
+    if (regionProvince && SPECIAL_CITIES.includes(regionProvince)) {
+      return false;
+    }
+    if (regionDistrict) {
+      const distClean = regionDistrict.replace(/[시군구]$/g, "");
+      const cityClean = addressCity.replace(/[시군구]$/g, "");
+      if (distClean === cityClean || regionDistrict === addressCity) return true;
+    }
+    if (!regionDistrict && regionProvince) {
+      const provClean = regionProvince.replace(/[시군구]$/g, "");
+      const cityClean = addressCity.replace(/[시군구]$/g, "");
+      if (provClean === cityClean) return true;
+    }
     return false;
   }
 
   if (addressCity && regionDistrict) {
-    if (regionDistrict.includes(addressCity) || addressCity.includes(regionDistrict.replace(/시|군|구/g, ""))) {
+    const distClean = regionDistrict.replace(/[시군구]$/g, "");
+    const cityClean = addressCity.replace(/[시군구]$/g, "");
+    if (regionDistrict === addressCity || distClean === cityClean) {
       return true;
     }
   }
 
-  return !!addressProvince && regionProvince === addressProvince;
+  return !!addressProvince && regionProvince === addressProvince && !regionDistrict;
 };
 
 interface IntakeProps {
@@ -376,16 +421,25 @@ export default function Intake({
       const stats = partnerStats?.find((s) => s.partnerName === companyName);
       const companyAccounts = partners.filter((p) => p.company === companyName);
       const companyAccount = companyAccounts.find((p) => p.accountType === "회사");
-      const regionSource = (companyAccount?.serviceRegions && companyAccount.serviceRegions.length > 0)
-        ? companyAccount
-        : companyAccounts.find((p) => p.serviceRegions && p.serviceRegions.length > 0) || companyAccounts[0];
+      let allRegions: string[] = [];
+      if (companyAccount?.serviceRegions && companyAccount.serviceRegions.length > 0) {
+        allRegions = companyAccount.serviceRegions;
+      } else {
+        const regionSet = new Set<string>();
+        companyAccounts.forEach((p) => {
+          if (p.serviceRegions) {
+            p.serviceRegions.forEach((r) => regionSet.add(r));
+          }
+        });
+        allRegions = Array.from(regionSet);
+      }
       return {
         name: companyName,
         dailyCount: stats?.dailyCount || 0,
         monthlyCount: stats?.monthlyCount || 0,
         inProgressCount: stats?.inProgressCount || 0,
         pendingCount: stats?.pendingCount || 0,
-        region: regionSource?.serviceRegions?.join(", ") || "",
+        region: allRegions.join(", ") || "",
       };
     });
   }, [partners, partnerStats]);
