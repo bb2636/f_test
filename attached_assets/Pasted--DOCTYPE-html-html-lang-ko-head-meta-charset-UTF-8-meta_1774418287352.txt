@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLOXN — 복구 손해액 관리 플랫폼</title>
+<!-- Pretendard 사용 → Google Fonts 불필요하여 제거 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+<style>
+:root {
+  --ink:      #042F2E;
+  --ink-mid:  #1C1C1C;
+  --ink-soft: #2A2A2A;
+  --fog:      #F2F0EB;
+  --fog-mid:  #E8E5DF;
+  --fog-dark: #D6D2CA;
+  --steel:    #6B7280;
+  --steel-lt: #9CA3AF;
+  --red:      #C0392B;
+  --red-soft: rgba(192,57,43,0.08);
+  --blue:     #1B4F8A;
+  --blue-soft:rgba(27,79,138,0.08);
+  --gold:     #8B6914;
+  --gold-soft:rgba(139,105,20,0.08);
+  --white:    #FFFFFF;
+  --radius:   4px;
+}
+
+/* ── 기본 리셋 & 폰트 ── */
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--fog);
+  color: var(--ink);
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display: flex; align-items:center; justify-content:space-between;
+  padding: 0 5vw; height: 64px;
+  background: rgba(242,240,235,0.94);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--fog-dark);
+  transition: box-shadow 0.3s;
+}
+.nav-logo {
+  display: flex; align-items:center; gap:10px;
+  text-decoration: none;
+}
+.nav-logo-text {
+  display: flex; flex-direction: column; justify-content: center;
+}
+.nav-logo-text .name {
+  font-size: 0.95rem; font-weight: 600; color: var(--ink);
+  line-height: 1.3; letter-spacing: -0.01em;
+}
+.nav-links { display:flex; gap:2.5rem; list-style:none; }
+.nav-links a {
+  font-size: 0.78rem; color: var(--steel); text-decoration:none;
+  letter-spacing:0.04em; font-weight:400; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-tag {
+  font-size: 0.65rem; color: var(--steel);
+  border: 1px solid var(--fog-dark);
+  padding: 0.3rem 0.8rem; border-radius: 100px; letter-spacing: 0.06em;
+}
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: grid; grid-template-columns: 1fr 1fr;
+  position: relative; overflow: hidden;
+}
+.hero-left {
+  padding: 120px 5vw 80px 5vw;
+  display: flex; flex-direction:column; justify-content:center;
+  position: relative; z-index:1;
+}
+.hero-right {
+  position: relative; overflow:hidden;
+  background: var(--ink);
+}
+.hero-right-pattern {
+  position:absolute; inset:0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.04) 39px, rgba(255,255,255,0.04) 40px);
+}
+.hero-right-content {
+  position:relative; z-index:1;
+  padding: 120px 5vw 80px 4vw;
+  display:flex; flex-direction:column; justify-content:center; height:100%;
+}
+.eyebrow {
+  font-size: 0.68rem; letter-spacing: 0.16em; color: var(--steel);
+  text-transform: uppercase; margin-bottom: 1.6rem;
+  display:flex; align-items:center; gap:0.8rem;
+}
+.eyebrow::before { content:''; display:block; width:24px; height:1px; background:var(--steel); }
+.hero-title {
+  font-size: clamp(3rem, 4.5vw, 5rem);
+  font-weight: 700; line-height: 1.08;
+  letter-spacing: -0.02em; margin-bottom: 2rem;
+}
+.hero-title em { font-style: normal; color: var(--blue); }
+.hero-desc { font-size: 0.9rem; line-height: 1.9; color: var(--steel); margin-bottom: 2.5rem; }
+.hero-divider { width: 40px; height: 2px; background: var(--ink); margin-bottom: 2rem; }
+.hero-tags { display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; }
+.hero-tag {
+  font-size: 0.62rem; letter-spacing: 0.08em; padding: 0.3rem 0.8rem;
+  border: 1px solid var(--fog-dark); border-radius: 100px; color: var(--steel);
+}
+.hero-tag-partner {
+  font-size: 0.62rem; letter-spacing: 0.08em; padding: 0.3rem 0.8rem;
+  border-radius: 100px; border: none; cursor: pointer; text-decoration: none;
+  background-color: #042F2E; color: #FFFFFF; font-weight: 700;
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.hero-tag-partner:hover {
+  background-color: #064d4b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(4,47,46,0.3);
+}
+
+.hero-right .eyebrow { color: rgba(255,255,255,0.35); }
+.hero-right .eyebrow::before { background: rgba(255,255,255,0.35); }
+.right-title {
+  font-size: clamp(1.8rem, 2.5vw, 2.8rem);
+  font-weight: 700; color: var(--white);
+  line-height: 1.2; margin-bottom: 2.5rem;
+}
+.right-title em { font-style:normal; color: rgba(200,180,140,0.9); }
+.pillars { display:flex; flex-direction:column; }
+.pillar {
+  display:flex; gap:1.4rem; align-items:flex-start;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.pillar:first-child { border-top: 1px solid rgba(255,255,255,0.07); }
+.pillar-num {
+  font-size: 0.6rem; color: rgba(255,255,255,0.25);
+  padding-top: 0.2rem; flex-shrink:0; letter-spacing:0.05em;
+}
+.pillar-text h4 { font-size: 0.9rem; font-weight:500; color:var(--white); margin-bottom: 0.35rem; }
+.pillar-text p  { font-size: 0.78rem; color: rgba(255,255,255,0.45); line-height: 1.7; }
+
+/* ── INTRO STRIP ── */
+.intro-strip {
+  background: var(--ink); padding: 5rem 5vw;
+  display:flex; justify-content:flex-start; align-items:baseline; gap: 3rem;
+}
+.strip-label {
+  font-size: 0.65rem; color: rgba(255,255,255,0.3);
+  letter-spacing: 0.15em; line-height: 2; flex-shrink:0;
+}
+.strip-body {
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-weight: 400; color: var(--white); line-height: 1.65;
+}
+.strip-body strong { font-weight:600; color: rgba(200,180,140,0.9); }
+
+/* ── SECTION BASE ── */
+section.pad { padding: 7rem 5vw; }
+.label-row { display:flex; align-items:center; gap:1rem; margin-bottom: 1rem; }
+.sec-label {
+  font-size: 0.65rem; color: var(--steel); letter-spacing: 0.14em; white-space:nowrap;
+}
+.sec-line { flex:1; height:1px; background: var(--fog-dark); }
+.sec-title {
+  font-size: clamp(2.2rem, 3.5vw, 3.2rem);
+  font-weight: 800; line-height: 1.15; margin-bottom: 1rem;
+}
+.sec-title em { font-style:normal; color: var(--blue); }
+.sec-sub { font-size: 0.88rem; color: var(--steel); line-height: 1.85; max-width: 520px; }
+
+/* ── PROBLEM ── */
+#problem { background: var(--white); }
+.problem-layout {
+  display:grid; grid-template-columns: 1fr 1fr;
+  gap: 5rem; margin-top: 4rem; align-items:start;
+}
+.problem-items { display:flex; flex-direction:column; }
+.prob-item {
+  display:flex; gap:1.5rem; padding: 1.8rem 0;
+  border-bottom: 1px solid var(--fog-mid); align-items: flex-start;
+}
+.prob-item:first-child { border-top: 1px solid var(--fog-mid); }
+.prob-icon-wrap {
+  width: 38px; height: 38px; flex-shrink:0;
+  border: 1px solid var(--fog-dark); border-radius: var(--radius);
+  display:flex; align-items:center; justify-content:center;
+  font-size: 1rem; background: var(--fog);
+}
+.prob-item h4 { font-size:0.9rem; font-weight:600; margin-bottom:0.4rem; }
+.prob-item p  { font-size:0.8rem; color:var(--steel); line-height:1.75; }
+.challenge-card {
+  background: var(--ink); border-radius: 8px; padding: 2.5rem;
+  color: var(--white); position: sticky; top: 100px;
+}
+.challenge-card h3 {
+  font-size: 1.4rem; font-weight:700; margin-bottom:0.5rem; line-height:1.3;
+}
+.challenge-card .sub { font-size:0.8rem; color: rgba(255,255,255,0.4); margin-bottom: 2rem; line-height:1.7; }
+.challenge-items { display:flex; flex-direction:column; gap:1rem; }
+.ch-item {
+  display:flex; gap:1rem; align-items:flex-start;
+  padding: 1rem; background: rgba(255,255,255,0.04);
+  border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.07);
+}
+.ch-arrow { font-size: 0.75rem; color: rgba(200,180,120,0.7); padding-top:0.1rem; flex-shrink:0; }
+.ch-item p    { font-size:0.8rem; color: rgba(255,255,255,0.65); line-height:1.7; }
+.ch-item span { color: rgba(255,255,255,0.9); font-weight:500; }
+
+
+
+/* ── 지정 섹션 정밀 축소 (기타 화면 현행 유지) ── */
+
+/* 1. Key Technologies (그리드 형태 섹션) */
+#tech {
+    padding-top: 30px !important;
+    padding-bottom: 30px !important;
+}
+#tech .tech-grid {
+    margin-top: 20px !important; /* 제목과 카드 사이 여백 최소화 */
+}
+
+/* 2. System Architecture (흐름도 섹션) */
+#process {
+    padding-top: 30px !important;
+    padding-bottom: 30px !important;
+}
+
+/* 3. Principle & Philosophy (텍스트 한 줄 메시지 섹션들) */
+#principle, #philosophy {
+    padding-top: 25px !important;
+    padding-bottom: 25px !important;
+    min-height: auto !important; /* 강제 높이 제한 해제 */
+}
+
+/* 4. Footer (푸터 영역) */
+footer {
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+}
+
+/* ─────────────────────────────────────────── */
+
+/* ── STRENGTHS ── */
+#strengths { background: var(--fog); }
+.strengths-grid {
+  display:grid; grid-template-columns: repeat(3,1fr);
+  gap: 1.5rem; margin-top: 4rem;
+}
+.str-card {
+  background: var(--white); border-radius: 8px; padding: 2.2rem;
+  border: 1px solid var(--fog-mid); transition: all 0.35s;
+  position: relative; overflow:hidden;
+}
+.str-card::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:3px;
+  background: var(--accent-color, var(--blue));
+  transform: scaleX(0); transform-origin: left; transition: transform 0.35s ease;
+}
+.str-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.1); transform: translateY(-4px); }
+.str-card:hover::after { transform: scaleX(1); }
+.str-card[data-c="blue"] { --accent-color: var(--blue); }
+.str-card[data-c="red"]  { --accent-color: var(--red); }
+.str-card[data-c="gold"] { --accent-color: var(--gold); }
+.str-num  { font-size: 0.62rem; color: var(--steel-lt); letter-spacing: 0.1em; margin-bottom: 1.5rem; }
+.str-icon { font-size:1.6rem; margin-bottom:1rem; }
+.str-card h3 { font-size:1rem; font-weight:600; margin-bottom:0.7rem; color: var(--ink); }
+.str-card p  { font-size:0.8rem; color: var(--steel); line-height:1.8; }
+.str-tag {
+  display:inline-block; margin-top:1.2rem;
+  font-size:0.6rem; letter-spacing:0.08em;
+  padding: 0.25rem 0.6rem; border-radius: 3px;
+  background: var(--blue-soft); color: var(--blue);
+}
+.str-card[data-c="red"]  .str-tag { background:var(--red-soft);  color:var(--red); }
+.str-card[data-c="gold"] .str-tag { background:var(--gold-soft); color:var(--gold); }
+
+/* ── PROCESS ── */
+#process { background: var(--white); }
+.process-flow {
+  margin-top: 4rem; display:grid; grid-template-columns: repeat(5,1fr);
+  position: relative;
+}
+.process-flow::before {
+  content:''; position:absolute; top: 28px; left:10%; right:10%;
+  height:1px; background: var(--fog-dark);
+}
+.proc-step { text-align:center; padding: 0 1rem; position:relative; }
+.proc-circle {
+  width:56px; height:56px; border-radius:50%;
+  border: 1px solid var(--fog-dark); background: var(--white);
+  display:flex; align-items:center; justify-content:center;
+  margin: 0 auto 1.4rem; font-size:1.2rem;
+  position:relative; z-index:1; transition: all 0.3s;
+}
+.proc-step:hover .proc-circle { background: var(--ink); border-color: var(--ink); }
+.proc-step:hover .proc-emoji  { filter: grayscale(1) brightness(10); }
+.proc-n       { font-size: 0.58rem; color: var(--steel-lt); letter-spacing:0.1em; margin-bottom:0.5rem; }
+.proc-step h4 { font-size:0.85rem; font-weight:600; margin-bottom:0.4rem; }
+.proc-step p  { font-size:0.75rem; color:var(--steel); line-height:1.65; }
+.process-note {
+  margin-top: 3rem; padding: 1.8rem 2.5rem;
+  background: var(--fog); border-radius: 6px; border-left: 3px solid var(--blue);
+  display:flex; gap:1.5rem; align-items:center;
+}
+.pnote-icon { font-size:1.4rem; flex-shrink:0; }
+.pnote-text { font-size:0.82rem; color:var(--steel); line-height:1.75; }
+.pnote-text strong { color:var(--ink); font-weight:500; }
+
+/* ── AUDIENCE ── */
+#audience { background: var(--fog); }
+.audience-grid {
+  display:grid; grid-template-columns: 1fr 1fr;
+  margin-top:4rem;
+  border: 1px solid var(--fog-dark); border-radius:8px; overflow:hidden;
+}
+.aud-col { padding: 3rem; }
+.aud-col:first-child { border-right: 1px solid var(--fog-dark); }
+.aud-badge {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  font-size: 0.62rem; letter-spacing: 0.1em;
+  padding: 0.3rem 0.8rem; border-radius: 100px; margin-bottom: 1.8rem;
+}
+.aud-badge.ins { background: var(--blue-soft); color: var(--blue);  border:1px solid rgba(27,79,138,0.2); }
+.aud-badge.par { background: var(--gold-soft); color: var(--gold);  border:1px solid rgba(139,105,20,0.2); }
+.aud-col h3 { font-size:1.8rem; font-weight:700; margin-bottom:0.8rem; line-height:1.2; }
+.aud-col > p { font-size:0.82rem; color:var(--steel); line-height:1.8; margin-bottom:2rem; }
+.aud-list  { display:flex; flex-direction:column; gap:0.8rem; }
+.aud-item  { display:flex; gap:0.8rem; align-items:flex-start; font-size:0.82rem; line-height:1.6; }
+.aud-check { flex-shrink:0; margin-top:0.1rem; }
+.aud-check.ins { color: var(--blue); }
+.aud-check.par { color: var(--gold); }
+
+/* ── TECH ── */
+#tech { background: var(--ink); }
+#tech .sec-label  { color: rgba(255,255,255,0.3); }
+#tech .sec-title  { color: var(--white); }
+#tech .sec-title em { color: rgba(200,180,140,0.9); }
+#tech .sec-sub    { color: rgba(255,255,255,0.4); }
+#tech .sec-line   { background: rgba(255,255,255,0.08); }
+.tech-grid {
+  display:grid; grid-template-columns: repeat(3,1fr);
+  gap:1px; background: rgba(255,255,255,0.07);
+  margin-top: 4rem; border:1px solid rgba(255,255,255,0.07); border-radius: 8px; overflow:hidden;
+}
+.tech-cell { background: var(--ink-mid); padding: 2.5rem; transition: background 0.3s; }
+.tech-cell:hover { background: var(--ink-soft); }
+.tech-cell-icon { font-size:1.5rem; margin-bottom:1.2rem; }
+.tech-cell h4 { font-size:0.95rem; font-weight:600; color:var(--white); margin-bottom:0.6rem; }
+.tech-cell p  { font-size:0.78rem; color:rgba(255,255,255,0.4); line-height:1.8; }
+.tc-tag {
+  display:inline-block; margin-top:1.2rem;
+  font-size:0.58rem; letter-spacing:0.1em;
+  padding: 0.2rem 0.5rem; border-radius:3px;
+  background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ── PRINCIPLE ── */
+#principle {
+  background: var(--fog-mid); padding: 7rem 5vw; text-align: center;
+}
+.principle-quote {
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-weight: 800; line-height: 1.6;
+  max-width: 800px; margin: 0 auto; color: var(--ink);
+}
+.principle-quote em { font-style:normal; color: var(--blue); }
+
+/* ── FOOTER ── */
+footer {
+  background-color: #042F2E;
+  padding: 60px 5vw;
+  color: rgba(255,255,255,0.6);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.footer-top {
+  display:flex; justify-content:center; align-items:center;
+  padding-bottom: 2rem; margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-wrap:wrap; gap:2rem;
+}
+.footer-logo    { font-size: 1.0rem; font-weight:600; color: var(--white); margin-bottom: 0.6rem; }
+.footer-tagline { font-size:0.75rem; color:rgba(255,255,255,0.45); line-height:1.9; margin-bottom:0.2rem; }
+.footer-contact { font-size:0.72rem; color:rgba(255,255,255,0.4); line-height:2.0; margin-top:0.6rem; }
+.footer-policy  { margin-top:1.2rem; }
+.footer-policy a {
+  font-size:0.72rem; color:rgba(255,255,255,0.45);
+  text-decoration:none; border-bottom:1px solid rgba(255,255,255,0.2);
+  transition: opacity 0.2s;
+}
+.footer-policy a:hover { opacity:0.8; }
+.footer-copy {
+  font-size:0.68rem; color:rgba(255,255,255,0.25); text-align:center;
+}
+
+/* ── 개인정보처리방침 모달 ── */
+.privacy-overlay {
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);
+  justify-content:center; align-items:center;
+}
+.privacy-overlay.open { display:flex; }
+.privacy-modal {
+  background:#fff; border-radius:12px; width:92%; max-width:640px;
+  max-height:80vh; display:flex; flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  animation: modalIn 0.25s ease;
+}
+@keyframes modalIn { from{opacity:0;transform:scale(0.96) translateY(12px)} to{opacity:1;transform:none} }
+.privacy-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:1.4rem 1.8rem; border-bottom:1px solid #e8e5df;
+  flex-shrink:0;
+}
+.privacy-header h2 { font-size:1.1rem; font-weight:700; color:#042F2E; }
+.privacy-close {
+  width:32px; height:32px; border:none; background:none;
+  font-size:1.3rem; cursor:pointer; color:#6B7280; border-radius:6px;
+  display:flex; align-items:center; justify-content:center;
+  transition:background 0.2s;
+}
+.privacy-close:hover { background:#f2f0eb; }
+.privacy-body {
+  padding:1.5rem 1.8rem; overflow-y:auto; flex:1;
+  font-size:0.85rem; color:#334155; line-height:1.85;
+}
+.privacy-body h4 {
+  font-weight:700; color:#0f172a; margin:1.2rem 0 0.3rem; font-size:0.88rem;
+}
+.privacy-body ul, .privacy-body ol {
+  padding-left:1.5rem; margin-top:0.3rem;
+}
+.privacy-body li { margin-bottom:0.3rem; color:#475569; }
+.privacy-body table {
+  width:100%; border-collapse:collapse; font-size:0.78rem; margin:0.6rem 0;
+}
+.privacy-body th {
+  text-align:left; padding:0.5rem; background:#f8fafc;
+  border-bottom:1px solid #e2e8f0; font-weight:600;
+}
+.privacy-body td {
+  padding:0.5rem; border-bottom:1px solid #f1f5f9;
+}
+.privacy-body .appendix { border-top:1px solid #e2e8f0; padding-top:1rem; margin-top:1rem; }
+
+/* ── REVEAL 애니메이션 ── */
+.reveal { opacity:0; transform:translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.in { opacity:1; transform:translateY(0); }
+.d1 { transition-delay: 0.08s; }
+.d2 { transition-delay: 0.16s; }
+.d3 { transition-delay: 0.24s; }
+.d4 { transition-delay: 0.32s; }
+
+/* ── 반응형 ── */
+@media(max-width:960px){
+  #hero               { grid-template-columns:1fr; }
+  .hero-right         { min-height:60vh; }
+  .hero-right-content { padding:60px 5vw; }
+  .problem-layout     { grid-template-columns:1fr; }
+  .challenge-card     { position:static; }
+  .strengths-grid     { grid-template-columns:1fr; }
+  .process-flow       { grid-template-columns:1fr; gap:2rem; }
+  .process-flow::before { display:none; }
+  .audience-grid      { grid-template-columns:1fr; }
+  .aud-col:first-child { border-right:none; border-bottom:1px solid var(--fog-dark); }
+  .tech-grid          { grid-template-columns:1fr; }
+  .intro-strip        { flex-direction:column; gap:1.5rem; }
+  .footer-contact     { text-align:left; }
+  .nav-links          { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <img src="data:image/png;base64,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" alt="FLOXN" style="height:34px; width:auto; display:block; flex-shrink:0;">
+    <div class="nav-logo-text">
+      <span class="name">주식회사 플록슨(FLOXN Co., Ltd.)</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#strengths">What Makes FLOXN Different</a></li>
+    <li><a href="#process">System Architecture</a></li>
+    <li><a href="#audience">Who It's For</a></li>
+    <li><a href="#tech">Key Technologies</a></li>
+  </ul>
+  <div class="nav-tag">B2B PLATFORM</div>
+</nav>
+
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-left">
+    <h1 class="hero-title"><em>복구 손해액,</em><br><span style="font-size:0.8em;">이제는 <em>사전에 관리</em>합니다</span></h1>
+    <div class="hero-divider"></div>
+    <p class="hero-desc">플록슨 사고 복구 통합 관리 시스템은, 표준화된 산정 체계와 공학적 알고리즘을 기반으로 보험사의 손해액 관리와 협력사의 성장을 목표로 합니다.</p>
+    <div class="hero-tags">
+      <span class="hero-tag">Insurer</span>
+      <a href="https://els.floxn.co.kr" class="hero-tag-partner">Restoration Partners</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-right-pattern"></div>
+    <div class="hero-right-content">
+      <div class="eyebrow">Problems FLOXN Solves</div>
+      <p class="right-title"><em>복구비 구조</em>의 근본적 문제를 해소합니다</p>
+      <div class="pillars">
+        <div class="pillar">
+          <span class="pillar-num">01</span>
+          <div class="pillar-text">
+            <h4>비표준화된 견적 산정</h4>
+            <p>복구업체마다 달랐던 기준을 하나의 표준으로 통합합니다</p>
+          </div>
+        </div>
+        <div class="pillar">
+          <span class="pillar-num">02</span>
+          <div class="pillar-text">
+            <h4>현장 정보의 부재</h4>
+            <p>실측·도면·사진 기반의 객관적 현장 데이터를 확보합니다</p>
+          </div>
+        </div>
+        <div class="pillar">
+          <span class="pillar-num">03</span>
+          <div class="pillar-text">
+            <h4>노무비 산정의 비 표준화</h4>
+            <p>실제 작업량에 비례하는 합리적 산정 체계로 전환합니다</p>
+          </div>
+        </div>
+        <div class="pillar">
+          <span class="pillar-num">04</span>
+          <div class="pillar-text">
+            <h4>사후 대응의 한계</h4>
+            <p>복구 전 단계부터 체계적인 관리로 전환합니다</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- INTRO STRIP -->
+<div class="intro-strip reveal">
+  <div class="strip-label">PLATFORM PHILOSOPHY</div>
+  <p class="strip-body">
+    수리업체별 복구비 산정 방식과 견적 편차를 플록슨이 체계적으로 관리 가능한 영역으로 전환합니다.
+  </p>
+</div>
+
+
+<!-- PROBLEM -->
+<section id="problem" class="pad">
+  <div class="label-row">
+    <span class="sec-label">Why Change Is Necessary</span>
+    <span class="sec-line"></span>
+  </div>
+  <h2 class="sec-title">복구 손해액, <em>그동안 관리가 어려웠던 이유</em></h2>
+
+  <div class="problem-layout">
+    <div class="problem-items">
+      <div class="prob-item reveal">
+        <div class="prob-icon-wrap">📋</div>
+        <div>
+          <h4>과다 청구</h4>
+          <p>시장에서 수리업체가 과다한 복구비를 청구하는 경우가 빈번하며, 사후 관리에는 한계가 있습니다.</p>
+        </div>
+      </div>
+      <div class="prob-item reveal d1">
+        <div class="prob-icon-wrap">🔍</div>
+        <div>
+          <h4>현장 정보의 구조적 부족</h4>
+          <p>관련자 진술 중심의 현행 정보 수집 방식은 현장 정보와 차이가 발생하며, 심사자의 판단이 부정확할 수 있습니다.</p>
+        </div>
+      </div>
+      <div class="prob-item reveal d2">
+        <div class="prob-icon-wrap">⚖️</div>
+        <div>
+          <h4>업체별 상이한 견적 기준</h4>
+          <p>시장 내 복구업체마다 다른 견적 기준으로 동일한 사고 조건에서도 손해액 편차가 커, 예측 가능한 관리가 어렵습니다.</p>
+        </div>
+      </div>
+      <div class="prob-item reveal d3">
+        <div class="prob-icon-wrap">💼</div>
+        <div>
+          <h4>노무비 산정의 관행적 문제</h4>
+          <p>소규모 작업에도 표준 물가나 시장가 기준으로 청구되면서, 사고 건수 증가로 손해액 관리가 어렵습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="challenge-card reveal d1">
+      <h3>이 문제들이 공통적으로 가리키는 것</h3>
+      <p class="sub">복구 전 과정을 통합하는 표준 관리 체계 부재가 근본 원인입니다. 주식회사 플록슨은 이를 시스템으로 해결합니다.</p>
+      <div class="challenge-items">
+        <div class="ch-item">
+          <span class="ch-arrow">→</span>
+          <p><span>표준화 부재</span>로 인한 견적 편차 — 동일 사고 조건에서도 손해액 차이 발생</p>
+        </div>
+        <div class="ch-item">
+          <span class="ch-arrow">→</span>
+          <p><span>현장 데이터 부족</span>으로 인한 심사 및 사후 검증 어려움</p>
+        </div>
+        <div class="ch-item">
+          <span class="ch-arrow">→</span>
+          <p><span>관행적 노무비</span> 적용에 따른 구조적·반복적 과다 지급</p>
+        </div>
+        <div class="ch-item">
+          <span class="ch-arrow">→</span>
+          <p><span>분산된 프로세스</span>로 인한 관리 효율 저하와 일관성 부족</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- STRENGTHS -->
+<section id="strengths" class="pad">
+  <div class="label-row">
+    <span class="sec-label">What Makes FLOXN Different</span>
+    <span class="sec-line"></span>
+  </div>
+  <h2 class="sec-title">손해액 관리를 위한 <em>6가지 핵심 역량</em></h2>
+  <p class="sec-sub">
+  <p style="color: #1A1A1A; font-weight: 500; padding-left: 1em; opacity: 1;">
+    다년간 축적된 현장 경험과 공학적 설계가 하나의 플랫폼으로 구현됩니다.</p>
+
+  <div class="strengths-grid">
+    <div class="str-card reveal" data-c="blue">
+      <div class="str-num">01 / STANDARDIZATION</div>
+      <div class="str-icon">📐</div>
+      <h3>표준화된 손해액 산정</h3>
+      <p>복구업체나 담당자에 관계없이, 동일한 사고 조건에서는 동일한 손해액이 산출됩니다. 견적 편차를 구조적으로 제거합니다.</p>
+      <div class="str-tag">Consistent Conditions, Consistent Results</div>
+    </div>
+    <div class="str-card reveal d1" data-c="red">
+      <div class="str-num">02 / OBJECTIVITY</div>
+      <div class="str-icon">🗂️</div>
+      <h3>객관적 현장 정보 확보</h3>
+      <p>실측 수치, 도면, 사진 중심의 현장 데이터를 단계별로 수집하여 적정 손해액을 구현하며, 사후 검증 근거를 자동 생성합니다.</p>
+      <div class="str-tag">Measured-Based Verification</div>
+    </div>
+    <div class="str-card reveal d2" data-c="gold">
+      <div class="str-num">03 / LABOR CONTROL</div>
+      <div class="str-icon">⚙️</div>
+      <h3>노무비 구조적 통제</h3>
+      <p>실제 작업량에 비례하는 합리적 노무비 산정 체계를 적용합니다. 관행적으로 과다 지급되던 노무비 구조를 시스템 차원에서 통제합니다.</p>
+      <div class="str-tag">Proportional to Workload</div>
+    </div>
+    <div class="str-card reveal" data-c="blue">
+      <div class="str-num">04 / AUTOMATION</div>
+      <div class="str-icon">⚡</div>
+      <h3>End-to-End 자동화</h3>
+      <p>접수·조사·견적·승인·정산·통계까지 전 과정이 단일 플랫폼에서 자동으로 처리됩니다. 업무 간 단절이 없어 처리 속도가 대폭 향상됩니다.</p>
+      <div class="str-tag">Unified on a Single Platform</div>
+    </div>
+    <div class="str-card reveal d1" data-c="red">
+      <div class="str-num">05 / TRANSPARENCY</div>
+      <div class="str-icon">🔎</div>
+      <h3>투명한 이력 관리</h3>
+      <p>모든 산정 과정의 변경·수정 이력이 체계적으로 기록됩니다. 민원·분쟁 발생 시 즉시 활용 가능한 객관적 증빙 자료가 자동 생성됩니다.</p>
+      <div class="str-tag">Traceable and Reproducible</div>
+    </div>
+    <div class="str-card reveal d2" data-c="gold">
+      <div class="str-num">06 / EXPERTISE</div>
+      <div class="str-icon">🧠</div>
+      <h3>전문가 경험의 시스템화</h3>
+      <p>손해사정사, 실내건축산업기사, 플랫폼 전문가, 공학박사 등 핵심 전문가 그룹의 다년간 실무 경험을 알고리즘에 내재화했습니다.</p>
+      <div class="str-tag">Experience Embedded in Practice</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- PROCESS -->
+<section id="process" class="pad">
+  <div class="label-row">
+    <span class="sec-label">System Architecture</span>
+    <span class="sec-line"></span>
+  </div>
+  <h2 class="sec-title">접수부터 정산까지 <em>하나의 흐름</em>으로</h2>
+  <p class="sec-sub">
+  <p style="color: #1A1A1A; font-weight: 500; padding-left: 1em; opacity: 1;">
+       업무 단계 간의 단절을 없애고, 전 과정을 단일 플랫폼에서 일관성 있게 관리합니다.
+</p>
+
+  <div class="process-flow">
+    <div class="proc-step reveal">
+      <div class="proc-circle"><span class="proc-emoji">📥</span></div>
+      <div class="proc-n">STEP 01</div>
+      <h4>사고 접수</h4>
+      <p>정보 누락 없이 신속 등록, 최적 협력사 자동 배정</p>
+    </div>
+    <div class="proc-step reveal d1">
+      <div class="proc-circle"><span class="proc-emoji">📸</span></div>
+      <div class="proc-n">STEP 02</div>
+      <h4>현장 조사</h4>
+      <p>실측·도면·사진 중심 현장 데이터 체계적 수집</p>
+    </div>
+    <div class="proc-step reveal d2">
+      <div class="proc-circle"><span class="proc-emoji">📐</span></div>
+      <div class="proc-n">STEP 03</div>
+      <h4>도면 & 견적</h4>
+      <p>복구 면적 산정 후 알고리즘 기반 견적서 자동 생성</p>
+    </div>
+    <div class="proc-step reveal d3">
+      <div class="proc-circle"><span class="proc-emoji">✅</span></div>
+      <div class="proc-n">STEP 04</div>
+      <h4>승인 & 수리</h4>
+      <p>심사자 실시간 모니터링 하에 표준 절차 복구 진행</p>
+    </div>
+    <div class="proc-step reveal d4">
+      <div class="proc-circle"><span class="proc-emoji">📊</span></div>
+      <div class="proc-n">STEP 05</div>
+      <h4>정산 & 통계</h4>
+      <p>데이터 기반 정산 및 다차원 통계로 손해액 추이 관리</p>
+    </div>
+  </div>
+
+  <div class="process-note reveal">
+    <div class="pnote-icon">💡</div>
+   <p style="color: #1A1A1A; font-weight: 500; opacity: 1;">
+     「현장 정보 입력 → 도면 작성 → 복구 면적 산정 → 견적서 자동 생성」 절차로 합리적인 손해액을 구현합니다.
+  </p>
+  </div>
+</section>
+
+
+<!-- AUDIENCE -->
+<section id="audience" class="pad">
+  <div class="label-row">
+    <span class="sec-label">Who It's For</span>
+    <span class="sec-line"></span>
+  </div>
+  <h2 class="sec-title">보험사와 협력사가 <em>함께 사용하는</em> 플랫폼</h2>
+  <p class="sec-sub">
+  <p style="color: #1A1A1A; font-weight: 500; padding-left: 1em; opacity: 1;">주식회사 플록슨은 보험사와 복구 협력사의 관점을 동시에 고려하여 손해액 관리와 현장 운영을 최적화합니다.</p>
+
+  <div class="audience-grid reveal">
+    <div class="aud-col">
+      <div class="aud-badge ins">For Insurers and Loss Adjusters</div>
+      <h3>복구 손해액을 사전에 관리합니다</h3>
+      <p>복구 전부터 관리하여 손해액의 예측 가능성과 일관성을 확보합니다.</p>
+      <div class="aud-list">
+        <div class="aud-item"><span class="aud-check ins">✓</span><span>표준화된 복구비 산정으로 견적 편차를 구조적으로 제거</span></div>
+        <div class="aud-item"><span class="aud-check ins">✓</span><span>실측 데이터 기반 현장출동보고서 자동 생성</span></div>
+        <div class="aud-item"><span class="aud-check ins">✓</span><span>표준물가자료 대비 저렴한 노무비 적용</span></div>
+        <div class="aud-item"><span class="aud-check ins">✓</span><span>공과잡비 합리적 적용</span></div>
+        <div class="aud-item"><span class="aud-check ins">✓</span><span>민원·분쟁 시 객관적 증빙 자료 즉시 제공</span></div>
+      </div>
+    </div>
+    <div class="aud-col">
+      <div class="aud-badge par">Designed for Partner Restoration Work</div>
+      <h3>현장 운영을 체계화합니다</h3>
+      <p>사고 배정부터 정산까지 전 과정을 하나의 플랫폼으로 통합해 처리 속도를 향상시킵니다.</p>
+      <div class="aud-list">
+        <div class="aud-item"><span class="aud-check par">✓</span><span>사고 배정 즉시 현장 정보 확인 및 견적서 작성</span></div>
+        <div class="aud-item"><span class="aud-check par">✓</span><span>도면 기반 복구 면적 산정으로 명확한 작업 범위 확정</span></div>
+        <div class="aud-item"><span class="aud-check par">✓</span><span>자동 생성된 견적서로 수작업 오류 없이 신속 처리</span></div>
+        <div class="aud-item"><span class="aud-check par">✓</span><span>사진·서류 등록으로 현장 진행 상황 투명하게 공유</span></div>
+        <div class="aud-item"><span class="aud-check par">✓</span><span>처리 이력 자동 기록으로 사후 문제 발생 시 즉시 대응</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- TECH -->
+<section id="tech" class="pad">
+  <div class="label-row">
+    <span class="sec-label">Key Technologies</span>
+    <span class="sec-line"></span>
+  </div>
+  <h2 class="sec-title">설명하고 검증할 수 있는 <em>알고리즘 기반 산출</em></h2>
+  <p class="sec-sub">
+  <p style="color: #FFFFFF; font-weight: 500; padding-left: 1em; opacity: 1;"> 모든 과정은 추적 및 재현이 가능합니다.</p>
+
+  <div class="tech-grid">
+    <div class="tech-cell reveal">
+      <div class="tech-cell-icon">📏</div>
+      <h4>실측 데이터 기반 산정</h4>
+      <p>현장 실측 치수를 기반으로 복구 면적을 구간별로 세분화하여 과학적이고 객관적인 손해액을 산정합니다.</p>
+      <div class="tc-tag">MEASUREMENT-BASED</div>
+    </div>
+    <div class="tech-cell reveal d1">
+      <div class="tech-cell-icon">🗺️</div>
+      <h4>도면 자동 생성</h4>
+      <p>현장 정보 입력만으로 도면을 자동 생성하고, 이를 기반으로 복구 면적과 자동 견적이 연동 산출됩니다.</p>
+      <div class="tc-tag">FLOOR PLAN DRIVEN</div>
+    </div>
+    <div class="tech-cell reveal d2">
+      <div class="tech-cell-icon">⚖️</div>
+      <h4>노무비 합리화 산정</h4>
+      <p>실제 작업량에 비례하는 합리적 노무비 산정 체계를 적용하여 관행적 과다 지급 구조를 근본적으로 차단합니다.</p>
+      <div class="tc-tag">LABOR OPTIMIZATION</div>
+    </div>
+    <div class="tech-cell reveal">
+      <div class="tech-cell-icon">📁</div>
+      <h4>자동화된 기록 관리</h4>
+      <p>이미지, 도면, 견적, 사진 등 산정 관련 모든 데이터가 자동 관리되어 사후 검증 자료로 즉시 활용됩니다.</p>
+      <div class="tc-tag">AUTO RECORD</div>
+    </div>
+    <div class="tech-cell reveal d1">
+      <div class="tech-cell-icon">🔄</div>
+      <h4>이력 추적 및 재현</h4>
+      <p>모든 변경·수정 이력이 체계적으로 기록되어 산정 과정 전체를 언제든 추적하고 재현할 수 있습니다.</p>
+      <div class="tc-tag">TRACEABLE</div>
+    </div>
+    <div class="tech-cell reveal d2">
+      <div class="tech-cell-icon">📊</div>
+      <h4>실시간 통계 분석</h4>
+      <p>전체 업무 프로세스의 데이터가 통합되어 손해액 추이, 절감 현황 등 다차원 분석을 실시간으로 제공합니다.</p>
+      <div class="tc-tag">REAL-TIME ANALYTICS</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- PRINCIPLE -->
+<section id="principle">
+  <p class="principle-quote reveal">
+    사고 발생 자체는 막을 수는 없습니다.<br>
+    그러나 <em>손해액의 규모와 편차는 관리할 수 있는 영역</em>입니다.
+  </p>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div style="text-align:center;">
+      <div class="footer-logo">주식회사 플록슨 (FLOXN Co., Ltd.)</div>
+      <div class="footer-tagline">대표이사: 송기원 &nbsp;|&nbsp; 사업자등록번호: 517-87-03490</div>
+      <div class="footer-tagline">서울특별시 영등포구 당산로 133, 서림빌딩 302호</div>
+      <div class="footer-contact">
+        전화: 070-7703-0925 &nbsp;|&nbsp; 팩스: 02-2633-0925 &nbsp;|&nbsp; 이메일: contact@floxn.co.kr
+      </div>
+      <div class="footer-policy">
+        <a href="#" onclick="document.getElementById('privacyModal').classList.add('open');return false;">개인정보처리방침</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-copy">© 2026 FLOXN Co., Ltd. All rights reserved.</div>
+</footer>
+
+<!-- 개인정보처리방침 모달 -->
+<div id="privacyModal" class="privacy-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="privacy-modal">
+    <div class="privacy-header">
+      <h2>개인정보 처리방침</h2>
+      <button class="privacy-close" onclick="document.getElementById('privacyModal').classList.remove('open')">&times;</button>
+    </div>
+    <div class="privacy-body">
+      <p>주식회사 플록슨(이하 '회사')은 「개인정보 보호법」 제30조에 따라 정보주체의 개인정보를 보호하고 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
+
+      <h4>제1조 (개인정보의 처리 목적)</h4>
+      <p>회사는 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며 이용 목적이 변경되는 경우에는 「개인정보 보호법」 제18조에 따라 별도의 동의를 받는 등 필요한 조치를 이행할 예정입니다.</p>
+      <ul>
+        <li>서비스 제공 및 관리: B2B 업무 시스템 이용에 따른 본인 식별, 인증, 회원자격 유지·관리, 서비스 공급 및 계약 이행.</li>
+        <li>현장 조사 및 공사 수행 지원: 사고원인 파악을 위한 현장확인, 관련 위치 및 피해상황 사진 촬영, 공사 진행상태 기록 및 관리</li>
+        <li>서비스 이용 관련 문의, 불만 처리 및 고지사항 전달 등</li>
+      </ul>
+
+      <h4>제2조 (개인정보의 처리 및 보유 기간)</h4>
+      <p>① 회사는 법령에 따른 개인정보 보유·이용 기간 또는 정보주체로부터 개인정보를 수집 시에 동의 받은 개인정보 보유·이용 기간 내에서 개인정보를 처리·보유합니다.</p>
+      <p>② 각각의 개인정보 처리 및 보유 기간은 다음과 같습니다.</p>
+      <ul>
+        <li>시스템 회원 가입 및 관리: 시스템 탈퇴 시까지. 단, 다음의 사유에 해당하는 경우에는 해당 사유 종료 시까지 보존합니다.
+          <ul>
+            <li>관계 법령 위반에 따른 수사·조사 등이 진행 중인 경우: 해당 수사·조사 종료 시까지</li>
+            <li>시스템 이용에 따른 채권·채무관계 잔존 시: 해당 채권·채무관계 정산 완료 시까지</li>
+          </ul>
+        </li>
+        <li>서비스 접속 및 이용 기록: 1년 (관련 법령에 따라 최소 1년 이상 보관)</li>
+      </ul>
+
+      <h4>제3조 (처리하는 개인정보의 항목)</h4>
+      <p>회사는 다음의 개인정보 항목을 처리하고 있습니다.</p>
+      <ol>
+        <li>피보험자 정보: 성명, 연락처(휴대전화번호), 주소(공사 대상 주택 소재지)</li>
+        <li>피해자 정보: 성명, 연락처, 주소</li>
+        <li>현장 조사 및 업무 수행 정보: 사고 현장 사진(위치 및 피해 상황 포함), 공사 진행 관련 사진</li>
+        <li>시스템 이용자(담당자) 정보: 성명, 소속 회사/부서, 직함, 업무용 연락처, 로그인 ID, 접속 로그, IP 주소</li>
+      </ol>
+
+      <h4>제4조 (개인정보 처리 업무의 위탁)</h4>
+      <p>회사는 원활한 서비스 제공 및 현장 출동, 복구 공사 등 업무 수행을 위하여 다음과 같이 개인정보 처리 업무를 위탁하고 있습니다.</p>
+      <table>
+        <thead>
+          <tr><th>수탁자(업무 수행 주체)</th><th>위탁 업무의 내용</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>시스템 등록된 공사업체</td><td>현장 출동, 사고원인 확인, 공사 수행, 피해자 확인 및 현장 사진 촬영</td></tr>
+        </tbody>
+      </table>
+      <p>회사는 위탁계약 체결 시 「개인정보 보호법」 제26조에 따라 위탁업무 수행 목적 외 개인정보 처리금지, 기술적·관리적 보호조치, 재위탁 제한, 수탁자에 대한 관리·감독, 손해배상 등 책임에 관한 사항을 계약서 등 명문으로 규정하고, 수탁자가 개인정보를 안전하게 처리하는지를 감독하고 있습니다.</p>
+
+      <h4>제5조 (개인정보의 파기 절차 및 방법)</h4>
+      <p>① 회사는 개인정보 보유기간의 경과, 처리목적 달성 등 개인정보가 불필요하게 되었을 때에는 지체 없이 해당 개인정보를 파기합니다.</p>
+      <p>② 전자적 파일 형태의 정보는 기록을 재생할 수 없는 기술적 방법을 사용하여 삭제합니다.</p>
+
+      <h4>제6조 (개인정보의 안전성 확보 조치)</h4>
+      <p>회사는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
+      <ul>
+        <li>관리적 조치: 내부관리계획 수립 및 시행, 정기적 직원 교육.</li>
+        <li>기술적 조치: 개인정보처리시스템 등의 접근권한 관리, 접속기록의 보관, 비밀번호의 일방향 암호화, 데이터 전송 시 SSL 암호화 적용.</li>
+      </ul>
+
+      <h4>제7조 (개인정보 보호책임자)</h4>
+      <p>개인정보 처리에 관한 업무를 총괄해서 책임지고, 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
+      <ul>
+        <li>성명: 이현재</li>
+        <li>직책: 상무</li>
+        <li>연락처: hjlee@floxn.co.kr (070-7731-0925)</li>
+      </ul>
+
+      <h4>제8조 (정보주체의 권리·의무 및 그 행사방법)</h4>
+      <p>정보주체는 회사에 대해 언제든지 개인정보 열람·정정·삭제·처리정지 요구 등의 권리를 행사할 수 있습니다. 권리 행사는 서면, 전자우편 등을 통하여 하실 수 있으며 회사는 이에 대해 지체 없이 조치하겠습니다.</p>
+
+      <div class="appendix">
+        <h4>부 칙</h4>
+        <p>제1조 (시행일) 본 개인정보 처리방침은 2026년 3월 1일부터 시행됩니다.</p>
+        <p>제2조 (개정 이력) 회사는 개인정보 처리방침을 개정하는 경우 변경 전후를 비교하여 확인할 수 있도록 아래와 같이 관리합니다.</p>
+        <table>
+          <thead>
+            <tr><th>버전 번호</th><th>공고 일자</th><th>시행일자</th><th>주요 개정 내용</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>v1.0</td><td>2026.02.23.</td><td>2026.03.01</td><td>최초 제정 및 시행</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.getElementById('privacyModal').classList.remove('open')});
+</script>
+
+<script>
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').style.boxShadow =
+    window.scrollY > 20 ? '0 1px 20px rgba(0,0,0,0.08)' : 'none';
+});
+</script>
+</body>
+</html>
