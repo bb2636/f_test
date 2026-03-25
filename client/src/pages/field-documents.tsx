@@ -788,8 +788,7 @@ export default function FieldDocuments() {
     }
   };
 
-  // 동시 업로드 제한 (5개 - presign 요청 포함)
-  const uploadLimit = pLimit(5);
+  const uploadLimit = pLimit(3);
 
   const uploadSingleFile = async (
     uploadingFile: UploadingFile,
@@ -828,45 +827,77 @@ export default function FieldDocuments() {
 
     updateProgress(10);
 
-    const formData = new FormData();
-    formData.append("file", uploadingFile.file);
-    formData.append("caseId", selectedCaseId);
-    formData.append("category", uploadingFile.category);
-    formData.append("fileName", uploadingFile.file.name);
-    formData.append("fileType", uploadingFile.file.type);
+    const fileType = uploadingFile.file.type || "application/octet-stream";
 
-    const xhr = new XMLHttpRequest();
-    const result = await new Promise<{ documentId: string }>((resolve, reject) => {
+    const presignRes = await fetch("/api/documents/presign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        caseId: selectedCaseId,
+        fileName: uploadingFile.file.name,
+        fileType,
+        fileSize: uploadingFile.file.size,
+      }),
+    });
+
+    if (!presignRes.ok) {
+      if (presignRes.status === 401) {
+        throw new Error("로그인이 만료되었습니다. 다시 로그인 후 시도해주세요.");
+      }
+      const errData = await presignRes.json().catch(() => ({}));
+      throw new Error(errData.error || `presign 실패 (${presignRes.status})`);
+    }
+
+    const { uploadURL, storageKey } = await presignRes.json();
+
+    updateProgress(15);
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 85) + 10;
+          const percent = Math.round((event.loaded / event.total) * 70) + 15;
           updateProgress(percent);
         }
       };
       xhr.onload = () => {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          if (xhr.status >= 200 && xhr.status < 300 && data.documentId) {
-            resolve(data);
-          } else if (xhr.status === 401) {
-            reject(new Error("로그인이 만료되었습니다. 다시 로그인 후 시도해주세요."));
-          } else if (xhr.status === 413) {
-            reject(new Error("파일이 너무 큽니다. 더 작은 파일로 시도해주세요."));
-          } else {
-            reject(new Error(data.error || data.details || `업로드 실패 (${xhr.status})`));
-          }
-        } catch {
-          reject(new Error(`업로드 실패 (${xhr.status})`));
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`스토리지 업로드 실패 (${xhr.status})`));
         }
       };
       xhr.onerror = () => reject(new Error("서버 연결 실패. 인터넷 연결을 확인해주세요."));
-      xhr.ontimeout = () => reject(new Error("업로드 시간이 초과되었습니다 (120초)."));
-      xhr.timeout = 120000;
-      xhr.open("POST", "/api/documents/multipart-upload");
-      xhr.withCredentials = true;
-      xhr.send(formData);
+      xhr.ontimeout = () => reject(new Error("업로드 시간이 초과되었습니다 (300초)."));
+      xhr.timeout = 300000;
+      xhr.open("PUT", uploadURL);
+      xhr.setRequestHeader("Content-Type", fileType);
+      xhr.send(uploadingFile.file);
     });
 
+    updateProgress(90);
+
+    const completeRes = await fetch("/api/documents/upload-complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        caseId: selectedCaseId,
+        category: uploadingFile.category,
+        fileName: uploadingFile.file.name,
+        fileType,
+        fileSize: uploadingFile.file.size,
+        storageKey,
+      }),
+    });
+
+    if (!completeRes.ok) {
+      const errData = await completeRes.json().catch(() => ({}));
+      throw new Error(errData.error || `업로드 완료 처리 실패 (${completeRes.status})`);
+    }
+
+    const result = await completeRes.json();
     updateProgress(100, "completed", undefined, result.documentId);
   };
 
@@ -879,9 +910,9 @@ export default function FieldDocuments() {
           await uploadSingleFile(uploadingFile);
         },
         {
-          retries: 3,
+          retries: 2,
           minTimeout: 2000,
-          maxTimeout: 10000,
+          maxTimeout: 8000,
           factor: 2,
           shouldRetry: (error: any) => {
             const msg = error?.message || "";
@@ -890,7 +921,9 @@ export default function FieldDocuments() {
               msg.includes("HEIC") ||
               msg.includes("HEIF") ||
               msg.includes("로그인이 만료") ||
-              msg.includes("너무 큽니다")
+              msg.includes("너무 큽니다") ||
+              msg.includes("presign 실패") ||
+              msg.includes("완료 처리 실패")
             ) {
               return false;
             }
@@ -901,7 +934,7 @@ export default function FieldDocuments() {
             retriesLeft: number;
           }) => {
             console.log(
-              `[Upload] ${uploadingFile.file.name} 재시도 ${error.attemptNumber}/3`,
+              `[Upload] ${uploadingFile.file.name} 재시도 ${error.attemptNumber}/2`,
             );
           },
         },
@@ -976,8 +1009,8 @@ export default function FieldDocuments() {
       console.log("[파일선택] 카테고리:", defaultSubCategory, "파일수:", fileArray.length);
 
       const rejectedFiles: string[] = [];
-      const compressedFiles: File[] = [];
 
+      const preFiltered: File[] = [];
       for (const file of fileArray) {
         console.log("[파일선택] 파일 처리 시작:", file.name, file.type, `${(file.size / 1024 / 1024).toFixed(2)}MB`);
 
@@ -998,27 +1031,46 @@ export default function FieldDocuments() {
           );
           continue;
         }
+        preFiltered.push(file);
+      }
 
-        try {
-          const compressed = await compressImage(file);
-          console.log("[파일선택] 압축 완료:", file.name, `${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressed.size / 1024 / 1024).toFixed(2)}MB`);
+      const compressLimit = pLimit(4);
+      const compressResults = await Promise.allSettled(
+        preFiltered.map((file) =>
+          compressLimit(async () => {
+            const compressed = await compressImage(file);
+            console.log("[파일선택] 압축 완료:", file.name, `${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressed.size / 1024 / 1024).toFixed(2)}MB`);
+            return { file, compressed };
+          })
+        )
+      );
+
+      const compressedFiles: File[] = [];
+      for (let i = 0; i < compressResults.length; i++) {
+        const result = compressResults[i];
+        const originalFile = preFiltered[i];
+        const isImage = originalFile.type.startsWith("image/");
+        const sizeLimit = isImage ? MAX_IMAGE_UPLOAD_SIZE : MAX_FILE_UPLOAD_SIZE;
+        const sizeLimitMB = isImage ? MAX_IMAGE_UPLOAD_SIZE_MB : MAX_FILE_UPLOAD_SIZE_MB;
+
+        if (result.status === "fulfilled") {
+          const { compressed } = result.value;
           if (compressed.size > sizeLimit) {
             rejectedFiles.push(
-              `${file.name}: 파일 크기(${(compressed.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
-            );
-            continue;
-          }
-          compressedFiles.push(compressed);
-        } catch (error) {
-          console.error("[파일선택] 압축 오류:", file.name, error);
-          const msg =
-            error instanceof Error ? error.message : "알 수 없는 오류";
-          if (file.size > sizeLimit) {
-            rejectedFiles.push(
-              `${file.name}: 파일 크기(${(file.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
+              `${originalFile.name}: 파일 크기(${(compressed.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
             );
           } else {
-            rejectedFiles.push(`${file.name}: ${msg}`);
+            compressedFiles.push(compressed);
+          }
+        } else {
+          const msg = result.reason instanceof Error ? result.reason.message : "알 수 없는 오류";
+          console.error("[파일선택] 압축 오류:", originalFile.name, result.reason);
+          if (originalFile.size > sizeLimit) {
+            rejectedFiles.push(
+              `${originalFile.name}: 파일 크기(${(originalFile.size / 1024 / 1024).toFixed(1)}MB)가 ${sizeLimitMB}MB 제한을 초과합니다.`,
+            );
+          } else {
+            rejectedFiles.push(`${originalFile.name}: ${msg}`);
           }
         }
       }

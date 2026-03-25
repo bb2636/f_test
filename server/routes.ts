@@ -5256,7 +5256,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           documentId: document.id,
         });
       } catch (error: any) {
-        console.error("[multipart-upload] Error:", error.message);
+        console.error("[multipart-upload] Error:", error.message, "code:", error.code, "statusCode:", error.statusCode);
+        if (error.stack) console.error("[multipart-upload] Stack:", error.stack.split("\n").slice(0, 3).join(" | "));
         res.status(500).json({
           error: "문서 업로드 중 오류가 발생했습니다",
           details: error.message,
