@@ -66,34 +66,79 @@ const formatDate = (dateStr: string | null | undefined): string => {
   }
 };
 
-// 주소에서 지역(시/도) 추출
-const extractRegion = (address: string | null | undefined): string => {
-  if (!address) return "-";
-  // 특별시/광역시
-  const specialCityMatch = address.match(/(서울|부산|대구|인천|광주|대전|울산|세종)/);
-  if (specialCityMatch) return specialCityMatch[1];
-  // 도
-  const provinceMatch = address.match(/([가-힣]+도)/);
-  if (provinceMatch) return provinceMatch[1];
-  return "-";
+const REGION_NORMALIZE: Record<string, string> = {
+  "서울특별시": "서울", "서울시": "서울", "서울": "서울",
+  "부산광역시": "부산", "부산시": "부산", "부산": "부산",
+  "대구광역시": "대구", "대구시": "대구", "대구": "대구",
+  "인천광역시": "인천", "인천시": "인천", "인천": "인천",
+  "광주광역시": "광주", "광주": "광주",
+  "대전광역시": "대전", "대전시": "대전", "대전": "대전",
+  "울산광역시": "울산", "울산시": "울산", "울산": "울산",
+  "세종특별자치시": "세종", "세종시": "세종", "세종": "세종",
+  "경기도": "경기", "경기": "경기",
+  "강원특별자치도": "강원", "강원도": "강원", "강원": "강원",
+  "충청북도": "충북", "충북": "충북",
+  "충청남도": "충남", "충남": "충남",
+  "전북특별자치도": "전북", "전라북도": "전북", "전북": "전북",
+  "전라남도": "전남", "전남": "전남",
+  "경상북도": "경북", "경북": "경북",
+  "경상남도": "경남", "경남": "경남",
+  "제주특별자치도": "제주", "제주도": "제주", "제주": "제주",
 };
 
-// 주소에서 시군구 추출 (지역명 포함)
-const extractCityDistrict = (address: string | null | undefined): string => {
-  if (!address) return "-";
-  const region = extractRegion(address);
-  // 특별시/광역시의 경우 구 추출
-  if (address.match(/(서울|부산|대구|인천|광주|대전|울산)/)) {
-    const guMatch = address.match(/([가-힣]+구)/);
-    if (guMatch) return region !== "-" ? `${region} ${guMatch[1]}` : guMatch[1];
+const PROVINCE_KEYS = ["경기도", "경기", "강원특별자치도", "강원도", "강원",
+  "충청북도", "충북", "충청남도", "충남", "전북특별자치도", "전라북도", "전북",
+  "전라남도", "전남", "경상북도", "경북", "경상남도", "경남",
+  "제주특별자치도", "제주도", "제주"];
+
+const parseAddress = (address: string | null | undefined): { region: string; district: string } => {
+  if (!address || typeof address !== "string") return { region: "-", district: "-" };
+  const addr = address.replace(/\s+/g, " ").trim();
+  if (!addr) return { region: "-", district: "-" };
+
+  const fullNamePattern = /^(서울특별시|부산광역시|대구광역시|인천광역시|광주광역시|대전광역시|울산광역시|세종특별자치시|경기도|강원특별자치도|강원도|충청북도|충청남도|전북특별자치도|전라북도|전라남도|경상북도|경상남도|제주특별자치도|제주도)\s*/;
+  const fullMatch = addr.match(fullNamePattern);
+  if (fullMatch) {
+    const region = REGION_NORMALIZE[fullMatch[1]] || fullMatch[1];
+    const rest = addr.slice(fullMatch[0].length).trim();
+    const districtMatch = rest.match(/^([가-힣]+(?:시|구|군))/);
+    return { region, district: districtMatch ? districtMatch[1] : "-" };
   }
-  // 시 추출
-  const cityMatch = address.match(/([가-힣]+시)/);
-  if (cityMatch) return region !== "-" ? `${region} ${cityMatch[1]}` : cityMatch[1];
-  // 군 추출
-  const gunMatch = address.match(/([가-힣]+군)/);
-  if (gunMatch) return region !== "-" ? `${region} ${gunMatch[1]}` : gunMatch[1];
-  return "-";
+
+  const tokens = addr.split(" ");
+  const firstToken = tokens[0];
+
+  if (REGION_NORMALIZE[firstToken]) {
+    const region = REGION_NORMALIZE[firstToken];
+    const isProvince = PROVINCE_KEYS.includes(firstToken);
+
+    if (isProvince && tokens.length >= 2) {
+      const secondToken = tokens[1];
+      const districtMatch = secondToken.match(/^([가-힣]+(?:시|구|군))$/);
+      return { region, district: districtMatch ? districtMatch[1] : secondToken };
+    }
+
+    if (!isProvince && tokens.length >= 2) {
+      const secondToken = tokens[1];
+      const guMatch = secondToken.match(/^([가-힣]+(?:구|군))$/);
+      if (guMatch) return { region, district: guMatch[1] };
+      const siMatch = secondToken.match(/^([가-힣]+시)$/);
+      if (siMatch) return { region, district: siMatch[1] };
+      return { region, district: secondToken };
+    }
+
+    return { region, district: "-" };
+  }
+
+  return { region: "-", district: "-" };
+};
+
+const extractRegion = (address: string | null | undefined): string => {
+  return parseAddress(address).region;
+};
+
+const extractCityDistrict = (address: string | null | undefined): string => {
+  return parseAddress(address).district;
 };
 
 const STATUS_ORDER = [
