@@ -345,7 +345,7 @@ export default function ClosedCaseStatistics() {
       "조사사", "조사자", "협력사", "담당자", "배당일자",
       "사고유형", "사고원인", "손방 유무", "대물 유무", "복구방식", "지역", "시군구", "진행상태",
       "견적금액", "견적일자", "승인금액", "승인일자",
-      ...(searchType !== "접수번호" ? ["청구액", "청구일자", "입금액", "입금일자", "정산액(협력업체 지급일)", "수수료", "정산일자"] : []),
+      ...(searchType !== "접수번호" ? ["청구액", "청구일자", "입금액계", "입금완료일", "지급액계", "지급완료일", "수수료계", "종결일 - 계산서 발행일"] : []),
     ];
 
     let rows: string[][];
@@ -425,7 +425,8 @@ export default function ClosedCaseStatistics() {
           formatDate(rep.claimDate),
           deposit.amount ? deposit.amount.toLocaleString() : "",
           formatDate(deposit.date),
-          sett.partnerPayment ? `${sett.partnerPayment.toLocaleString()} (${formatDate(sett.partnerPaymentDate)})` : "",
+          sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "",
+          formatDate(sett.partnerPaymentDate),
           sett.commission ? sett.commission.toLocaleString() : "",
           formatDate(sett.settlementDate),
         ];
@@ -480,10 +481,8 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{formatDate(rep.claimDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
         <td style={cellStyle}>{formatDate(deposit.date)}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>
-          {formatAmount(sett.partnerPayment)}
-          {sett.partnerPaymentDate ? <div style={{ fontSize: "11px", color: "rgba(12,12,12,0.4)", marginTop: "2px" }}>({formatDate(sett.partnerPaymentDate)})</div> : null}
-        </td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.partnerPayment)}</td>
+        <td style={cellStyle}>{formatDate(sett.partnerPaymentDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.commission)}</td>
         <td style={{ ...cellStyle, borderRight: "none" }}>{formatDate(sett.settlementDate)}</td>
       </tr>
@@ -735,8 +734,8 @@ export default function ClosedCaseStatistics() {
               {searchType !== "접수번호" && (
                 <>
                   <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>청구액</th>
-                  <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>입금액</th>
-                  <th colSpan={3} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)", borderRight: "none" }}>정산</th>
+                  <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>입금</th>
+                  <th colSpan={4} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)", borderRight: "none" }}>정산</th>
                 </>
               )}
             </tr>
@@ -766,11 +765,12 @@ export default function ClosedCaseStatistics() {
                 <>
                   <th style={{ ...headerStyle, width: "120px" }}>청구액</th>
                   <th style={{ ...headerStyle, width: "110px" }}>청구일자</th>
-                  <th style={{ ...headerStyle, width: "120px" }}>입금액</th>
-                  <th style={{ ...headerStyle, width: "110px" }}>입금일자</th>
-                  <th style={{ ...headerStyle, width: "140px" }}>정산액{"\n"}(협력업체 지급일)</th>
-                  <th style={{ ...headerStyle, width: "120px" }}>수수료</th>
-                  <th style={{ ...headerStyle, width: "110px", borderRight: "none" }}>정산일자</th>
+                  <th style={{ ...headerStyle, width: "120px" }}>입금액계</th>
+                  <th style={{ ...headerStyle, width: "110px" }}>입금완료일</th>
+                  <th style={{ ...headerStyle, width: "120px" }}>지급액계</th>
+                  <th style={{ ...headerStyle, width: "110px" }}>지급완료일</th>
+                  <th style={{ ...headerStyle, width: "120px" }}>수수료계</th>
+                  <th style={{ ...headerStyle, width: "150px", borderRight: "none" }}>종결일{"\n"}- 계산서 발행일</th>
                 </>
               )}
             </tr>
@@ -779,7 +779,7 @@ export default function ClosedCaseStatistics() {
             {displayCount === 0 ? (
               <tr>
                 <td
-                  colSpan={searchType === "접수번호" ? 27 : 33}
+                  colSpan={searchType === "접수번호" ? 27 : 34}
                   style={{
                     padding: "60px 20px",
                     textAlign: "center",
