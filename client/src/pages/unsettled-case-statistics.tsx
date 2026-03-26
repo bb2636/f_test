@@ -186,21 +186,25 @@ const getCaseApprovedForStats = (c: Case): number => {
   return parseFloat(c.approvedAmount || "0") || 0;
 };
 
+const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
+  return groupCases.filter(c => c.status !== "접수취소" && c.status !== "출동비청구(선견적)");
+};
+
 const getGroupEstimateAmount = (groupCases: Case[]): number | null => {
-  const active = getActiveCases(groupCases);
-  if (active.length === 0) return null;
-  if (isOnlyPreEstimate(groupCases)) return null;
-  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
-  const targets = hasDirectRecovery ? active.filter(c => isDirectRecovery(c)) : active;
+  const eligible = getEstimateEligibleCases(groupCases);
+  if (eligible.length === 0) return null;
+  if (eligible.every(c => isPreEstimate(c))) return null;
+  const hasDirectRecovery = eligible.some(c => isDirectRecovery(c));
+  const targets = hasDirectRecovery ? eligible.filter(c => isDirectRecovery(c)) : eligible;
   return targets.reduce((sum, c) => sum + getCaseEstimateForStats(c), 0);
 };
 
 const getGroupApprovedAmount = (groupCases: Case[]): number | null => {
-  const active = getActiveCases(groupCases);
-  if (active.length === 0) return null;
-  if (isOnlyPreEstimate(groupCases)) return null;
-  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
-  const targets = hasDirectRecovery ? active.filter(c => isDirectRecovery(c)) : active;
+  const eligible = getEstimateEligibleCases(groupCases);
+  if (eligible.length === 0) return null;
+  if (eligible.every(c => isPreEstimate(c))) return null;
+  const hasDirectRecovery = eligible.some(c => isDirectRecovery(c));
+  const targets = hasDirectRecovery ? eligible.filter(c => isDirectRecovery(c)) : eligible;
   return targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
 };
 
