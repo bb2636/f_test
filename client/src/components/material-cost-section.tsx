@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, GripVertical, Lock, Plus, Minus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // MaterialCatalogItem matches excel_data 자재비 response
 export interface MaterialCatalogItem {
@@ -29,6 +30,7 @@ export interface MaterialRow {
   수량: number; // 호환용 (총 수량)
   합계: number; // 합계 (기존 금액 대체)
   금액: number; // 호환용
+  includeInEstimate: boolean; // 경비여부 - true: 비경비(관리비/이윤 포함), false: 경비(관리비/이윤 제외)
   비고: string; // 입력
   sourceLaborRowId?: string; // 노무비 행 ID 추적
   sourceAreaRowId?: string; // 복구면적 산출표 행 ID 추적 (첫 번째 행)
@@ -270,6 +272,7 @@ export function MaterialCostSection({
       수량: 0,
       합계: 0,
       금액: 0,
+      includeInEstimate: true,
       비고: '',
       isLinkedFromRecovery: false, // 수동 추가 행
     };
@@ -330,6 +333,7 @@ export function MaterialCostSection({
       수량: 0,
       합계: 0,
       금액: 0,
+      includeInEstimate: true,
       비고: '',
     };
     
@@ -382,6 +386,7 @@ export function MaterialCostSection({
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "150px" }}>수량</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "60px" }}>단위</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "100px" }}>합계</th>
+            <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "60px" }}>경비여부</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB", minWidth: "150px" }}>비고</th>
           </tr>
         </thead>
@@ -940,6 +945,24 @@ export function MaterialCostSection({
                     {total > 0 ? total.toLocaleString() : "단가x수량"}
                   </td>
                   
+                  {/* 경비 여부 - 연동 행도 수정 가능 */}
+                  <td style={{ padding: "0 12px", textAlign: "center", borderBottom: groupBorderBottom, borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
+                    <Checkbox
+                      checked={row.includeInEstimate === false}
+                      onCheckedChange={(checked) => {
+                        onRowsChange(
+                          rows.map((r) =>
+                            r.id === row.id
+                              ? { ...r, includeInEstimate: !checked }
+                              : r,
+                          ),
+                        );
+                      }}
+                      disabled={isReadOnly}
+                      data-testid={`checkbox-expense-material-${currentGlobalIndex}`}
+                    />
+                  </td>
+
                   {/* 비고 - 연동 행도 수정 가능 */}
                   <td style={{ padding: "0 8px", background: "#EFF6FF", borderBottom: groupBorderBottom }}>
                     <Input

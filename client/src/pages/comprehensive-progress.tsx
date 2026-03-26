@@ -2101,6 +2101,7 @@ export default function ComprehensiveProgress() {
                                   "접수완료",
                                   "검토중",
                                   "반려",
+                                  "복구요청(2차승인)",
                                   "직접복구",
                                   "선견적요청",
                                   "청구",

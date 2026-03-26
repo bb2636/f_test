@@ -385,6 +385,7 @@ export default function FieldEstimate() {
       수량: 0,
       합계: 0,
       금액: 0,
+      includeInEstimate: true,
       비고: '',
       sourceLaborRowId,
     };
@@ -1413,6 +1414,7 @@ export default function FieldEstimate() {
               수량: calculatedQty,
               합계: Math.round(unitPrice * calculatedQty),
               금액: Math.round(unitPrice * calculatedQty),
+              includeInEstimate: true,
               비고: '',
               sourceAreaRowIds: data.sourceAreaRowIds,
               isLinkedFromRecovery: true,
@@ -1468,6 +1470,7 @@ export default function FieldEstimate() {
             수량: calculatedQty,
             합계: 0,
             금액: 0,
+            includeInEstimate: true,
             비고: '',
             sourceAreaRowIds: data.sourceAreaRowIds,
             isLinkedFromRecovery: true,
@@ -2853,6 +2856,7 @@ export default function FieldEstimate() {
             return {
               id: `material-saved-${index}`,
               ...rest,
+              includeInEstimate: rest.includeInEstimate !== false,
               sourceLaborRowId,
             };
           });
@@ -2877,6 +2881,7 @@ export default function FieldEstimate() {
             return {
               id: `material-saved-${index}`,
               ...rest,
+              includeInEstimate: rest.includeInEstimate !== false,
               sourceLaborRowId: undefined,
             };
           });
@@ -3282,11 +3287,19 @@ export default function FieldEstimate() {
       return sum + (row.금액 || 0);
     }, 0);
 
+    // 자재비 경비가 아닌 항목 (관리비/이윤 포함 대상)
+    const materialTotalNonExpense = materialRows.reduce((sum, row) => {
+      if (row.includeInEstimate !== false) {
+        return sum + (row.금액 || 0);
+      }
+      return sum;
+    }, 0);
+
     // 소계 (전체)
     const subtotal = laborTotalNonExpense + laborTotalExpense + materialTotal;
 
-    // 일반관리비와 이윤 계산 대상 (경비가 아닌 항목 + 자재비)
-    const baseForFees = laborTotalNonExpense + materialTotal;
+    // 일반관리비와 이윤 계산 대상 (경비가 아닌 노무비 + 경비가 아닌 자재비)
+    const baseForFees = laborTotalNonExpense + materialTotalNonExpense;
 
     // 일반관리비 (6%) - 경비 제외 항목에만 적용
     const managementFee = Math.round(baseForFees * 0.06);
@@ -4096,6 +4109,7 @@ export default function FieldEstimate() {
         수량: materialQuantity,
         합계: materialAmount,
         금액: materialAmount,
+        includeInEstimate: true,
         비고: '',
         sourceAreaRowId: sourceRowId, // 첫 번째 복구면적 행 ID
         sourceAreaRowIds: [sourceRowId], // 연결된 모든 복구면적 행 ID 배열

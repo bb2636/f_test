@@ -3356,25 +3356,27 @@ async function renderEstimatePage(
     } catch {}
   }
 
-  // Golden Master 자재비 컬럼: 공종 | 공사명 | 자재항목 | 단가 | 수량 | 단위 | 합계 | 비고
+  // Golden Master 자재비 컬럼: 공종 | 공사명 | 자재항목 | 단가 | 수량 | 단위 | 합계 | 경비 | 비고
   const materialHeader: TableCell[] = [
     { text: "공종", width: 55, isHeader: true, align: "center" },
-    { text: "공사명", width: 70, isHeader: true, align: "center" },
-    { text: "자재항목", width: 90, isHeader: true, align: "center" },
-    { text: "단가(원)", width: 70, isHeader: true, align: "center" },
-    { text: "수량", width: 50, isHeader: true, align: "center" },
-    { text: "단위", width: 40, isHeader: true, align: "center" },
-    { text: "합계(원)", width: 80, isHeader: true, align: "center" },
+    { text: "공사명", width: 65, isHeader: true, align: "center" },
+    { text: "자재항목", width: 85, isHeader: true, align: "center" },
+    { text: "단가(원)", width: 65, isHeader: true, align: "center" },
+    { text: "수량", width: 45, isHeader: true, align: "center" },
+    { text: "단위", width: 35, isHeader: true, align: "center" },
+    { text: "합계(원)", width: 75, isHeader: true, align: "center" },
+    { text: "경비", width: 30, isHeader: true, align: "center" },
     { text: "비고", width: 60, isHeader: true, align: "center" },
   ];
 
   const materialRows: TableCell[][] = [materialHeader];
   let materialTotal = 0;
+  let materialNonExpenseTotal = 0;
 
   if (materialCostItems.length > 0) {
     materialCostItems.forEach((row) => {
       // MaterialRow 필드명: 공종, 공사명, 자재항목, 자재, 규격, 단위, 단가, 기준단가
-      // 수량m2, 수량EA, 수량, 합계, 금액, 비고
+      // 수량m2, 수량EA, 수량, 합계, 금액, includeInEstimate, 비고
       const qty =
         Number(row["수량"]) ||
         Number(row["수량m2"]) ||
@@ -3392,6 +3394,11 @@ async function renderEstimatePage(
         qty * unitPrice;
       materialTotal += amount;
 
+      const isExpense = row.includeInEstimate === false;
+      if (!isExpense) {
+        materialNonExpenseTotal += amount;
+      }
+
       materialRows.push([
         {
           text: row["공종"] || row.workType || row.category || "-",
@@ -3400,7 +3407,7 @@ async function renderEstimatePage(
         },
         {
           text: row["공사명"] || row.workName || "-",
-          width: 70,
+          width: 65,
           align: "left",
         },
         {
@@ -3410,17 +3417,18 @@ async function renderEstimatePage(
             row.materialItem ||
             row.materialName ||
             "-",
-          width: 90,
+          width: 85,
           align: "left",
         },
         {
           text: unitPrice > 0 ? formatNumber(unitPrice) : "-",
-          width: 70,
+          width: 65,
           align: "right",
         },
-        { text: String(qty), width: 50, align: "center" },
-        { text: row["단위"] || row.unit || "-", width: 40, align: "center" },
-        { text: formatNumber(amount), width: 80, align: "right" },
+        { text: String(qty), width: 45, align: "center" },
+        { text: row["단위"] || row.unit || "-", width: 35, align: "center" },
+        { text: formatNumber(amount), width: 75, align: "right" },
+        { text: isExpense ? "여" : "부", width: 30, align: "center" },
         { text: row["비고"] || row.note || "-", width: 60, align: "left" },
       ]);
     });
@@ -3464,10 +3472,8 @@ async function renderEstimatePage(
   const profitRate = 0.15;
   const vatRate = 0.1;
 
-  // 일반관리비/이윤 계산 기준: 경비가 아닌 항목(includeInEstimate=true) + 자재비
-  // field-report.tsx 계산 로직과 동일:
-  // baseForFees = laborTotalNonExpense + materialTotal
-  const feeBase = laborNonExpenseTotal + materialTotal;
+  // 일반관리비/이윤 계산 기준: 경비가 아닌 노무비 + 경비가 아닌 자재비
+  const feeBase = laborNonExpenseTotal + materialNonExpenseTotal;
   const adminFee = Math.round(feeBase * adminFeeRate);
   const profit = Math.round(feeBase * profitRate);
 
