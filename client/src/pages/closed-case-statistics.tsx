@@ -103,10 +103,24 @@ const STATUS_ORDER = [
   "부분지급", "지급완료", "정산완료", "종결", "접수취소",
 ];
 
+const getGroupRestorationMethod = (groupCases: Case[]): string => {
+  const hasDirectRecovery = groupCases.some(c => isDirectRecovery(c));
+  if (hasDirectRecovery) return "직접복구";
+  const hasPreEstimate = groupCases.some(c => isPreEstimate(c));
+  if (hasPreEstimate) return "선견적요청";
+  const rep = groupCases[0];
+  return rep?.restorationMethod || rep?.recoveryType || "-";
+};
+
 const getLatestStatus = (groupCases: Case[]): string => {
+  const hasDirectRecovery = groupCases.some(c => isDirectRecovery(c));
+  const targetCases = hasDirectRecovery
+    ? groupCases.filter(c => isDirectRecovery(c))
+    : groupCases;
+
   let minIndex = STATUS_ORDER.length;
-  let latestStatus = groupCases[0]?.status || "-";
-  for (const c of groupCases) {
+  let latestStatus = targetCases[0]?.status || "-";
+  for (const c of targetCases) {
     const idx = STATUS_ORDER.indexOf(c.status);
     if (idx !== -1 && idx < minIndex) {
       minIndex = idx;
@@ -433,7 +447,7 @@ export default function ClosedCaseStatistics() {
           rep.accidentCause || "",
           damagePrevention ? "손방" : "-",
           victimIncident ? "대물" : "-",
-          rep.restorationMethod || rep.recoveryType || "",
+          getGroupRestorationMethod(g.cases),
           extractRegion(address),
           extractCityDistrict(address),
           getLatestStatus(g.cases),
@@ -489,7 +503,7 @@ export default function ClosedCaseStatistics() {
         <td style={{ ...cellStyle, whiteSpace: "normal", wordBreak: "break-word", maxWidth: "200px" }}>{rep.accidentCause || "-"}</td>
         <td style={cellStyle}>{(rep.damagePreventionCost === "true" || (rep.damagePreventionCost as any) === true) ? "손방" : "-"}</td>
         <td style={cellStyle}>{(rep.victimIncidentAssistance === "true" || (rep.victimIncidentAssistance as any) === true) ? "대물" : "-"}</td>
-        <td style={cellStyle}>{rep.restorationMethod || rep.recoveryType || "-"}</td>
+        <td style={cellStyle}>{getGroupRestorationMethod(g.cases)}</td>
         <td style={cellStyle}>{extractRegion(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={cellStyle}>{extractCityDistrict(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={{ ...cellStyle, fontWeight: 500 }}>{getLatestStatus(g.cases)}</td>
