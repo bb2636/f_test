@@ -340,59 +340,62 @@ export default function ClosedCaseStatistics() {
       return lastDash > 0 ? cn.substring(0, lastDash) : cn;
     };
 
-    const prefixGroups: Record<string, Case[]> = {};
-    cases.forEach((c) => {
-      const prefix = getCasePrefix(c);
-      const key = prefix || `no-prefix-${c.id}`;
-      if (!prefixGroups[key]) prefixGroups[key] = [];
-      prefixGroups[key].push(c);
-    });
-
-    const accNoGroups: Record<string, Case[]> = {};
-    cases.forEach((c) => {
-      const accNo = (c.insuranceAccidentNo || "").trim();
-      if (!accNo) return;
-      if (!accNoGroups[accNo]) accNoGroups[accNo] = [];
-      accNoGroups[accNo].push(c);
-    });
-
-    const merged: Record<string, Case[]> = {};
-    const assigned = new Set<string>();
-
-    Object.entries(prefixGroups).forEach(([prefix, groupCases]) => {
-      const caseIds = groupCases.map(c => c.id);
-      if (caseIds.some(id => assigned.has(id))) return;
-      const allRelated = new Set<string>(caseIds);
-
-      groupCases.forEach(c => {
-        const accNo = (c.insuranceAccidentNo || "").trim();
-        if (accNo && accNoGroups[accNo]) {
-          accNoGroups[accNo].forEach(rc => allRelated.add(rc.id));
-        }
-      });
-
-      const mergedCases = cases.filter(c => allRelated.has(c.id));
-      const rep = getRepresentativeCase(mergedCases);
-      const accNo = (rep.insuranceAccidentNo || "").trim() || `no-acc-${rep.id}`;
-
-      mergedCases.forEach(c => assigned.add(c.id));
-      if (merged[accNo]) {
-        merged[accNo].push(...mergedCases);
-      } else {
-        merged[accNo] = mergedCases;
-      }
-    });
+    const parent: Record<string, string> = {};
+    const find = (x: string): string => {
+      if (!parent[x]) parent[x] = x;
+      if (parent[x] !== x) parent[x] = find(parent[x]);
+      return parent[x];
+    };
+    const union = (a: string, b: string) => {
+      const ra = find(a), rb = find(b);
+      if (ra !== rb) parent[ra] = rb;
+    };
 
     cases.forEach(c => {
-      if (!assigned.has(c.id)) {
-        const accNo = (c.insuranceAccidentNo || "").trim() || `no-acc-${c.id}`;
-        if (!merged[accNo]) merged[accNo] = [];
-        merged[accNo].push(c);
-        assigned.add(c.id);
+      if (!parent[c.id]) parent[c.id] = c.id;
+    });
+
+    const prefixMap: Record<string, string[]> = {};
+    cases.forEach(c => {
+      const prefix = getCasePrefix(c);
+      if (!prefix) return;
+      if (!prefixMap[prefix]) prefixMap[prefix] = [];
+      prefixMap[prefix].push(c.id);
+    });
+    Object.values(prefixMap).forEach(ids => {
+      for (let i = 1; i < ids.length; i++) union(ids[0], ids[i]);
+    });
+
+    const accNoMap: Record<string, string[]> = {};
+    cases.forEach(c => {
+      const accNo = (c.insuranceAccidentNo || "").trim();
+      if (!accNo) return;
+      if (!accNoMap[accNo]) accNoMap[accNo] = [];
+      accNoMap[accNo].push(c.id);
+    });
+    Object.values(accNoMap).forEach(ids => {
+      for (let i = 1; i < ids.length; i++) union(ids[0], ids[i]);
+    });
+
+    const components: Record<string, Case[]> = {};
+    cases.forEach(c => {
+      const root = find(c.id);
+      if (!components[root]) components[root] = [];
+      components[root].push(c);
+    });
+
+    const grouped: Record<string, Case[]> = {};
+    Object.values(components).forEach(groupCases => {
+      const rep = getRepresentativeCase(groupCases);
+      const accNo = (rep.insuranceAccidentNo || "").trim() || `no-acc-${rep.id}`;
+      if (grouped[accNo]) {
+        grouped[accNo].push(...groupCases);
+      } else {
+        grouped[accNo] = groupCases;
       }
     });
 
-    let entries = Object.entries(merged).filter(([, groupCases]) => {
+    let entries = Object.entries(grouped).filter(([, groupCases]) => {
       const allClosed = groupCases.every((c) => isClosed(c));
       if (!allClosed) return false;
       return groupCases.some((c) => isClosedInDateRange(c));
@@ -583,13 +586,13 @@ export default function ClosedCaseStatistics() {
           g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-",
           g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-",
           g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-",
-          claimAmount ? claimAmount.toLocaleString() : "",
+          claimAmount ? claimAmount.toLocaleString() : "-",
           formatDate(rep.claimDate),
-          deposit.amount ? deposit.amount.toLocaleString() : "",
+          deposit.amount ? deposit.amount.toLocaleString() : "-",
           formatDate(deposit.date),
-          sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "",
+          sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "-",
           formatDate(sett.partnerPaymentDate),
-          sett.commission ? sett.commission.toLocaleString() : "",
+          sett.commission ? sett.commission.toLocaleString() : "-",
           formatDate(sett.settlementDate),
         ];
       });
