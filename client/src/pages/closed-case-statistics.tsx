@@ -491,7 +491,7 @@ export default function ClosedCaseStatistics() {
         partnerPayment += parseFloat(s.partnerPaymentAmount || "0") || 0;
         commission += parseFloat(s.commission || "0") || 0;
         if (s.partnerPaymentDate && s.partnerPaymentDate > latestPartnerDate) latestPartnerDate = s.partnerPaymentDate;
-        const settDate = s.settlementDate || c.taxInvoiceConfirmDate || c.settlementCompletedDate || "";
+        const settDate = c.taxInvoiceConfirmDate || s.settlementDate || c.settlementCompletedDate || "";
         if (settDate && settDate > latestSettlementDate) latestSettlementDate = settDate;
       } else {
         const fallbackDate = c.taxInvoiceConfirmDate || c.settlementCompletedDate || "";
@@ -510,7 +510,7 @@ export default function ClosedCaseStatistics() {
       "조사사", "조사자", "협력사", "담당자", "배당일자",
       "사고유형", "사고원인", "손방 유무", "대물 유무", "복구방식", "지역", "시군구", "진행상태",
       "견적금액", "견적일자", "승인금액", "승인일자",
-      ...(searchType !== "접수번호" ? ["청구액", "청구일자", "입금액계", "입금완료일", "지급액계", "지급완료일", "수수료계", "종결일 - 계산서 발행일"] : []),
+      ...(searchType !== "접수번호" ? ["청구액", "청구일자", "입금액계", "입금완료일", "지급액계", "지급완료일", "수수료계", "종결일"] : []),
     ];
 
     let rows: string[][];
@@ -935,7 +935,7 @@ export default function ClosedCaseStatistics() {
                   <th style={{ ...headerStyle, width: "120px" }}>지급액계</th>
                   <th style={{ ...headerStyle, width: "110px" }}>지급완료일</th>
                   <th style={{ ...headerStyle, width: "120px" }}>수수료계</th>
-                  <th style={{ ...headerStyle, width: "150px", borderRight: "none" }}>종결일{"\n"}- 계산서 발행일</th>
+                  <th style={{ ...headerStyle, width: "150px", borderRight: "none" }}>종결일</th>
                 </>
               )}
             </tr>
