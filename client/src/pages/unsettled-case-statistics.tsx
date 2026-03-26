@@ -502,21 +502,35 @@ export default function UnsettledCaseStatistics() {
     return { amount: totalAmount, date: latestDate || "-" };
   };
 
+  const getLatestPaymentDate = (s: Settlement): string => {
+    let latest = s.partnerPaymentDate || "";
+    const entries = s.paymentEntries as any[];
+    if (entries && entries.length > 0) {
+      entries.forEach((e: any) => {
+        const d = e.paymentDate || "";
+        if (d && d > latest) latest = d;
+      });
+    }
+    return latest;
+  };
+
   const getGroupSettlementTotals = (groupCases: Case[]) => {
     let partnerPayment = 0;
     let commission = 0;
     let latestPartnerDate = "";
-    let latestSettlementDate = "";
+    let latestClosingDate = "";
     groupCases.forEach((c) => {
       const s = settlementMap[c.id];
       if (s) {
         partnerPayment += parseFloat(s.partnerPaymentAmount || "0") || 0;
         commission += parseFloat(s.commission || "0") || 0;
-        if (s.partnerPaymentDate && s.partnerPaymentDate > latestPartnerDate) latestPartnerDate = s.partnerPaymentDate;
-        if (s.settlementDate && s.settlementDate > latestSettlementDate) latestSettlementDate = s.settlementDate;
+        const payDate = getLatestPaymentDate(s);
+        if (payDate && payDate > latestPartnerDate) latestPartnerDate = payDate;
+        const closeDate = s.closingDate || "";
+        if (closeDate && closeDate > latestClosingDate) latestClosingDate = closeDate;
       }
     });
-    return { partnerPayment, commission, partnerPaymentDate: latestPartnerDate || null, settlementDate: latestSettlementDate || null };
+    return { partnerPayment, commission, partnerPaymentDate: latestPartnerDate || null, closingDate: latestClosingDate || null };
   };
 
   const handleExcelDownload = () => {
@@ -613,7 +627,7 @@ export default function UnsettledCaseStatistics() {
           sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "-",
           formatDate(sett.partnerPaymentDate),
           sett.commission ? sett.commission.toLocaleString() : "-",
-          formatDate(sett.settlementDate),
+          formatDate(sett.closingDate),
         ];
       });
     }
@@ -670,7 +684,7 @@ export default function UnsettledCaseStatistics() {
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.partnerPayment)}</td>
         <td style={cellStyle}>{formatDate(sett.partnerPaymentDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.commission)}</td>
-        <td style={{ ...cellStyle, borderRight: "none" }}>{formatDate(sett.settlementDate)}</td>
+        <td style={{ ...cellStyle, borderRight: "none" }}>{formatDate(sett.closingDate)}</td>
       </tr>
     );
   };

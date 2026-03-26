@@ -14,22 +14,13 @@ const CLOSED_STATUSES = ["접수취소", "종결"];
 const isClosed = (c: Case): boolean => CLOSED_STATUSES.includes(c.status);
 
 const getClosedDate = (c: Case, settlement?: Settlement): string | null => {
-  if (c.status === "정산완료") {
-    return settlement?.settlementDate || c.settlementCompletedDate || null;
-  }
-  if (c.status === "입금완료") {
-    return c.paymentCompletedDate || null;
-  }
-  if (c.status === "부분입금") {
-    return c.partialPaymentDate || null;
+  if (settlement?.closingDate) {
+    return settlement.closingDate;
   }
   if (c.status === "접수취소") {
     return c.cancellationDate || null;
   }
-  if (c.status === "종결") {
-    return c.taxInvoiceConfirmDate || c.settlementCompletedDate || settlement?.settlementDate || null;
-  }
-  return c.settlementCompletedDate || c.paymentCompletedDate || c.partialPaymentDate || null;
+  return c.settlementCompletedDate || c.taxInvoiceConfirmDate || null;
 };
 
 const isDirectRecovery = (c: Case): boolean => {
@@ -480,25 +471,35 @@ export default function ClosedCaseStatistics() {
     return { amount: totalAmount, date: latestDate || "-" };
   };
 
+  const getLatestPaymentDate = (s: Settlement): string => {
+    let latest = s.partnerPaymentDate || "";
+    const entries = s.paymentEntries as any[];
+    if (entries && entries.length > 0) {
+      entries.forEach((e: any) => {
+        const d = e.paymentDate || "";
+        if (d && d > latest) latest = d;
+      });
+    }
+    return latest;
+  };
+
   const getGroupSettlementTotals = (groupCases: Case[]) => {
     let partnerPayment = 0;
     let commission = 0;
     let latestPartnerDate = "";
-    let latestSettlementDate = "";
+    let latestClosingDate = "";
     groupCases.forEach((c) => {
       const s = settlementMap[c.id];
       if (s) {
         partnerPayment += parseFloat(s.partnerPaymentAmount || "0") || 0;
         commission += parseFloat(s.commission || "0") || 0;
-        if (s.partnerPaymentDate && s.partnerPaymentDate > latestPartnerDate) latestPartnerDate = s.partnerPaymentDate;
-        const settDate = c.taxInvoiceConfirmDate || s.settlementDate || c.settlementCompletedDate || "";
-        if (settDate && settDate > latestSettlementDate) latestSettlementDate = settDate;
-      } else {
-        const fallbackDate = c.taxInvoiceConfirmDate || c.settlementCompletedDate || "";
-        if (fallbackDate && fallbackDate > latestSettlementDate) latestSettlementDate = fallbackDate;
+        const payDate = getLatestPaymentDate(s);
+        if (payDate && payDate > latestPartnerDate) latestPartnerDate = payDate;
+        const closeDate = s.closingDate || "";
+        if (closeDate && closeDate > latestClosingDate) latestClosingDate = closeDate;
       }
     });
-    return { partnerPayment, commission, partnerPaymentDate: latestPartnerDate || null, settlementDate: latestSettlementDate || null };
+    return { partnerPayment, commission, partnerPaymentDate: latestPartnerDate || null, closingDate: latestClosingDate || null };
   };
 
   const handleExcelDownload = () => {
@@ -593,7 +594,7 @@ export default function ClosedCaseStatistics() {
           sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "-",
           formatDate(sett.partnerPaymentDate),
           sett.commission ? sett.commission.toLocaleString() : "-",
-          formatDate(sett.settlementDate),
+          formatDate(sett.closingDate),
         ];
       });
     }
@@ -649,7 +650,7 @@ export default function ClosedCaseStatistics() {
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.partnerPayment)}</td>
         <td style={cellStyle}>{formatDate(sett.partnerPaymentDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.commission)}</td>
-        <td style={{ ...cellStyle, borderRight: "none" }}>{formatDate(sett.settlementDate)}</td>
+        <td style={{ ...cellStyle, borderRight: "none" }}>{formatDate(sett.closingDate)}</td>
       </tr>
     );
   };
