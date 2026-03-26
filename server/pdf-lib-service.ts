@@ -3342,6 +3342,7 @@ async function renderEstimatePage(
   y -= 20;
 
   let materialCostItems: any[] = [];
+  let vatIncluded = true;
   if (estimateData?.materialCostData) {
     try {
       const rawMaterialData =
@@ -3352,6 +3353,9 @@ async function renderEstimatePage(
         materialCostItems = rawMaterialData;
       } else if (rawMaterialData.rows && Array.isArray(rawMaterialData.rows)) {
         materialCostItems = rawMaterialData.rows;
+        if (rawMaterialData.vatIncluded !== undefined) {
+          vatIncluded = rawMaterialData.vatIncluded;
+        }
       }
     } catch {}
   }
@@ -3498,7 +3502,7 @@ async function renderEstimatePage(
   // 만원단위 절사 (10000원 단위) - 용어는 '천원단위 절사'로 표시
   const rounded = Math.floor(beforeRounding / 10000) * 10000;
   const roundingDiff = beforeRounding - rounded;
-  const vat = Math.round(rounded * vatRate);
+  const vat = vatIncluded ? Math.round(rounded * vatRate) : 0;
   const grandTotal = rounded + vat;
 
   const totalRows: TableCell[][] = [
@@ -3536,12 +3540,12 @@ async function renderEstimatePage(
     ],
     [
       {
-        text: "부가세 (10%) - 포함",
+        text: vatIncluded ? "부가세 (10%) - 포함" : "부가세 (10%) - 제외",
         width: 150,
         isHeader: true,
         align: "center",
       },
-      { text: formatNumber(vat), width: 120, align: "right" },
+      { text: vatIncluded ? formatNumber(vat) : "0", width: 120, align: "right" },
     ],
     [
       { text: "총 합계", width: 150, isHeader: true, align: "center" },
