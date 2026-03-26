@@ -386,8 +386,8 @@ export function MaterialCostSection({
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "150px" }}>수량</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "60px" }}>단위</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "100px" }}>합계</th>
-            <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "60px" }}>경비여부</th>
-            <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB", minWidth: "150px" }}>비고</th>
+            <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "75px", whiteSpace: "nowrap" }}>경비여부</th>
+            <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB", minWidth: "120px" }}>비고</th>
           </tr>
         </thead>
         <tbody>
