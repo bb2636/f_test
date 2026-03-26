@@ -77,6 +77,26 @@ const extractCityDistrict = (address: string | null | undefined): string => {
   return "-";
 };
 
+const STATUS_ORDER = [
+  "배당대기", "접수완료", "현장방문", "현장정보입력", "검토중", "반려",
+  "1차승인", "현장정보제출", "복구요청(2차승인)", "직접복구", "선견적요청",
+  "청구자료제출(복구)", "출동비청구(선견적)", "청구", "입금완료", "부분입금",
+  "부분지급", "지급완료", "정산완료", "종결", "접수취소",
+];
+
+const getLatestStatus = (groupCases: Case[]): string => {
+  let minIndex = STATUS_ORDER.length;
+  let latestStatus = groupCases[0]?.status || "-";
+  for (const c of groupCases) {
+    const idx = STATUS_ORDER.indexOf(c.status);
+    if (idx !== -1 && idx < minIndex) {
+      minIndex = idx;
+      latestStatus = c.status;
+    }
+  }
+  return latestStatus;
+};
+
 const getRepresentativeCase = (groupCases: Case[]): Case => {
   const sorted = [...groupCases].sort((a, b) => (a.caseNumber || "").localeCompare(b.caseNumber || ""));
   const zeroCase = sorted.find(c => (c.caseNumber || "").endsWith("-0"));
@@ -436,7 +456,7 @@ export default function UnsettledCaseStatistics() {
           rep.restorationMethod || rep.recoveryType || "",
           extractRegion(address),
           extractCityDistrict(address),
-          rep.status,
+          getLatestStatus(g.cases),
           g.totalEstimate ? g.totalEstimate.toLocaleString() : "",
           formatDate(rep.siteInvestigationSubmitDate),
           g.totalApproved ? g.totalApproved.toLocaleString() : "",
@@ -493,7 +513,7 @@ export default function UnsettledCaseStatistics() {
         <td style={cellStyle}>{rep.restorationMethod || rep.recoveryType || "-"}</td>
         <td style={cellStyle}>{extractRegion(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={cellStyle}>{extractCityDistrict(rep.insuredAddress || rep.victimAddress)}</td>
-        <td style={{ ...cellStyle, fontWeight: 500 }}>{rep.status}</td>
+        <td style={{ ...cellStyle, fontWeight: 500 }}>{getLatestStatus(g.cases)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(g.totalEstimate)}</td>
         <td style={cellStyle}>{formatDate(rep.siteInvestigationSubmitDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(g.totalApproved)}</td>
