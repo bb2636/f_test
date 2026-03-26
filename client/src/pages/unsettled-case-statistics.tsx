@@ -187,7 +187,7 @@ const getCaseApprovedForStats = (c: Case): number => {
 };
 
 const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
-  return groupCases.filter(c => c.status !== "접수취소" && c.status !== "출동비청구(선견적)");
+  return groupCases.filter(c => c.status !== "접수취소" && !isPreEstimate(c));
 };
 
 const getGroupEstimateAmount = (groupCases: Case[]): number | null => {
