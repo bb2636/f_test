@@ -84,20 +84,28 @@ const STATUS_ORDER = [
   "부분지급", "지급완료", "정산완료", "종결", "접수취소",
 ];
 
+const getActiveCases = (groupCases: Case[]): Case[] => {
+  return groupCases.filter(c => c.status !== "접수취소");
+};
+
 const getGroupRestorationMethod = (groupCases: Case[]): string => {
-  const hasDirectRecovery = groupCases.some(c => isDirectRecovery(c));
+  const active = getActiveCases(groupCases);
+  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
   if (hasDirectRecovery) return "직접복구";
-  const hasPreEstimate = groupCases.some(c => isPreEstimate(c));
+  const hasPreEstimate = active.some(c => isPreEstimate(c));
   if (hasPreEstimate) return "선견적요청";
-  const rep = groupCases[0];
+  const rep = active[0] || groupCases[0];
   return rep?.restorationMethod || rep?.recoveryType || "-";
 };
 
 const getLatestStatus = (groupCases: Case[]): string => {
-  const hasDirectRecovery = groupCases.some(c => isDirectRecovery(c));
+  const active = getActiveCases(groupCases);
+  if (active.length === 0) return groupCases[0]?.status || "-";
+
+  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
   const targetCases = hasDirectRecovery
-    ? groupCases.filter(c => isDirectRecovery(c))
-    : groupCases;
+    ? active.filter(c => isDirectRecovery(c))
+    : active;
 
   let minIndex = STATUS_ORDER.length;
   let latestStatus = targetCases[0]?.status || "-";
@@ -109,6 +117,12 @@ const getLatestStatus = (groupCases: Case[]): string => {
     }
   }
   return latestStatus;
+};
+
+const isOnlyPreEstimate = (groupCases: Case[]): boolean => {
+  const active = getActiveCases(groupCases);
+  if (active.length === 0) return false;
+  return active.every(c => isPreEstimate(c));
 };
 
 const getRepresentativeCase = (groupCases: Case[]): Case => {
@@ -127,20 +141,30 @@ const getCaseApprovedForStats = (c: Case): number => {
   return parseFloat(c.approvedAmount || "0") || 0;
 };
 
-const getGroupEstimateAmount = (groupCases: Case[]): number => {
-  return groupCases.reduce((sum, c) => sum + getCaseEstimateForStats(c), 0);
+const getGroupEstimateAmount = (groupCases: Case[]): number | null => {
+  const active = getActiveCases(groupCases);
+  if (active.length === 0) return null;
+  if (isOnlyPreEstimate(groupCases)) return null;
+  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
+  const targets = hasDirectRecovery ? active.filter(c => isDirectRecovery(c)) : active;
+  return targets.reduce((sum, c) => sum + getCaseEstimateForStats(c), 0);
 };
 
-const getGroupApprovedAmount = (groupCases: Case[]): number => {
-  return groupCases.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+const getGroupApprovedAmount = (groupCases: Case[]): number | null => {
+  const active = getActiveCases(groupCases);
+  if (active.length === 0) return null;
+  if (isOnlyPreEstimate(groupCases)) return null;
+  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
+  const targets = hasDirectRecovery ? active.filter(c => isDirectRecovery(c)) : active;
+  return targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
 };
 
 interface GroupedRow {
   accidentNo: string;
   rep: Case;
   cases: Case[];
-  totalEstimate: number;
-  totalApproved: number;
+  totalEstimate: number | null;
+  totalApproved: number | null;
   totalClaim: number;
 }
 
@@ -471,10 +495,10 @@ export default function UnsettledCaseStatistics() {
           extractRegion(address),
           extractCityDistrict(address),
           getLatestStatus(g.cases),
-          g.totalEstimate ? g.totalEstimate.toLocaleString() : "",
-          formatDate(rep.siteInvestigationSubmitDate),
-          g.totalApproved ? g.totalApproved.toLocaleString() : "",
-          formatDate(rep.secondApprovalDate),
+          g.totalEstimate !== null ? (g.totalEstimate ? g.totalEstimate.toLocaleString() : "0") : "-",
+          g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-",
+          g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-",
+          g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-",
           claimAmount ? claimAmount.toLocaleString() : "",
           formatDate(rep.claimDate),
           deposit.amount ? deposit.amount.toLocaleString() : "",
@@ -528,10 +552,10 @@ export default function UnsettledCaseStatistics() {
         <td style={cellStyle}>{extractRegion(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={cellStyle}>{extractCityDistrict(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={{ ...cellStyle, fontWeight: 500 }}>{getLatestStatus(g.cases)}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(g.totalEstimate)}</td>
-        <td style={cellStyle}>{formatDate(rep.siteInvestigationSubmitDate)}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(g.totalApproved)}</td>
-        <td style={cellStyle}>{formatDate(rep.secondApprovalDate)}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalEstimate !== null ? formatAmount(g.totalEstimate) : "-"}</td>
+        <td style={cellStyle}>{g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-"}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalApproved !== null ? formatAmount(g.totalApproved) : "-"}</td>
+        <td style={cellStyle}>{g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(g.totalClaim)}</td>
         <td style={cellStyle}>{formatDate(rep.claimDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
