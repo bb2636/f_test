@@ -224,7 +224,7 @@ interface GroupedRow {
   cases: Case[];
   totalEstimate: number | null;
   totalApproved: number | null;
-  totalClaim: number;
+  totalClaim: number | null;
 }
 
 const headerStyle: React.CSSProperties = {
@@ -409,7 +409,7 @@ export default function ClosedCaseStatistics() {
         cases: uniqueCases,
         totalEstimate: getGroupEstimateAmount(uniqueCases),
         totalApproved: getGroupApprovedAmount(uniqueCases),
-        totalClaim: uniqueCases.reduce((sum, c) => sum + getClaimAmount(c), 0),
+        totalClaim: isOnlyPreEstimate(uniqueCases) ? null : uniqueCases.reduce((sum, c) => sum + getClaimAmount(c), 0),
       };
     });
 
@@ -587,8 +587,8 @@ export default function ClosedCaseStatistics() {
           g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-",
           g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-",
           g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-",
-          claimAmount ? claimAmount.toLocaleString() : "-",
-          formatDate(rep.claimDate),
+          g.totalClaim !== null ? (claimAmount ? claimAmount.toLocaleString() : "0") : "-",
+          g.totalClaim !== null ? formatDate(rep.claimDate) : "-",
           deposit.amount ? deposit.amount.toLocaleString() : "-",
           formatDate(deposit.date),
           sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "-",
@@ -643,8 +643,8 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalApproved !== null ? formatAmount(g.totalApproved) : "-"}</td>
         <td style={cellStyle}>{g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-"}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(g.totalClaim)}</td>
-        <td style={cellStyle}>{formatDate(rep.claimDate)}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalClaim !== null ? formatAmount(g.totalClaim) : "-"}</td>
+        <td style={cellStyle}>{g.totalClaim !== null ? formatDate(rep.claimDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
         <td style={cellStyle}>{formatDate(deposit.date)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.partnerPayment)}</td>
