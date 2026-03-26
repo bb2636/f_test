@@ -334,14 +334,65 @@ export default function ClosedCaseStatistics() {
   const groupedRows = useMemo((): GroupedRow[] => {
     if (searchType !== "사고번호") return [];
 
-    const groups: Record<string, Case[]> = {};
+    const getCasePrefix = (c: Case): string => {
+      const cn = c.caseNumber || "";
+      const lastDash = cn.lastIndexOf("-");
+      return lastDash > 0 ? cn.substring(0, lastDash) : cn;
+    };
+
+    const prefixGroups: Record<string, Case[]> = {};
     cases.forEach((c) => {
-      const key = c.insuranceAccidentNo || `no-acc-${c.id}`;
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(c);
+      const prefix = getCasePrefix(c);
+      const key = prefix || `no-prefix-${c.id}`;
+      if (!prefixGroups[key]) prefixGroups[key] = [];
+      prefixGroups[key].push(c);
     });
 
-    let entries = Object.entries(groups).filter(([, groupCases]) => {
+    const accNoGroups: Record<string, Case[]> = {};
+    cases.forEach((c) => {
+      const accNo = (c.insuranceAccidentNo || "").trim();
+      if (!accNo) return;
+      if (!accNoGroups[accNo]) accNoGroups[accNo] = [];
+      accNoGroups[accNo].push(c);
+    });
+
+    const merged: Record<string, Case[]> = {};
+    const assigned = new Set<string>();
+
+    Object.entries(prefixGroups).forEach(([prefix, groupCases]) => {
+      const caseIds = groupCases.map(c => c.id);
+      if (caseIds.some(id => assigned.has(id))) return;
+      const allRelated = new Set<string>(caseIds);
+
+      groupCases.forEach(c => {
+        const accNo = (c.insuranceAccidentNo || "").trim();
+        if (accNo && accNoGroups[accNo]) {
+          accNoGroups[accNo].forEach(rc => allRelated.add(rc.id));
+        }
+      });
+
+      const mergedCases = cases.filter(c => allRelated.has(c.id));
+      const rep = getRepresentativeCase(mergedCases);
+      const accNo = (rep.insuranceAccidentNo || "").trim() || `no-acc-${rep.id}`;
+
+      mergedCases.forEach(c => assigned.add(c.id));
+      if (merged[accNo]) {
+        merged[accNo].push(...mergedCases);
+      } else {
+        merged[accNo] = mergedCases;
+      }
+    });
+
+    cases.forEach(c => {
+      if (!assigned.has(c.id)) {
+        const accNo = (c.insuranceAccidentNo || "").trim() || `no-acc-${c.id}`;
+        if (!merged[accNo]) merged[accNo] = [];
+        merged[accNo].push(c);
+        assigned.add(c.id);
+      }
+    });
+
+    let entries = Object.entries(merged).filter(([, groupCases]) => {
       const allClosed = groupCases.every((c) => isClosed(c));
       if (!allClosed) return false;
       return groupCases.some((c) => isClosedInDateRange(c));
@@ -349,18 +400,22 @@ export default function ClosedCaseStatistics() {
 
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
-      entries = entries.filter(([accNo]) => accNo.toLowerCase().includes(q));
+      entries = entries.filter(([accNo, groupCases]) => {
+        if (accNo.toLowerCase().includes(q)) return true;
+        return groupCases.some(c => (c.caseNumber || "").toLowerCase().includes(q));
+      });
     }
 
     const rows: GroupedRow[] = entries.map(([accNo, groupCases]) => {
-      const rep = getRepresentativeCase(groupCases);
+      const uniqueCases = Array.from(new Map(groupCases.map(c => [c.id, c])).values());
+      const rep = getRepresentativeCase(uniqueCases);
       return {
         accidentNo: accNo,
         rep,
-        cases: groupCases,
-        totalEstimate: getGroupEstimateAmount(groupCases),
-        totalApproved: getGroupApprovedAmount(groupCases),
-        totalClaim: groupCases.reduce((sum, c) => sum + getClaimAmount(c), 0),
+        cases: uniqueCases,
+        totalEstimate: getGroupEstimateAmount(uniqueCases),
+        totalApproved: getGroupApprovedAmount(uniqueCases),
+        totalClaim: uniqueCases.reduce((sum, c) => sum + getClaimAmount(c), 0),
       };
     });
 
