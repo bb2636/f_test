@@ -28,8 +28,12 @@ const isPreEstimate = (c: Case): boolean => {
   return c.recoveryType === "선견적요청" || c.restorationMethod === "선견적요청" || c.status === "선견적요청" || c.status === "출동비청구(선견적)";
 };
 
+const isCurrentlyPreEstimate = (c: Case): boolean => {
+  return c.status === "선견적요청" || c.status === "출동비청구(선견적)";
+};
+
 const getClaimAmount = (c: Case): number => {
-  if (isPreEstimate(c)) {
+  if (isCurrentlyPreEstimate(c)) {
     return 100000;
   }
   if (isDirectRecovery(c)) {
