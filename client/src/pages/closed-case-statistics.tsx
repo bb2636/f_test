@@ -177,6 +177,11 @@ const isOnlyPreEstimate = (groupCases: Case[]): boolean => {
   return active.every(c => isPreEstimate(c));
 };
 
+const groupHasAnyPreEstimate = (groupCases: Case[]): boolean => {
+  const active = getActiveCases(groupCases);
+  return active.some(c => isPreEstimate(c));
+};
+
 const getRepresentativeCase = (groupCases: Case[]): Case => {
   const sorted = [...groupCases].sort((a, b) => (a.caseNumber || "").localeCompare(b.caseNumber || ""));
   const zeroCase = sorted.find(c => (c.caseNumber || "").endsWith("-0"));
@@ -319,6 +324,58 @@ export default function ClosedCaseStatistics() {
     return result;
   }, [cases, settlementMap, startDate, endDate, searchQuery, searchType]);
 
+  const preEstimateGroupCaseIds = useMemo((): Set<string> => {
+    const getCasePrefix = (c: Case): string => {
+      const cn = c.caseNumber || "";
+      const lastDash = cn.lastIndexOf("-");
+      return lastDash > 0 ? cn.substring(0, lastDash) : cn;
+    };
+    const parent: Record<string, string> = {};
+    const find = (x: string): string => {
+      if (!parent[x]) parent[x] = x;
+      if (parent[x] !== x) parent[x] = find(parent[x]);
+      return parent[x];
+    };
+    const union = (a: string, b: string) => {
+      const ra = find(a), rb = find(b);
+      if (ra !== rb) parent[ra] = rb;
+    };
+    cases.forEach(c => { if (!parent[c.id]) parent[c.id] = c.id; });
+    const prefixMap: Record<string, string[]> = {};
+    cases.forEach(c => {
+      const prefix = getCasePrefix(c);
+      if (!prefix) return;
+      if (!prefixMap[prefix]) prefixMap[prefix] = [];
+      prefixMap[prefix].push(c.id);
+    });
+    Object.values(prefixMap).forEach(ids => {
+      for (let i = 1; i < ids.length; i++) union(ids[0], ids[i]);
+    });
+    const accNoMap: Record<string, string[]> = {};
+    cases.forEach(c => {
+      const accNo = (c.insuranceAccidentNo || "").trim();
+      if (!accNo) return;
+      if (!accNoMap[accNo]) accNoMap[accNo] = [];
+      accNoMap[accNo].push(c.id);
+    });
+    Object.values(accNoMap).forEach(ids => {
+      for (let i = 1; i < ids.length; i++) union(ids[0], ids[i]);
+    });
+    const components: Record<string, Case[]> = {};
+    cases.forEach(c => {
+      const root = find(c.id);
+      if (!components[root]) components[root] = [];
+      components[root].push(c);
+    });
+    const result = new Set<string>();
+    Object.values(components).forEach(groupCases => {
+      if (groupHasAnyPreEstimate(groupCases)) {
+        groupCases.forEach(c => result.add(c.id));
+      }
+    });
+    return result;
+  }, [cases]);
+
   const groupedRows = useMemo((): GroupedRow[] => {
     if (searchType !== "사고번호") return [];
 
@@ -404,9 +461,9 @@ export default function ClosedCaseStatistics() {
         accidentNo: accNo,
         rep,
         cases: uniqueCases,
-        totalEstimate: getGroupEstimateAmount(uniqueCases),
-        totalApproved: getGroupApprovedAmount(uniqueCases),
-        totalClaim: isOnlyPreEstimate(uniqueCases) ? null : uniqueCases.reduce((sum, c) => sum + getClaimAmount(c), 0),
+        totalEstimate: groupHasAnyPreEstimate(uniqueCases) ? null : getGroupEstimateAmount(uniqueCases),
+        totalApproved: groupHasAnyPreEstimate(uniqueCases) ? null : getGroupApprovedAmount(uniqueCases),
+        totalClaim: groupHasAnyPreEstimate(uniqueCases) ? null : uniqueCases.reduce((sum, c) => sum + getClaimAmount(c), 0),
       };
     });
 
@@ -547,9 +604,9 @@ export default function ClosedCaseStatistics() {
           extractRegion(address),
           extractCityDistrict(address),
           c.status,
-          getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "",
+          preEstimateGroupCaseIds.has(c.id) ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : ""),
           formatDate(c.siteInvestigationSubmitDate),
-          getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : "",
+          preEstimateGroupCaseIds.has(c.id) ? "-" : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : ""),
           formatDate(c.secondApprovalDate),
         ];
       });
@@ -662,6 +719,7 @@ export default function ClosedCaseStatistics() {
     const settlement = settlementMap[c.id];
     const estimateAmt = getCaseEstimateForStats(c);
     const approvedAmt = getCaseApprovedForStats(c);
+    const blankAmounts = preEstimateGroupCaseIds.has(c.id);
 
     return (
       <tr key={c.id} data-testid={`row-case-${c.id}`}>
@@ -688,9 +746,9 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{extractRegion(c.insuredAddress || c.victimAddress)}</td>
         <td style={cellStyle}>{extractCityDistrict(c.insuredAddress || c.victimAddress)}</td>
         <td style={{ ...cellStyle, fontWeight: 500 }}>{c.status}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(estimateAmt)}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : formatAmount(estimateAmt)}</td>
         <td style={cellStyle}>{formatDate(c.siteInvestigationSubmitDate)}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(approvedAmt)}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : formatAmount(approvedAmt)}</td>
         <td style={{ ...cellStyle, borderRight: "none" }}>{formatDate(c.secondApprovalDate)}</td>
       </tr>
     );
