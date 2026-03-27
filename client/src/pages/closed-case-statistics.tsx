@@ -461,9 +461,9 @@ export default function ClosedCaseStatistics() {
         accidentNo: accNo,
         rep,
         cases: uniqueCases,
-        totalEstimate: groupHasAnyPreEstimate(uniqueCases) ? null : getGroupEstimateAmount(uniqueCases),
-        totalApproved: groupHasAnyPreEstimate(uniqueCases) ? null : getGroupApprovedAmount(uniqueCases),
-        totalClaim: groupHasAnyPreEstimate(uniqueCases) ? null : uniqueCases.reduce((sum, c) => sum + getClaimAmount(c), 0),
+        totalEstimate: getGroupEstimateAmount(uniqueCases),
+        totalApproved: getGroupApprovedAmount(uniqueCases),
+        totalClaim: isOnlyPreEstimate(uniqueCases) ? null : uniqueCases.reduce((sum, c) => sum + getClaimAmount(c), 0),
       };
     });
 
@@ -604,9 +604,9 @@ export default function ClosedCaseStatistics() {
           extractRegion(address),
           extractCityDistrict(address),
           c.status,
-          (preEstimateGroupCaseIds.has(c.id) || c.status === "접수취소") ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : ""),
+          (isPreEstimate(c) || c.status === "접수취소") ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : ""),
           formatDate(c.siteInvestigationSubmitDate),
-          (preEstimateGroupCaseIds.has(c.id) || c.status === "접수취소") ? "-" : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : ""),
+          (isPreEstimate(c) || c.status === "접수취소") ? "-" : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : ""),
           formatDate(c.secondApprovalDate),
         ];
       });
@@ -719,7 +719,7 @@ export default function ClosedCaseStatistics() {
     const settlement = settlementMap[c.id];
     const estimateAmt = getCaseEstimateForStats(c);
     const approvedAmt = getCaseApprovedForStats(c);
-    const blankAmounts = preEstimateGroupCaseIds.has(c.id) || c.status === "접수취소";
+    const blankAmounts = isPreEstimate(c) || c.status === "접수취소";
 
     return (
       <tr key={c.id} data-testid={`row-case-${c.id}`}>
