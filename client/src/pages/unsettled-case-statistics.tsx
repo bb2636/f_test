@@ -635,9 +635,9 @@ export default function UnsettledCaseStatistics() {
           extractRegion(address),
           extractCityDistrict(address),
           c.status,
-          preEstimateGroupCaseIds.has(c.id) ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : ""),
+          (preEstimateGroupCaseIds.has(c.id) || c.status === "접수취소") ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : ""),
           formatDate(c.siteInvestigationSubmitDate),
-          preEstimateGroupCaseIds.has(c.id) ? "-" : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : ""),
+          (preEstimateGroupCaseIds.has(c.id) || c.status === "접수취소") ? "-" : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : ""),
           formatDate(c.secondApprovalDate),
         ];
       });
@@ -751,7 +751,7 @@ export default function UnsettledCaseStatistics() {
     const settlement = settlementMap[c.id];
     const estimateAmt = getCaseEstimateForStats(c);
     const approvedAmt = getCaseApprovedForStats(c);
-    const blankAmounts = preEstimateGroupCaseIds.has(c.id);
+    const blankAmounts = preEstimateGroupCaseIds.has(c.id) || c.status === "접수취소";
 
     return (
       <tr key={c.id} data-testid={`row-unsettled-case-${c.id}`}>
