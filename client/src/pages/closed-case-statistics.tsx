@@ -240,7 +240,7 @@ const headerStyle: React.CSSProperties = {
   borderRight: "1px solid rgba(12, 12, 12, 0.06)",
   borderBottom: "1px solid rgba(12, 12, 12, 0.06)",
   textAlign: "center",
-  background: "rgba(12, 12, 12, 0.04)",
+  background: "rgba(240, 240, 240, 1)",
   whiteSpace: "nowrap",
 };
 
@@ -669,6 +669,35 @@ export default function ClosedCaseStatistics() {
     URL.revokeObjectURL(url);
   };
 
+  const stickyColWidths = searchType === "접수번호"
+    ? [120, 140, 140, 140, 80, 110]
+    : [120, 140, 140, 80, 110];
+  const stickyColCount = stickyColWidths.length;
+  const stickyColLefts = stickyColWidths.map((_, i) => stickyColWidths.slice(0, i).reduce((a, b) => a + b, 0));
+
+  const stickyTd = (colIdx: number, extra?: React.CSSProperties): React.CSSProperties => ({
+    ...cellStyle,
+    position: "sticky",
+    left: stickyColLefts[colIdx],
+    zIndex: 2,
+    background: "#FFFFFF",
+    minWidth: stickyColWidths[colIdx],
+    width: stickyColWidths[colIdx],
+    ...(colIdx === stickyColCount - 1 ? { boxShadow: "2px 0 4px rgba(0,0,0,0.06)" } : {}),
+    ...extra,
+  });
+
+  const stickyTh = (colIdx: number, extra?: React.CSSProperties): React.CSSProperties => ({
+    ...headerStyle,
+    position: "sticky",
+    left: stickyColLefts[colIdx],
+    zIndex: 32,
+    minWidth: stickyColWidths[colIdx],
+    width: stickyColWidths[colIdx],
+    ...(colIdx === stickyColCount - 1 ? { boxShadow: "2px 0 4px rgba(0,0,0,0.06)" } : {}),
+    ...extra,
+  });
+
   const renderGroupedRow = (g: GroupedRow) => {
     const rep = g.rep;
     const deposit = getGroupDepositInfo(g.cases);
@@ -676,11 +705,11 @@ export default function ClosedCaseStatistics() {
 
     return (
       <tr key={g.accidentNo} data-testid={`row-closed-group-${g.accidentNo}`}>
-        <td style={cellStyle}>{rep.insuranceCompany || "-"}</td>
-        <td style={{ ...cellStyle, fontSize: "12px" }}>{rep.insurancePolicyNo || "-"}</td>
-        <td style={{ ...cellStyle, fontSize: "12px" }}>{g.accidentNo.startsWith("no-acc-") ? "-" : (g.accidentNo || "-")}</td>
-        <td style={cellStyle}>{getManagerName(rep)}</td>
-        <td style={cellStyle}>{formatDate(rep.createdAt)}</td>
+        <td style={stickyTd(0)}>{rep.insuranceCompany || "-"}</td>
+        <td style={stickyTd(1, { fontSize: "12px" })}>{rep.insurancePolicyNo || "-"}</td>
+        <td style={stickyTd(2, { fontSize: "12px" })}>{g.accidentNo.startsWith("no-acc-") ? "-" : (g.accidentNo || "-")}</td>
+        <td style={stickyTd(3)}>{getManagerName(rep)}</td>
+        <td style={stickyTd(4)}>{formatDate(rep.createdAt)}</td>
         <td style={cellStyle}>{rep.clientResidence || "-"}</td>
         <td style={cellStyle}>{rep.clientName || "-"}</td>
         <td style={cellStyle}>{rep.assessorId || "-"}</td>
@@ -723,12 +752,12 @@ export default function ClosedCaseStatistics() {
 
     return (
       <tr key={c.id} data-testid={`row-case-${c.id}`}>
-        <td style={cellStyle}>{c.insuranceCompany || "-"}</td>
-        <td style={{ ...cellStyle, fontSize: "12px" }}>{c.insurancePolicyNo || "-"}</td>
-        <td style={{ ...cellStyle, fontSize: "12px" }}>{c.insuranceAccidentNo || "-"}</td>
-        <td style={{ ...cellStyle, fontSize: "12px" }}>{c.caseNumber || "-"}</td>
-        <td style={cellStyle}>{getManagerName(c)}</td>
-        <td style={cellStyle}>{formatDate(c.createdAt)}</td>
+        <td style={stickyTd(0)}>{c.insuranceCompany || "-"}</td>
+        <td style={stickyTd(1, { fontSize: "12px" })}>{c.insurancePolicyNo || "-"}</td>
+        <td style={stickyTd(2, { fontSize: "12px" })}>{c.insuranceAccidentNo || "-"}</td>
+        <td style={stickyTd(3, { fontSize: "12px" })}>{c.caseNumber || "-"}</td>
+        <td style={stickyTd(4)}>{getManagerName(c)}</td>
+        <td style={stickyTd(5)}>{formatDate(c.createdAt)}</td>
         <td style={cellStyle}>{c.clientResidence || "-"}</td>
         <td style={cellStyle}>{c.clientName || "-"}</td>
         <td style={cellStyle}>{c.assessorId || "-"}</td>
@@ -935,14 +964,15 @@ export default function ClosedCaseStatistics() {
           background: "#FFFFFF",
           borderRadius: "12px",
           border: "1px solid rgba(12, 12, 12, 0.06)",
-          overflow: "auto",
+          overflow: "hidden",
         }}
       >
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "3500px" }}>
-          <thead>
+        <div style={{ overflow: "auto", maxHeight: "calc(100vh - 280px)", position: "relative" }}>
+        <table style={{ width: "max-content", minWidth: "100%", borderCollapse: "separate", borderSpacing: 0 }}>
+          <thead style={{ position: "sticky", top: 0, zIndex: 30 }}>
             <tr>
-              <th colSpan={3} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>보험사</th>
-              <th colSpan={searchType === "접수번호" ? 3 : 2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>플록슨</th>
+              <th colSpan={3} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)", position: "sticky", left: 0, zIndex: 32, background: "rgba(240,240,240,1)" }}>보험사</th>
+              <th colSpan={searchType === "접수번호" ? 3 : 2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)", position: "sticky", left: stickyColLefts[3], zIndex: 32, background: "rgba(240,240,240,1)", boxShadow: "2px 0 4px rgba(0,0,0,0.06)" }}>플록슨</th>
               <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>의뢰사</th>
               <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>심사사</th>
               <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>조사사</th>
@@ -966,14 +996,14 @@ export default function ClosedCaseStatistics() {
               )}
             </tr>
             <tr>
-              <th style={{ ...headerStyle, width: "120px" }}>보험사</th>
-              <th style={{ ...headerStyle, width: "140px" }}>증권번호</th>
-              <th style={{ ...headerStyle, width: "140px" }}>사고번호</th>
+              <th style={stickyTh(0, { width: "120px" })}>보험사</th>
+              <th style={stickyTh(1, { width: "140px" })}>증권번호</th>
+              <th style={stickyTh(2, { width: "140px" })}>사고번호</th>
               {searchType === "접수번호" && (
-                <th style={{ ...headerStyle, width: "140px" }}>접수번호</th>
+                <th style={stickyTh(3, { width: "140px" })}>접수번호</th>
               )}
-              <th style={{ ...headerStyle, width: "80px" }}>담당자</th>
-              <th style={{ ...headerStyle, width: "110px" }}>최초 접수 일자</th>
+              <th style={stickyTh(searchType === "접수번호" ? 4 : 3, { width: "80px" })}>담당자</th>
+              <th style={stickyTh(searchType === "접수번호" ? 5 : 4, { width: "110px" })}>최초 접수 일자</th>
               <th style={{ ...headerStyle, width: "100px" }}>의뢰사</th>
               <th style={{ ...headerStyle, width: "80px" }}>의뢰자</th>
               <th style={{ ...headerStyle, width: "100px" }}>심사사</th>
@@ -1024,6 +1054,7 @@ export default function ClosedCaseStatistics() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
