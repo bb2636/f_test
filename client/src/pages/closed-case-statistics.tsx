@@ -28,10 +28,6 @@ const isPreEstimate = (c: Case): boolean => {
   return c.recoveryType === "선견적요청" || c.restorationMethod === "선견적요청" || c.status === "선견적요청" || c.status === "출동비청구(선견적)";
 };
 
-const getClaimAmount = (c: Case): number => {
-  return parseFloat(c.approvedAmount || "0") || 0;
-};
-
 const formatAmount = (amount: number): string => {
   if (!amount) return "-";
   return amount.toLocaleString("ko-KR") + "원";
@@ -195,6 +191,10 @@ const getCaseApprovedForStats = (c: Case): number => {
   const isApproved = c.reviewDecision === "승인" || APPROVED_STATUSES.includes(c.status);
   if (isApproved) return getCaseEstimateForStats(c);
   return 0;
+};
+
+const getClaimAmount = (c: Case): number => {
+  return getCaseApprovedForStats(c);
 };
 
 const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
