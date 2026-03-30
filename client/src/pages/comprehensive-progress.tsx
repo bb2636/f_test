@@ -98,18 +98,6 @@ const formatAmount = (amount: string | number | null | undefined): string => {
   return `₩${numAmount.toLocaleString()}`;
 };
 
-const APPROVED_STATUSES = ["청구", "청구자료제출(복구)", "출동비청구(선견적)", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
-
-const getDisplayApprovedAmount = (c: any): string => {
-  const approved = parseInt(c?.approvedAmount || "0") || 0;
-  if (approved > 0) return formatAmount(c.approvedAmount);
-  const isApproved = c?.reviewDecision === "승인" || APPROVED_STATUSES.includes(c?.status);
-  if (isApproved) {
-    const estimate = c?.initialEstimateAmount || c?.estimateAmount;
-    return formatAmount(estimate);
-  }
-  return "-";
-};
 
 // SMS 자동 발송을 위한 수신자 기본 설정
 const STAGE_RECIPIENT_DEFAULTS: Record<NotificationStage, RecipientConfig> = {
@@ -2009,7 +1997,7 @@ export default function ComprehensiveProgress() {
                         justifyContent: "flex-end",
                       }}
                     >
-                      {getDisplayApprovedAmount(caseItem)}
+                      {formatAmount(caseItem.approvedAmount)}
                     </div>
                     <div
                       style={{
@@ -2750,7 +2738,7 @@ export default function ComprehensiveProgress() {
                                   color: "rgba(12, 12, 12, 0.9)",
                                 }}
                               >
-                                {getDisplayApprovedAmount(selectedCase)}
+                                {formatAmount(selectedCase.approvedAmount)}
                               </div>
                             </div>
                           </div>

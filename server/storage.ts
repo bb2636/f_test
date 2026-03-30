@@ -4599,6 +4599,9 @@ export class DbStorage implements IStorage {
         if (!existingCase.constructionCompletionDate) {
           dateUpdates.constructionCompletionDate = currentDate;
         }
+        if (!existingCase.approvedAmount && existingCase.estimateAmount) {
+          dateUpdates.approvedAmount = existingCase.estimateAmount;
+        }
         break;
       case "선견적요청":
       case "출동비청구(선견적)":
@@ -4613,11 +4616,17 @@ export class DbStorage implements IStorage {
         if (!existingCase.claimDate) {
           dateUpdates.claimDate = currentDate;
         }
+        if (!existingCase.approvedAmount && existingCase.estimateAmount) {
+          dateUpdates.approvedAmount = existingCase.estimateAmount;
+        }
         break;
       case "입금완료":
         // 입금완료일 자동 기록 (기존 값 없을 때만)
         if (!existingCase.paymentCompletedDate) {
           dateUpdates.paymentCompletedDate = currentDate;
+        }
+        if (!existingCase.approvedAmount && existingCase.estimateAmount) {
+          dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
       case "부분입금":
@@ -4626,17 +4635,26 @@ export class DbStorage implements IStorage {
         if (!existingCase.partialPaymentDate) {
           dateUpdates.partialPaymentDate = currentDate;
         }
+        if (!existingCase.approvedAmount && existingCase.estimateAmount) {
+          dateUpdates.approvedAmount = existingCase.estimateAmount;
+        }
         break;
       case "지급완료":
         // 지급완료일 자동 기록 (기존 값 없을 때만)
         if (!existingCase.paymentCompletedDate) {
           dateUpdates.paymentCompletedDate = currentDate;
         }
+        if (!existingCase.approvedAmount && existingCase.estimateAmount) {
+          dateUpdates.approvedAmount = existingCase.estimateAmount;
+        }
         break;
       case "정산완료":
         // 정산완료일 자동 기록 (기존 값 없을 때만)
         if (!existingCase.settlementCompletedDate) {
           dateUpdates.settlementCompletedDate = currentDate;
+        }
+        if (!existingCase.approvedAmount && existingCase.estimateAmount) {
+          dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
       case "접수취소":
