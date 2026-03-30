@@ -456,7 +456,7 @@ export default function ClosedCaseStatistics() {
         cases: uniqueCases,
         totalEstimate: getGroupEstimateAmount(uniqueCases),
         totalApproved: getGroupApprovedAmount(uniqueCases),
-        totalClaim: uniqueCases.reduce((sum, c) => sum + getClaimAmount(c), 0),
+        totalClaim: uniqueCases.filter(c => !isPreEstimate(c)).reduce((sum, c) => sum + getClaimAmount(c), 0),
       };
     });
 
