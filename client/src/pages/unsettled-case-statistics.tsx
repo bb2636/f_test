@@ -1064,8 +1064,8 @@ export default function UnsettledCaseStatistics() {
               <th rowSpan={2} style={{ ...headerStyle, width: "80px" }}>지역</th>
               <th rowSpan={2} style={{ ...headerStyle, width: "100px" }}>시군구</th>
               <th rowSpan={2} style={{ ...headerStyle, width: "120px" }}>진행 상태</th>
-              <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>견적금액 (합계)</th>
-              <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)", ...(searchType === "접수번호" ? { borderRight: "none" } : {}) }}>승인금액 (합계)</th>
+              <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>견적금액</th>
+              <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)", ...(searchType === "접수번호" ? { borderRight: "none" } : {}) }}>승인금액</th>
               {searchType !== "접수번호" && (
                 <>
                   <th colSpan={2} style={{ ...headerStyle, borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>청구액</th>
