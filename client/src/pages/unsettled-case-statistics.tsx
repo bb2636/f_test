@@ -180,8 +180,14 @@ const getCaseEstimateForStats = (c: Case): number => {
   return parseFloat(c.initialEstimateAmount || c.estimateAmount || "0") || 0;
 };
 
+const APPROVED_STATUSES = ["청구", "청구자료제출(복구)", "출동비청구(선견적)", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
+
 const getCaseApprovedForStats = (c: Case): number => {
-  return parseFloat(c.approvedAmount || "0") || 0;
+  const approved = parseFloat(c.approvedAmount || "0") || 0;
+  if (approved > 0) return approved;
+  const isApproved = c.reviewDecision === "승인" || APPROVED_STATUSES.includes(c.status);
+  if (isApproved) return getCaseEstimateForStats(c);
+  return 0;
 };
 
 const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
