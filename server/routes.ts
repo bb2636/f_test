@@ -13075,17 +13075,7 @@ Front·Line·Ops·Xpert·Net
           const isPrevention = suffix === 0;
           const isProperty = suffix > 0;
 
-          let estimateTotal = 0;
-          const initialEst = (c as any).initialEstimateAmount;
-          if (
-            initialEst !== null &&
-            initialEst !== undefined &&
-            initialEst !== ""
-          ) {
-            estimateTotal = parseAmt(initialEst);
-          } else {
-            estimateTotal = parseAmt(c.estimateAmount);
-          }
+          let estimateTotal = parseAmt(c.estimateAmount);
           totalEstimate += estimateTotal;
 
           const caseApprovedAmount = parseAmt(c.approvedAmount);
