@@ -499,7 +499,9 @@ export default function UnsettledCaseStatistics() {
           const hasDirectRecovery = active.some(c => isDirectRecovery(c));
           const allPreEstimate = active.length > 0 && active.every(c => isPreEstimate(c));
           if (allPreEstimate) {
-            return 100000;
+            const CLAIMED_STATUSES = ["출동비청구(선견적)", "청구", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
+            const isClaimed = active.some(c => CLAIMED_STATUSES.includes(c.status));
+            return isClaimed ? 100000 : 0;
           }
           if (hasDirectRecovery) {
             return active.filter(c => !isPreEstimate(c)).reduce((sum, c) => sum + getClaimAmount(c), 0);
