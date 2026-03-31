@@ -1860,10 +1860,7 @@ export class MemStorage implements IStorage {
       case "선견적요청":
       case "출동비청구(선견적)":
         // 선견적요청은 실제 복구를 하지 않으므로 복구완료일은 공란으로 유지
-        // 청구일만 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.claimDate) {
-          dateUpdates.claimDate = currentDate;
-        }
+        // 청구일은 인보이스 발송 시점에 기록 (여기서 자동 설정하지 않음)
         break;
       case "청구":
         // 청구일 자동 기록 (기존 값 없을 때만)
@@ -4606,10 +4603,7 @@ export class DbStorage implements IStorage {
       case "선견적요청":
       case "출동비청구(선견적)":
         // 선견적요청은 실제 복구를 하지 않으므로 복구완료일은 공란으로 유지
-        // 청구일만 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.claimDate) {
-          dateUpdates.claimDate = currentDate;
-        }
+        // 청구일은 인보이스 발송 시점에 기록 (여기서 자동 설정하지 않음)
         break;
       case "청구":
         // 청구일 자동 기록 (기존 값 없을 때만)
