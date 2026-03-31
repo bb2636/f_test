@@ -1811,6 +1811,11 @@ export class MemStorage implements IStorage {
     // 상태에 따라 자동으로 날짜 기록 (상태 변경 시 항상 해당 날짜 덮어쓰기)
     const dateUpdates: Partial<Case> = {};
 
+    const PRE_CLAIM_STATUSES = ["접수완료", "현장방문", "현장정보입력", "현장정보제출", "검토중", "반려", "1차승인", "복구요청(2차승인)", "직접복구", "청구자료제출(복구)", "선견적요청", "출동비청구(선견적)"];
+    if (PRE_CLAIM_STATUSES.includes(normalizedStatus) && caseItem.claimDate) {
+      dateUpdates.claimDate = null as any;
+    }
+
     switch (normalizedStatus) {
       case "접수완료":
         dateUpdates.receptionDate = currentDate;
@@ -1838,8 +1843,6 @@ export class MemStorage implements IStorage {
         break;
       case "선견적요청":
       case "출동비청구(선견적)":
-        // 청구일은 인보이스 발송 시점에 기록 (여기서 자동 설정하지 않음)
-        dateUpdates.claimDate = null as any;
         break;
       case "청구":
         dateUpdates.claimDate = currentDate;
@@ -4516,6 +4519,11 @@ export class DbStorage implements IStorage {
     // 상태에 따라 자동으로 날짜 기록 (상태 변경 시 항상 해당 날짜 덮어쓰기)
     const dateUpdates: Partial<typeof cases.$inferInsert> = {};
 
+    const PRE_CLAIM_STATUSES = ["접수완료", "현장방문", "현장정보입력", "현장정보제출", "검토중", "반려", "1차승인", "복구요청(2차승인)", "직접복구", "청구자료제출(복구)", "선견적요청", "출동비청구(선견적)"];
+    if (PRE_CLAIM_STATUSES.includes(normalizedStatus) && existingCase.claimDate) {
+      dateUpdates.claimDate = null as any;
+    }
+
     switch (normalizedStatus) {
       case "접수완료":
         dateUpdates.receptionDate = currentDate;
@@ -4545,8 +4553,6 @@ export class DbStorage implements IStorage {
         break;
       case "선견적요청":
       case "출동비청구(선견적)":
-        // 청구일은 인보이스 발송 시점에 기록 (여기서 자동 설정하지 않음)
-        dateUpdates.claimDate = null as any;
         break;
       case "청구":
         dateUpdates.claimDate = currentDate;
