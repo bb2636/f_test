@@ -508,7 +508,7 @@ export default function UnsettledCaseStatistics() {
           const hasDirectRecovery = active.some(c => isDirectRecovery(c));
           const allPreEstimate = active.length > 0 && active.every(c => isPreEstimate(c));
           if (allPreEstimate) {
-            const CLAIMED_STATUSES = ["출동비청구(선견적)", "청구", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
+            const CLAIMED_STATUSES = ["청구", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
             const isClaimed = active.some(c => CLAIMED_STATUSES.includes(c.status));
             return isClaimed ? 100000 : 0;
           }
@@ -696,8 +696,8 @@ export default function UnsettledCaseStatistics() {
           g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-",
           g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-",
           g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-",
-          g.totalClaim !== null ? (claimAmount ? claimAmount.toLocaleString() : "0") : "-",
-          g.totalClaim !== null ? formatDate(rep.claimDate) : "-",
+          claimAmount ? claimAmount.toLocaleString() : "-",
+          claimAmount ? formatDate(rep.claimDate) : "-",
           deposit.amount ? deposit.amount.toLocaleString() : "-",
           formatDate(deposit.date),
           sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "-",
@@ -782,8 +782,8 @@ export default function UnsettledCaseStatistics() {
         <td style={cellStyle}>{g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalApproved !== null ? formatAmount(g.totalApproved) : "-"}</td>
         <td style={cellStyle}>{g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-"}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalClaim !== null ? formatAmount(g.totalClaim) : "-"}</td>
-        <td style={cellStyle}>{g.totalClaim !== null ? formatDate(rep.claimDate) : "-"}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalClaim ? formatAmount(g.totalClaim) : "-"}</td>
+        <td style={cellStyle}>{g.totalClaim ? formatDate(rep.claimDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
         <td style={cellStyle}>{formatDate(deposit.date)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.partnerPayment)}</td>
