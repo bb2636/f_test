@@ -311,7 +311,12 @@ export default function ClosedCaseStatistics() {
 
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
-      result = result.filter((c) => (c.caseNumber || "").toLowerCase().includes(q));
+      result = result.filter((c) => {
+        const cn = (c.caseNumber || "").toLowerCase();
+        const accNo = (c.accidentNumber || "").toLowerCase();
+        const policyNo = (c.insurancePolicyNo || "").toLowerCase();
+        return cn.includes(q) || accNo.includes(q) || policyNo.includes(q);
+      });
     }
 
     result = [...result].sort((a, b) =>
@@ -447,7 +452,11 @@ export default function ClosedCaseStatistics() {
       const q = searchQuery.trim().toLowerCase();
       entries = entries.filter(([accNo, groupCases]) => {
         if (accNo.toLowerCase().includes(q)) return true;
-        return groupCases.some(c => (c.caseNumber || "").toLowerCase().includes(q));
+        return groupCases.some(c => {
+          const cn = (c.caseNumber || "").toLowerCase();
+          const policyNo = (c.insurancePolicyNo || "").toLowerCase();
+          return cn.includes(q) || policyNo.includes(q);
+        });
       });
     }
 
@@ -803,7 +812,7 @@ export default function ClosedCaseStatistics() {
         <div className="relative flex-1">
           <Search size={16} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.3)" }} />
           <Input
-            placeholder="검색어를 입력해주세요"
+            placeholder="증권번호, 사고번호 또는 접수번호를 입력해주세요"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
