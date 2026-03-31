@@ -1808,93 +1808,53 @@ export class MemStorage implements IStorage {
     // 미복구 선택 시 자동으로 출동비 청구로 정규화
     const normalizedStatus = status === "미복구" ? "출동비 청구" : status;
 
-    // 상태에 따라 자동으로 날짜 기록 (기존 값이 없을 때만)
+    // 상태에 따라 자동으로 날짜 기록 (상태 변경 시 항상 해당 날짜 덮어쓰기)
     const dateUpdates: Partial<Case> = {};
 
     switch (normalizedStatus) {
       case "접수완료":
-        // 접수일과 배당일 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.receptionDate) {
-          dateUpdates.receptionDate = currentDate;
-        }
-        if (!caseItem.assignmentDate) {
-          dateUpdates.assignmentDate = currentDate;
-        }
+        dateUpdates.receptionDate = currentDate;
+        dateUpdates.assignmentDate = currentDate;
         break;
       case "현장방문":
-        // 현장방문일 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.siteVisitDate) {
-          dateUpdates.siteVisitDate = currentDate;
-        }
+        dateUpdates.siteVisitDate = currentDate;
         break;
       case "현장정보입력":
       case "현장정보제출":
-        // 현장자료 제출일 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.siteInvestigationSubmitDate) {
-          dateUpdates.siteInvestigationSubmitDate = currentDate;
-        }
+        dateUpdates.siteInvestigationSubmitDate = currentDate;
         break;
       case "1차승인":
-        // 1차 승인일(내부) 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.firstApprovalDate) {
-          dateUpdates.firstApprovalDate = currentDate;
-        }
+        dateUpdates.firstApprovalDate = currentDate;
         break;
       case "복구요청(2차승인)":
-        // 2차 승인일(복구 요청일) 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.secondApprovalDate) {
-          dateUpdates.secondApprovalDate = currentDate;
-        }
-        // 2차 승인 시점의 견적금액을 승인금액으로 자동 저장 (항상 덮어씀)
+        dateUpdates.secondApprovalDate = currentDate;
         if (caseItem.estimateAmount) {
           dateUpdates.approvedAmount = caseItem.estimateAmount;
         }
         break;
       case "직접복구":
       case "청구자료제출(복구)":
-        // 직접복구/청구자료제출 시 복구완료일 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.constructionCompletionDate) {
-          dateUpdates.constructionCompletionDate = currentDate;
-        }
+        dateUpdates.constructionCompletionDate = currentDate;
         break;
       case "선견적요청":
       case "출동비청구(선견적)":
-        // 선견적요청은 실제 복구를 하지 않으므로 복구완료일은 공란으로 유지
         // 청구일은 인보이스 발송 시점에 기록 (여기서 자동 설정하지 않음)
-        // 기존에 잘못 기록된 claimDate가 있으면 초기화
-        if (caseItem.claimDate) {
-          dateUpdates.claimDate = null as any;
-        }
+        dateUpdates.claimDate = null as any;
         break;
       case "청구":
-        // 청구일 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.claimDate) {
-          dateUpdates.claimDate = currentDate;
-        }
+        dateUpdates.claimDate = currentDate;
         break;
       case "입금완료":
-        // 입금완료일 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.paymentCompletedDate) {
-          dateUpdates.paymentCompletedDate = currentDate;
-        }
+        dateUpdates.paymentCompletedDate = currentDate;
         break;
       case "부분입금":
-        // 일부입금일 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.partialPaymentDate) {
-          dateUpdates.partialPaymentDate = currentDate;
-        }
+        dateUpdates.partialPaymentDate = currentDate;
         break;
       case "정산완료":
-        // 정산완료일 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.settlementCompletedDate) {
-          dateUpdates.settlementCompletedDate = currentDate;
-        }
+        dateUpdates.settlementCompletedDate = currentDate;
         break;
       case "접수취소":
-        // 접수취소일 자동 기록 (기존 값 없을 때만)
-        if (!caseItem.cancellationDate) {
-          dateUpdates.cancellationDate = currentDate;
-        }
+        dateUpdates.cancellationDate = currentDate;
         break;
     }
 
@@ -4553,117 +4513,74 @@ export class DbStorage implements IStorage {
       return null;
     }
 
-    // 상태에 따라 자동으로 날짜 기록 (기존 값이 없을 때만)
+    // 상태에 따라 자동으로 날짜 기록 (상태 변경 시 항상 해당 날짜 덮어쓰기)
     const dateUpdates: Partial<typeof cases.$inferInsert> = {};
 
     switch (normalizedStatus) {
       case "접수완료":
-        // 접수일과 배당일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.receptionDate) {
-          dateUpdates.receptionDate = currentDate;
-        }
-        if (!existingCase.assignmentDate) {
-          dateUpdates.assignmentDate = currentDate;
-        }
+        dateUpdates.receptionDate = currentDate;
+        dateUpdates.assignmentDate = currentDate;
         break;
       case "현장방문":
-        // 현장방문일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.siteVisitDate) {
-          dateUpdates.siteVisitDate = currentDate;
-        }
+        dateUpdates.siteVisitDate = currentDate;
         break;
       case "현장정보입력":
       case "현장정보제출":
-        // 현장자료 제출일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.siteInvestigationSubmitDate) {
-          dateUpdates.siteInvestigationSubmitDate = currentDate;
-        }
+        dateUpdates.siteInvestigationSubmitDate = currentDate;
         break;
       case "1차승인":
-        // 1차 승인일(내부) 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.firstApprovalDate) {
-          dateUpdates.firstApprovalDate = currentDate;
-        }
+        dateUpdates.firstApprovalDate = currentDate;
         break;
       case "복구요청(2차승인)":
-        // 2차 승인일(복구 요청일) 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.secondApprovalDate) {
-          dateUpdates.secondApprovalDate = currentDate;
-        }
-        // 2차 승인 시점의 견적금액을 승인금액으로 자동 저장 (항상 덮어씀)
+        dateUpdates.secondApprovalDate = currentDate;
         if (existingCase.estimateAmount) {
           dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
       case "청구자료제출(복구)":
-        // 청구자료제출(복구) 시 복구완료일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.constructionCompletionDate) {
-          dateUpdates.constructionCompletionDate = currentDate;
-        }
+        dateUpdates.constructionCompletionDate = currentDate;
         if (!existingCase.approvedAmount && existingCase.estimateAmount) {
           dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
       case "선견적요청":
       case "출동비청구(선견적)":
-        // 선견적요청은 실제 복구를 하지 않으므로 복구완료일은 공란으로 유지
         // 청구일은 인보이스 발송 시점에 기록 (여기서 자동 설정하지 않음)
-        // 기존에 잘못 기록된 claimDate가 있으면 초기화
-        if (existingCase.claimDate) {
-          dateUpdates.claimDate = null as any;
-        }
+        dateUpdates.claimDate = null as any;
         break;
       case "청구":
-        // 청구일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.claimDate) {
-          dateUpdates.claimDate = currentDate;
-        }
+        dateUpdates.claimDate = currentDate;
         if (!existingCase.approvedAmount && existingCase.estimateAmount) {
           dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
       case "입금완료":
-        // 입금완료일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.paymentCompletedDate) {
-          dateUpdates.paymentCompletedDate = currentDate;
-        }
+        dateUpdates.paymentCompletedDate = currentDate;
         if (!existingCase.approvedAmount && existingCase.estimateAmount) {
           dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
       case "부분입금":
       case "부분지급":
-        // 일부지급일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.partialPaymentDate) {
-          dateUpdates.partialPaymentDate = currentDate;
-        }
+        dateUpdates.partialPaymentDate = currentDate;
         if (!existingCase.approvedAmount && existingCase.estimateAmount) {
           dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
       case "지급완료":
-        // 지급완료일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.paymentCompletedDate) {
-          dateUpdates.paymentCompletedDate = currentDate;
-        }
+        dateUpdates.paymentCompletedDate = currentDate;
         if (!existingCase.approvedAmount && existingCase.estimateAmount) {
           dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
       case "정산완료":
-        // 정산완료일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.settlementCompletedDate) {
-          dateUpdates.settlementCompletedDate = currentDate;
-        }
+        dateUpdates.settlementCompletedDate = currentDate;
         if (!existingCase.approvedAmount && existingCase.estimateAmount) {
           dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
       case "접수취소":
-        // 접수취소일 자동 기록 (기존 값 없을 때만)
-        if (!existingCase.cancellationDate) {
-          dateUpdates.cancellationDate = currentDate;
-        }
+        dateUpdates.cancellationDate = currentDate;
         break;
     }
 
