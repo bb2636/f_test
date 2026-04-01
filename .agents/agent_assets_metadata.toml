@@ -1,3 +1,8 @@
 uploads = []
 generated = []
-outputs = []
+
+[[outputs]]
+id = "izfjuBcjgF9LqUAnIXcZb"
+uri = "file://docs/encryption-audit.md"
+type = "text"
+title = "암호화/해시/마스킹 감사 문서"
