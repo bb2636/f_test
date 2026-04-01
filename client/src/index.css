@@ -324,4 +324,14 @@
     outline: none;
     border: 2px solid #008FED !important;
   }
+
+  /* Common data table with column dividers */
+  .data-table-header > div,
+  .data-table-row > div {
+    border-right: 1px solid rgba(12, 12, 12, 0.08);
+  }
+  .data-table-header > div:last-child,
+  .data-table-row > div:last-child {
+    border-right: none;
+  }
 }

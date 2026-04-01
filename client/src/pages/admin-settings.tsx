@@ -4024,7 +4024,7 @@ export default function AdminSettings() {
             <div className="flex flex-col">
               {/* Table Header */}
               <div
-                className="flex items-stretch px-3 rounded-lg"
+                className="flex items-stretch px-3 rounded-lg data-table-header"
                 style={{
                   height: "54px",
                   background: "rgba(12, 12, 12, 0.04)",
@@ -4098,7 +4098,7 @@ export default function AdminSettings() {
               {filteredUsers.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-stretch px-3 hover:bg-black/5 transition-colors"
+                  className="flex items-stretch px-3 hover:bg-black/5 transition-colors data-table-row"
                   style={{
                     minHeight: "44px",
                     borderBottom: "1px solid rgba(12, 12, 12, 0.08)",

@@ -1584,6 +1584,7 @@ export default function ComprehensiveProgress() {
           <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
             {/* Table Header */}
             <div
+              className="data-table-header"
               style={{
                 display: "grid",
                 gridTemplateColumns:
@@ -1768,6 +1769,7 @@ export default function ComprehensiveProgress() {
                 return (
                   <div
                     key={caseItem.id}
+                    className="data-table-row"
                     onClick={() => setSelectedCaseId(caseItem.id)}
                     style={{
                       display: "grid",

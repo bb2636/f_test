@@ -1,0 +1,28 @@
+[hasCategory] 종합진행관리: ENABLED=false, items={"종합진행관리":true,"접수건 삭제 권한":false}, anyTrue=true
+index-BcHp00_m.js:233 [hasCategory] 정산 및 통계: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 관리자 설정: ENABLED=false, items={"계정관리":true,"DB관리":false,"기준정보 관리":true,"접근권한관리":false,"인보이스 승인":true,"보고서 승인":true}, anyTrue=true
+index-BcHp00_m.js:233 [Permissions] Loaded categories: Array(6)
+index-BcHp00_m.js:233 [hasCategory] 현장조사: ENABLED=true -> true
+index-BcHp00_m.js:233 [Permissions] Loaded categories: Array(6)
+index-BcHp00_m.js:233 [hasCategory] 홈: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 새로운접수: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 종합진행관리: ENABLED=false, items={"종합진행관리":true,"접수건 삭제 권한":false}, anyTrue=true
+index-BcHp00_m.js:233 [hasCategory] 정산 및 통계: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 관리자 설정: ENABLED=false, items={"계정관리":true,"DB관리":false,"기준정보 관리":true,"접근권한관리":false,"인보이스 승인":true,"보고서 승인":true}, anyTrue=true
+index-BcHp00_m.js:233 [Permissions] Loaded categories: Array(6)
+index-BcHp00_m.js:233 [hasCategory] 현장조사: ENABLED=true -> true
+index-BcHp00_m.js:233 [Permissions] Loaded categories: Array(6)
+index-BcHp00_m.js:233 [hasCategory] 홈: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 새로운접수: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 종합진행관리: ENABLED=false, items={"종합진행관리":true,"접수건 삭제 권한":false}, anyTrue=true
+index-BcHp00_m.js:233 [hasCategory] 정산 및 통계: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 관리자 설정: ENABLED=false, items={"계정관리":true,"DB관리":false,"기준정보 관리":true,"접근권한관리":false,"인보이스 승인":true,"보고서 승인":true}, anyTrue=true
+index-BcHp00_m.js:233 [Permissions] Loaded categories: Array(6)
+index-BcHp00_m.js:233 [hasCategory] 현장조사: ENABLED=true -> true
+index-BcHp00_m.js:233 [Permissions] Loaded categories: Array(6)
+index-BcHp00_m.js:233 [hasCategory] 홈: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 새로운접수: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 종합진행관리: ENABLED=false, items={"종합진행관리":true,"접수건 삭제 권한":false}, anyTrue=true
+index-BcHp00_m.js:233 [hasCategory] 정산 및 통계: ENABLED=true -> true
+index-BcHp00_m.js:233 [hasCategory] 관리자 설정: ENABLED=false, items={"계정관리":true,"DB관리":false,"기준정보 관리":true,"접근권한관리":false,"인보이스 승인":true,"보고서 승인":true}, anyTrue=true
+/api/documents/62f8a5a3-334b-4382-afc0-bf476aa13a8c/image:1  Failed to load resource: the server responded with a status of 404 ()
