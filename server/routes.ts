@@ -5535,8 +5535,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const info = getStorageBucketInfo();
+        const storageStatus = await checkStorageAuth();
 
-        if (info) {
+        if (info && storageStatus.available) {
           try {
             const timestamp = Date.now();
             const uuid = crypto.randomUUID();
@@ -5570,6 +5571,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 error: "파일 저장소를 사용할 수 없습니다",
               });
             }
+          }
+        } else if (info && !storageStatus.available) {
+          console.log(`[multipart-upload] Skipping GCS (storage unavailable: ${storageStatus.error})`);
+          if (!uploadConfig.dbFallback) {
+            return res.status(503).json({
+              code: "FILE_STORAGE_UNAVAILABLE",
+              error: "파일 저장소를 사용할 수 없습니다",
+            });
           }
         }
 

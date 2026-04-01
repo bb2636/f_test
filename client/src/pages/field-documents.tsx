@@ -953,6 +953,7 @@ export default function FieldDocuments() {
 
       if (isStorageUnavailable && (presignedError as any).multipartFallback) {
         console.log(`[Upload] Storage unavailable, using multipart fallback: ${msg}`);
+        updateProgress(15);
         result = await uploadViaMultipart(uploadingFile, updateProgress);
       } else if (isStorageUnavailable) {
         throw new Error("파일 저장소 일시 장애입니다. 잠시 후 다시 시도해주세요.");
