@@ -5,7 +5,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage, warmUpUsersCache, warmUpCasesCache } from "./storage";
 import { initializeEmailTransporter } from "./hiworks-email";
-import { pool } from "./db";
+import { pool, dbPoolReady } from "./db";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import ws from "ws";
 import { activeUserSessions } from "./session-store";
@@ -55,7 +55,7 @@ const sessionPool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
-sessionPool.query('SELECT 1').then(() => {
+const sessionPoolReady = sessionPool.query('SELECT 1').then(() => {
   console.log("[SESSION] DB pool warmed up (initial connection)");
   return sessionPool.query('SELECT COUNT(*) FROM session');
 }).then((result: any) => {
@@ -216,6 +216,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  const warmupStart = Date.now();
+  console.log("[STARTUP] Warming up database connections...");
+  await Promise.all([dbPoolReady, sessionPoolReady]);
+  console.log(`[STARTUP] Database connections ready (${Date.now() - warmupStart}ms)`);
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

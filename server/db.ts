@@ -37,7 +37,7 @@ export const pool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
-pool.query('SELECT 1').then(() => {
+export const dbPoolReady = pool.query('SELECT 1').then(() => {
   console.log("[DB] Pool warmed up successfully");
 }).catch((err: any) => {
   console.error("[DB] Pool warmup failed:", err.message);
