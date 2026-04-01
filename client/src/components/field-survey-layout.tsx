@@ -57,7 +57,7 @@ export function FieldSurveyLayout({ children }: FieldSurveyLayoutProps) {
         }}
       >
         <AppSidebarFieldSurvey />
-        <main className="flex-1 overflow-y-auto ml-0">
+        <main className="flex-1 flex flex-col overflow-y-auto ml-0 min-h-0">
           {children}
         </main>
       </div>
