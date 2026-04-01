@@ -979,6 +979,7 @@ export default function FieldDocuments() {
               msg.includes("로그인이 만료") ||
               msg.includes("너무 큽니다") ||
               msg.includes("업로드 실패") ||
+              msg.includes("멀티파트 업로드 실패") ||
               msg.includes("완료 처리 실패")
             ) {
               return false;

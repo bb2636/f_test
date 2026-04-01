@@ -376,7 +376,7 @@ export interface IStorage {
   }): Promise<CaseDocument>;
   updateDocumentStatus(
     id: string,
-    status: "pending" | "ready" | "failed",
+    status: "pending" | "processing" | "ready" | "failed",
     checksum?: string,
   ): Promise<CaseDocument | null>;
   // Estimate methods
@@ -2490,7 +2490,7 @@ export class MemStorage implements IStorage {
 
   async updateDocumentStatus(
     id: string,
-    status: "pending" | "ready" | "failed",
+    status: "pending" | "processing" | "ready" | "failed",
     checksum?: string,
   ): Promise<CaseDocument | null> {
     const existing = this.documents.get(id);
@@ -5488,7 +5488,7 @@ export class DbStorage implements IStorage {
 
   async updateDocumentStatus(
     id: string,
-    status: "pending" | "ready" | "failed",
+    status: "pending" | "processing" | "ready" | "failed",
     checksum?: string,
   ): Promise<CaseDocument | null> {
     const updateData: { status: string; checksum?: string } = { status };
