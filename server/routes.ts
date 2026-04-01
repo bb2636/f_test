@@ -5401,20 +5401,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     limits: { fileSize: 2 * 1024 * 1024 },
   });
 
+  const multipartUploadLimit = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 },
+  });
+
   app.post("/api/documents/multipart-upload", (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
     }
 
-    const info = getStorageBucketInfo();
-    if (!info) {
-      return res.status(503).json({ error: "File storage is not available" });
-    }
-
-    smallUpload.single("file")(req, res, async (multerErr) => {
+    multipartUploadLimit.single("file")(req, res, async (multerErr) => {
       if (multerErr) {
         if (multerErr.code === "LIMIT_FILE_SIZE") {
-          return res.status(413).json({ error: "이 엔드포인트는 2MB 이하만 허용합니다. presigned URL 업로드를 사용해주세요." });
+          return res.status(413).json({ error: "파일 크기가 50MB 제한을 초과합니다." });
         }
         return res.status(400).json({ error: multerErr.message || "파일 처리 오류" });
       }
@@ -5427,30 +5427,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: "필수 필드가 누락되었습니다" });
         }
 
-        const timestamp = Date.now();
-        const uuid = crypto.randomUUID();
-        const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
-        const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
-        const { bucketName, objectName } = buildStoragePath(storageKey);
+        const info = getStorageBucketInfo();
 
-        const bucket = objectStorageClient.bucket(bucketName);
-        const gcsFile = bucket.file(objectName);
-        await gcsFile.save(file.buffer, { metadata: { contentType: fileType } });
+        if (info) {
+          const timestamp = Date.now();
+          const uuid = crypto.randomUUID();
+          const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
+          const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
+          const { bucketName, objectName } = buildStoragePath(storageKey);
 
-        const document = await storage.createPendingDocument({
+          const bucket = objectStorageClient.bucket(bucketName);
+          const gcsFile = bucket.file(objectName);
+          await gcsFile.save(file.buffer, { metadata: { contentType: fileType } });
+
+          const document = await storage.createPendingDocument({
+            caseId,
+            category,
+            fileName,
+            fileType,
+            fileSize: file.size,
+            storageKey,
+            createdBy: req.session.userId,
+          });
+          await storage.updateDocumentStatus(document.id, "ready");
+
+          console.log(`[multipart-upload] Document ${document.id} saved to Object Storage (${(file.size / 1024).toFixed(0)}KB)`);
+          return res.json({ success: true, documentId: document.id });
+        }
+
+        const base64Data = `data:${fileType};base64,${file.buffer.toString("base64")}`;
+        const document = await storage.saveDocument({
           caseId,
           category,
           fileName,
           fileType,
           fileSize: file.size,
-          storageKey,
+          fileData: base64Data,
           createdBy: req.session.userId,
         });
-        await storage.updateDocumentStatus(document.id, "ready");
 
-        console.log(`[multipart-upload] Document ${document.id} saved to Object Storage (${(file.size / 1024).toFixed(0)}KB)`);
-
-        res.json({ success: true, documentId: document.id });
+        console.log(`[multipart-upload] Document ${document.id} saved to DB fallback (${(file.size / 1024).toFixed(0)}KB)`);
+        return res.json({ success: true, documentId: document.id });
       } catch (error: any) {
         console.error("[multipart-upload] Error:", error.message);
         res.status(500).json({ error: "문서 업로드 중 오류가 발생했습니다" });

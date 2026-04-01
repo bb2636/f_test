@@ -790,6 +790,35 @@ export default function FieldDocuments() {
 
   const uploadLimit = pLimit(3);
 
+  const uploadViaMultipart = async (
+    uploadingFile: UploadingFile,
+    updateProgress: (progress: number, status?: UploadStatus, error?: string, documentId?: string) => void,
+  ): Promise<{ success: boolean; documentId: string }> => {
+    const formData = new FormData();
+    formData.append("file", uploadingFile.file);
+    formData.append("caseId", selectedCaseId!);
+    formData.append("category", uploadingFile.category);
+    formData.append("fileName", uploadingFile.file.name);
+    formData.append("fileType", uploadingFile.file.type || "application/octet-stream");
+
+    updateProgress(20);
+
+    const res = await fetch("/api/documents/multipart-upload", {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error || `멀티파트 업로드 실패 (${res.status})`);
+    }
+
+    const data = await res.json();
+    updateProgress(90);
+    return { success: true, documentId: data.documentId };
+  };
+
   const uploadViaPresignedUrl = async (
     uploadingFile: UploadingFile,
     updateProgress: (progress: number, status?: UploadStatus, error?: string, documentId?: string) => void,
@@ -912,7 +941,18 @@ export default function FieldDocuments() {
       );
     }
 
-    const result = await uploadViaPresignedUrl(uploadingFile, updateProgress);
+    let result: { success: boolean; documentId: string };
+    try {
+      result = await uploadViaPresignedUrl(uploadingFile, updateProgress);
+    } catch (presignedError: any) {
+      const msg = presignedError?.message || "";
+      if (msg.includes("URL 발급") || msg.includes("503") || msg.includes("500")) {
+        console.log(`[Upload] Presigned URL failed, falling back to multipart: ${msg}`);
+        result = await uploadViaMultipart(uploadingFile, updateProgress);
+      } else {
+        throw presignedError;
+      }
+    }
 
     updateProgress(100, "completed", undefined, result.documentId);
   };
