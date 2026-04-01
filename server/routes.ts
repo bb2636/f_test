@@ -5428,46 +5428,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const info = getStorageBucketInfo();
+        let gcsSaved = false;
 
         if (info) {
-          const timestamp = Date.now();
-          const uuid = crypto.randomUUID();
-          const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
-          const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
-          const { bucketName, objectName } = buildStoragePath(storageKey);
+          try {
+            const timestamp = Date.now();
+            const uuid = crypto.randomUUID();
+            const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
+            const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
+            const { bucketName, objectName } = buildStoragePath(storageKey);
 
-          const bucket = objectStorageClient.bucket(bucketName);
-          const gcsFile = bucket.file(objectName);
-          await gcsFile.save(file.buffer, { metadata: { contentType: fileType } });
+            const bucket = objectStorageClient.bucket(bucketName);
+            const gcsFile = bucket.file(objectName);
+            await gcsFile.save(file.buffer, { metadata: { contentType: fileType } });
 
-          const document = await storage.createPendingDocument({
+            const document = await storage.createPendingDocument({
+              caseId,
+              category,
+              fileName,
+              fileType,
+              fileSize: file.size,
+              storageKey,
+              createdBy: req.session.userId,
+            });
+            await storage.updateDocumentStatus(document.id, "ready");
+
+            console.log(`[multipart-upload] Document ${document.id} saved to Object Storage (${(file.size / 1024).toFixed(0)}KB)`);
+            gcsSaved = true;
+            return res.json({ success: true, documentId: document.id });
+          } catch (gcsErr: any) {
+            console.warn(`[multipart-upload] GCS save failed, falling back to DB: ${gcsErr.message}`);
+          }
+        }
+
+        if (!gcsSaved) {
+          const base64Data = `data:${fileType};base64,${file.buffer.toString("base64")}`;
+          const document = await storage.saveDocument({
             caseId,
             category,
             fileName,
             fileType,
             fileSize: file.size,
-            storageKey,
+            fileData: base64Data,
             createdBy: req.session.userId,
           });
-          await storage.updateDocumentStatus(document.id, "ready");
 
-          console.log(`[multipart-upload] Document ${document.id} saved to Object Storage (${(file.size / 1024).toFixed(0)}KB)`);
+          console.log(`[multipart-upload] Document ${document.id} saved to DB fallback (${(file.size / 1024).toFixed(0)}KB)`);
           return res.json({ success: true, documentId: document.id });
         }
-
-        const base64Data = `data:${fileType};base64,${file.buffer.toString("base64")}`;
-        const document = await storage.saveDocument({
-          caseId,
-          category,
-          fileName,
-          fileType,
-          fileSize: file.size,
-          fileData: base64Data,
-          createdBy: req.session.userId,
-        });
-
-        console.log(`[multipart-upload] Document ${document.id} saved to DB fallback (${(file.size / 1024).toFixed(0)}KB)`);
-        return res.json({ success: true, documentId: document.id });
       } catch (error: any) {
         console.error("[multipart-upload] Error:", error.message);
         res.status(500).json({ error: "문서 업로드 중 오류가 발생했습니다" });
