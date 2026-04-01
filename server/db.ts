@@ -34,5 +34,13 @@ console.log(`[DB] Connected to ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} da
 export const pool = new Pool({ 
   connectionString: databaseUrl,
   max: 20,
+  connectionTimeoutMillis: 10000,
 });
+
+pool.query('SELECT 1').then(() => {
+  console.log("[DB] Pool warmed up successfully");
+}).catch((err: any) => {
+  console.error("[DB] Pool warmup failed:", err.message);
+});
+
 export const db = drizzle({ client: pool, schema });

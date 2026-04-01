@@ -1,0 +1,25 @@
+[파일선택] onChange 이벤트 발생 1
+field-documents-xNq4ANfD.js:16 [파일선택] handleFileSelect 호출됨 Object
+field-documents-xNq4ANfD.js:16 [파일선택] 카테고리: 현장출동사진 파일수: 1
+field-documents-xNq4ANfD.js:16 [파일선택] 파일 처리 시작: 원본.png image/png 0.03MB
+field-documents-xNq4ANfD.js:16 [압축] 원본.png (0.03MB) → 원본.jpg (0.01MB)
+field-documents-xNq4ANfD.js:16 [파일선택] 압축 완료: 원본.png 0.03MB → 0.01MB
+field-documents-xNq4ANfD.js:17 [파일선택] 업로드 시작: 1 개 파일
+/api/documents/request-upload:1  Failed to load resource: the server responded with a status of 503 ()Understand this error
+field-documents-xNq4ANfD.js:16 [Upload] Storage unavailable, using multipart fallback: 파일 저장소를 사용할 수 없습니다
+index-D5MHGg_q.js:233 [Permissions] Loaded categories: (6) ['홈', '새로운접수', '종합진행관리', '관리자 설정', '현장조사', '정산 및 통계']
+index-D5MHGg_q.js:233 [hasCategory] 현장조사: ENABLED=true -> true
+index-D5MHGg_q.js:233 [Permissions] Loaded categories: (6) ['홈', '새로운접수', '종합진행관리', '관리자 설정', '현장조사', '정산 및 통계']
+index-D5MHGg_q.js:233 [hasCategory] 홈: ENABLED=true -> true
+index-D5MHGg_q.js:233 [hasCategory] 새로운접수: ENABLED=true -> true
+index-D5MHGg_q.js:233 [hasCategory] 종합진행관리: ENABLED=false, items={"종합진행관리":true,"접수건 삭제 권한":false}, anyTrue=true
+index-D5MHGg_q.js:233 [hasCategory] 정산 및 통계: ENABLED=true -> true
+index-D5MHGg_q.js:233 [hasCategory] 관리자 설정: ENABLED=false, items={"계정관리":true,"DB관리":false,"기준정보 관리":true,"접근권한관리":false,"인보이스 승인":true,"보고서 승인":true}, anyTrue=true
+index-D5MHGg_q.js:233 [Permissions] Loaded categories: (6) ['홈', '새로운접수', '종합진행관리', '관리자 설정', '현장조사', '정산 및 통계']
+index-D5MHGg_q.js:233 [hasCategory] 현장조사: ENABLED=true -> true
+index-D5MHGg_q.js:233 [Permissions] Loaded categories: (6) ['홈', '새로운접수', '종합진행관리', '관리자 설정', '현장조사', '정산 및 통계']
+index-D5MHGg_q.js:233 [hasCategory] 홈: ENABLED=true -> true
+index-D5MHGg_q.js:233 [hasCategory] 새로운접수: ENABLED=true -> true
+index-D5MHGg_q.js:233 [hasCategory] 종합진행관리: ENABLED=false, items={"종합진행관리":true,"접수건 삭제 권한":false}, anyTrue=true
+index-D5MHGg_q.js:233 [hasCategory] 정산 및 통계: ENABLED=true -> true
+index-D5MHGg_q.js:233 [hasCategory] 관리자 설정: ENABLED=false, items={"계정관리":true,"DB관리":false,"기준정보 관리":true,"접근권한관리":false,"인보이스 승인":true,"보고서 승인":true}, anyTrue=true

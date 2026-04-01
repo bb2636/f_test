@@ -52,6 +52,16 @@ const sessionDbUrl = isProduction
 const sessionPool = new Pool({
   connectionString: sessionDbUrl,
   max: 10,
+  connectionTimeoutMillis: 10000,
+});
+
+sessionPool.query('SELECT 1').then(() => {
+  console.log("[SESSION] DB pool warmed up (initial connection)");
+  return sessionPool.query('SELECT COUNT(*) FROM session');
+}).then((result: any) => {
+  console.log(`[SESSION] Session table ready (${result?.rows?.[0]?.count || 0} sessions)`);
+}).catch((err: any) => {
+  console.error("[SESSION] DB pool warmup failed:", err.message);
 });
 
 const SESSION_CACHE = new Map<string, { data: any; ts: number }>();
