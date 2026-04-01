@@ -5163,15 +5163,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   (async () => {
     try {
+      const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
+      if (!privateObjectDir) {
+        console.log("[GCS] PRIVATE_OBJECT_DIR not set, using DB storage for uploads");
+        gcsDisabled = true;
+        return;
+      }
+      const pathParts = privateObjectDir.split("/").filter((p: string) => p);
+      const bucketName = pathParts[0] || "test";
       const res = await fetch("http://127.0.0.1:1106/object-storage/signed-object-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bucket_name: "test", object_name: "test", method: "GET", expires_at: new Date(Date.now() + 60000).toISOString() }),
+        body: JSON.stringify({ bucket_name: bucketName, object_name: "__health_check__", method: "GET", expires_at: new Date(Date.now() + 60000).toISOString() }),
         signal: AbortSignal.timeout(3000),
       });
       if (!res.ok) {
         console.log(`[GCS] Sidecar auth check failed (${res.status}), using DB storage for uploads`);
         gcsDisabled = true;
+      } else {
+        console.log(`[GCS] Sidecar available, presigned URL uploads enabled`);
       }
     } catch {
       console.log("[GCS] Sidecar not available, using DB storage for uploads");
@@ -5670,10 +5680,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `[complete-upload] Completing upload for document ${documentId}`,
       );
 
-      // 문서 조회
       const document = await storage.getDocument(documentId);
       if (!document) {
         return res.status(404).json({ error: "문서를 찾을 수 없습니다" });
+      }
+
+      const userRole = req.session.userRole;
+      const isPrivilegedRole = userRole === "관리자" || userRole === "심사사";
+      if (!isPrivilegedRole && document.createdBy !== req.session.userId) {
+        return res.status(403).json({ error: "권한이 없습니다" });
       }
 
       if (!document.storageKey) {
@@ -5750,13 +5765,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `[fail-upload] Marking upload as failed for document ${documentId}`,
       );
 
-      // 문서 조회
       const document = await storage.getDocument(documentId);
       if (!document) {
         return res.status(404).json({ error: "문서를 찾을 수 없습니다" });
       }
 
-      // status를 failed로 업데이트
+      const userRole = req.session.userRole;
+      const isPrivilegedRole = userRole === "관리자" || userRole === "심사사";
+      if (!isPrivilegedRole && document.createdBy !== req.session.userId) {
+        return res.status(403).json({ error: "권한이 없습니다" });
+      }
+
       const updatedDocument = await storage.updateDocumentStatus(
         documentId,
         "failed",
