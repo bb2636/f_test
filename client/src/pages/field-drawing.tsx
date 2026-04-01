@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useLocation } from "wouter";
 import { User, Drawing, Case } from "@shared/schema";
 import { MousePointer2, ImagePlus, Square, Target, Lock, Trash2, Focus, ChevronDown, Undo2, Copy } from "lucide-react";
 import {
@@ -76,7 +75,6 @@ interface ActiveTransform {
 }
 
 export default function FieldDrawing() {
-  const [location, setLocation] = useLocation();
   const [selectedTool, setSelectedTool] = useState<ToolType>("pointer");
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [rectangles, setRectangles] = useState<DrawnRectangle[]>([]);
@@ -535,14 +533,6 @@ export default function FieldDrawing() {
       setSelectedLeakId(null);
     }
   };
-
-  const fieldSurveyMenuItems = [
-    { title: "현장입력", url: "/field-survey/management" },
-    { title: "도면작성", url: "/field-survey/drawing" },
-    { title: "증빙자료 등록", url: "/field-survey/documents" },
-    { title: "견적서 작성", url: "/field-survey/estimate" },
-    { title: "현장출동보고서", url: "/field-survey/report" },
-  ];
 
   const tools = [
     { id: "pointer" as ToolType, icon: MousePointer2, label: "선택" },
@@ -1168,124 +1158,7 @@ export default function FieldDrawing() {
 
   return (
     <>
-      <div className="flex h-[calc(100vh-89px)] min-h-0 overflow-hidden">
-        {/* 왼쪽 사이드바 */}
-        <div 
-          className="w-[180px] border-r flex-shrink-0 flex flex-col"
-          style={{
-            background: "white",
-            borderRight: "1px solid rgba(0, 143, 237, 0.15)",
-          }}
-        >
-          {/* 도면 작성 타이틀 */}
-          <div 
-            className="p-4 border-b flex-shrink-0"
-            style={{
-              borderBottom: "1px solid rgba(0, 143, 237, 0.15)",
-            }}
-          >
-            <h2 
-              style={{
-                fontFamily: "Pretendard",
-                fontSize: "18px",
-                fontWeight: 700,
-                color: "#0C0C0C",
-              }}
-            >
-              도면 작성
-            </h2>
-          </div>
-
-          {/* 케이스 정보 */}
-          <div 
-            className="p-4 border-b flex-shrink-0"
-            style={{
-              borderBottom: "1px solid rgba(0, 143, 237, 0.15)",
-            }}
-          >
-            {isLoadingSelectedCase ? (
-              <span
-                style={{
-                  fontFamily: "Pretendard",
-                  fontSize: "12px",
-                  color: "rgba(12, 12, 12, 0.5)",
-                }}
-              >
-                로딩 중...
-              </span>
-            ) : selectedCase ? (
-              <>
-                <div className="flex items-center gap-2 mb-1">
-                  <div 
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: "#008FED" }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      color: "#0C0C0C",
-                    }}
-                  >
-                    {selectedCase.insuranceCompany} {selectedCase.insuranceAccidentNo}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontFamily: "Pretendard",
-                    fontSize: "11px",
-                    color: "rgba(12, 12, 12, 0.5)",
-                  }}
-                >
-                  {formatCaseNumber(selectedCase.caseNumber)}
-                </span>
-              </>
-            ) : selectedCaseId ? (
-              <span
-                style={{
-                  fontFamily: "Pretendard",
-                  fontSize: "12px",
-                  color: "#ef4444",
-                }}
-              >
-                케이스를 찾을 수 없습니다
-              </span>
-            ) : (
-              <span
-                style={{
-                  fontFamily: "Pretendard",
-                  fontSize: "12px",
-                  color: "rgba(12, 12, 12, 0.5)",
-                }}
-              >
-                케이스를 선택해주세요
-              </span>
-            )}
-          </div>
-
-          {/* 메뉴 아이템들 */}
-          <div className="p-2 flex-1 overflow-y-auto">
-            {fieldSurveyMenuItems.map((item) => (
-              <button
-                key={item.title}
-                onClick={() => setLocation(item.url)}
-                data-testid={`menu-${item.title}`}
-                className="w-full text-left px-3 py-2.5 rounded mb-1 hover-elevate active-elevate-2"
-                style={{
-                  fontFamily: "Pretendard",
-                  fontSize: "14px",
-                  fontWeight: location === item.url ? 600 : 500,
-                  color: location === item.url ? "#008FED" : "rgba(12, 12, 12, 0.7)",
-                  background: location === item.url ? "rgba(0, 143, 237, 0.08)" : "transparent",
-                }}
-              >
-                {item.title}
-              </button>
-            ))}
-          </div>
-        </div>
-
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* 메인 콘텐츠 영역 */}
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
           {/* 숨겨진 파일 입력 */}
@@ -1547,7 +1420,7 @@ export default function FieldDrawing() {
               className="absolute z-10"
               data-ui="control-panel"
               style={{
-                left: `calc(${selectedRectangle.x * DISPLAY_SCALE}px + 180px)`,
+                left: `${selectedRectangle.x * DISPLAY_SCALE}px`,
                 top: `${Math.max(selectedRectangle.y * DISPLAY_SCALE - 60, 80)}px`,
               }}
             >
@@ -1649,7 +1522,7 @@ export default function FieldDrawing() {
               className="absolute z-10"
               data-ui="control-panel"
               style={{
-                left: `calc(${selectedImage.x * DISPLAY_SCALE}px + 180px)`,
+                left: `${selectedImage.x * DISPLAY_SCALE}px`,
                 top: `${Math.max(selectedImage.y * DISPLAY_SCALE - 50, 80)}px`,
               }}
             >
@@ -1686,7 +1559,7 @@ export default function FieldDrawing() {
                 className="absolute z-20"
                 data-ui="control-panel-leak"
                 style={{
-                  left: `calc(${selectedMarker.x * DISPLAY_SCALE}px + 180px - 18px)`,
+                  left: `${selectedMarker.x * DISPLAY_SCALE - 18}px`,
                   top: `${Math.max(selectedMarker.y * DISPLAY_SCALE - 55, 80)}px`,
                 }}
               >
@@ -1714,7 +1587,7 @@ export default function FieldDrawing() {
               className="absolute z-10"
               data-ui="control-panel"
               style={{
-                left: `calc(${(selectedAccidentArea.x + selectedAccidentArea.width / 2) * DISPLAY_SCALE}px + 180px - 20px)`,
+                left: `${(selectedAccidentArea.x + selectedAccidentArea.width / 2) * DISPLAY_SCALE - 20}px`,
                 top: `${Math.max(selectedAccidentArea.y * DISPLAY_SCALE - 50, 80)}px`,
               }}
             >

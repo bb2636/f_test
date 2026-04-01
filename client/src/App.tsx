@@ -31,7 +31,6 @@ const NotFound = lazy(() => import("@/pages/not-found"));
 
 const StatisticsLayout = lazy(() => import("@/components/statistics-layout").then(m => ({ default: m.StatisticsLayout })));
 const FieldSurveyLayout = lazy(() => import("@/components/field-survey-layout").then(m => ({ default: m.FieldSurveyLayout })));
-const DrawingLayout = lazy(() => import("@/components/drawing-layout").then(m => ({ default: m.DrawingLayout })));
 
 function PageLoader() {
   return (
@@ -194,9 +193,9 @@ function Router() {
         <Route path="/field-survey/drawing">
           {() => (
             <ProtectedRoute category="현장조사" item="도면작성">
-              <DrawingLayout>
+              <FieldSurveyLayout>
                 <FieldDrawing />
-              </DrawingLayout>
+              </FieldSurveyLayout>
             </ProtectedRoute>
           )}
         </Route>

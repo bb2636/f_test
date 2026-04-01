@@ -44,7 +44,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { FieldSurveyLayout } from "@/components/field-survey-layout";
 import { formatCaseNumber } from "@/lib/utils";
 import pLimit from "p-limit";
 import pRetry from "p-retry";
@@ -632,78 +631,72 @@ export default function FieldDocuments() {
   // 케이스가 선택되지 않은 경우 케이스 선택 UI 표시
   if (!selectedCaseId) {
     return (
-      <FieldSurveyLayout>
-        <div className="flex-1 flex flex-col items-center justify-center bg-[#F5F7FA] p-6">
-          <div
-            className="mb-6"
-            style={{
-              fontFamily: "Pretendard",
-              fontSize: "16px",
-              fontWeight: 500,
-              color: "rgba(12, 12, 12, 0.5)",
-            }}
-          >
-            케이스를 선택해주세요
-          </div>
-          <button
-            type="button"
-            onClick={() => setCaseSearchModalOpen(true)}
-            className="px-6 py-3 rounded-lg hover-elevate active-elevate-2"
-            style={{
-              fontFamily: "Pretendard",
-              fontSize: "15px",
-              fontWeight: 600,
-              letterSpacing: "-0.02em",
-              color: "#FFFFFF",
-              background: "#008FED",
-              border: "none",
-            }}
-            data-testid="button-select-case-empty"
-          >
-            케이스 선택
-          </button>
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#F5F7FA] p-6">
+        <div
+          className="mb-6"
+          style={{
+            fontFamily: "Pretendard",
+            fontSize: "16px",
+            fontWeight: 500,
+            color: "rgba(12, 12, 12, 0.5)",
+          }}
+        >
+          케이스를 선택해주세요
         </div>
-      </FieldSurveyLayout>
+        <button
+          type="button"
+          onClick={() => setCaseSearchModalOpen(true)}
+          className="px-6 py-3 rounded-lg hover-elevate active-elevate-2"
+          style={{
+            fontFamily: "Pretendard",
+            fontSize: "15px",
+            fontWeight: 600,
+            letterSpacing: "-0.02em",
+            color: "#FFFFFF",
+            background: "#008FED",
+            border: "none",
+          }}
+          data-testid="button-select-case-empty"
+        >
+          케이스 선택
+        </button>
+      </div>
     );
   }
 
   // 케이스 데이터 로딩 중일 때
   if (isLoadingCase) {
     return (
-      <FieldSurveyLayout>
-        <div className="flex-1 flex items-center justify-center bg-[#F5F7FA]">
-          <div
-            style={{
-              fontFamily: "Pretendard",
-              fontSize: "16px",
-              fontWeight: 500,
-              color: "rgba(12, 12, 12, 0.5)",
-            }}
-          >
-            케이스 정보를 불러오는 중...
-          </div>
+      <div className="flex-1 flex items-center justify-center bg-[#F5F7FA]">
+        <div
+          style={{
+            fontFamily: "Pretendard",
+            fontSize: "16px",
+            fontWeight: 500,
+            color: "rgba(12, 12, 12, 0.5)",
+          }}
+        >
+          케이스 정보를 불러오는 중...
         </div>
-      </FieldSurveyLayout>
+      </div>
     );
   }
 
   // 케이스 데이터가 없는 경우 (로딩 완료 후에도 없을 때)
   if (!selectedCase) {
     return (
-      <FieldSurveyLayout>
-        <div className="flex-1 flex items-center justify-center bg-[#F5F7FA]">
-          <div
-            style={{
-              fontFamily: "Pretendard",
-              fontSize: "16px",
-              fontWeight: 500,
-              color: "rgba(12, 12, 12, 0.5)",
-            }}
-          >
-            케이스 정보를 찾을 수 없습니다
-          </div>
+      <div className="flex-1 flex items-center justify-center bg-[#F5F7FA]">
+        <div
+          style={{
+            fontFamily: "Pretendard",
+            fontSize: "16px",
+            fontWeight: 500,
+            color: "rgba(12, 12, 12, 0.5)",
+          }}
+        >
+          케이스 정보를 찾을 수 없습니다
         </div>
-      </FieldSurveyLayout>
+      </div>
     );
   }
 
