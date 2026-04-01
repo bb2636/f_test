@@ -5334,10 +5334,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const authStatus = await checkStorageAuth();
       if (!authStatus.available) {
-        return res.status(503).json({
+        return res.status(200).json({
           code: "FILE_STORAGE_UNAVAILABLE",
           error: "파일 저장소를 사용할 수 없습니다",
           multipartFallback: uploadConfig.multipartFallback,
+          fallback: true,
         });
       }
 
@@ -5386,10 +5387,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storageAuthCache = { available: false, checkedAt: Date.now(), error: error.message };
       }
 
-      res.status(503).json({
+      res.status(200).json({
         code: "FILE_STORAGE_UNAVAILABLE",
         error: "파일 저장소를 사용할 수 없습니다",
         multipartFallback: uploadConfig.multipartFallback,
+        fallback: true,
       });
     }
   });

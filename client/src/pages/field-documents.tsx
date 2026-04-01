@@ -517,9 +517,15 @@ export default function FieldDocuments() {
     mutationFn: async (documentId: string) => {
       return await apiRequest("DELETE", `/api/documents/${documentId}`);
     },
-    onMutate: (documentId: string) => {
-      // 즉시 UI에서 제거 (낙관적 업데이트)
+    onMutate: async (documentId: string) => {
+      await queryClient.cancelQueries({ queryKey: ["/api/documents/case", selectedCaseId] });
+      const previousDocs = queryClient.getQueryData(["/api/documents/case", selectedCaseId]);
       setDeletingDocIds((prev) => new Set(prev).add(documentId));
+      queryClient.setQueryData(
+        ["/api/documents/case", selectedCaseId],
+        (old: any) => old ? old.filter((d: any) => d.id !== documentId) : old,
+      );
+      return { previousDocs };
     },
     onSuccess: (_, documentId: string) => {
       queryClient.invalidateQueries({
@@ -536,7 +542,10 @@ export default function FieldDocuments() {
         className: "bg-[#008FED] text-white border-0",
       });
     },
-    onError: (error, documentId: string) => {
+    onError: (error, documentId: string, context: any) => {
+      if (context?.previousDocs) {
+        queryClient.setQueryData(["/api/documents/case", selectedCaseId], context.previousDocs);
+      }
       setDeletingDocIds((prev) => {
         const next = new Set(prev);
         next.delete(documentId);
@@ -834,14 +843,21 @@ export default function FieldDocuments() {
       }),
     });
 
+    const urlBody = await urlRes.json().catch(() => ({}));
+
     if (!urlRes.ok) {
-      const errBody = await urlRes.json().catch(() => ({}));
-      const err = new Error(errBody.error || `업로드 URL 발급 실패 (${urlRes.status})`);
-      (err as any).multipartFallback = errBody.multipartFallback === true;
+      const err = new Error(urlBody.error || `업로드 URL 발급 실패 (${urlRes.status})`);
+      (err as any).multipartFallback = urlBody.multipartFallback === true;
       throw err;
     }
 
-    const { documentId, uploadURL, storageKey } = await urlRes.json();
+    if (urlBody.fallback) {
+      const err = new Error(urlBody.error || "파일 저장소를 사용할 수 없습니다");
+      (err as any).multipartFallback = urlBody.multipartFallback === true;
+      throw err;
+    }
+
+    const { documentId, uploadURL, storageKey } = urlBody;
 
     updateProgress(15);
 
@@ -945,7 +961,6 @@ export default function FieldDocuments() {
       const isStorageUnavailable = msg.includes("저장소") || msg.includes("URL 발급") || msg.includes("503");
 
       if (isStorageUnavailable && (presignedError as any).multipartFallback) {
-        console.log(`[Upload] Storage unavailable, using multipart fallback: ${msg}`);
         updateProgress(15);
         result = await uploadViaMultipart(uploadingFile, updateProgress);
       } else if (isStorageUnavailable) {
