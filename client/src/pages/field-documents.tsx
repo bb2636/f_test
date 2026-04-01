@@ -820,6 +820,7 @@ export default function FieldDocuments() {
   };
 
   const uploadViaPresignedUrl = async (
+
     uploadingFile: UploadingFile,
     updateProgress: (progress: number, status?: UploadStatus, error?: string, documentId?: string) => void,
   ): Promise<{ success: boolean; documentId: string }> => {
@@ -842,7 +843,9 @@ export default function FieldDocuments() {
 
     if (!urlRes.ok) {
       const errBody = await urlRes.json().catch(() => ({}));
-      throw new Error(errBody.error || `업로드 URL 발급 실패 (${urlRes.status})`);
+      const err = new Error(errBody.error || `업로드 URL 발급 실패 (${urlRes.status})`);
+      (err as any).multipartFallback = errBody.multipartFallback === true;
+      throw err;
     }
 
     const { documentId, uploadURL, storageKey } = await urlRes.json();
@@ -946,9 +949,13 @@ export default function FieldDocuments() {
       result = await uploadViaPresignedUrl(uploadingFile, updateProgress);
     } catch (presignedError: any) {
       const msg = presignedError?.message || "";
-      if (msg.includes("URL 발급") || msg.includes("503") || msg.includes("500")) {
-        console.log(`[Upload] Presigned URL failed, falling back to multipart: ${msg}`);
+      const isStorageUnavailable = msg.includes("저장소") || msg.includes("URL 발급") || msg.includes("503");
+
+      if (isStorageUnavailable && (presignedError as any).multipartFallback) {
+        console.log(`[Upload] Storage unavailable, using multipart fallback: ${msg}`);
         result = await uploadViaMultipart(uploadingFile, updateProgress);
+      } else if (isStorageUnavailable) {
+        throw new Error("파일 저장소 일시 장애입니다. 잠시 후 다시 시도해주세요.");
       } else {
         throw presignedError;
       }
@@ -980,7 +987,9 @@ export default function FieldDocuments() {
               msg.includes("너무 큽니다") ||
               msg.includes("업로드 실패") ||
               msg.includes("멀티파트 업로드 실패") ||
-              msg.includes("완료 처리 실패")
+              msg.includes("완료 처리 실패") ||
+              msg.includes("저장소 일시 장애") ||
+              msg.includes("저장소를 사용할 수 없습니다")
             ) {
               return false;
             }
