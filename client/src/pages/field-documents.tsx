@@ -877,58 +877,6 @@ export default function FieldDocuments() {
     return { success: true, documentId };
   };
 
-  const uploadViaMultipart = async (
-    uploadingFile: UploadingFile,
-    updateProgress: (progress: number, status?: UploadStatus, error?: string, documentId?: string) => void,
-  ): Promise<{ success: boolean; documentId: string }> => {
-    const fileType = uploadingFile.file.type || "application/octet-stream";
-
-    const formData = new FormData();
-    formData.append("file", uploadingFile.file);
-    formData.append("caseId", selectedCaseId);
-    formData.append("category", uploadingFile.category);
-    formData.append("fileName", uploadingFile.file.name);
-    formData.append("fileType", fileType);
-
-    updateProgress(15);
-
-    return new Promise<{ success: boolean; documentId: string }>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 80) + 15;
-          updateProgress(percent);
-        }
-      };
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            resolve(JSON.parse(xhr.responseText));
-          } catch {
-            reject(new Error("서버 응답 파싱 실패"));
-          }
-        } else if (xhr.status === 401) {
-          reject(new Error("로그인이 만료되었습니다. 다시 로그인 후 시도해주세요."));
-        } else if (xhr.status === 413) {
-          reject(new Error("파일이 너무 큽니다 (50MB 제한)"));
-        } else {
-          try {
-            const errData = JSON.parse(xhr.responseText);
-            reject(new Error(errData.error || `업로드 실패 (${xhr.status})`));
-          } catch {
-            reject(new Error(`업로드 실패 (${xhr.status})`));
-          }
-        }
-      };
-      xhr.onerror = () => reject(new Error("서버 연결 실패. 인터넷 연결을 확인해주세요."));
-      xhr.ontimeout = () => reject(new Error("업로드 시간이 초과되었습니다 (300초)."));
-      xhr.timeout = 300000;
-      xhr.withCredentials = true;
-      xhr.open("POST", "/api/documents/multipart-upload");
-      xhr.send(formData);
-    });
-  };
-
   const uploadSingleFile = async (
     uploadingFile: UploadingFile,
   ): Promise<void> => {
@@ -964,21 +912,7 @@ export default function FieldDocuments() {
       );
     }
 
-    let result: { success: boolean; documentId: string };
-    try {
-      result = await uploadViaPresignedUrl(uploadingFile, updateProgress);
-    } catch (presignedErr: any) {
-      console.warn("[Upload] Presigned URL 방식 실패, multipart fallback:", presignedErr.message);
-      if (
-        presignedErr.message.includes("로그인이 만료") ||
-        presignedErr.message.includes("제한을 초과") ||
-        presignedErr.message.includes("너무 큽니다")
-      ) {
-        throw presignedErr;
-      }
-      updateProgress(10, "uploading");
-      result = await uploadViaMultipart(uploadingFile, updateProgress);
-    }
+    const result = await uploadViaPresignedUrl(uploadingFile, updateProgress);
 
     updateProgress(100, "completed", undefined, result.documentId);
   };

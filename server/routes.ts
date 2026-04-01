@@ -4953,6 +4953,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const validatedData = insertCaseDocumentSchema.parse(req.body);
+
+      if (validatedData.fileData) {
+        return res.status(400).json({
+          error: "파일 데이터(base64)를 통한 업로드는 더 이상 지원되지 않습니다. presigned URL 방식을 사용하세요.",
+        });
+      }
+
       const document = await storage.saveDocument(validatedData);
 
       // 청구자료 카테고리 목록
@@ -5159,467 +5166,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== 문서 업로드 API =====
-  let gcsDisabled = false;
 
-  (async () => {
-    try {
-      const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
-      if (!privateObjectDir) {
-        console.log("[GCS] PRIVATE_OBJECT_DIR not set, using DB storage for uploads");
-        gcsDisabled = true;
-        return;
-      }
-      const pathParts = privateObjectDir.split("/").filter((p: string) => p);
-      const bucketName = pathParts[0] || "test";
-      const res = await fetch("http://127.0.0.1:1106/object-storage/signed-object-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bucket_name: bucketName, object_name: "__health_check__", method: "GET", expires_at: new Date(Date.now() + 60000).toISOString() }),
-        signal: AbortSignal.timeout(3000),
-      });
-      if (!res.ok) {
-        console.log(`[GCS] Sidecar auth check failed (${res.status}), using DB storage for uploads`);
-        gcsDisabled = true;
-      } else {
-        console.log(`[GCS] Sidecar available, presigned URL uploads enabled`);
-      }
-    } catch {
-      console.log("[GCS] Sidecar not available, using DB storage for uploads");
-      gcsDisabled = true;
-    }
-  })();
+  const getStorageBucketInfo = () => {
+    const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
+    if (!privateObjectDir) return null;
+    const pathParts = privateObjectDir.split("/").filter((p: string) => p);
+    if (pathParts.length < 1) return null;
+    return { privateObjectDir, bucketName: pathParts[0] };
+  };
 
-  // 직접 업로드 (base64): Object Storage 우회, DB에 직접 저장
-  const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 50 * 1024 * 1024 },
-  });
+  const buildStoragePath = (storageKey: string) => {
+    const info = getStorageBucketInfo();
+    if (!info) throw new Error("Object Storage가 설정되지 않았습니다");
+    const fullPath = `${info.privateObjectDir}/${storageKey}`;
+    const pathParts = fullPath.split("/").filter((p: string) => p);
+    return { bucketName: pathParts[0], objectName: pathParts.slice(1).join("/") };
+  };
 
-  app.post("/api/documents/multipart-upload", (req, res) => {
-    if (!req.session?.userId) {
-      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
-    }
-
-    upload.single("file")(req, res, async (multerErr) => {
-      if (multerErr) {
-        console.error("[multipart-upload] Multer error:", multerErr.message);
-        if (multerErr.code === "LIMIT_FILE_SIZE") {
-          return res.status(413).json({ error: "파일이 너무 큽니다 (50MB 제한)" });
-        }
-        return res.status(400).json({ error: multerErr.message || "파일 처리 오류" });
-      }
-
+  const processPdfInBackground = (documentId: string, storageKey: string) => {
+    setImmediate(async () => {
       try {
-        const { caseId, category, fileName, fileType } = req.body;
-        const file = req.file;
+        const { bucketName, objectName } = buildStoragePath(storageKey);
+        const bucket = objectStorageClient.bucket(bucketName);
+        const file = bucket.file(objectName);
 
-        if (!caseId || !category || !fileName || !fileType || !file) {
-          const missing = [];
-          if (!caseId) missing.push("caseId");
-          if (!category) missing.push("category");
-          if (!fileName) missing.push("fileName");
-          if (!fileType) missing.push("fileType");
-          if (!file) missing.push("file");
-          return res.status(400).json({
-            error: `필수 필드가 누락되었습니다: ${missing.join(", ")}`,
-          });
+        console.log(`[pdf-bg] PDF 압축 시작: document=${documentId}`);
+
+        const [pdfBuffer] = await file.download();
+        const compressionResult = await compressPdf(pdfBuffer);
+
+        if (!compressionResult.success) {
+          console.error(`[pdf-bg] PDF 압축 거부: ${compressionResult.error}`);
+          await storage.updateDocumentStatus(documentId, "ready");
+          return;
         }
 
-        console.log(
-          `[multipart-upload] user: ${req.session.userId}, caseId: ${caseId}, file: ${fileName}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
-        );
-
-        const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
-        let savedToGCS = false;
-        let storageKey = "";
-
-        if (privateObjectDir && !gcsDisabled) {
-          try {
-            const timestamp = Date.now();
-            const uuid = crypto.randomUUID();
-            const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
-            storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
-            const fullPath = `${privateObjectDir}/${storageKey}`;
-            const pathParts = fullPath.split("/").filter((p: string) => p);
-            const bucketName = pathParts[0];
-            const objectName = pathParts.slice(1).join("/");
-
-            const bucket = objectStorageClient.bucket(bucketName);
-            const gcsFile = bucket.file(objectName);
-            await gcsFile.save(file.buffer, {
-              metadata: { contentType: fileType },
-            });
-
-            savedToGCS = true;
-            console.log(`[multipart-upload] File saved to GCS: ${storageKey}`);
-          } catch (gcsError: any) {
-            console.warn(`[multipart-upload] GCS upload failed, disabling GCS for future uploads: ${gcsError.message}`);
-            gcsDisabled = true;
-            savedToGCS = false;
-          }
+        if (
+          compressionResult.compressedBuffer &&
+          compressionResult.compressedSize !== compressionResult.originalSize
+        ) {
+          await file.save(compressionResult.compressedBuffer, {
+            contentType: "application/pdf",
+          });
+          console.log(
+            `[pdf-bg] PDF 압축 완료: ${(compressionResult.originalSize / 1024 / 1024).toFixed(2)}MB → ${(compressionResult.compressedSize! / 1024 / 1024).toFixed(2)}MB (${compressionResult.compressionRatio}%)`,
+          );
         }
 
-        let document;
-        if (savedToGCS) {
-          document = await storage.createPendingDocument({
-            caseId,
-            category,
-            fileName,
-            fileType,
-            fileSize: file.size,
-            storageKey,
-            createdBy: req.session.userId,
-          });
-          await storage.updateDocumentStatus(document.id, "ready");
-          console.log(`[multipart-upload] Document saved to Object Storage: ${document.id}, key: ${storageKey}`);
-        } else {
-          const fileData = file.buffer.toString("base64");
-          document = await storage.saveDocument({
-            caseId,
-            category,
-            fileName,
-            fileType,
-            fileSize: file.size,
-            fileData,
-            createdBy: req.session.userId,
-          });
-          console.log(`[multipart-upload] Document saved to DB: ${document.id}`);
-        }
-
-        res.json({
-          success: true,
-          documentId: document.id,
-        });
-      } catch (error: any) {
-        console.error("[multipart-upload] Error:", error.message, "code:", error.code, "statusCode:", error.statusCode);
-        if (error.stack) console.error("[multipart-upload] Stack:", error.stack.split("\n").slice(0, 3).join(" | "));
-        res.status(500).json({
-          error: "문서 업로드 중 오류가 발생했습니다",
-          details: error.message,
-        });
+        await storage.updateDocumentStatus(documentId, "ready");
+        console.log(`[pdf-bg] Document ${documentId} status → ready`);
+      } catch (err: any) {
+        console.error(`[pdf-bg] PDF 처리 오류 (document=${documentId}):`, err.message);
+        await storage.updateDocumentStatus(documentId, "ready").catch(() => {});
       }
     });
-  });
+  };
 
-  app.post("/api/documents/direct-upload", async (req, res) => {
-    if (!req.session?.userId) {
-      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+  app.get("/api/health/storage", async (_req, res) => {
+    const info = getStorageBucketInfo();
+    if (!info) {
+      return res.status(503).json({ status: "unavailable", error: "PRIVATE_OBJECT_DIR not configured" });
     }
-
     try {
-      const { caseId, category, fileName, fileType, fileSize, fileData } = req.body;
-
-      console.log(
-        `[direct-upload] Request received - user: ${req.session.userId}, caseId: ${caseId || "MISSING"}, fileName: ${fileName || "MISSING"}, fileSize: ${fileSize || "MISSING"}, hasFileData: ${!!fileData}, fileDataLen: ${fileData ? fileData.length : 0}`,
-      );
-
-      if (!caseId || !category || !fileName || !fileType || !fileData) {
-        const missing = [];
-        if (!caseId) missing.push("caseId");
-        if (!category) missing.push("category");
-        if (!fileName) missing.push("fileName");
-        if (!fileType) missing.push("fileType");
-        if (!fileData) missing.push("fileData");
-        console.error(`[direct-upload] Missing fields: ${missing.join(", ")}`);
-        return res.status(400).json({
-          error: `필수 필드가 누락되었습니다: ${missing.join(", ")}`,
-        });
-      }
-
-      const MAX_FILE_SIZE = 50 * 1024 * 1024;
-      const decodedSize = Math.ceil((fileData.length * 3) / 4);
-      if (decodedSize > MAX_FILE_SIZE) {
-        return res.status(413).json({
-          error: `파일 크기(${(decodedSize / 1024 / 1024).toFixed(1)}MB)가 제한(${MAX_FILE_SIZE / 1024 / 1024}MB)을 초과합니다`,
-        });
-      }
-
-      console.log(
-        `[direct-upload] Saving document for case ${caseId}, file: ${fileName}, decodedSize: ${(decodedSize / 1024 / 1024).toFixed(2)}MB`,
-      );
-
-      const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
-      if (privateObjectDir) {
-        const timestamp = Date.now();
-        const uuid = crypto.randomUUID();
-        const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
-        const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
-        const fullPath = `${privateObjectDir}/${storageKey}`;
-        const pathParts = fullPath.split("/").filter((p: string) => p);
-        const bucketName = pathParts[0];
-        const objectName = pathParts.slice(1).join("/");
-
-        const buffer = Buffer.from(fileData, "base64");
-        const bucket = objectStorageClient.bucket(bucketName);
-        const gcsFile = bucket.file(objectName);
-        await gcsFile.save(buffer, {
-          metadata: { contentType: fileType },
-        });
-
-        const document = await storage.createPendingDocument({
-          caseId,
-          category,
-          fileName,
-          fileType,
-          fileSize: fileSize || decodedSize,
-          storageKey,
-          createdBy: req.session.userId,
-        });
-
-        await storage.updateDocumentStatus(document.id, "ready");
-
-        console.log(`[direct-upload] Document saved to Object Storage: ${document.id}`);
-
-        if (req.rawBody) {
-          delete (req as any).rawBody;
-        }
-
-        return res.json({
-          success: true,
-          documentId: document.id,
-        });
-      }
-
-      const document = await storage.saveDocument({
-        caseId,
-        category,
-        fileName,
-        fileType,
-        fileSize: fileSize || decodedSize,
-        fileData,
-        createdBy: req.session.userId,
+      await signObjectURL({
+        bucketName: info.bucketName,
+        objectName: "__health_check__",
+        method: "GET",
+        ttlSec: 60,
       });
-
-      console.log(
-        `[direct-upload] Document saved successfully: ${document.id}`,
-      );
-
-      if (req.rawBody) {
-        delete (req as any).rawBody;
-      }
-
-      res.json({
-        success: true,
-        documentId: document.id,
-      });
-    } catch (error: any) {
-      console.error("[direct-upload] Error:", error.message, error.stack?.split("\n").slice(0, 3).join(" | "));
-      res.status(500).json({
-        error: "문서 업로드 중 오류가 발생했습니다",
-        details: error.message,
-      });
+      res.json({ status: "ok", bucket: info.bucketName });
+    } catch (err: any) {
+      res.status(503).json({ status: "unavailable", error: err.message });
     }
   });
 
-
-  // Step 2: 업로드 완료 후 DB에 저장
-  app.post("/api/documents/upload-complete", async (req, res) => {
-    if (!req.session?.userId) {
-      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
-    }
-
-    try {
-      const {
-        caseId,
-        category,
-        fileName,
-        fileType,
-        fileSize,
-        storageKey,
-        displayOrder,
-        checksum,
-      } = req.body;
-
-      if (
-        !caseId ||
-        !category ||
-        !fileName ||
-        !fileType ||
-        !fileSize ||
-        !storageKey
-      ) {
-        return res.status(400).json({ error: "필수 필드가 누락되었습니다" });
-      }
-
-      console.log(
-        `[upload-complete] Verifying and saving document for case ${caseId}, file: ${fileName}`,
-      );
-
-      // Object Storage에서 파일 존재 확인
-      const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
-      if (!privateObjectDir) {
-        return res
-          .status(500)
-          .json({ error: "Object Storage가 설정되지 않았습니다" });
-      }
-
-      const fullPath = `${privateObjectDir}/${storageKey}`;
-      const pathParts = fullPath.split("/").filter((p) => p);
-      const bucketName = pathParts[0];
-      const objectName = pathParts.slice(1).join("/");
-
-      const bucket = objectStorageClient.bucket(bucketName);
-      const file = bucket.file(objectName);
-      const [exists] = await file.exists();
-
-      if (!exists) {
-        console.error(
-          `[upload-complete] File not found in storage: ${storageKey}`,
-        );
-        return res.status(400).json({
-          error:
-            "업로드된 파일을 찾을 수 없습니다. 업로드가 실패했을 수 있습니다.",
-        });
-      }
-
-      let finalFileSize = fileSize;
-      let compressionInfo: {
-        originalSize: number;
-        compressedSize: number;
-        ratio: number;
-      } | null = null;
-
-      // PDF 파일인 경우 압축 처리
-      if (isPdfFile(fileType, fileName)) {
-        console.log(`[upload-complete] PDF 파일 감지, 압축 시작: ${fileName}`);
-
-        try {
-          // 1. Object Storage에서 PDF 다운로드
-          const [pdfBuffer] = await file.download();
-          console.log(
-            `[upload-complete] PDF 다운로드 완료: ${(pdfBuffer.length / 1024 / 1024).toFixed(2)}MB`,
-          );
-
-          // 2. PDF 압축
-          const compressionResult = await compressPdf(pdfBuffer);
-
-          if (!compressionResult.success) {
-            // 압축 실패 (용량 초과 등)
-            console.error(
-              `[upload-complete] PDF 압축 거부: ${compressionResult.error}`,
-            );
-            // 업로드된 파일 삭제
-            await file.delete();
-            return res.status(400).json({ error: compressionResult.error });
-          }
-
-          // 3. 압축된 파일로 교체 (원본과 다른 경우)
-          if (
-            compressionResult.compressedBuffer &&
-            compressionResult.compressedSize !== compressionResult.originalSize
-          ) {
-            console.log(`[upload-complete] 압축된 PDF 업로드 중...`);
-            await file.save(compressionResult.compressedBuffer, {
-              contentType: "application/pdf",
-            });
-            finalFileSize = compressionResult.compressedSize!;
-            compressionInfo = {
-              originalSize: compressionResult.originalSize,
-              compressedSize: compressionResult.compressedSize!,
-              ratio: compressionResult.compressionRatio!,
-            };
-            console.log(
-              `[upload-complete] PDF 압축 완료: ${(compressionResult.originalSize / 1024 / 1024).toFixed(2)}MB → ${(finalFileSize / 1024 / 1024).toFixed(2)}MB (${compressionResult.compressionRatio}%)`,
-            );
-          } else {
-            console.log(`[upload-complete] PDF 압축 불필요 또는 효과 없음`);
-          }
-        } catch (compressError) {
-          console.error(`[upload-complete] PDF 압축 중 오류:`, compressError);
-          // 압축 오류 시 원본 파일 그대로 사용 (중단하지 않음)
-        }
-      }
-
-      // DB에 문서 레코드 생성 (status: ready)
-      const document = await storage.createPendingDocument({
-        caseId,
-        category,
-        fileName,
-        fileType,
-        fileSize: finalFileSize,
-        storageKey,
-        displayOrder: displayOrder ?? 0,
-        createdBy: req.session.userId!,
-      });
-
-      // status를 ready로 업데이트
-      await storage.updateDocumentStatus(document.id, "ready", checksum);
-
-      console.log(
-        `[upload-complete] Document ${document.id} saved with status ready${compressionInfo ? ` (compressed: ${compressionInfo.ratio}%)` : ""}`,
-      );
-
-      res.json({
-        success: true,
-        documentId: document.id,
-        document,
-        compression: compressionInfo,
-      });
-    } catch (error: any) {
-      console.error("[upload-complete] Error occurred:");
-      console.error("  message:", error.message);
-      console.error("  stack:", error.stack);
-      if (error.code) console.error("  code:", error.code);
-      res.status(500).json({
-        error: "문서 저장 중 오류가 발생했습니다",
-        details: error.message,
-      });
-    }
-  });
-
-  // Legacy: Request upload URL (하위 호환용)
   app.post("/api/documents/request-upload", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
     }
 
     try {
-      const contentLength = req.headers["content-length"];
-      console.log(`[request-upload] Content-Length: ${contentLength} bytes`);
-
-      const { caseId, category, fileName, fileType, fileSize, displayOrder } =
-        req.body;
+      const { caseId, category, fileName, fileType, fileSize, displayOrder } = req.body;
 
       if (!caseId || !category || !fileName || !fileType || !fileSize) {
         return res.status(400).json({
-          error:
-            "필수 필드가 누락되었습니다 (caseId, category, fileName, fileType, fileSize)",
+          error: "필수 필드가 누락되었습니다 (caseId, category, fileName, fileType, fileSize)",
         });
       }
 
-      console.log(
-        `[request-upload] Starting upload request for case ${caseId}, file: ${fileName}, size: ${fileSize}`,
-      );
+      const MAX_UPLOAD_SIZE = 50 * 1024 * 1024;
+      if (fileSize > MAX_UPLOAD_SIZE) {
+        return res.status(400).json({
+          error: `파일 크기가 너무 큽니다 (최대 ${MAX_UPLOAD_SIZE / 1024 / 1024}MB)`,
+        });
+      }
 
-      // storageKey 생성: documents/{caseId}/{timestamp}_{uuid}_{fileName}
+      const info = getStorageBucketInfo();
+      if (!info) {
+        return res.status(503).json({ error: "File storage is not available" });
+      }
+
       const timestamp = Date.now();
       const uuid = crypto.randomUUID();
       const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
       const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
 
-      // PRIVATE_OBJECT_DIR에서 bucket 정보 추출
-      const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
-      if (!privateObjectDir) {
-        console.error("[request-upload] PRIVATE_OBJECT_DIR not set");
-        return res
-          .status(500)
-          .json({ error: "Object Storage가 설정되지 않았습니다" });
-      }
+      const { bucketName, objectName } = buildStoragePath(storageKey);
 
-      // Full path: /{bucket}/.../{storageKey}
-      const fullPath = `${privateObjectDir}/${storageKey}`;
-      const pathParts = fullPath.split("/").filter((p) => p);
-      if (pathParts.length < 2) {
-        return res.status(500).json({ error: "잘못된 스토리지 경로입니다" });
-      }
-      const bucketName = pathParts[0];
-      const objectName = pathParts.slice(1).join("/");
+      console.log(`[request-upload] case=${caseId}, file=${fileName}, size=${fileSize}, bucket=${bucketName}`);
 
-      console.log(
-        `[request-upload] Bucket: ${bucketName}, Object: ${objectName}`,
-      );
-
-      // Presigned URL 발급 (15분 TTL)
       const uploadURL = await signObjectURL({
         bucketName,
         objectName,
@@ -5627,7 +5282,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ttlSec: 900,
       });
 
-      // DB에 pending 상태로 문서 레코드 생성
       const document = await storage.createPendingDocument({
         caseId,
         category,
@@ -5639,9 +5293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: req.session.userId!,
       });
 
-      console.log(
-        `[request-upload] Created pending document ${document.id} with storageKey: ${storageKey}`,
-      );
+      console.log(`[request-upload] Created pending document ${document.id}, storageKey: ${storageKey}`);
 
       res.json({
         documentId: document.id,
@@ -5649,13 +5301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storageKey,
       });
     } catch (error: any) {
-      console.error("[request-upload] Error occurred:");
-      console.error("  message:", error.message);
-      console.error("  stack:", error.stack);
-      if (error.code) console.error("  code:", error.code);
-      if (error.statusCode) console.error("  statusCode:", error.statusCode);
-      if (error.response)
-        console.error("  response:", JSON.stringify(error.response));
+      console.error("[request-upload] Error:", error.message);
       res.status(500).json({
         error: "업로드 URL 발급 중 오류가 발생했습니다",
         details: error.message,
@@ -5663,7 +5309,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Complete upload (업로드 완료 검증 + status ready로 변경)
   app.post("/api/documents/complete-upload", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -5675,10 +5320,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!documentId) {
         return res.status(400).json({ error: "documentId가 필요합니다" });
       }
-
-      console.log(
-        `[complete-upload] Completing upload for document ${documentId}`,
-      );
 
       const document = await storage.getDocument(documentId);
       if (!document) {
@@ -5692,63 +5333,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (!document.storageKey) {
-        return res
-          .status(400)
-          .json({ error: "해당 문서는 Object Storage 업로드가 아닙니다" });
+        return res.status(400).json({ error: "해당 문서는 Object Storage 업로드가 아닙니다" });
       }
 
-      // Object Storage에서 파일 존재 확인
-      const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
-      if (!privateObjectDir) {
-        return res
-          .status(500)
-          .json({ error: "Object Storage가 설정되지 않았습니다" });
-      }
-
-      const fullPath = `${privateObjectDir}/${document.storageKey}`;
-      const pathParts = fullPath.split("/").filter((p) => p);
-      const bucketName = pathParts[0];
-      const objectName = pathParts.slice(1).join("/");
-
+      const { bucketName, objectName } = buildStoragePath(document.storageKey);
       const bucket = objectStorageClient.bucket(bucketName);
       const file = bucket.file(objectName);
       const [exists] = await file.exists();
 
       if (!exists) {
-        console.error(
-          `[complete-upload] File not found in storage: ${document.storageKey}`,
-        );
-        // 파일이 없으면 failed 상태로 업데이트
+        console.error(`[complete-upload] File not found: ${document.storageKey}`);
         await storage.updateDocumentStatus(documentId, "failed");
-        return res
-          .status(400)
-          .json({ error: "업로드된 파일을 찾을 수 없습니다" });
+        return res.status(400).json({ error: "업로드된 파일을 찾을 수 없습니다" });
       }
 
-      // status를 ready로 업데이트
-      const updatedDocument = await storage.updateDocumentStatus(
-        documentId,
-        "ready",
-        checksum,
-      );
+      if (isPdfFile(document.fileType, document.fileName)) {
+        await storage.updateDocumentStatus(documentId, "processing", checksum);
+        console.log(`[complete-upload] Document ${documentId} → processing (PDF async)`);
+        processPdfInBackground(documentId, document.storageKey);
+      } else {
+        await storage.updateDocumentStatus(documentId, "ready", checksum);
+        console.log(`[complete-upload] Document ${documentId} → ready`);
+      }
 
-      console.log(
-        `[complete-upload] Document ${documentId} status updated to ready`,
-      );
-
-      res.json({
-        success: true,
-        document: updatedDocument,
-      });
-    } catch (error) {
-      console.error("[complete-upload] Error:", error);
-      res
-        .status(500)
-        .json({ error: "업로드 완료 처리 중 오류가 발생했습니다" });
+      res.json({ success: true, documentId });
+    } catch (error: any) {
+      console.error("[complete-upload] Error:", error.message);
+      res.status(500).json({ error: "업로드 완료 처리 중 오류가 발생했습니다" });
     }
   });
 
-  // Fail upload (업로드 실패 처리)
   app.post("/api/documents/fail-upload", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -5761,10 +5375,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "documentId가 필요합니다" });
       }
 
-      console.log(
-        `[fail-upload] Marking upload as failed for document ${documentId}`,
-      );
-
       const document = await storage.getDocument(documentId);
       if (!document) {
         return res.status(404).json({ error: "문서를 찾을 수 없습니다" });
@@ -5776,25 +5386,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "권한이 없습니다" });
       }
 
-      const updatedDocument = await storage.updateDocumentStatus(
-        documentId,
-        "failed",
-      );
+      await storage.updateDocumentStatus(documentId, "failed");
+      console.log(`[fail-upload] Document ${documentId} → failed`);
 
-      console.log(
-        `[fail-upload] Document ${documentId} status updated to failed`,
-      );
-
-      res.json({
-        success: true,
-        document: updatedDocument,
-      });
+      res.json({ success: true });
     } catch (error) {
       console.error("[fail-upload] Error:", error);
-      res
-        .status(500)
-        .json({ error: "업로드 실패 처리 중 오류가 발생했습니다" });
+      res.status(500).json({ error: "업로드 실패 처리 중 오류가 발생했습니다" });
     }
+  });
+
+  const smallUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 2 * 1024 * 1024 },
+  });
+
+  app.post("/api/documents/multipart-upload", (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+
+    const info = getStorageBucketInfo();
+    if (!info) {
+      return res.status(503).json({ error: "File storage is not available" });
+    }
+
+    smallUpload.single("file")(req, res, async (multerErr) => {
+      if (multerErr) {
+        if (multerErr.code === "LIMIT_FILE_SIZE") {
+          return res.status(413).json({ error: "이 엔드포인트는 2MB 이하만 허용합니다. presigned URL 업로드를 사용해주세요." });
+        }
+        return res.status(400).json({ error: multerErr.message || "파일 처리 오류" });
+      }
+
+      try {
+        const { caseId, category, fileName, fileType } = req.body;
+        const file = req.file;
+
+        if (!caseId || !category || !fileName || !fileType || !file) {
+          return res.status(400).json({ error: "필수 필드가 누락되었습니다" });
+        }
+
+        const timestamp = Date.now();
+        const uuid = crypto.randomUUID();
+        const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
+        const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
+        const { bucketName, objectName } = buildStoragePath(storageKey);
+
+        const bucket = objectStorageClient.bucket(bucketName);
+        const gcsFile = bucket.file(objectName);
+        await gcsFile.save(file.buffer, { metadata: { contentType: fileType } });
+
+        const document = await storage.createPendingDocument({
+          caseId,
+          category,
+          fileName,
+          fileType,
+          fileSize: file.size,
+          storageKey,
+          createdBy: req.session.userId,
+        });
+        await storage.updateDocumentStatus(document.id, "ready");
+
+        console.log(`[multipart-upload] Document ${document.id} saved to Object Storage (${(file.size / 1024).toFixed(0)}KB)`);
+
+        res.json({ success: true, documentId: document.id });
+      } catch (error: any) {
+        console.error("[multipart-upload] Error:", error.message);
+        res.status(500).json({ error: "문서 업로드 중 오류가 발생했습니다" });
+      }
+    });
+  });
+
+  app.post("/api/documents/direct-upload", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+
+    try {
+      const { caseId, category, fileName, fileType, fileSize, fileData } = req.body;
+
+      if (!caseId || !category || !fileName || !fileType || !fileData) {
+        return res.status(400).json({ error: "필수 필드가 누락되었습니다" });
+      }
+
+      const decodedSize = Math.ceil((fileData.length * 3) / 4);
+      const MAX_DIRECT_SIZE = 2 * 1024 * 1024;
+      if (decodedSize > MAX_DIRECT_SIZE) {
+        return res.status(413).json({
+          error: `이 엔드포인트는 2MB 이하만 허용합니다 (${(decodedSize / 1024 / 1024).toFixed(1)}MB). presigned URL 업로드를 사용해주세요.`,
+        });
+      }
+
+      const info = getStorageBucketInfo();
+      if (!info) {
+        return res.status(503).json({ error: "File storage is not available" });
+      }
+
+      const timestamp = Date.now();
+      const uuid = crypto.randomUUID();
+      const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
+      const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
+      const { bucketName, objectName } = buildStoragePath(storageKey);
+
+      const buffer = Buffer.from(fileData, "base64");
+      const bucket = objectStorageClient.bucket(bucketName);
+      const gcsFile = bucket.file(objectName);
+      await gcsFile.save(buffer, { metadata: { contentType: fileType } });
+
+      const document = await storage.createPendingDocument({
+        caseId,
+        category,
+        fileName,
+        fileType,
+        fileSize: fileSize || decodedSize,
+        storageKey,
+        createdBy: req.session.userId,
+      });
+      await storage.updateDocumentStatus(document.id, "ready");
+
+      console.log(`[direct-upload] Document ${document.id} saved to Object Storage (${(decodedSize / 1024).toFixed(0)}KB)`);
+
+      res.json({ success: true, documentId: document.id });
+    } catch (error: any) {
+      console.error("[direct-upload] Error:", error.message);
+      res.status(500).json({ error: "문서 업로드 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.post("/api/documents/upload-complete", async (req, res) => {
+    return res.status(410).json({ error: "이 엔드포인트는 /api/documents/complete-upload로 이전되었습니다" });
   });
 
   // Get download URL (storageKey에서 다운로드 URL 생성)
@@ -5838,8 +5559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // status가 ready인지 확인
-      if (document.status !== "ready") {
+      if (document.status === "pending" || document.status === "failed") {
         return res.status(400).json({
           error: `문서가 준비되지 않았습니다 (현재 상태: ${document.status})`,
         });
@@ -5885,8 +5605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "권한이 없습니다" });
       }
 
-      // Object Storage 문서인 경우 서버에서 직접 스트리밍
-      if (document.storageKey && document.status === "ready") {
+      if (document.storageKey && (document.status === "ready" || document.status === "processing")) {
         const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
         if (!privateObjectDir) {
           return res
