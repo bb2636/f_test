@@ -5170,9 +5170,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const isProduction = process.env.NODE_ENV === "production" || !!process.env.REPLIT_DEPLOYMENT;
 
   const uploadConfig = {
-    presignedOnly: isProduction || process.env.UPLOAD_PRESIGNED_ONLY === "true",
-    multipartFallback: !isProduction && process.env.UPLOAD_MULTIPART_FALLBACK !== "false",
-    dbFallback: !isProduction && process.env.UPLOAD_DB_FALLBACK !== "false",
+    presignedOnly: process.env.UPLOAD_PRESIGNED_ONLY === "false" ? false
+      : (isProduction || process.env.UPLOAD_PRESIGNED_ONLY === "true"),
+    multipartFallback: process.env.UPLOAD_MULTIPART_FALLBACK === "true" ? true
+      : (!isProduction && process.env.UPLOAD_MULTIPART_FALLBACK !== "false"),
+    dbFallback: process.env.UPLOAD_DB_FALLBACK === "true" ? true
+      : (!isProduction && process.env.UPLOAD_DB_FALLBACK !== "false"),
     successCacheTtl: parseInt(process.env.STORAGE_HEALTHCACHE_SUCCESS_TTL_SEC || "60", 10) * 1000,
     failureCacheTtl: parseInt(process.env.STORAGE_HEALTHCACHE_FAILURE_TTL_SEC || "30", 10) * 1000,
   };
@@ -5571,11 +5574,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         if (uploadConfig.dbFallback) {
-          const MAX_DB_FALLBACK_SIZE = 1 * 1024 * 1024;
+          const MAX_DB_FALLBACK_SIZE = 10 * 1024 * 1024;
           if (file.size > MAX_DB_FALLBACK_SIZE) {
             return res.status(413).json({
               code: "DB_FALLBACK_TOO_LARGE",
-              error: `개발 환경 DB fallback은 1MB 이하만 허용합니다 (${(file.size / 1024 / 1024).toFixed(1)}MB)`,
+              error: `DB fallback은 ${MAX_DB_FALLBACK_SIZE / 1024 / 1024}MB 이하만 허용합니다 (${(file.size / 1024 / 1024).toFixed(1)}MB)`,
             });
           }
 

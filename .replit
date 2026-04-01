@@ -42,6 +42,8 @@ expertMode = true
 [userenv]
 
 [userenv.production]
+UPLOAD_MULTIPART_FALLBACK = "true"
+UPLOAD_DB_FALLBACK = "true"
 
 [userenv.shared]
 SMTP_FROM = "master@floxn.co.kr"
