@@ -5179,6 +5179,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   console.log(`[upload-config] ${JSON.stringify(uploadConfig)}`);
 
+  const uploadMetrics = {
+    multipartFallbackCount: 0,
+    dbFallbackCount: 0,
+    presignedCount: 0,
+    presignedFailCount: 0,
+  };
+
   let storageAuthCache: { available: boolean; checkedAt: number; error?: string } | null = null;
 
   const getStorageBucketInfo = () => {
@@ -5280,6 +5287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           multipartFallback: uploadConfig.multipartFallback,
           dbFallback: uploadConfig.dbFallback,
         },
+        metrics: uploadMetrics,
       });
     } else {
       res.status(503).json({
@@ -5292,11 +5300,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           multipartFallback: uploadConfig.multipartFallback,
           dbFallback: uploadConfig.dbFallback,
         },
+        metrics: uploadMetrics,
       });
     }
   });
 
   app.post("/api/documents/request-upload", async (req, res) => {
+    const startTime = Date.now();
     if (!req.session?.userId) {
       return res.status(401).json({ code: "UNAUTHORIZED", error: "인증되지 않은 사용자입니다" });
     }
@@ -5353,7 +5363,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: req.session.userId!,
       });
 
-      console.log(`[request-upload] doc=${document.id}, case=${caseId}, file=${fileName}, size=${fileSize}`);
+      uploadMetrics.presignedCount++;
+      const elapsed = Date.now() - startTime;
+      console.log(`[request-upload] doc=${document.id}, case=${caseId}, file=${fileName}, size=${fileSize}, elapsed=${elapsed}ms`);
 
       res.json({
         documentId: document.id,
@@ -5361,7 +5373,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storageKey,
       });
     } catch (error: any) {
-      console.error("[request-upload] Error:", error.message);
+      uploadMetrics.presignedFailCount++;
+      const elapsed = Date.now() - startTime;
+      console.error(`[request-upload] Error (${elapsed}ms):`, error.message);
 
       const isStorageError = error.message?.includes("sign") || error.message?.includes("401") ||
         error.message?.includes("storage") || error.message?.includes("bucket");
@@ -5377,7 +5391,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  const verifyFileExistsAsync = (documentId: string, storageKey: string) => {
+    setTimeout(async () => {
+      try {
+        const { bucketName, objectName } = buildStoragePath(storageKey);
+        const bucket = objectStorageClient.bucket(bucketName);
+        const gcsFile = bucket.file(objectName);
+        const [exists] = await gcsFile.exists();
+        if (!exists) {
+          console.error(`[verify-file] doc=${documentId} NOT FOUND in storage, marking failed`);
+          await storage.updateDocumentStatus(documentId, "failed");
+        } else {
+          console.log(`[verify-file] doc=${documentId} verified OK`);
+        }
+      } catch (err: any) {
+        console.warn(`[verify-file] doc=${documentId} check error (non-fatal): ${err.message}`);
+      }
+    }, 5000);
+  };
+
   app.post("/api/documents/complete-upload", async (req, res) => {
+    const startTime = Date.now();
     if (!req.session?.userId) {
       return res.status(401).json({ code: "UNAUTHORIZED", error: "인증되지 않은 사용자입니다" });
     }
@@ -5406,21 +5440,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (isPdfFile(document.fileType, document.fileName)) {
         await storage.updateDocumentStatus(documentId, "processing", checksum);
-        console.log(`[complete-upload] doc=${documentId} → processing (PDF async)`);
+        console.log(`[complete-upload] doc=${documentId} → processing (PDF async), elapsed=${Date.now() - startTime}ms`);
         processPdfInBackground(documentId, document.storageKey);
       } else {
         await storage.updateDocumentStatus(documentId, "ready", checksum);
-        console.log(`[complete-upload] doc=${documentId} → ready`);
+        const elapsed = Date.now() - startTime;
+        console.log(`[complete-upload] doc=${documentId} → ready, elapsed=${elapsed}ms`);
+        verifyFileExistsAsync(documentId, document.storageKey);
       }
 
       res.json({ success: true, documentId });
     } catch (error: any) {
-      console.error("[complete-upload] Error:", error.message);
+      const elapsed = Date.now() - startTime;
+      console.error(`[complete-upload] Error (${elapsed}ms):`, error.message);
       res.status(500).json({ code: "INTERNAL_ERROR", error: "업로드 완료 처리 중 오류가 발생했습니다" });
     }
   });
 
   app.post("/api/documents/fail-upload", async (req, res) => {
+    const startTime = Date.now();
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
     }
@@ -5444,11 +5482,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await storage.updateDocumentStatus(documentId, "failed");
-      console.log(`[fail-upload] Document ${documentId} → failed`);
+      const elapsed = Date.now() - startTime;
+      console.log(`[fail-upload] doc=${documentId} → failed, elapsed=${elapsed}ms`);
 
       res.json({ success: true });
-    } catch (error) {
-      console.error("[fail-upload] Error:", error);
+    } catch (error: any) {
+      const elapsed = Date.now() - startTime;
+      console.error(`[fail-upload] Error (${elapsed}ms):`, error?.message || error);
       res.status(500).json({ error: "업로드 실패 처리 중 오류가 발생했습니다" });
     }
   });
@@ -5516,7 +5556,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
             await storage.updateDocumentStatus(document.id, "ready");
 
-            console.log(`[multipart-upload] doc=${document.id} → Object Storage (${(file.size / 1024).toFixed(0)}KB)`);
+            uploadMetrics.multipartFallbackCount++;
+            console.log(`[multipart-upload] doc=${document.id} → Object Storage (${(file.size / 1024).toFixed(0)}KB) [metrics: multipart=${uploadMetrics.multipartFallbackCount}]`);
             return res.json({ success: true, documentId: document.id });
           } catch (gcsErr: any) {
             console.warn(`[multipart-upload] GCS failed: ${gcsErr.message}`);
@@ -5549,7 +5590,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             createdBy: req.session.userId,
           });
 
-          console.log(`[multipart-upload] doc=${document.id} → DB fallback (${(file.size / 1024).toFixed(0)}KB, dev only)`);
+          uploadMetrics.dbFallbackCount++;
+          console.log(`[multipart-upload] doc=${document.id} → DB fallback (${(file.size / 1024).toFixed(0)}KB, dev only) [metrics: db=${uploadMetrics.dbFallbackCount}]`);
           return res.json({ success: true, documentId: document.id });
         }
 
@@ -5745,6 +5787,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           res.set("Content-Disposition", `inline; filename="${encodeURIComponent(document.fileName)}"`);
           return res.send(contents);
         } catch (gcsError: any) {
+          const isNotFound = gcsError.code === 404 || gcsError.message?.includes("No such object") || gcsError.message?.includes("not found");
+          if (isNotFound && (document.status === "ready" || document.status === "processing")) {
+            console.error(`[image] doc=${id} file NOT FOUND in storage, marking failed`);
+            await storage.updateDocumentStatus(id, "failed");
+            return res.status(410).json({ code: "FILE_GONE", error: "파일이 저장소에 존재하지 않습니다" });
+          }
+
           console.warn(`[image] GCS download failed for ${id}, trying signed URL fallback: ${gcsError.message}`);
           try {
             const fullPath = `${privateObjectDir}/${document.storageKey}`;
