@@ -101,9 +101,9 @@ pgStore.get = function (sid: string, callback: (err: any, session?: session.Sess
 
 pgStore.set = function (sid: string, sessionData: session.SessionData, callback?: (err?: any) => void) {
   SESSION_CACHE.set(sid, { data: sessionData, ts: Date.now() });
+  if (callback) callback();
   originalSet(sid, sessionData, (err: any) => {
     if (err) console.error("[SESSION] PG set error:", err);
-    if (callback) callback(err);
   });
 };
 
