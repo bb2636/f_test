@@ -6,3 +6,9 @@ id = "izfjuBcjgF9LqUAnIXcZb"
 uri = "file://docs/encryption-audit.md"
 type = "text"
 title = "암호화/해시/마스킹 감사 문서"
+
+[[outputs]]
+id = "nr-4Ry_4mHBVXeIZ4zSlu"
+uri = "file://docs/encryption-audit.txt"
+type = "text"
+title = "암호화/해시/마스킹 감사 문서"

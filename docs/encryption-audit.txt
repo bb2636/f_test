@@ -1,0 +1,273 @@
+================================================================================
+  누수 사고 관리 시스템 — 암호화 / 해시 / 마스킹 감사 문서
+  (Encryption & Data Protection Audit)
+================================================================================
+  작성일 : 2026-04-02
+  시스템 : 누수 사고 관리 시스템 (FLOXN Co., Ltd.)
+  스택   : React + Vite (프론트) / Express.js (백엔드) / PostgreSQL Neon (DB)
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+1. 비밀번호 (Password)
+────────────────────────────────────────────────────────────────────────────────
+
+  대상            비밀번호 (users.password)
+  방식            bcrypt 해시 (salt rounds = 10)
+  적용 위치       server/storage.ts — createUser(), updatePassword(), seedTestUsers()
+  실제 암호화     ✅ 예 (단방향 해시, 복호화 불가)
+  DB 저장 형태    "$2b$10$..." (bcrypt 해시 문자열)
+  검증 방식       bcrypt.compare() — server/storage.ts verifyPassword()
+  API 응답 제외   ✅ 예 — routes.ts에서 { password, ...rest } 구조분해로 제거
+  비고            - 모든 사용자 생성/수정 시 bcrypt.hash(password, 10)
+                  - API 응답에 password 필드 미포함 (라우트별 수동 제거)
+
+
+────────────────────────────────────────────────────────────────────────────────
+2. 개인정보 PII 암호화 — users 테이블
+────────────────────────────────────────────────────────────────────────────────
+
+  ┌─────────────────┬─────────────────┬─────────────────┬──────────┬──────────┐
+  │ 대상 (평문컬럼)  │ 암호화 컬럼      │ 해시 컬럼        │ 실제암호화│ 비고     │
+  ├─────────────────┼─────────────────┼─────────────────┼──────────┼──────────┤
+  │ email           │ email_enc       │ email_hash      │ ✅ 예    │ SHA-256  │
+  │ phone           │ phone_enc       │ phone_hash      │ ✅ 예    │ SHA-256  │
+  │ address         │ address_enc     │ —               │ ✅ 예    │          │
+  │ address_detail  │ address_detail_enc │ —            │ ✅ 예    │          │
+  └─────────────────┴─────────────────┴─────────────────┴──────────┴──────────┘
+
+  방식            AES-256-GCM 대칭키 암호화
+  저장 형태       {IV(base64)}:{AuthTag(base64)}:{Ciphertext(base64)}
+  적용 위치       server/pii-service.ts — encryptUserFields() / decryptUserFields()
+                  server/storage.ts — createUser(), updateUser(), getUser(), getAllUsers()
+  해시 용도       이메일/전화번호 중복 체크 (정규화 후 SHA-256)
+  환경변수        PII_ENCRYPTION_KEY (64자 hex = 32바이트)
+  비활성화 가능   ✅ 예 — PII_ENCRYPTION_KEY 미설정 시 평문 모드
+  API 응답 제외   ✅ 예 — _enc/_hash 컬럼은 stripPiiFromResponse()에서 재귀 제거
+  비고            - 과도기: 평문 컬럼 + 암호화 컬럼 병행 유지
+                  - 읽기: _enc 복호화 우선, 없으면 평문 fallback
+                  - 쓰기: 평문 + _enc + _hash 동시 저장
+                  - 값이 null/빈값이면 _enc/_hash도 null로 동기화
+
+
+────────────────────────────────────────────────────────────────────────────────
+3. 개인정보 PII 암호화 — cases 테이블
+────────────────────────────────────────────────────────────────────────────────
+
+  ┌──────────────────────────┬──────────────────────────────┬──────────────────────────┬──────────┐
+  │ 대상 (평문 컬럼)          │ 암호화 컬럼                    │ 해시 컬럼                  │ 실제암호화│
+  ├──────────────────────────┼──────────────────────────────┼──────────────────────────┼──────────┤
+  │ client_phone             │ client_phone_enc             │ client_phone_hash        │ ✅ 예    │
+  │ client_contact           │ client_contact_enc           │ —                        │ ✅ 예    │
+  │ client_address           │ client_address_enc           │ —                        │ ✅ 예    │
+  │ assessor_contact         │ assessor_contact_enc         │ —                        │ ✅ 예    │
+  │ assessor_email           │ assessor_email_enc           │ assessor_email_hash      │ ✅ 예    │
+  │ investigator_contact     │ investigator_contact_enc     │ —                        │ ✅ 예    │
+  │ investigator_email       │ investigator_email_enc       │ investigator_email_hash  │ ✅ 예    │
+  │ policy_holder_id_number  │ policy_holder_id_number_enc  │ —                        │ ✅ 예    │
+  │ policy_holder_address    │ policy_holder_address_enc    │ —                        │ ✅ 예    │
+  │ insured_id_number        │ insured_id_number_enc        │ —                        │ ✅ 예    │
+  │ insured_contact          │ insured_contact_enc          │ —                        │ ✅ 예    │
+  │ insured_address          │ insured_address_enc          │ —                        │ ✅ 예    │
+  │ insured_address_detail   │ insured_address_detail_enc   │ —                        │ ✅ 예    │
+  │ victim_contact           │ victim_contact_enc           │ —                        │ ✅ 예    │
+  │ victim_address           │ victim_address_enc           │ —                        │ ✅ 예    │
+  │ victim_address_detail    │ victim_address_detail_enc    │ —                        │ ✅ 예    │
+  │ assigned_partner_contact │ assigned_partner_contact_enc │ —                        │ ✅ 예    │
+  └──────────────────────────┴──────────────────────────────┴──────────────────────────┴──────────┘
+
+  방식            AES-256-GCM 대칭키 암호화
+  적용 위치       server/pii-service.ts — encryptCaseFields() / decryptCaseFields()
+                  server/storage.ts — createCase(), updateCase(), getCaseById(),
+                                      getAllCases(), getAssignedCasesForUser()
+  비고            - 주민등록번호(id_number)는 해시 없이 암호화만 적용
+                  - 협력사 연락처 자동채우기(getCaseById)도 암호화 경유
+
+
+────────────────────────────────────────────────────────────────────────────────
+4. 세션 관리 (Session)
+────────────────────────────────────────────────────────────────────────────────
+
+  대상            사용자 인증 세션
+  방식            express-session + connect-pg-simple (PostgreSQL 세션 저장소)
+  적용 위치       server/index.ts
+  세션 서명       ✅ 예 — SESSION_SECRET 환경변수로 쿠키 서명
+                  (개발 환경: 하드코딩 기본값, 운영 환경: 필수)
+  쿠키 보안       - 운영: secure: true, httpOnly: true, sameSite: "strict"
+                  - 개발: secure: false (HTTP 허용)
+  저장 위치       PostgreSQL "session" 테이블 (서버측)
+  만료            maxAge: 24시간 (86,400,000ms)
+  추가 보호       - 중복 로그인 방지 (activeUserSessions Map)
+                  - 세션 캐시 (60초 TTL)
+                  - 세션 touch 스로틀링 (5분 간격)
+                  - 자동 세션 정리 (pruneSessionInterval: 15분)
+  비고            - 쿠키에는 세션 ID만 저장 (connect.sid)
+                  - 세션 데이터(userId, role 등)는 서버측 DB에만 존재
+
+
+────────────────────────────────────────────────────────────────────────────────
+5. Solapi SMS API 인증
+────────────────────────────────────────────────────────────────────────────────
+
+  대상            SMS 발송 API 요청 인증
+  방식            HMAC-SHA256 서명
+  적용 위치       server/routes.ts — createSolapiAuthHeader()
+  실제 암호화     ✅ 예 (API 요청 서명)
+  동작            HMAC-SHA256(apiSecret, date + salt) → Authorization 헤더 생성
+  환경변수        SOLAPI_API_KEY, SOLAPI_API_SECRET, SOLAPI_SENDER
+  비고            - 매 요청마다 새로운 salt(32바이트 랜덤) 생성
+                  - ISO 날짜 + salt를 HMAC 서명
+
+
+────────────────────────────────────────────────────────────────────────────────
+6. SMTP 이메일 인증
+────────────────────────────────────────────────────────────────────────────────
+
+  대상            이메일 발송 SMTP 인증 정보
+  방식            환경변수 참조 (SMTP_PASSWORD)
+  적용 위치       server/hiworks-email.ts — initializeEmailTransporter()
+  실제 암호화     ⚠️ 전송 시 TLS (smtps.hiworks.com:465, secure: true)
+  비고            - SMTP 비밀번호는 환경변수로 관리 (코드에 하드코딩 없음)
+                  - TLS/SSL로 이메일 서버 연결 암호화
+
+
+────────────────────────────────────────────────────────────────────────────────
+7. Object Storage (파일 업로드/다운로드)
+────────────────────────────────────────────────────────────────────────────────
+
+  대상            파일 업로드/다운로드 URL
+  방식            Presigned URL (서명된 임시 URL)
+  적용 위치       server/replit_integrations/object_storage/objectStorage.ts
+                  — signObjectURL()
+  실제 암호화     ✅ 예 (URL 서명 — GCS HMAC 기반)
+  업로드 TTL      15분 (900초)
+  다운로드 TTL    60분 (3600초)
+  비고            - 클라이언트가 직접 Object Storage에 PUT/GET
+                  - 서버는 서명된 URL만 발급, 파일 데이터 미경유
+                  - 파일 자체는 암호화되지 않음 (저장소 레벨 암호화에 의존)
+
+
+────────────────────────────────────────────────────────────────────────────────
+8. API 응답 보호 (데이터 제거/필터링)
+────────────────────────────────────────────────────────────────────────────────
+
+  대상            API JSON 응답에서 민감 데이터 제거
+  방식            응답 미들웨어 + 구조분해 할당
+  적용 위치       server/routes.ts — stripPiiFromResponse(), res.json 오버라이드
+  항목:
+
+  ┌───────────────────────┬───────────────────────────────────────────────────┐
+  │ 제거 대상              │ 처리 방식                                         │
+  ├───────────────────────┼───────────────────────────────────────────────────┤
+  │ password              │ 라우트별 { password, ...rest } 수동 제거           │
+  │ *Enc (암호화 컬럼)     │ res.json 미들웨어 — 재귀적 자동 제거               │
+  │ *Hash (해시 컬럼)      │ res.json 미들웨어 — 재귀적 자동 제거               │
+  │ attachments (사용자)   │ 사용자 목록 조회 시 제거 (데이터 크기 절감)          │
+  └───────────────────────┴───────────────────────────────────────────────────┘
+
+  비고            - _enc/_hash 제거는 모든 중첩 깊이에 대해 재귀적 적용
+                  - password 제거는 라우트별 수동 처리 (누락 가능성 존재)
+
+
+────────────────────────────────────────────────────────────────────────────────
+9. 데이터베이스 연결
+────────────────────────────────────────────────────────────────────────────────
+
+  대상            PostgreSQL (Neon) 연결
+  방식            TLS 암호화 연결 (Neon 기본값)
+  적용 위치       server/db.ts — Pool 생성
+  실제 암호화     ✅ 예 (전송 중 암호화)
+  환경변수        DEV_DATABASE_URL (개발), PROD_DATABASE_URL (운영)
+  비고            - Neon PostgreSQL은 기본적으로 TLS 강제
+                  - 연결 문자열에 SSL 파라미터 포함
+                  - WebSocket 사용 (@neondatabase/serverless)
+
+
+────────────────────────────────────────────────────────────────────────────────
+10. PII 백필 스크립트
+────────────────────────────────────────────────────────────────────────────────
+
+  대상            기존 평문 데이터 → 암호화 마이그레이션
+  방식            서버 시작 시 자동 실행
+  적용 위치       server/backfill-pii.ts — runPiiBackfill()
+                  server/index.ts — 서버 시작 후 호출
+  동작            - _enc 컬럼이 NULL인 레코드만 처리 (멱등성 보장)
+                  - 평문 값을 읽어 AES-256-GCM 암호화 후 _enc 컬럼 저장
+                  - 해시 대상 필드는 SHA-256 해시도 함께 생성
+  비고            - PII_ENCRYPTION_KEY 미설정 시 실행되지 않음
+                  - Users 42명 + Cases 40건 백필 완료 (약 35초)
+
+
+────────────────────────────────────────────────────────────────────────────────
+11. 프론트엔드 보호
+────────────────────────────────────────────────────────────────────────────────
+
+  대상            비밀번호 입력 필드
+  방식            input type="password" (UI 마스킹)
+  적용 위치       client/src/pages/login.tsx
+                  client/src/pages/mobile-login.tsx
+                  client/src/components/force-change-password-modal.tsx
+                  client/src/components/my-page-dialog.tsx
+  실제 암호화     ❌ 아니오 (UI 마스킹만, 전송 시 HTTPS에 의존)
+  비고            - 비밀번호 표시/숨기기 토글 기능 있음 (모바일, 비밀번호 변경)
+                  - 로그인 페이지는 항상 숨김 처리
+
+
+────────────────────────────────────────────────────────────────────────────────
+12. 마스킹 vs 실제 암호화 구분 요약
+────────────────────────────────────────────────────────────────────────────────
+
+  ┌─────────────────────────────┬──────────────┬──────────────┬──────────────┐
+  │ 항목                        │ UI 마스킹     │ 전송 암호화   │ DB 암호화    │
+  ├─────────────────────────────┼──────────────┼──────────────┼──────────────┤
+  │ 비밀번호                     │ ✅ (input)   │ ✅ (HTTPS)   │ ✅ (bcrypt)  │
+  │ 이메일                       │ ❌           │ ✅ (HTTPS)   │ ✅ (AES-GCM) │
+  │ 전화번호                     │ ❌           │ ✅ (HTTPS)   │ ✅ (AES-GCM) │
+  │ 주소/상세주소                 │ ❌           │ ✅ (HTTPS)   │ ✅ (AES-GCM) │
+  │ 주민등록번호                  │ ❌           │ ✅ (HTTPS)   │ ✅ (AES-GCM) │
+  │ 세션 ID                     │ —            │ ✅ (서명쿠키) │ ✅ (PG 저장) │
+  │ SMTP 비밀번호                │ —            │ ✅ (TLS)     │ — (환경변수) │
+  │ Solapi API Secret           │ —            │ ✅ (HMAC)    │ — (환경변수) │
+  │ 업로드 파일                  │ —            │ ✅ (HTTPS)   │ ❌ (평문저장) │
+  │ PII 암호화 키                │ —            │ —            │ — (환경변수) │
+  └─────────────────────────────┴──────────────┴──────────────┴──────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+13. 환경변수 (보안 관련)
+────────────────────────────────────────────────────────────────────────────────
+
+  ┌──────────────────────────┬──────────────────────────────────────────────┐
+  │ 환경변수                  │ 용도                                        │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ PII_ENCRYPTION_KEY       │ AES-256-GCM 암호화 키 (64자 hex)             │
+  │ SESSION_SECRET           │ express-session 쿠키 서명 키                  │
+  │ DEV_DATABASE_URL         │ 개발 DB 연결 문자열 (TLS 포함)                │
+  │ PROD_DATABASE_URL        │ 운영 DB 연결 문자열 (TLS 포함)                │
+  │ SMTP_PASSWORD            │ 이메일 발송 SMTP 비밀번호                     │
+  │ SOLAPI_API_KEY           │ SMS API 인증 키                              │
+  │ SOLAPI_API_SECRET        │ SMS API HMAC 서명용 시크릿                    │
+  │ SOLAPI_SENDER            │ SMS 발신번호                                 │
+  └──────────────────────────┴──────────────────────────────────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+14. 관련 파일 목록
+────────────────────────────────────────────────────────────────────────────────
+
+  server/crypto.ts              AES-256-GCM 암/복호화, SHA-256 해시 함수
+  server/pii-service.ts         사용자/케이스 PII 암호화/복호화/스트립 서비스
+  server/backfill-pii.ts        기존 평문 → 암호화 백필 스크립트
+  server/storage.ts             DB CRUD (bcrypt 해시 + PII 암복호화 통합)
+  server/routes.ts              API 응답 민감정보 제거, Solapi HMAC, 세션 처리
+  server/index.ts               세션 설정, PII 백필 호출
+  server/session-store.ts       세션 저장소 설정
+  server/db.ts                  DB 연결 (TLS)
+  server/hiworks-email.ts       SMTP TLS 이메일 발송
+  shared/schema.ts              DB 스키마 (_enc/_hash 컬럼 정의)
+  docs/pii-encryption-guide.md  PII 암호화 상세 구현 가이드 (한국어)
+
+
+================================================================================
+  문서 끝
+================================================================================
