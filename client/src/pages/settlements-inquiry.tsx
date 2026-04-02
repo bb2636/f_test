@@ -1516,6 +1516,23 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
           </table>
         </div>
 
+        {/* Pagination */}
+        <div
+          className="flex items-center justify-center p-6"
+          style={{
+            borderTop: "1px solid rgba(12, 12, 12, 0.05)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "Pretendard",
+              fontSize: "14px",
+              color: "rgba(12, 12, 12, 0.5)",
+            }}
+          >
+            합계
+          </span>
+        </div>
       </div>
         );
       })()}
