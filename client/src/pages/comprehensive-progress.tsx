@@ -1590,11 +1590,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 160px"
-                      : "40px 110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 160px")
+                      ? "40px 120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
+                      : "40px 120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px")
                     : (user?.role === "협력사"
-                      ? "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 160px"
-                      : "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 160px"),
+                      ? "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
+                      : "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px"),
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1646,10 +1646,10 @@ export default function ComprehensiveProgress() {
                 { label: "진행상태", textAlign: "center" as const },
                 { label: "특이사항" },
                 ...(user?.role === "협력사" ? [{ label: "수행업무" }] : []),
-                { label: "자세히 보기", textAlign: "center" as const, isLast: true },
+                { label: "", textAlign: "center" as const, isLast: true },
               ].map((col, idx) => (
                 <div
-                  key={col.label}
+                  key={col.label || `col-${idx}`}
                   style={{
                     fontFamily: "Pretendard",
                     fontWeight: 600,
@@ -1776,11 +1776,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 160px"
-                            : "40px 110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 160px")
+                            ? "40px 120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
+                            : "40px 120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px")
                           : (user?.role === "협력사"
-                            ? "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 160px"
-                            : "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 160px"),
+                            ? "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
+                            : "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px"),
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -2292,24 +2292,24 @@ export default function ComprehensiveProgress() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setIsReceptionEditMode(false); // 새 케이스 열 때 수정모드 리셋
+                              setIsReceptionEditMode(false);
                               setSelectedCaseId(caseItem.id);
                             }}
                             style={{
-                              padding: "6px 12px",
+                              padding: "6px",
                               background: "#FFFFFF",
                               border: "1px solid rgba(12, 12, 12, 0.2)",
                               borderRadius: "6px",
-                              fontFamily: "Pretendard",
-                              fontSize: "12px",
-                              fontWeight: 500,
-                              color: "rgba(12, 12, 12, 0.7)",
                               cursor: "pointer",
-                              whiteSpace: "nowrap",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
+                            title="자세히 보기"
+                            aria-label="자세히 보기"
                             data-testid={`button-detail-${caseItem.id}`}
                           >
-                            자세히 보기
+                            <Search style={{ width: "14px", height: "14px", color: "rgba(12, 12, 12, 0.5)" }} />
                           </button>
                           {canShowClaimButton(caseItem, cases) &&
                             user?.role !== "협력사" &&
