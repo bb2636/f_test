@@ -1937,21 +1937,15 @@ export default function ComprehensiveProgress() {
                               .join(" ") || "-";
                         }
                       }
-                      const fontSize =
-                        addressText.length > 40 ? "11px" : "13px";
                       return (
                         <div
                           style={{
                             fontFamily: "Pretendard",
-                            fontSize: fontSize,
+                            fontSize: "13px",
                             color: "rgba(12, 12, 12, 0.8)",
                             lineHeight: "1.4",
-                            wordBreak: "keep-all",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-        
+                            wordBreak: "break-all",
+                            whiteSpace: "normal",
                             paddingRight: "4px",
                             paddingLeft: "4px",
                             paddingTop: "14px",
