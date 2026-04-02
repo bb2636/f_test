@@ -4904,9 +4904,11 @@ export class DbStorage implements IStorage {
     const safeFieldData = { ...fieldData };
     delete (safeFieldData as any).receptionDate;
 
+    const mergedData = { ...safeFieldData, ...additionalUpdates, updatedAt: getKSTTimestamp() };
+    const encryptedData = encryptCaseFields(mergedData as Record<string, any>);
     const result = await db
       .update(cases)
-      .set({ ...safeFieldData, ...additionalUpdates, updatedAt: getKSTTimestamp() })
+      .set(encryptedData)
       .where(eq(cases.id, caseId))
       .returning();
 
@@ -6583,9 +6585,10 @@ export class DbStorage implements IStorage {
     let updatedCount = 0;
     for (const relatedCase of relatedCases) {
       try {
+        const encryptedFieldData = encryptCaseFields(safeFieldData as Record<string, any>);
         await db
           .update(cases)
-          .set(safeFieldData)
+          .set(encryptedFieldData)
           .where(eq(cases.id, relatedCase.id));
         updatedCount++;
         console.log(
@@ -7031,9 +7034,10 @@ export class DbStorage implements IStorage {
           }
         }
         
+        const encryptedUpdateData = encryptCaseFields(updateData as Record<string, any>);
         await db
           .update(cases)
-          .set(updateData)
+          .set(encryptedUpdateData)
           .where(eq(cases.id, relatedCase.id));
         syncedCount++;
       } catch (error) {
@@ -7128,9 +7132,10 @@ export class DbStorage implements IStorage {
     }
 
     try {
+      const encryptedData = encryptCaseFields(filteredData as Record<string, any>);
       await db
         .update(cases)
-        .set(filteredData)
+        .set(encryptedData)
         .where(eq(cases.id, newCaseId));
       
       console.log(

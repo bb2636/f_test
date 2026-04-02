@@ -10,10 +10,14 @@ function getEncryptionKey(): Buffer {
   if (!keyHex) {
     throw new Error("PII_ENCRYPTION_KEY environment variable is not set. Must be a 64-char hex string (32 bytes).");
   }
-  if (keyHex.length !== 64) {
-    throw new Error(`PII_ENCRYPTION_KEY must be 64 hex characters (32 bytes). Got ${keyHex.length} characters.`);
+  if (keyHex.length !== 64 || !/^[0-9a-fA-F]{64}$/.test(keyHex)) {
+    throw new Error(`PII_ENCRYPTION_KEY must be exactly 64 hex characters (0-9, a-f). Got ${keyHex.length} characters.`);
   }
-  return Buffer.from(keyHex, "hex");
+  const buf = Buffer.from(keyHex, "hex");
+  if (buf.length !== 32) {
+    throw new Error(`PII_ENCRYPTION_KEY decoded to ${buf.length} bytes, expected 32.`);
+  }
+  return buf;
 }
 
 export function encryptPii(plaintext: string | null | undefined): string | null {
@@ -55,7 +59,7 @@ export function decryptPii(encryptedValue: string | null | undefined): string | 
     decrypted += decipher.final("utf8");
     return decrypted;
   } catch {
-    return encryptedValue;
+    return null;
   }
 }
 
