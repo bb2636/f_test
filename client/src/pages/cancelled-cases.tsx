@@ -766,14 +766,14 @@ export default function CancelledCases() {
               const latestNote = (() => {
                 try {
                   const history = (caseItem as any).specialNotesHistory;
-                  if (!history) return (caseItem as any).specialNotes || "-";
+                  if (!history) return (caseItem as any).specialNotes || "";
                   const parsed = JSON.parse(history);
                   if (Array.isArray(parsed) && parsed.length > 0) {
-                    return parsed[parsed.length - 1].content || "-";
+                    return parsed[parsed.length - 1].content || "";
                   }
-                  return (caseItem as any).specialNotes || "-";
+                  return (caseItem as any).specialNotes || "";
                 } catch {
-                  return (caseItem as any).specialNotes || "-";
+                  return (caseItem as any).specialNotes || "";
                 }
               })();
 
