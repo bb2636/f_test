@@ -676,7 +676,7 @@ export default function CancelledCases() {
               { label: "경과일", textAlign: "center" as const },
               { label: "진행상태", textAlign: "center" as const },
               { label: "취소일자", textAlign: "center" as const },
-              { label: "특이사항" },
+              { label: "메모" },
               { label: "", textAlign: "center" as const },
             ].map((col, idx) => (
               <div
