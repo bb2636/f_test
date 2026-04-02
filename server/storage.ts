@@ -1813,8 +1813,15 @@ export class MemStorage implements IStorage {
     const dateUpdates: Partial<Case> = {};
 
     const PRE_CLAIM_STATUSES = ["접수완료", "현장방문", "현장정보입력", "현장정보제출", "검토중", "반려", "1차승인", "복구요청(2차승인)", "직접복구", "청구자료제출(복구)", "선견적요청", "출동비청구(선견적)"];
-    if (PRE_CLAIM_STATUSES.includes(normalizedStatus) && caseItem.claimDate) {
+    const hadClaimData = caseItem.claimDate || caseItem.invoiceDamagePreventionAmount || caseItem.invoicePropertyRepairAmount || caseItem.fieldDispatchInvoiceAmount || caseItem.invoiceRemarks || caseItem.fieldDispatchInvoiceRemarks || caseItem.invoicePdfGenerated;
+    if (PRE_CLAIM_STATUSES.includes(normalizedStatus) && hadClaimData) {
       dateUpdates.claimDate = null as any;
+      dateUpdates.invoiceDamagePreventionAmount = null as any;
+      dateUpdates.invoicePropertyRepairAmount = null as any;
+      dateUpdates.invoiceRemarks = null as any;
+      dateUpdates.fieldDispatchInvoiceAmount = null as any;
+      dateUpdates.fieldDispatchInvoiceRemarks = null as any;
+      dateUpdates.invoicePdfGenerated = null as any;
     }
 
     switch (normalizedStatus) {
@@ -4527,8 +4534,15 @@ export class DbStorage implements IStorage {
     const dateUpdates: Partial<typeof cases.$inferInsert> = {};
 
     const PRE_CLAIM_STATUSES = ["접수완료", "현장방문", "현장정보입력", "현장정보제출", "검토중", "반려", "1차승인", "복구요청(2차승인)", "직접복구", "청구자료제출(복구)", "선견적요청", "출동비청구(선견적)"];
-    if (PRE_CLAIM_STATUSES.includes(normalizedStatus) && existingCase.claimDate) {
+    const hadClaimData = existingCase.claimDate || existingCase.invoiceDamagePreventionAmount || existingCase.invoicePropertyRepairAmount || existingCase.fieldDispatchInvoiceAmount || existingCase.invoiceRemarks || existingCase.fieldDispatchInvoiceRemarks || existingCase.invoicePdfGenerated;
+    if (PRE_CLAIM_STATUSES.includes(normalizedStatus) && hadClaimData) {
       dateUpdates.claimDate = null as any;
+      dateUpdates.invoiceDamagePreventionAmount = null as any;
+      dateUpdates.invoicePropertyRepairAmount = null as any;
+      dateUpdates.invoiceRemarks = null as any;
+      dateUpdates.fieldDispatchInvoiceAmount = null as any;
+      dateUpdates.fieldDispatchInvoiceRemarks = null as any;
+      dateUpdates.invoicePdfGenerated = null as any;
     }
 
     switch (normalizedStatus) {
