@@ -153,14 +153,20 @@ function solapiHttpsRequest({
   });
 }
 
+function isPlainObject(val: any): boolean {
+  if (!val || typeof val !== "object") return false;
+  const proto = Object.getPrototypeOf(val);
+  return proto === Object.prototype || proto === null;
+}
+
 function stripPiiFromResponse(data: any): any {
   if (!data) return data;
   if (Array.isArray(data)) return data.map(stripPiiFromResponse);
-  if (typeof data === "object" && data !== null) {
+  if (isPlainObject(data)) {
     const stripped = stripEncryptedColumns(data);
     for (const key of Object.keys(stripped)) {
       const val = stripped[key];
-      if (val && typeof val === "object") {
+      if (Array.isArray(val) || isPlainObject(val)) {
         stripped[key] = stripPiiFromResponse(val);
       }
     }
