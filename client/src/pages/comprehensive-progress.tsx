@@ -2199,6 +2199,18 @@ export default function ComprehensiveProgress() {
                             display: "flex",
                             gap: "8px",
                             alignItems: "center",
+                            justifyContent: canShowClaimButton(caseItem, cases) &&
+                              user?.role !== "협력사" &&
+                              user?.role !== "심사사" &&
+                              user?.role !== "조사사"
+                              ? "center"
+                              : "flex-start",
+                            paddingLeft: canShowClaimButton(caseItem, cases) &&
+                              user?.role !== "협력사" &&
+                              user?.role !== "심사사" &&
+                              user?.role !== "조사사"
+                              ? "0"
+                              : "8px",
                           }}
                         >
                           <button
