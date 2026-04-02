@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { storage } from "./storage";
-import { activeUserSessions, sessionStore } from "./session-store";
+import { setCurrentSession, getCurrentSessionId, clearCurrentSession, destroyPgSession } from "./session-store";
+import { getSessionPool } from "./session-pool";
 import { stripEncryptedColumns } from "./pii-service";
 import {
   loginSchema,
@@ -159,12 +160,18 @@ function isPlainObject(val: any): boolean {
   return proto === Object.prototype || proto === null;
 }
 
+const INTERNAL_FIELDS = new Set(["currentSessionId", "current_session_id"]);
+
 function stripPiiFromResponse(data: any): any {
   if (!data) return data;
   if (Array.isArray(data)) return data.map(stripPiiFromResponse);
   if (isPlainObject(data)) {
     const stripped = stripEncryptedColumns(data);
     for (const key of Object.keys(stripped)) {
+      if (INTERNAL_FIELDS.has(key)) {
+        delete stripped[key];
+        continue;
+      }
       const val = stripped[key];
       if (Array.isArray(val) || isPlainObject(val)) {
         stripped[key] = stripPiiFromResponse(val);
@@ -183,6 +190,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     return originalJson.call(this, body);
   };
+
+  const PUBLIC_PATHS = new Set([
+    "/api/login",
+    "/api/logout",
+    "/api/check-session",
+  ]);
+
+  app.use("/api", async (req, res, next) => {
+    const fullPath = "/api" + req.path;
+    if (PUBLIC_PATHS.has(fullPath)) {
+      return next();
+    }
+
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+
+    try {
+      const dbSessionId = await getCurrentSessionId(req.session.userId);
+
+      if (dbSessionId && dbSessionId !== req.sessionID) {
+        console.log("[AUTH] Session invalidated - newer login exists", {
+          userId: req.session.userId,
+          currentSessionId: req.sessionID,
+          activeSessionId: dbSessionId,
+        });
+        req.session.destroy(() => {});
+        return res.status(401).json({
+          error: "다른 기기에서 로그인되어 현재 세션이 종료되었습니다",
+          code: "DUPLICATE_LOGIN",
+        });
+      }
+
+      if (!dbSessionId) {
+        console.log("[AUTH] No active session in DB for user", {
+          userId: req.session.userId,
+          sessionId: req.sessionID,
+        });
+        req.session.destroy(() => {});
+        return res.status(401).json({ error: "세션이 만료되었습니다. 다시 로그인해 주세요" });
+      }
+    } catch (err: any) {
+      console.error("[AUTH] Session validation error:", err.message);
+      return res.status(503).json({ error: "세션 검증 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요" });
+    }
+
+    next();
+  });
 
   registerObjectStorageRoutes(app);
 
@@ -217,18 +272,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (req.session) {
-        // 중복 로그인 방지: 기존 세션이 있으면 파괴
-        const existingSessionId = activeUserSessions.get(user.id);
+        const existingSessionId = await getCurrentSessionId(user.id);
         if (existingSessionId && existingSessionId !== req.sessionID) {
-          // activeUserSessions에서 먼저 제거
-          activeUserSessions.delete(user.id);
-          sessionStore.destroy(existingSessionId, (err) => {
-            if (err) {
-              console.error("[LOGIN] Failed to destroy existing session:", err);
-            } else {
-              console.log("[LOGIN] Destroyed existing session for userId:", user.id, "sessionId:", existingSessionId);
-            }
-          });
+          await destroyPgSession(getSessionPool(), existingSessionId);
+          console.log("[LOGIN] Destroyed existing PG session for userId:", user.id, "old sessionId:", existingSessionId);
         }
 
         req.session.userId = user.id;
@@ -252,17 +299,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Force session save and then respond
-        req.session.save((err) => {
+        req.session.save(async (err) => {
           if (err) {
             console.error("[LOGIN] Session save error:", err);
             return res
               .status(500)
               .json({ error: "세션 저장 중 오류가 발생했습니다" });
           }
-          // 새 세션ID 등록
-          activeUserSessions.set(user.id, req.sessionID);
+          try {
+            await setCurrentSession(user.id, req.sessionID);
+          } catch (dbErr: any) {
+            console.error("[LOGIN] Failed to set current_session_id:", dbErr.message);
+            return res.status(500).json({ error: "로그인 처리 중 오류가 발생했습니다" });
+          }
           console.log(
-            "[LOGIN] Session saved successfully, sessionId:",
+            "[LOGIN] Session saved + current_session_id set, sessionId:",
             req.sessionID,
           );
           const { password, ...userWithoutPassword } = user;
@@ -290,6 +341,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/logout", async (req, res) => {
     if (req.session) {
       const userId = req.session.userId;
+      const currentSid = req.sessionID;
+      if (userId) {
+        const dbSessionId = await getCurrentSessionId(userId);
+        if (dbSessionId === currentSid) {
+          await clearCurrentSession(userId);
+        }
+      }
       req.session.destroy((err) => {
         if (err) {
           console.error("Logout error:", err);
@@ -297,7 +355,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .status(500)
             .json({ error: "로그아웃 중 오류가 발생했습니다" });
         }
-        if (userId) activeUserSessions.delete(userId);
         res.clearCookie("connect.sid");
         res.json({ success: true });
       });
@@ -396,17 +453,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check session endpoint
   app.get("/api/check-session", async (req, res) => {
     if (req.session?.userId) {
-      // 중복 로그인 방지: activeUserSessions에서 현재 세션이 활성화된 세션인지 확인
-      const activeSessionId = activeUserSessions.get(req.session.userId);
-      if (activeSessionId && activeSessionId !== req.sessionID) {
-        // 다른 세션이 활성화되어 있으면 현재 세션 무효화
-        console.log("[CHECK-SESSION] Session invalidated - another session is active", {
+      const dbSessionId = await getCurrentSessionId(req.session.userId);
+      if (dbSessionId && dbSessionId !== req.sessionID) {
+        console.log("[CHECK-SESSION] Session invalidated - newer login exists", {
           userId: req.session.userId,
           currentSessionId: req.sessionID,
-          activeSessionId: activeSessionId,
+          activeSessionId: dbSessionId,
         });
         req.session.destroy(() => {});
-        return res.json({ authenticated: false });
+        return res.json({ authenticated: false, reason: "DUPLICATE_LOGIN" });
       }
       
       const user = await storage.getUser(req.session.userId);

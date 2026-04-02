@@ -35,6 +35,8 @@ export const users = pgTable("users", {
   isSuperAdmin: boolean("is_super_admin").notNull().default(false),
   status: text("status").notNull().default("active"), // "active" | "deleted"
   mustChangePassword: boolean("must_change_password").notNull().default(true), // 최초 로그인 시 비밀번호 변경 필요 여부
+  currentSessionId: text("current_session_id"),
+  lastLoginAt: text("last_login_at"),
   createdAt: text("created_at").notNull(),
 });
 

@@ -48,9 +48,12 @@ export function ProtectedRoute({ category, item, children }: ProtectedRouteProps
         if (!data.authenticated) {
           isRedirectingRef.current = true;
           queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+          const isDuplicate = data.reason === "DUPLICATE_LOGIN";
           toast({
-            title: "자동 로그아웃",
-            description: "다른 기기에서 로그인되어 자동으로 로그아웃됩니다.",
+            title: isDuplicate ? "중복 로그인 감지" : "자동 로그아웃",
+            description: isDuplicate
+              ? "다른 기기에서 로그인되어 현재 세션이 종료되었습니다."
+              : "세션이 만료되어 자동으로 로그아웃됩니다.",
             variant: "destructive",
           });
           setTimeout(() => {

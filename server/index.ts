@@ -7,11 +7,8 @@ import { storage, warmUpUsersCache, warmUpCasesCache } from "./storage";
 import { initializeEmailTransporter } from "./hiworks-email";
 import { runPiiBackfill } from "./backfill-pii";
 import { pool, dbPoolReady } from "./db";
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import ws from "ws";
-import { activeUserSessions } from "./session-store";
-
-neonConfig.webSocketConstructor = ws;
+import { clearSessionById } from "./session-store";
+import { getSessionPool } from "./session-pool";
 
 const PgStore = connectPgSimple(session);
 
@@ -46,15 +43,7 @@ if (isProduction) {
   console.log("[SESSION] Trust proxy enabled for production");
 }
 
-const sessionDbUrl = isProduction
-  ? process.env.PROD_DATABASE_URL
-  : process.env.DEV_DATABASE_URL;
-
-const sessionPool = new Pool({
-  connectionString: sessionDbUrl,
-  max: 10,
-  connectionTimeoutMillis: 10000,
-});
+const sessionPool = getSessionPool();
 
 const sessionPoolReady = sessionPool.query('SELECT 1').then(() => {
   console.log("[SESSION] DB pool warmed up (initial connection)");
@@ -149,15 +138,13 @@ pgStore.destroy = function (sid: string, callback?: (err?: any) => void) {
   SESSION_PENDING.delete(sid);
   SESSION_TOUCH_TIMES.delete(sid);
   
-        // 세션 파괴 시 activeUserSessions에서도 제거
-        // sessionId로 userId를 찾아서 제거
-        for (const [userId, sessionId] of Array.from(activeUserSessions.entries())) {
-          if (sessionId === sid) {
-            activeUserSessions.delete(userId);
-            console.log("[SESSION] Removed from activeUserSessions on destroy:", { userId, sessionId: sid });
-            break;
-          }
-        }
+  clearSessionById(sid).then((userId) => {
+    if (userId) {
+      console.log("[SESSION] Cleared current_session_id on destroy:", { userId, sessionId: sid });
+    }
+  }).catch((err) => {
+    console.error("[SESSION] Failed to clear current_session_id:", err.message);
+  });
   
   originalDestroy(sid, callback);
 };
