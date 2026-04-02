@@ -67,7 +67,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   SmsNotificationDialog,
   type NotificationStage,
@@ -206,9 +205,6 @@ export default function ComprehensiveProgress() {
   });
   const [showProgressDialog, setShowProgressDialog] = useState(false);
   const [detailTab, setDetailTab] = useState("기본정보");
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
-  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showReceptionDetailDialog, setShowReceptionDetailDialog] =
     useState(false);
   const [isReceptionEditMode, setIsReceptionEditMode] = useState(false);
@@ -289,7 +285,6 @@ export default function ComprehensiveProgress() {
   });
 
   const { hasItem } = usePermissions();
-  const canDeleteCases = hasItem("종합진행관리", "접수건 삭제 권한");
 
   const { data: cases, isLoading } = useQuery<CaseWithLatestProgress[]>({
     queryKey: ["/api/cases"],
@@ -403,61 +398,6 @@ export default function ComprehensiveProgress() {
       toast({
         title: "즐겨찾기 처리 실패",
         description: "다시 시도해주세요.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteCaseMutation = useMutation({
-    mutationFn: async (caseId: string) => {
-      return await apiRequest("DELETE", `/api/cases/${caseId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
-      setSelectedCaseId(null);
-      setShowDeleteDialog(false);
-      toast({
-        title: "삭제 완료",
-        description: "접수건이 삭제되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "삭제 실패",
-        description: error?.message || "접수건 삭제 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const bulkDeleteMutation = useMutation({
-    mutationFn: async (caseIds: string[]) => {
-      const results = await Promise.allSettled(
-        caseIds.map((caseId) => apiRequest("DELETE", `/api/cases/${caseId}`)),
-      );
-      const failedCount = results.filter((r) => r.status === "rejected").length;
-      if (failedCount > 0) {
-        throw new Error(`${failedCount}건 삭제 실패`);
-      }
-      return results;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
-      setSelectedCaseIds([]);
-      setShowBulkDeleteDialog(false);
-      toast({
-        title: "삭제 완료",
-        description: `선택한 ${selectedCaseIds.length}건이 삭제되었습니다.`,
-      });
-    },
-    onError: (error: any) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
-      setSelectedCaseIds([]);
-      setShowBulkDeleteDialog(false);
-      toast({
-        title: "일부 삭제 실패",
-        description:
-          error?.message || "일부 접수건 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
@@ -1554,19 +1494,6 @@ export default function ComprehensiveProgress() {
               {totalCount}
             </span>
           </div>
-          {canDeleteCases && selectedCaseIds.length > 0 && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setShowBulkDeleteDialog(true)}
-              disabled={bulkDeleteMutation.isPending}
-              data-testid="button-bulk-delete"
-            >
-              {bulkDeleteMutation.isPending
-                ? "삭제 중..."
-                : `선택된 ${selectedCaseIds.length}건 삭제`}
-            </Button>
-          )}
         </div>
 
         {/* Table */}
@@ -1588,13 +1515,9 @@ export default function ComprehensiveProgress() {
               style={{
                 display: "grid",
                 gridTemplateColumns:
-                  canDeleteCases
-                    ? (user?.role === "협력사"
-                      ? "40px 120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
-                      : "40px 120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px")
-                    : (user?.role === "협력사"
-                      ? "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
-                      : "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px"),
+                  user?.role === "협력사"
+                    ? "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
+                    : "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px",
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1603,33 +1526,6 @@ export default function ComprehensiveProgress() {
                 zIndex: 10,
               }}
             >
-              {canDeleteCases && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-
-                    paddingTop: "14px",
-                    paddingBottom: "14px",
-                  }}
-                >
-                  <Checkbox
-                    checked={
-                      filteredData.length > 0 &&
-                      selectedCaseIds.length === filteredData.length
-                    }
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedCaseIds(filteredData.map((c) => c.id));
-                      } else {
-                        setSelectedCaseIds([]);
-                      }
-                    }}
-                    data-testid="checkbox-select-all"
-                  />
-                </div>
-              )}
               {[
                 { label: "증권번호" },
                 { label: "사고번호" },
@@ -1774,13 +1670,9 @@ export default function ComprehensiveProgress() {
                     style={{
                       display: "grid",
                       gridTemplateColumns:
-                        canDeleteCases
-                          ? (user?.role === "협력사"
-                            ? "40px 120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
-                            : "40px 120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px")
-                          : (user?.role === "협력사"
-                            ? "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
-                            : "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px"),
+                        user?.role === "협력사"
+                          ? "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
+                          : "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px",
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -1788,36 +1680,6 @@ export default function ComprehensiveProgress() {
                     }}
                     data-testid={`case-row-${caseItem.id}`}
                   >
-                    {canDeleteCases && (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-      
-                          paddingTop: "14px",
-                          paddingBottom: "14px",
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Checkbox
-                          checked={selectedCaseIds.includes(caseItem.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedCaseIds((prev) => [
-                                ...prev,
-                                caseItem.id,
-                              ]);
-                            } else {
-                              setSelectedCaseIds((prev) =>
-                                prev.filter((id) => id !== caseItem.id),
-                              );
-                            }
-                          }}
-                          data-testid={`checkbox-case-${caseItem.id}`}
-                        />
-                      </div>
-                    )}
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -4502,64 +4364,6 @@ export default function ComprehensiveProgress() {
               data-testid="button-confirm-lms-send"
             >
               {sendLmsMutation.isPending ? "발송 중..." : "발송확인"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      {/* 삭제 확인 Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>접수건 삭제</AlertDialogTitle>
-            <AlertDialogDescription>
-              이 접수건을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-delete">
-              취소
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (selectedCaseId) {
-                  deleteCaseMutation.mutate(selectedCaseId);
-                }
-              }}
-              disabled={deleteCaseMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              data-testid="button-confirm-delete"
-            >
-              {deleteCaseMutation.isPending ? "삭제 중..." : "확인"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      {/* 대량 삭제 확인 Dialog */}
-      <AlertDialog
-        open={showBulkDeleteDialog}
-        onOpenChange={setShowBulkDeleteDialog}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>선택된 접수건 삭제</AlertDialogTitle>
-            <AlertDialogDescription>
-              선택한 {selectedCaseIds.length}건의 접수건을 삭제하시겠습니까?
-              삭제된 데이터는 복구할 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-bulk-delete">
-              취소
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                bulkDeleteMutation.mutate(selectedCaseIds);
-              }}
-              disabled={bulkDeleteMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              data-testid="button-confirm-bulk-delete"
-            >
-              {bulkDeleteMutation.isPending ? "삭제 중..." : "확인"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
