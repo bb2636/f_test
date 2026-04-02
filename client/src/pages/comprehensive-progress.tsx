@@ -1516,8 +1516,8 @@ export default function ComprehensiveProgress() {
                 display: "grid",
                 gridTemplateColumns:
                   user?.role === "협력사"
-                    ? "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
-                    : "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px",
+                    ? "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 120px"
+                    : "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 120px",
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1671,8 +1671,8 @@ export default function ComprehensiveProgress() {
                       display: "grid",
                       gridTemplateColumns:
                         user?.role === "협력사"
-                          ? "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 90px 50px"
-                          : "120px 110px 120px 100px 80px minmax(80px,1fr) 80px 100px 80px 50px 50px 50px 140px 50px 50px",
+                          ? "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 120px"
+                          : "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 120px",
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -1812,6 +1812,8 @@ export default function ComprehensiveProgress() {
                             paddingLeft: "4px",
                             paddingTop: "14px",
                             paddingBottom: "14px",
+                            display: "flex",
+                            alignItems: "center",
                           }}
                           title={addressText}
                           data-testid={`text-address-${caseItem.id}`}
@@ -2118,7 +2120,7 @@ export default function ComprehensiveProgress() {
                             : "현장조사 입력"}
                       </div>
                     )}
-                    <div style={{ paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
+                    <div style={{ paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "flex-start", overflow: "visible", minWidth: 0 }}>
                       {caseItem.status === "배당대기" ? (
                         // 배당대기 상태 - 임시 저장 건이므로 이어서 작성하기 버튼
                         (<button
