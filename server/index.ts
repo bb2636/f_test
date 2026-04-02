@@ -58,6 +58,15 @@ const sessionPool = new Pool({
 
 const sessionPoolReady = sessionPool.query('SELECT 1').then(() => {
   console.log("[SESSION] DB pool warmed up (initial connection)");
+  return sessionPool.query(`
+    CREATE TABLE IF NOT EXISTS "session" (
+      "sid" varchar NOT NULL COLLATE "default",
+      "sess" json NOT NULL,
+      "expire" timestamp(6) NOT NULL,
+      CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+    ) WITH (OIDS=FALSE)
+  `);
+}).then(() => {
   return sessionPool.query('SELECT COUNT(*) FROM session');
 }).then((result: any) => {
   console.log(`[SESSION] Session table ready (${result?.rows?.[0]?.count || 0} sessions)`);
