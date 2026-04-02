@@ -5,7 +5,6 @@ let queryClientInstance: QueryClient | null = null;
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    // 401 에러 발생 시 세션 체크 (중복 로그인 감지)
     if (res.status === 401) {
       const currentPath = window.location.pathname;
       if (currentPath === "/" || currentPath === "/login" || currentPath === "/mobile-login") {
@@ -17,9 +16,13 @@ async function throwIfResNotOk(res: Response) {
         const resClone = res.clone();
         const errorBody = await resClone.json().catch(() => null);
         
-        if (errorBody?.code === "DUPLICATE_LOGIN") {
-          alert(errorBody.error || "다른 기기에서 로그인되어 현재 세션이 종료되었습니다");
-        }
+        const isDuplicate = errorBody?.code === "DUPLICATE_LOGIN";
+        const message = isDuplicate
+          ? "다른 기기에서 로그인되어 현재 세션이 종료되었습니다.\n다시 로그인해 주세요."
+          : "세션이 만료되었습니다. 다시 로그인해 주세요.";
+        const title = isDuplicate ? "중복 로그인 감지" : "세션 만료";
+        
+        alert(`[${title}]\n${message}`);
         
         if (queryClientInstance) {
           queryClientInstance.clear();
