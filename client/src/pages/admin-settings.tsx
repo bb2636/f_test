@@ -4074,7 +4074,7 @@ export default function AdminSettings() {
                   { label: "연락처", width: "163px", field: "" },
                   { label: "사무실 전화", width: "163px", field: "" },
                   { label: "계정 생성일", width: "120px", field: "" },
-                  { label: "상세보기", width: "60px", field: "" },
+                  { label: "상세보기", width: "80px", field: "" },
                 ].map((col) => (
                   <div
                     key={col.label}
@@ -4157,7 +4157,7 @@ export default function AdminSettings() {
                       </span>
                     </div>
                   ))}
-                  <div className="px-2 flex items-center justify-center" style={{ width: "60px" }}>
+                  <div className="px-2 flex items-center justify-center" style={{ width: "80px" }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
