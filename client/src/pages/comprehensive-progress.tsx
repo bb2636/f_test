@@ -2184,7 +2184,7 @@ export default function ComprehensiveProgress() {
                         paddingBottom: "14px",
                       }}
                     >
-                      {/* 협력사 특이사항 빨간색 점 (협력사 메모가 1개라도 있으면 항상 표시) */}
+                      {/* 협력사 특이사항 빨간색 점: 미확인=채움, 확인=테두리만 */}
                       {(caseItem.specialNotes ||
                         safeParseNotesHistory(
                           caseItem.partnerNotesHistory as string,
@@ -2194,13 +2194,16 @@ export default function ComprehensiveProgress() {
                               width: "8px",
                               height: "8px",
                               borderRadius: "50%",
-                              background: "#ED1C00",
+                              boxSizing: "border-box" as const,
+                              ...(caseItem.partnerNotesAckedByAdmin === "true"
+                                ? { border: "2px solid #ED1C00", background: "transparent" }
+                                : { background: "#ED1C00" }),
                             }}
-                            title="협력사 특이사항 (미확인)"
+                            title={caseItem.partnerNotesAckedByAdmin === "true" ? "협력사 특이사항 (확인됨)" : "협력사 특이사항 (미확인)"}
                             data-testid={`partner-notes-indicator-${caseItem.id}`}
                           />
                         )}
-                      {/* 관리자 특이사항 파란색 점 (관리자 메모가 있으면 항상 표시) */}
+                      {/* 관리자 특이사항 파란색 점: 미확인=채움, 확인=테두리만 */}
                       {safeParseNotesHistory(
                         caseItem.adminNotesHistory as string,
                       ).length > 0 && (
@@ -2209,9 +2212,12 @@ export default function ComprehensiveProgress() {
                               width: "8px",
                               height: "8px",
                               borderRadius: "50%",
-                              background: "#008FED",
+                              boxSizing: "border-box" as const,
+                              ...(caseItem.adminNotesAckedByPartner === "true"
+                                ? { border: "2px solid #008FED", background: "transparent" }
+                                : { background: "#008FED" }),
                             }}
-                            title="관리자 특이사항"
+                            title={caseItem.adminNotesAckedByPartner === "true" ? "관리자 특이사항 (확인됨)" : "관리자 특이사항 (미확인)"}
                             data-testid={`admin-notes-indicator-${caseItem.id}`}
                           />
                         )}
@@ -3283,7 +3289,10 @@ export default function ComprehensiveProgress() {
                                   width: "10px",
                                   height: "10px",
                                   borderRadius: "50%",
-                                  background: "#ED1C00",
+                                  boxSizing: "border-box" as const,
+                                  ...(selectedCase.partnerNotesAckedByAdmin === "true"
+                                    ? { border: "2.5px solid #ED1C00", background: "transparent" }
+                                    : { background: "#ED1C00" }),
                                 }}
                               />
                               <div
@@ -3552,7 +3561,10 @@ export default function ComprehensiveProgress() {
                                   width: "10px",
                                   height: "10px",
                                   borderRadius: "50%",
-                                  background: "#008FED",
+                                  boxSizing: "border-box" as const,
+                                  ...(selectedCase.adminNotesAckedByPartner === "true"
+                                    ? { border: "2.5px solid #008FED", background: "transparent" }
+                                    : { background: "#008FED" }),
                                 }}
                               />
                               <div

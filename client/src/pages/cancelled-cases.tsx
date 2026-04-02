@@ -1233,7 +1233,7 @@ export default function CancelledCases() {
                         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#ED1C00" }} />
+                              <div style={{ width: "10px", height: "10px", borderRadius: "50%", boxSizing: "border-box" as const, ...(selectedCase.partnerNotesAckedByAdmin === "true" ? { border: "2.5px solid #ED1C00", background: "transparent" } : { background: "#ED1C00" }) }} />
                               <div style={{ fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px", letterSpacing: "-0.02em", color: "rgba(12, 12, 12, 0.9)" }}>협력사 진행메모</div>
                             </div>
                             <div
@@ -1320,7 +1320,7 @@ export default function CancelledCases() {
 
                           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#008FED" }} />
+                              <div style={{ width: "10px", height: "10px", borderRadius: "50%", boxSizing: "border-box" as const, ...(selectedCase.adminNotesAckedByPartner === "true" ? { border: "2.5px solid #008FED", background: "transparent" } : { background: "#008FED" }) }} />
                               <div style={{ fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px", letterSpacing: "-0.02em", color: "rgba(12, 12, 12, 0.9)" }}>관리자 진행메모</div>
                             </div>
                             <div
