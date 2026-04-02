@@ -1554,7 +1554,7 @@ export default function ComprehensiveProgress() {
             maxHeight: "calc(100vh - 260px)",
           }}
         >
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
             {/* Table Header */}
             <div
               className="data-table-header"
@@ -1562,9 +1562,8 @@ export default function ComprehensiveProgress() {
                 display: "grid",
                 gridTemplateColumns:
                   user?.role === "협력사"
-                    ? "110px 130px 110px 100px 70px minmax(45px,1fr) 80px 100px 100px 50px 50px 50px 130px 50px 90px 120px"
-                    : "110px 130px 110px 100px 70px minmax(45px,1fr) 80px 100px 100px 50px 50px 50px 130px 50px 120px",
-                minWidth: user?.role === "협력사" ? "1700px" : "1570px",
+                    ? "7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                    : "7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%",
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1718,9 +1717,8 @@ export default function ComprehensiveProgress() {
                       display: "grid",
                       gridTemplateColumns:
                         user?.role === "협력사"
-                          ? "110px 130px 110px 100px 70px minmax(45px,1fr) 80px 100px 100px 50px 50px 50px 130px 50px 90px 120px"
-                          : "110px 130px 110px 100px 70px minmax(45px,1fr) 80px 100px 100px 50px 50px 50px 130px 50px 120px",
-                      minWidth: user?.role === "협력사" ? "1700px" : "1570px",
+                          ? "7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                          : "7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%",
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
