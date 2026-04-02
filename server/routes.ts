@@ -3213,8 +3213,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // SMS 알림은 이제 클라이언트의 다이얼로그를 통해 확인 후 발송됩니다
-      // 자동 발송 코드는 제거되었습니다
+      const allUsers = await storage.getAllUsers();
+      if (!updatedCase.assessorEmail && updatedCase.assessorTeam) {
+        const assessorUser = allUsers.find(
+          (u) => u.role === "심사사" && u.name === updatedCase.assessorTeam,
+        );
+        if (assessorUser?.email) {
+          (updatedCase as any).assessorEmail = assessorUser.email;
+        }
+      }
+      if (!updatedCase.investigatorEmail && updatedCase.investigatorTeamName) {
+        const investigatorUser = allUsers.find(
+          (u) => u.role === "조사사" && u.name === updatedCase.investigatorTeamName,
+        );
+        if (investigatorUser?.email) {
+          (updatedCase as any).investigatorEmail = investigatorUser.email;
+        }
+      }
 
       res.json({ success: true, case: updatedCase });
     } catch (error) {
@@ -14090,6 +14105,24 @@ https://www.floxn.co.kr/
       const caseData = await storage.getCaseById(caseId);
       if (!caseData) {
         return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
+      }
+
+      const allUsersForEmail = await storage.getAllUsers();
+      if (!caseData.assessorEmail && caseData.assessorTeam) {
+        const assessorUser = allUsersForEmail.find(
+          (u) => u.role === "심사사" && u.name === caseData.assessorTeam,
+        );
+        if (assessorUser?.email) {
+          (caseData as any).assessorEmail = assessorUser.email;
+        }
+      }
+      if (!caseData.investigatorEmail && caseData.investigatorTeamName) {
+        const investigatorUser = allUsersForEmail.find(
+          (u) => u.role === "조사사" && u.name === caseData.investigatorTeamName,
+        );
+        if (investigatorUser?.email) {
+          (caseData as any).investigatorEmail = investigatorUser.email;
+        }
       }
 
       const emailRecipients: string[] = [];

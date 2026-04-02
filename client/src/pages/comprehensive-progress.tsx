@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
@@ -237,6 +237,8 @@ export default function ComprehensiveProgress() {
   const [cancelConfirmDialogOpen, setCancelConfirmDialogOpen] = useState(false);
   const [cancelTargetCase, setCancelTargetCase] =
     useState<CaseWithLatestProgress | null>(null);
+  const skipSmsForCancelRef = useRef(false);
+  const pendingCancelNavigationRef = useRef(false);
 
   // 상태 변경 확인 다이얼로그 상태
   const [statusChangeDialogOpen, setStatusChangeDialogOpen] = useState(false);
@@ -576,11 +578,18 @@ export default function ComprehensiveProgress() {
 
         const stage = smsRequiredStages[variables.status];
         if (stage && updatedCaseData) {
-          // 추가 정보가 필요한 상태는 Dialog 표시, 나머지는 자동 발송
           if (stagesRequiringDialog.includes(stage)) {
-            setSmsCaseData(updatedCaseData);
-            setSmsStage(stage);
-            setSmsDialogOpen(true);
+            if (skipSmsForCancelRef.current) {
+              skipSmsForCancelRef.current = false;
+              if (pendingCancelNavigationRef.current) {
+                pendingCancelNavigationRef.current = false;
+                setLocation("/settlements/cancelled");
+              }
+            } else {
+              setSmsCaseData(updatedCaseData);
+              setSmsStage(stage);
+              setSmsDialogOpen(true);
+            }
           } else {
             // 반려 시 이전 상태(변경 전 상태)를 전달
             const prevStatus =
@@ -591,9 +600,13 @@ export default function ComprehensiveProgress() {
       }
     },
     onError: (error, variables, context) => {
-      // 롤백: 이전 데이터 복원
       if (context?.previousCases) {
         queryClient.setQueryData(["/api/cases"], context.previousCases);
+      }
+
+      if (pendingCancelNavigationRef.current) {
+        pendingCancelNavigationRef.current = false;
+        skipSmsForCancelRef.current = false;
       }
 
       toast({
@@ -4677,18 +4690,25 @@ export default function ComprehensiveProgress() {
           open={smsDialogOpen}
           onOpenChange={(open) => {
             setSmsDialogOpen(open);
-            if (!open && smsStage === "접수취소") {
+            if (!open) {
               setSmsCaseData(null);
-              setLocation("/settlements/cancelled");
             }
           }}
           caseData={smsCaseData as unknown as SchemaCase}
           stage={smsStage}
           onSuccess={() => {
-            setSmsDialogOpen(false);
-            setSmsCaseData(null);
-            if (smsStage === "접수취소") {
-              setLocation("/settlements/cancelled");
+            if (smsStage === "접수취소" && smsCaseData) {
+              skipSmsForCancelRef.current = true;
+              pendingCancelNavigationRef.current = true;
+              updateStatusMutation.mutate({
+                caseId: smsCaseData.id,
+                status: "접수취소",
+              });
+              setSmsDialogOpen(false);
+              setSmsCaseData(null);
+            } else {
+              setSmsDialogOpen(false);
+              setSmsCaseData(null);
             }
           }}
         />
@@ -4770,10 +4790,26 @@ export default function ComprehensiveProgress() {
               onClick={() => {
                 if (cancelTargetCase) {
                   setCancelConfirmDialogOpen(false);
-                  updateStatusMutation.mutate({
-                    caseId: cancelTargetCase.id,
-                    status: "접수취소",
-                  });
+                  const enrichedCase = { ...cancelTargetCase };
+                  if (!enrichedCase.assessorEmail && enrichedCase.assessorTeam) {
+                    const assessorUser = allUsers.find(
+                      (u) => u.role === "심사사" && u.name === enrichedCase.assessorTeam,
+                    );
+                    if (assessorUser?.email) {
+                      (enrichedCase as any).assessorEmail = assessorUser.email;
+                    }
+                  }
+                  if (!enrichedCase.investigatorEmail && (enrichedCase as any).investigatorTeamName) {
+                    const investigatorUser = allUsers.find(
+                      (u) => u.role === "조사사" && u.name === (enrichedCase as any).investigatorTeamName,
+                    );
+                    if (investigatorUser?.email) {
+                      (enrichedCase as any).investigatorEmail = investigatorUser.email;
+                    }
+                  }
+                  setSmsCaseData(enrichedCase);
+                  setSmsStage("접수취소");
+                  setSmsDialogOpen(true);
                   setCancelTargetCase(null);
                 }
               }}
