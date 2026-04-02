@@ -1542,7 +1542,7 @@ export default function ComprehensiveProgress() {
                 { label: "진행상태", textAlign: "center" as const },
                 { label: "특이사항" },
                 ...(user?.role === "협력사" ? [{ label: "수행업무" }] : []),
-                { label: "", textAlign: "center" as const, isLast: true },
+                { label: "자세히보기", textAlign: "center" as const, isLast: true },
               ].map((col, idx) => (
                 <div
                   key={col.label || `col-${idx}`}
