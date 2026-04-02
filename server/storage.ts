@@ -4120,72 +4120,71 @@ export class DbStorage implements IStorage {
     date: string,
     insuranceAccidentNo?: string,
   ): Promise<{ prefix: string; suffix: number }> {
-    // Step 1: Check if there are existing cases with the same insurance accident number
-    if (insuranceAccidentNo) {
-      const existingCases = await db
-        .select({ caseNumber: cases.caseNumber })
-        .from(cases)
-        .where(eq(cases.insuranceAccidentNo, insuranceAccidentNo));
+    const dateParts = date.split("-");
+    const year = dateParts[0].substring(2);
+    const month = dateParts[1];
+    const day = dateParts[2];
+    const datePrefix = year + month + day;
+    const lockKey = parseInt(datePrefix, 10) || 999999;
 
-      if (existingCases.length > 0) {
-        // Extract prefix from first existing case (yyMMddxxx part)
-        const firstCaseNumber = existingCases[0].caseNumber;
-        if (firstCaseNumber) {
-          const parts = firstCaseNumber.split("-");
-          if (parts.length >= 2) {
-            const prefix = parts[0]; // "251124001"
+    return await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(1, ${lockKey})`);
 
-            // Find max suffix for this prefix
-            let maxSuffix = -1;
-            for (const c of existingCases) {
-              if (c.caseNumber && c.caseNumber.startsWith(prefix + "-")) {
-                const suffixStr = c.caseNumber.split("-")[1];
-                const suffix = parseInt(suffixStr, 10);
-                if (!isNaN(suffix) && suffix > maxSuffix) {
-                  maxSuffix = suffix;
+      if (insuranceAccidentNo) {
+        const existingCases = await tx
+          .select({ caseNumber: cases.caseNumber })
+          .from(cases)
+          .where(eq(cases.insuranceAccidentNo, insuranceAccidentNo));
+
+        if (existingCases.length > 0) {
+          const firstCaseNumber = existingCases[0].caseNumber;
+          if (firstCaseNumber) {
+            const parts = firstCaseNumber.split("-");
+            if (parts.length >= 2) {
+              const prefix = parts[0];
+
+              let maxSuffix = -1;
+              for (const c of existingCases) {
+                if (c.caseNumber && c.caseNumber.startsWith(prefix + "-")) {
+                  const suffixStr = c.caseNumber.split("-")[1];
+                  const suffix = parseInt(suffixStr, 10);
+                  if (!isNaN(suffix) && suffix > maxSuffix) {
+                    maxSuffix = suffix;
+                  }
                 }
               }
+
+              return { prefix, suffix: maxSuffix + 1 };
             }
-
-            return { prefix, suffix: maxSuffix + 1 };
           }
         }
       }
-    }
 
-    // Step 2: No existing cases with same accident number - generate new prefix
-    // Convert YYYY-MM-DD to yyMMdd (6 digits)
-    const dateParts = date.split("-");
-    const year = dateParts[0].substring(2); // YY (last 2 digits)
-    const month = dateParts[1]; // MM
-    const day = dateParts[2]; // dd
-    const datePrefix = year + month + day; // yyMMdd
+      const allCases = await tx
+        .select({ caseNumber: cases.caseNumber })
+        .from(cases)
+        .where(sql`${cases.caseNumber} LIKE ${datePrefix + "%"}`);
 
-    // Query database for cases with case numbers starting with datePrefix
-    const allCases = await db
-      .select({ caseNumber: cases.caseNumber })
-      .from(cases)
-      .where(sql`${cases.caseNumber} LIKE ${datePrefix + "%"}`);
-
-    let maxSequence = 0;
-    for (const c of allCases) {
-      if (c.caseNumber && c.caseNumber.startsWith(datePrefix)) {
-        const parts = c.caseNumber.split("-");
-        if (parts.length >= 1) {
-          const sequencePart = parts[0].substring(6); // Extract XXX from yyMMddxxx
-          const seq = parseInt(sequencePart, 10);
-          if (!isNaN(seq) && seq > maxSequence) {
-            maxSequence = seq;
+      let maxSequence = 0;
+      for (const c of allCases) {
+        if (c.caseNumber && c.caseNumber.startsWith(datePrefix)) {
+          const parts = c.caseNumber.split("-");
+          if (parts.length >= 1) {
+            const sequencePart = parts[0].substring(6);
+            const seq = parseInt(sequencePart, 10);
+            if (!isNaN(seq) && seq > maxSequence) {
+              maxSequence = seq;
+            }
           }
         }
       }
-    }
 
-    const nextSequence = maxSequence + 1;
-    const seqStr = String(nextSequence).padStart(3, "0");
-    const prefix = `${datePrefix}${seqStr}`; // e.g., "251124001"
+      const nextSequence = maxSequence + 1;
+      const seqStr = String(nextSequence).padStart(3, "0");
+      const prefix = `${datePrefix}${seqStr}`;
 
-    return { prefix, suffix: 0 };
+      return { prefix, suffix: 0 };
+    });
   }
 
   async createCase(
@@ -6868,27 +6867,30 @@ export class DbStorage implements IStorage {
     return oldFormat[0] || null;
   }
 
-  // 피해세대복구 다음 suffix 계산
   async getNextVictimSuffix(prefix: string): Promise<number> {
-    // Find all cases with this prefix (including prefix itself and prefix-N)
-    const allCases = await db
-      .select({ caseNumber: cases.caseNumber })
-      .from(cases)
-      .where(sql`${cases.caseNumber} LIKE ${prefix + "%"}`);
+    const lockKey = parseInt(prefix, 10) || 888888;
 
-    // Find the maximum suffix used
-    let maxSuffix = 0;
-    for (const c of allCases) {
-      if (c.caseNumber && c.caseNumber.startsWith(prefix + "-")) {
-        const suffixStr = c.caseNumber.split("-")[1];
-        const suffix = parseInt(suffixStr, 10);
-        if (!isNaN(suffix) && suffix > maxSuffix) {
-          maxSuffix = suffix;
+    return await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(2, ${lockKey})`);
+
+      const allCases = await tx
+        .select({ caseNumber: cases.caseNumber })
+        .from(cases)
+        .where(sql`${cases.caseNumber} LIKE ${prefix + "%"}`);
+
+      let maxSuffix = 0;
+      for (const c of allCases) {
+        if (c.caseNumber && c.caseNumber.startsWith(prefix + "-")) {
+          const suffixStr = c.caseNumber.split("-")[1];
+          const suffix = parseInt(suffixStr, 10);
+          if (!isNaN(suffix) && suffix > maxSuffix) {
+            maxSuffix = suffix;
+          }
         }
       }
-    }
 
-    return maxSuffix + 1;
+      return maxSuffix + 1;
+    });
   }
 
   // 같은 prefix를 가진 케이스들 조회 (예: 251102001, 251102001-1, 251102001-2)

@@ -2227,9 +2227,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.status(201).json({ success: true, cases: [newCase] });
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
+      }
+      if (error?.code === "23505" || error?.constraint?.includes("case_number")) {
+        console.error("[Case Create] Duplicate case number conflict:", error.detail || error.message);
+        return res.status(409).json({ error: "접수번호가 중복되었습니다. 다시 시도해 주세요." });
       }
       console.error("Create case error:", error);
       res.status(500).json({ error: "접수 생성 중 오류가 발생했습니다" });
