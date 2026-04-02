@@ -127,9 +127,20 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
     queryKey: ["/api/user"],
   });
 
-  const { data: cases = [] } = useQuery<Case[]>({
+  const { data: allCases = [] } = useQuery<Case[]>({
     queryKey: ["/api/cases"],
   });
+
+  const cases = useMemo(() => {
+    if (!searchQuery.trim()) return allCases;
+    const q = searchQuery.trim().toLowerCase();
+    return allCases.filter((c) =>
+      (c.caseNumber && c.caseNumber.toLowerCase().includes(q)) ||
+      (c.insuranceAccidentNo && c.insuranceAccidentNo.toLowerCase().includes(q)) ||
+      (c.accidentNumber && c.accidentNumber.toLowerCase().includes(q)) ||
+      (c.insurancePolicyNo && c.insurancePolicyNo.toLowerCase().includes(q))
+    );
+  }, [allCases, searchQuery]);
 
   // 평균 수리비 항목별 통계 쿼리
   interface AvgRepairCostByCategoryData {
