@@ -104,7 +104,7 @@ const getDisplayApprovedAmount = (c: any): string => {
   if (approved > 0) return formatAmount(c.approvedAmount);
   const isApproved = c?.reviewDecision === "승인" || POST_APPROVAL_STATUSES.includes(c?.status);
   if (isApproved) {
-    const estimate = c?.initialEstimateAmount || c?.estimateAmount;
+    const estimate = c?.estimateAmount || c?.initialEstimateAmount;
     return formatAmount(estimate);
   }
   return "-";

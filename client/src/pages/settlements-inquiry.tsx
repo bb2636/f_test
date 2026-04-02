@@ -389,19 +389,35 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
       const isProperty = caseSuffix > 0; // -1, -2, etc. are property costs
 
       // 견적금액 결정 로직:
-      // 1. initialEstimateAmount (종합진행관리와 동일하게 사용)
-      // 2. 그 외 fallback들
+      // 1. approvedAmount (2차 승인 확정 금액 최우선)
+      // 2. estimateAmount (최신 견적 금액)
+      // 3. initialEstimateAmount (최초 견적 금액)
+      // 4. 그 외 fallback들
       let estimateTotal = 0;
 
-      // 종합진행관리와 동일하게 initialEstimateAmount 우선 사용
+      const approvedAmt = (caseItem as any).approvedAmount;
+      const currentEstimateAmount = (caseItem as any).estimateAmount;
       const initialEstimateAmount = (caseItem as any).initialEstimateAmount;
 
       if (
+        approvedAmt !== null &&
+        approvedAmt !== undefined &&
+        approvedAmt !== "" &&
+        parseAmountValue(approvedAmt) > 0
+      ) {
+        estimateTotal = parseAmountValue(approvedAmt);
+      } else if (
+        currentEstimateAmount !== null &&
+        currentEstimateAmount !== undefined &&
+        currentEstimateAmount !== "" &&
+        parseAmountValue(currentEstimateAmount) > 0
+      ) {
+        estimateTotal = parseAmountValue(currentEstimateAmount);
+      } else if (
         initialEstimateAmount !== null &&
         initialEstimateAmount !== undefined &&
         initialEstimateAmount !== ""
       ) {
-        // initialEstimateAmount가 있으면 그 값 사용 (종합진행관리와 동일)
         estimateTotal = parseAmountValue(initialEstimateAmount);
       } else if (estimateData?.estimate?.laborCostData) {
         // 초기 견적금액이 없으면 현재 견적 데이터에서 계산 (아직 제출 전인 경우)

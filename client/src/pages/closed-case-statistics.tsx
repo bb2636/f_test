@@ -180,7 +180,7 @@ const getRepresentativeCase = (groupCases: Case[]): Case => {
 };
 
 const getCaseEstimateForStats = (c: Case): number => {
-  return parseFloat(c.initialEstimateAmount || c.estimateAmount || "0") || 0;
+  return parseFloat(c.approvedAmount || c.estimateAmount || c.initialEstimateAmount || "0") || 0;
 };
 
 const APPROVED_STATUSES = ["청구", "청구자료제출(복구)", "출동비청구(선견적)", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
