@@ -1846,7 +1846,7 @@ export default function Intake({
         </div>
 
         {/* Form */}
-        <form className="space-y-10" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-10" onSubmit={(e) => e.preventDefault()} autoComplete="off">
           {/* 기본 정보 */}
           <section>
             <div className="mb-4 border-b-2 border-sky-500">
