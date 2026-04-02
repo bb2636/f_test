@@ -40,7 +40,7 @@ The system is a full-stack web application utilizing a React-based frontend and 
   - **Estimate Management**: Create and submit restoration cost estimates with dynamic calculation tables linked to master data, version tracking, and PDF/Excel export. Includes a Recovery Area Table and configurable Labor Rate Tiers.
   - **Field Reports**: Generate comprehensive reports integrating all collected field survey data.
 - **Master Data Management**: Administrator-only feature for managing dropdown options used throughout the system.
-- **Progress Management**: Track case progress, manage approvals/rejections, and send notifications. Includes a refined field survey approval workflow (Review → 1차승인 → 현장정보제출 → 복구요청).
+- **Progress Management**: Track case progress, manage approvals/rejections, and send notifications. Includes a refined field survey approval workflow (Review → 1차승인 → 현장정보제출 → 복구요청). **진행단계 이력 자동 기록**: 발생일자 변경 시 `progress_updates` + `lmsSendHistory`에 자동 기록, 인보이스/현장출동비용 청구서 발송 시 `progress_updates`(추가 발송 구분 포함) + `lmsSendHistory`에 자동 기록. 추가 발송 여부는 케이스별 기존 상태("청구")를 기준으로 판단.
 - **Finance & Settlement**: View statistics, manage settlements, track receivables, and match payments. Includes an Invoice System with two distinct types (Reusable Invoice and Field Dispatch Cost Invoice) and a feature for viewing historical pending cases.
 - **Statistics Grouping**: Cases are grouped by Union-Find algorithm using case-number prefix and insuranceAccidentNo as edges, ensuring transitive closure (A~B by prefix, B~C by accidentNo → all in one group). CSV export uses "-" for zero/null monetary values, matching table display.
 

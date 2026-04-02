@@ -2883,6 +2883,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
 
+            const accidentDateChange1 = changes.find((c) => c.field === "accidentDate");
+            if (accidentDateChange1) {
+              try {
+                await storage.createProgressUpdate({
+                  caseId: id,
+                  content: `발생일자 변경: ${accidentDateChange1.before || "(없음)"} → ${accidentDateChange1.after || "(없음)"}`,
+                  createdBy: req.session.userId,
+                });
+                const kstNow = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+                const sentAtStr = kstNow.toISOString().replace("T", " ").substring(0, 19);
+                const currentUser = await storage.getUser(req.session.userId);
+                let lmsHistory: any[] = [];
+                try {
+                  if (updatedCase.lmsSendHistory) {
+                    lmsHistory = JSON.parse(updatedCase.lmsSendHistory as string);
+                  }
+                } catch {}
+                lmsHistory.unshift({
+                  id: `auto-accident-date-${Date.now()}`,
+                  sentAt: sentAtStr,
+                  medium: "시스템",
+                  messageType: `발생일자 변경: ${accidentDateChange1.before || "(없음)"} → ${accidentDateChange1.after || "(없음)"}`,
+                  recipientType: "자동기록",
+                  recipientCompany: "",
+                  recipientName: "",
+                  recipientPhone: "",
+                  senderName: currentUser?.name || currentUser?.username || "시스템",
+                  isManual: false,
+                  isSystemEvent: true,
+                });
+                await storage.updateCase(id, { lmsSendHistory: JSON.stringify(lmsHistory) });
+              } catch (historyError) {
+                console.error("Failed to record accidentDate change history:", historyError);
+              }
+            }
+
             try {
               await storage.syncIntakeDataToRelatedCases(id);
             } catch (syncError) {
@@ -2961,6 +2997,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
 
+            const accidentDateChange2 = changes.find((c) => c.field === "accidentDate");
+            if (accidentDateChange2) {
+              try {
+                await storage.createProgressUpdate({
+                  caseId: id,
+                  content: `발생일자 변경: ${accidentDateChange2.before || "(없음)"} → ${accidentDateChange2.after || "(없음)"}`,
+                  createdBy: req.session.userId,
+                });
+                const kstNow = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+                const sentAtStr = kstNow.toISOString().replace("T", " ").substring(0, 19);
+                const currentUser = await storage.getUser(req.session.userId);
+                let lmsHistory: any[] = [];
+                try {
+                  if (updatedCase.lmsSendHistory) {
+                    lmsHistory = JSON.parse(updatedCase.lmsSendHistory as string);
+                  }
+                } catch {}
+                lmsHistory.unshift({
+                  id: `auto-accident-date-${Date.now()}`,
+                  sentAt: sentAtStr,
+                  medium: "시스템",
+                  messageType: `발생일자 변경: ${accidentDateChange2.before || "(없음)"} → ${accidentDateChange2.after || "(없음)"}`,
+                  recipientType: "자동기록",
+                  recipientCompany: "",
+                  recipientName: "",
+                  recipientPhone: "",
+                  senderName: currentUser?.name || currentUser?.username || "시스템",
+                  isManual: false,
+                  isSystemEvent: true,
+                });
+                await storage.updateCase(id, { lmsSendHistory: JSON.stringify(lmsHistory) });
+              } catch (historyError) {
+                console.error("Failed to record accidentDate change history:", historyError);
+              }
+            }
+
             try {
               await storage.syncIntakeDataToRelatedCases(id);
             } catch (syncError) {
@@ -3009,7 +3081,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
         } catch (logError) {
           console.error("Failed to create change log:", logError);
-          // Don't fail the request if logging fails
+        }
+      }
+
+      const accidentDateChange = changes.find((c) => c.field === "accidentDate");
+      if (accidentDateChange) {
+        try {
+          await storage.createProgressUpdate({
+            caseId: id,
+            content: `발생일자 변경: ${accidentDateChange.before || "(없음)"} → ${accidentDateChange.after || "(없음)"}`,
+            createdBy: req.session.userId,
+          });
+
+          const kstNow = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+          const sentAtStr = kstNow.toISOString().replace("T", " ").substring(0, 19);
+          const currentUser = await storage.getUser(req.session.userId);
+
+          let lmsHistory: any[] = [];
+          try {
+            if (updatedCase.lmsSendHistory) {
+              lmsHistory = JSON.parse(updatedCase.lmsSendHistory as string);
+            }
+          } catch {}
+
+          lmsHistory.unshift({
+            id: `auto-accident-date-${Date.now()}`,
+            sentAt: sentAtStr,
+            medium: "시스템",
+            messageType: `발생일자 변경: ${accidentDateChange.before || "(없음)"} → ${accidentDateChange.after || "(없음)"}`,
+            recipientType: "자동기록",
+            recipientCompany: "",
+            recipientName: "",
+            recipientPhone: "",
+            senderName: currentUser?.name || currentUser?.username || "시스템",
+            isManual: false,
+            isSystemEvent: true,
+          });
+
+          await storage.updateCase(id, {
+            lmsSendHistory: JSON.stringify(lmsHistory),
+          });
+
+          console.log(`[History] Recorded accidentDate change for case ${id}: ${accidentDateChange.before} → ${accidentDateChange.after}`);
+        } catch (historyError) {
+          console.error("Failed to record accidentDate change history:", historyError);
         }
       }
 
@@ -8181,26 +8296,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const kstNow = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
       const claimDateStr = kstNow.toISOString().split("T")[0];
 
+      const currentUser = await storage.getUser(req.session.userId);
+      const kstNow2 = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+      const sentAtStr = kstNow2.toISOString().replace("T", " ").substring(0, 19);
+      const amountSummary = `손해방지비용: ${parsedDamagePreventionAmount.toLocaleString()}원, 대물복구비용: ${parsedPropertyRepairAmount.toLocaleString()}원${remarks ? `, 비고: ${remarks}` : ""}`;
+
       for (const id of caseIdsToUpdate) {
+        const targetCase = id === caseId ? caseData : await storage.getCaseById(id);
+        const isAdditionalSend = targetCase?.status === "청구";
+
         await storage.updateCase(id, {
           status: "청구",
-          claimDate: claimDateStr, // 청구일 설정
+          claimDate: claimDateStr,
           invoiceDamagePreventionAmount:
             parsedDamagePreventionAmount.toString(),
           invoicePropertyRepairAmount: parsedPropertyRepairAmount.toString(),
           invoiceRemarks: remarks || null,
         });
 
-        // 진행상황 기록 추가 (금액 정보 포함)
         await storage.createProgressUpdate({
           caseId: id,
-          content: `인보이스 발송 완료 - 청구 상태로 변경 (손해방지비용: ${parsedDamagePreventionAmount.toLocaleString()}원, 대물복구비용: ${parsedPropertyRepairAmount.toLocaleString()}원${remarks ? `, 비고: ${remarks}` : ""})`,
+          content: isAdditionalSend
+            ? `인보이스 추가 발송 완료 (${amountSummary})`
+            : `인보이스 발송 완료 - 청구 상태로 변경 (${amountSummary})`,
           createdBy: req.session.userId,
+        });
+
+        let lmsHistory: any[] = [];
+        try {
+          const freshCase = await storage.getCaseById(id);
+          if (freshCase?.lmsSendHistory) {
+            lmsHistory = JSON.parse(freshCase.lmsSendHistory as string);
+          }
+        } catch {}
+
+        lmsHistory.unshift({
+          id: `auto-invoice-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          sentAt: sentAtStr,
+          medium: "이메일",
+          messageType: isAdditionalSend
+            ? `인보이스 추가 발송 (${amountSummary})`
+            : `인보이스 발송 (${amountSummary})`,
+          recipientType: "보험사",
+          recipientCompany: targetCase?.insuranceCompany || "",
+          recipientName: "",
+          recipientPhone: "",
+          senderName: currentUser?.name || currentUser?.username || "시스템",
+          isManual: false,
+          isSystemEvent: true,
+        });
+
+        await storage.updateCase(id, {
+          lmsSendHistory: JSON.stringify(lmsHistory),
         });
       }
 
-      // TODO: 실제 이메일 발송 로직 (SendGrid 등 연동 필요)
-      // 현재는 상태만 변경하고 성공 응답 반환
+      console.log(`[History] Recorded invoice send for ${caseIdsToUpdate.length} cases`);
 
       res.json({
         success: true,
@@ -8283,22 +8434,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const kstNow = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
       const claimDateStr = kstNow.toISOString().split("T")[0];
 
+      const currentUser = await storage.getUser(req.session.userId);
+      const kstNow2 = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+      const sentAtStr = kstNow2.toISOString().replace("T", " ").substring(0, 19);
+      const fdAmountSummary = `현장출동비용: ${parsedFieldDispatchAmount.toLocaleString()}원${remarks ? `, 비고: ${remarks}` : ""}`;
+
       for (const id of caseIdsToUpdate) {
-        // 상태 변경 및 인보이스 데이터 저장
+        const targetCase = id === caseId ? caseData : await storage.getCaseById(id);
+        const isAdditionalSend = targetCase?.status === "청구";
+
         await storage.updateCase(id, {
           status: "청구",
-          claimDate: claimDateStr, // 청구일 설정
+          claimDate: claimDateStr,
           fieldDispatchInvoiceAmount: parsedFieldDispatchAmount.toString(),
           fieldDispatchInvoiceRemarks: remarks || null,
         });
 
-        // 진행상황 기록 추가 (금액 정보 포함)
         await storage.createProgressUpdate({
           caseId: id,
-          content: `현장출동비용 청구서 발송 완료 - 청구 상태로 변경 (현장출동비용: ${parsedFieldDispatchAmount.toLocaleString()}원${remarks ? `, 비고: ${remarks}` : ""})`,
+          content: isAdditionalSend
+            ? `현장출동비용 청구서 추가 발송 완료 (${fdAmountSummary})`
+            : `현장출동비용 청구서 발송 완료 - 청구 상태로 변경 (${fdAmountSummary})`,
           createdBy: req.session.userId,
         });
+
+        let lmsHistory: any[] = [];
+        try {
+          const freshCase = await storage.getCaseById(id);
+          if (freshCase?.lmsSendHistory) {
+            lmsHistory = JSON.parse(freshCase.lmsSendHistory as string);
+          }
+        } catch {}
+
+        lmsHistory.unshift({
+          id: `auto-field-invoice-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          sentAt: sentAtStr,
+          medium: "이메일",
+          messageType: isAdditionalSend
+            ? `현장출동비용 청구서 추가 발송 (${fdAmountSummary})`
+            : `현장출동비용 청구서 발송 (${fdAmountSummary})`,
+          recipientType: "보험사",
+          recipientCompany: targetCase?.insuranceCompany || "",
+          recipientName: "",
+          recipientPhone: "",
+          senderName: currentUser?.name || currentUser?.username || "시스템",
+          isManual: false,
+          isSystemEvent: true,
+        });
+
+        await storage.updateCase(id, {
+          lmsSendHistory: JSON.stringify(lmsHistory),
+        });
       }
+
+      console.log(`[History] Recorded field dispatch invoice send for ${caseIdsToUpdate.length} cases`);
 
       res.json({
         success: true,
