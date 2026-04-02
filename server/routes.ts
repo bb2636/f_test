@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
-import { storage } from "./storage";
+import { storage, invalidateUsersCache } from "./storage";
 import { setCurrentSession, getCurrentSessionId, clearCurrentSession, destroyPgSession } from "./session-store";
 import { getSessionPool } from "./session-pool";
 import { stripEncryptedColumns } from "./pii-service";
@@ -32,7 +32,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
-import { estimates, cases } from "@shared/schema";
+import { estimates, cases, users } from "@shared/schema";
 import { sql, inArray, eq, and } from "drizzle-orm";
 import nodemailer from "nodemailer";
 import https from "https";
@@ -1088,6 +1088,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .json({ error: "위임 대상 사용자 ID가 필요합니다" });
     }
 
+    if (targetUserId === requester.id) {
+      return res.status(400).json({ error: "본인에게 위임할 수 없습니다" });
+    }
+
     const targetUser = await storage.getUser(targetUserId);
     if (!targetUser) {
       return res.status(404).json({ error: "대상 사용자를 찾을 수 없습니다" });
@@ -1097,15 +1101,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .status(400)
         .json({ error: "관리자 역할의 사용자에게만 위임할 수 있습니다" });
     }
+    if ((targetUser as any).isDeactivated) {
+      return res.status(400).json({ error: "비활성화된 사용자에게 위임할 수 없습니다" });
+    }
 
     try {
-      // Remove super admin from current user
-      await storage.updateUser(requester.id, { isSuperAdmin: false });
-      // Grant super admin to target user
-      await storage.updateUser(targetUserId, { isSuperAdmin: true });
+      await db.transaction(async (tx) => {
+        await tx.update(users).set({ isSuperAdmin: false }).where(eq(users.id, requester.id));
+        await tx.update(users).set({ isSuperAdmin: true }).where(eq(users.id, targetUserId));
+      });
 
-      // Update session
       req.session.isSuperAdmin = false;
+
+      console.log(`[SuperAdmin Delegate] ${requester.username}(${requester.id}) → ${targetUser.username || targetUser.name}(${targetUserId})`);
+
+      invalidateUsersCache();
 
       res.json({ success: true });
     } catch (error) {

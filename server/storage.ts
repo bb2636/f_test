@@ -89,7 +89,7 @@ let usersCache: User[] | null = null;
 let usersCacheTime = 0;
 let usersCacheFetching: Promise<User[]> | null = null;
 
-function invalidateUsersCache() {
+export function invalidateUsersCache() {
   usersCache = null;
   usersCacheTime = 0;
 }

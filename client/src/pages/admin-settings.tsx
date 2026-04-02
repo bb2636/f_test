@@ -419,6 +419,7 @@ export default function AdminSettings() {
   const [showDelegateConfirmModal, setShowDelegateConfirmModal] = useState(false);
   const [delegateTargetUser, setDelegateTargetUser] = useState<User | null>(null);
   const [isDelegating, setIsDelegating] = useState(false);
+  const [showDelegateSelectModal, setShowDelegateSelectModal] = useState(false);
   const [showAccountCreatedModal, setShowAccountCreatedModal] = useState(false);
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
   const [sendEmailNotification, setSendEmailNotification] = useState(false);
@@ -3953,28 +3954,59 @@ export default function AdminSettings() {
                   {filteredUsers.length}
                 </span>
               </div>
-              <button
-                className="flex items-center justify-center px-6 hover-elevate active-elevate-2"
-                style={{
-                  height: "48px",
-                  background: "#008FED",
-                  borderRadius: "6px",
-                }}
-                onClick={() => setShowCreateAccountModal(true)}
-                data-testid="button-create-account"
-              >
-                <span
+              <div className="flex items-center gap-3">
+                <button
+                  className="flex items-center justify-center px-6 hover-elevate active-elevate-2"
                   style={{
-                    fontFamily: "Pretendard",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    letterSpacing: "-0.02em",
-                    color: "#FDFDFD",
+                    height: "48px",
+                    background: "#008FED",
+                    borderRadius: "6px",
                   }}
+                  onClick={() => setShowCreateAccountModal(true)}
+                  data-testid="button-create-account"
                 >
-                  계정 생성
-                </span>
-              </button>
+                  <span
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      letterSpacing: "-0.02em",
+                      color: "#FDFDFD",
+                    }}
+                  >
+                    계정 생성
+                  </span>
+                </button>
+                {loggedInUser?.isSuperAdmin && (
+                  <button
+                    className="flex items-center justify-center px-5 hover-elevate active-elevate-2"
+                    style={{
+                      height: "48px",
+                      background: "#FFFFFF",
+                      border: "1.5px solid #008FED",
+                      borderRadius: "6px",
+                    }}
+                    onClick={() => {
+                      setDelegateTargetUser(null);
+                      setShowDelegateSelectModal(true);
+                    }}
+                    data-testid="button-open-delegate"
+                  >
+                    <Shield style={{ width: "16px", height: "16px", color: "#008FED", marginRight: "6px" }} />
+                    <span
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "16px",
+                        fontWeight: 600,
+                        letterSpacing: "-0.02em",
+                        color: "#008FED",
+                      }}
+                    >
+                      권한위임
+                    </span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Sort Options */}
@@ -4042,11 +4074,11 @@ export default function AdminSettings() {
                   { label: "연락처", width: "163px", field: "" },
                   { label: "사무실 전화", width: "163px", field: "" },
                   { label: "계정 생성일", width: "120px", field: "" },
-                  { label: "요청", width: "120px", field: "" },
+                  { label: "상세보기", width: "60px", field: "" },
                 ].map((col) => (
                   <div
                     key={col.label}
-                    className="px-2 flex items-center"
+                    className="px-2 flex items-center justify-center"
                     style={{
                       width: col.width,
                       cursor: col.field ? "pointer" : "default",
@@ -4077,21 +4109,6 @@ export default function AdminSettings() {
                     </span>
                   </div>
                 ))}
-                {user?.isSuperAdmin && (
-                  <div className="px-2 flex-1 flex items-center">
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "15px",
-                        fontWeight: 600,
-                        letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.6)",
-                      }}
-                    >
-                      관리자 위임
-                    </span>
-                  </div>
-                )}
               </div>
 
               {/* Table Rows */}
@@ -4106,22 +4123,23 @@ export default function AdminSettings() {
                   data-testid={`user-row-${user.id}`}
                 >
                   {[
-                    { value: user.role, width: "90px" },
-                    { value: user.company, width: "155px" },
-                    { value: user.name, width: "80px" },
-                    { value: user.department, width: "100px" },
-                    { value: user.position, width: "70px" },
-                    { value: user.email, width: "220px", ellipsis: true },
-                    { value: user.username, width: "230px", ellipsis: true },
-                    { value: user.phone, width: "163px" },
-                    { value: user.office, width: "163px" },
-                    { value: user.createdAt, width: "120px" },
+                    { value: user.role, width: "90px", align: "center" },
+                    { value: user.company, width: "155px", align: "center" },
+                    { value: user.name, width: "80px", align: "center" },
+                    { value: user.department, width: "100px", align: "center" },
+                    { value: user.position, width: "70px", align: "center" },
+                    { value: user.email, width: "220px", ellipsis: true, align: "left" },
+                    { value: user.username, width: "230px", ellipsis: true, align: "left" },
+                    { value: user.phone, width: "163px", align: "center" },
+                    { value: user.office, width: "163px", align: "center" },
+                    { value: user.createdAt, width: "120px", align: "center" },
                   ].map((col, idx, arr) => (
                     <div
                       key={idx}
                       className="px-2 cursor-pointer flex items-center"
                       style={{
                         width: col.width,
+                        justifyContent: col.align === "center" ? "center" : "flex-start",
                         ...(col.ellipsis ? { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const } : {}),
                       }}
                       onClick={() => setSelectedUser(user)}
@@ -4139,81 +4157,29 @@ export default function AdminSettings() {
                       </span>
                     </div>
                   ))}
-                  <div className="px-2 flex items-center" style={{ width: "120px" }}>
+                  <div className="px-2 flex items-center justify-center" style={{ width: "60px" }}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedUser(user);
                       }}
-                      className="flex items-center justify-center"
                       style={{
-                        width: "92px",
-                        height: "28px",
+                        padding: "6px",
                         background: "#FFFFFF",
                         border: "1px solid rgba(12, 12, 12, 0.2)",
                         borderRadius: "6px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
+                      title="자세히 보기"
+                      aria-label="자세히 보기"
                       data-testid={`button-view-detail-${user.id}`}
                     >
-                      <span
-                        style={{
-                          fontFamily: "Pretendard",
-                          fontSize: "14px",
-                          fontWeight: 500,
-                          letterSpacing: "-0.01em",
-                          color: "rgba(12, 12, 12, 0.8)",
-                        }}
-                      >
-                        자세히 보기
-                      </span>
+                      <Search style={{ width: "14px", height: "14px", color: "rgba(12, 12, 12, 0.5)" }} />
                     </button>
                   </div>
-                  {loggedInUser?.isSuperAdmin && (
-                    <div className="px-2 flex-1">
-                      {user.role === "관리자" && user.id !== loggedInUser?.id && !user.isSuperAdmin && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDelegateTargetUser(user);
-                            setShowDelegateConfirmModal(true);
-                          }}
-                          className="flex items-center justify-center"
-                          style={{
-                            width: "92px",
-                            height: "28px",
-                            background: "#E3F2FD",
-                            border: "1px solid #008FED",
-                            borderRadius: "6px",
-                          }}
-                          data-testid={`button-delegate-super-admin-${user.id}`}
-                        >
-                          <span
-                            style={{
-                              fontFamily: "Pretendard",
-                              fontSize: "13px",
-                              fontWeight: 600,
-                              letterSpacing: "-0.01em",
-                              color: "#008FED",
-                            }}
-                          >
-                            위임
-                          </span>
-                        </button>
-                      )}
-                      {user.role === "관리자" && user.id === loggedInUser?.id && user.isSuperAdmin && (
-                        <span
-                          style={{
-                            fontFamily: "Pretendard",
-                            fontSize: "13px",
-                            fontWeight: 500,
-                            color: "#008FED",
-                          }}
-                        >
-                          최고관리자
-                        </span>
-                      )}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -4523,6 +4489,131 @@ export default function AdminSettings() {
           ) : null}
         </div>
       </div>
+      {showDelegateSelectModal && (
+        <>
+          <div
+            className="fixed inset-0 z-[58]"
+            style={{ background: "rgba(0, 0, 0, 0.5)" }}
+            onClick={() => {
+              setShowDelegateSelectModal(false);
+              setDelegateTargetUser(null);
+            }}
+          />
+          <div
+            className="fixed z-[59] rounded-xl"
+            style={{
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "480px",
+              maxHeight: "70vh",
+              background: "#FFFFFF",
+              boxShadow: "0px 8px 40px rgba(0, 0, 0, 0.15)",
+              padding: "32px",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div className="flex flex-col gap-5">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "50%",
+                    background: "rgba(0, 143, 237, 0.1)",
+                  }}
+                >
+                  <Shield style={{ width: "22px", height: "22px", color: "#008FED" }} />
+                </div>
+                <span
+                  style={{
+                    fontFamily: "Pretendard",
+                    fontSize: "20px",
+                    fontWeight: 700,
+                    color: "#0C0C0C",
+                  }}
+                >
+                  권한위임 대상 선택
+                </span>
+              </div>
+              <span
+                style={{
+                  fontFamily: "Pretendard",
+                  fontSize: "14px",
+                  fontWeight: 400,
+                  color: "rgba(12, 12, 12, 0.6)",
+                }}
+              >
+                SuperUser 권한을 위임할 관리자를 선택해주세요.
+              </span>
+              <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid rgba(12, 12, 12, 0.1)", borderRadius: "8px" }}>
+                {allUsers
+                  .filter((u) => u.role === "관리자" && u.id !== loggedInUser?.id && !u.isSuperAdmin && !u.isDeactivated)
+                  .length === 0 ? (
+                  <div style={{ padding: "24px", textAlign: "center", fontFamily: "Pretendard", fontSize: "14px", color: "rgba(12, 12, 12, 0.5)" }}>
+                    위임 가능한 관리자가 없습니다.
+                  </div>
+                ) : (
+                  allUsers
+                    .filter((u) => u.role === "관리자" && u.id !== loggedInUser?.id && !u.isSuperAdmin && !u.isDeactivated)
+                    .map((adminUser) => (
+                      <label
+                        key={adminUser.id}
+                        className="flex items-center gap-3 cursor-pointer hover:bg-black/5 transition-colors"
+                        style={{
+                          padding: "14px 16px",
+                          borderBottom: "1px solid rgba(12, 12, 12, 0.06)",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="delegate-target"
+                          checked={delegateTargetUser?.id === adminUser.id}
+                          onChange={() => setDelegateTargetUser(adminUser)}
+                          style={{ width: "18px", height: "18px", accentColor: "#008FED" }}
+                        />
+                        <div className="flex flex-col gap-1">
+                          <span style={{ fontFamily: "Pretendard", fontSize: "15px", fontWeight: 600, color: "#0C0C0C" }}>
+                            {adminUser.name || adminUser.username}
+                          </span>
+                          <span style={{ fontFamily: "Pretendard", fontSize: "13px", fontWeight: 400, color: "rgba(12, 12, 12, 0.5)" }}>
+                            {adminUser.email || adminUser.username} · {adminUser.company || "-"}
+                          </span>
+                        </div>
+                      </label>
+                    ))
+                )}
+              </div>
+              <button
+                className="flex items-center justify-center hover-elevate active-elevate-2"
+                style={{
+                  height: "44px",
+                  background: delegateTargetUser ? "#008FED" : "rgba(0, 143, 237, 0.3)",
+                  borderRadius: "8px",
+                  fontFamily: "Pretendard",
+                  fontSize: "15px",
+                  fontWeight: 600,
+                  color: "#FFFFFF",
+                  cursor: delegateTargetUser ? "pointer" : "not-allowed",
+                }}
+                disabled={!delegateTargetUser}
+                onClick={() => {
+                  if (delegateTargetUser) {
+                    setShowDelegateSelectModal(false);
+                    setShowDelegateConfirmModal(true);
+                  }
+                }}
+                data-testid="button-delegate-select-confirm"
+              >
+                권한위임
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Super Admin Delegate Confirm Modal */}
       {showDelegateConfirmModal && delegateTargetUser && (
         <>
@@ -4580,7 +4671,7 @@ export default function AdminSettings() {
                   }}
                 >
                   <strong style={{ color: "#008FED" }}>{delegateTargetUser.name || delegateTargetUser.username}</strong>님에게
-                  최고관리자 권한을 위임하시겠습니까?
+                  SuperUser권한을 위임하시겠습니까?
                   <br />
                   위임 후 본인은 일반관리자로 변경됩니다.
                 </span>
@@ -4636,7 +4727,7 @@ export default function AdminSettings() {
                   disabled={isDelegating}
                   data-testid="button-delegate-confirm"
                 >
-                  {isDelegating ? "처리 중..." : "위임하기"}
+                  {isDelegating ? "처리 중..." : "확인"}
                 </button>
               </div>
             </div>

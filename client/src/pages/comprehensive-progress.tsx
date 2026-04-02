@@ -1562,8 +1562,8 @@ export default function ComprehensiveProgress() {
                 display: "grid",
                 gridTemplateColumns:
                   user?.role === "협력사"
-                    ? "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 120px"
-                    : "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 120px",
+                    ? "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 100px 50px 50px 50px 130px 50px 90px 50px"
+                    : "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 100px 50px 50px 50px 130px 50px 50px",
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1573,22 +1573,22 @@ export default function ComprehensiveProgress() {
               }}
             >
               {[
-                { label: "증권번호" },
-                { label: "사고번호" },
-                { label: "접수번호" },
-                { label: "보험사" },
-                { label: "피보험자" },
+                { label: "증권번호", textAlign: "center" as const },
+                { label: "사고번호", textAlign: "center" as const },
+                { label: "접수번호", textAlign: "center" as const },
+                { label: "보험사", textAlign: "center" as const },
+                { label: "피보험자", textAlign: "center" as const },
                 { label: "주소", textAlign: "center" as const },
-                { label: "담당자" },
-                { label: "협력사" },
+                { label: "담당자", textAlign: "center" as const },
+                { label: "협력사", textAlign: "center" as const },
                 { label: "승인금액", textAlign: "center" as const },
                 { label: "경과1", textAlign: "center" as const },
                 { label: "경과2", textAlign: "center" as const },
                 { label: "경과3", textAlign: "center" as const },
                 { label: "진행상태", textAlign: "center" as const },
-                { label: "특이사항" },
-                ...(user?.role === "협력사" ? [{ label: "수행업무" }] : []),
-                { label: "자세히보기", textAlign: "center" as const, isLast: true },
+                { label: "메모", textAlign: "center" as const },
+                ...(user?.role === "협력사" ? [{ label: "수행업무", textAlign: "center" as const }] : []),
+                { label: "상세", textAlign: "center" as const, isLast: true },
               ].map((col, idx) => (
                 <div
                   key={col.label || `col-${idx}`}
@@ -1717,8 +1717,8 @@ export default function ComprehensiveProgress() {
                       display: "grid",
                       gridTemplateColumns:
                         user?.role === "협력사"
-                          ? "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 90px 120px"
-                          : "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 80px 50px 50px 50px 130px 50px 120px",
+                          ? "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 100px 50px 50px 50px 130px 50px 90px 50px"
+                          : "110px 100px 110px 100px 70px minmax(60px,1fr) 80px 100px 100px 50px 50px 50px 130px 50px 50px",
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -1731,13 +1731,13 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-    
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "14px",
                         paddingBottom: "14px",
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       {caseItem.insurancePolicyNo || "-"}
@@ -1747,13 +1747,13 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-    
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "14px",
                         paddingBottom: "14px",
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       {caseItem.insuranceAccidentNo || "-"}
@@ -1763,13 +1763,13 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-    
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "14px",
                         paddingBottom: "14px",
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       {formatCaseNumber(caseItem.caseNumber) || "-"}
@@ -1779,13 +1779,13 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-    
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "14px",
                         paddingBottom: "14px",
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       {caseItem.insuranceCompany || "-"}
@@ -1795,13 +1795,13 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-    
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "14px",
                         paddingBottom: "14px",
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       {caseItem.insuredName || "-"}
@@ -1873,13 +1873,13 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-    
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "14px",
                         paddingBottom: "14px",
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       {caseItem.managerName || "-"}
@@ -1889,13 +1889,13 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-    
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "14px",
                         paddingBottom: "14px",
                         display: "flex",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       {caseItem.assignedPartner || "-"}
@@ -2135,11 +2135,13 @@ export default function ComprehensiveProgress() {
                           fontWeight: 500,
                           cursor: "pointer",
                           textDecoration: "underline",
-      
                           paddingRight: "4px",
                           paddingLeft: "4px",
                           paddingTop: "14px",
                           paddingBottom: "14px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -2166,7 +2168,7 @@ export default function ComprehensiveProgress() {
                             : "현장조사 입력"}
                       </div>
                     )}
-                    <div style={{ paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "flex-start", overflow: "visible", minWidth: 0 }}>
+                    <div style={{ paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "center", overflow: "visible", minWidth: 0 }}>
                       {caseItem.status === "배당대기" ? (
                         // 배당대기 상태 - 임시 저장 건이므로 이어서 작성하기 버튼
                         (<button
