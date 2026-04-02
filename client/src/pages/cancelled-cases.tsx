@@ -303,7 +303,7 @@ export default function CancelledCases() {
     return null;
   }
 
-  const gridTemplateColumns = "110px 100px 110px 100px 70px 1fr 80px 90px 90px 60px 130px 100px 50px 160px";
+  const gridTemplateColumns = "120px 110px 120px 100px 80px 1fr 80px 100px 90px 60px 140px 100px 50px 50px";
 
   return (
     <div className="p-8 bg-white min-h-full">
@@ -677,10 +677,10 @@ export default function CancelledCases() {
               { label: "진행상태", textAlign: "center" as const },
               { label: "취소일자", textAlign: "center" as const },
               { label: "특이사항" },
-              { label: "자세히 보기", textAlign: "center" as const },
-            ].map((col) => (
+              { label: "", textAlign: "center" as const },
+            ].map((col, idx) => (
               <div
-                key={col.label}
+                key={col.label || `col-${idx}`}
                 style={{
                   fontFamily: "Pretendard",
                   fontWeight: 600,
@@ -962,18 +962,20 @@ export default function CancelledCases() {
                           setSelectedCaseId(caseItem.id);
                         }}
                         style={{
-                          fontFamily: "Pretendard",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "#008FED",
-                          background: "none",
-                          border: "none",
+                          padding: "6px",
+                          background: "#FFFFFF",
+                          border: "1px solid rgba(12, 12, 12, 0.2)",
+                          borderRadius: "6px",
                           cursor: "pointer",
-                          whiteSpace: "nowrap",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
+                        title="자세히 보기"
+                        aria-label="자세히 보기"
                         data-testid={`button-detail-${caseItem.id}`}
                       >
-                        자세히 보기
+                        <Search style={{ width: "14px", height: "14px", color: "rgba(12, 12, 12, 0.5)" }} />
                       </button>
                     ) : (
                       <span style={{ fontFamily: "Pretendard", fontSize: "12px", color: "rgba(12,12,12,0.3)" }}>-</span>
