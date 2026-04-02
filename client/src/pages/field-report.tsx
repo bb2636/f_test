@@ -678,11 +678,18 @@ export default function FieldReport() {
       return sum + (row.금액 || 0);
     }, 0);
 
+    const materialTotalNonExpense = parsedMaterialCosts.reduce((sum, row) => {
+      if (row.includeInEstimate !== false) {
+        return sum + (row.금액 || 0);
+      }
+      return sum;
+    }, 0);
+
     // 소계 (전체)
     const subtotal = laborTotalNonExpense + laborTotalExpense + materialTotal;
 
-    // 일반관리비와 이윤 계산 대상 (경비가 아닌 항목 + 자재비)
-    const baseForFees = laborTotalNonExpense + materialTotal;
+    // 일반관리비와 이윤 계산 대상 (경비가 아닌 항목만)
+    const baseForFees = laborTotalNonExpense + materialTotalNonExpense;
 
     // 일반관리비 (6%) - 경비 제외 항목에만 적용
     const managementFee = Math.round(baseForFees * 0.06);
