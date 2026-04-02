@@ -1562,8 +1562,8 @@ export default function ComprehensiveProgress() {
                 display: "grid",
                 gridTemplateColumns:
                   user?.role === "협력사"
-                    ? "110px 130px 110px 100px 70px minmax(40px,0.8fr) 80px 100px 100px 50px 50px 50px 130px 50px 90px 120px"
-                    : "110px 130px 110px 100px 70px minmax(40px,0.8fr) 80px 100px 100px 50px 50px 50px 130px 50px 120px",
+                    ? "110px 130px 110px 100px 70px 80px 80px 100px 100px 50px 50px 50px 130px 50px 90px 80px"
+                    : "110px 130px 110px 100px 70px 80px 80px 100px 100px 50px 50px 50px 130px 50px 80px",
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1717,8 +1717,8 @@ export default function ComprehensiveProgress() {
                       display: "grid",
                       gridTemplateColumns:
                         user?.role === "협력사"
-                          ? "110px 130px 110px 100px 70px minmax(40px,0.8fr) 80px 100px 100px 50px 50px 50px 130px 50px 90px 120px"
-                          : "110px 130px 110px 100px 70px minmax(40px,0.8fr) 80px 100px 100px 50px 50px 50px 130px 50px 120px",
+                          ? "110px 130px 110px 100px 70px 80px 80px 100px 100px 50px 50px 50px 130px 50px 90px 80px"
+                          : "110px 130px 110px 100px 70px 80px 80px 100px 100px 50px 50px 50px 130px 50px 80px",
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
