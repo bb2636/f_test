@@ -16,7 +16,13 @@ export const users = pgTable("users", {
   phone: text("phone"),
   office: text("office"),
   address: text("address"),
-  addressDetail: text("address_detail"), // 상세주소
+  addressDetail: text("address_detail"),
+  emailEnc: text("email_enc"),
+  phoneEnc: text("phone_enc"),
+  addressEnc: text("address_enc"),
+  addressDetailEnc: text("address_detail_enc"),
+  emailHash: text("email_hash"),
+  phoneHash: text("phone_hash"),
   // Partner-specific fields
   businessRegistrationNumber: text("business_registration_number"), // 사업자 등록번호
   representativeName: text("representative_name"), // 대표자 명
@@ -218,6 +224,27 @@ export const cases = pgTable("cases", {
   clientAddress: text("client_address"),
   accidentLocation: text("accident_location"),
   accidentDescription: text("accident_description"),
+
+  clientPhoneEnc: text("client_phone_enc"),
+  clientContactEnc: text("client_contact_enc"),
+  clientAddressEnc: text("client_address_enc"),
+  assessorContactEnc: text("assessor_contact_enc"),
+  assessorEmailEnc: text("assessor_email_enc"),
+  investigatorContactEnc: text("investigator_contact_enc"),
+  investigatorEmailEnc: text("investigator_email_enc"),
+  policyHolderIdNumberEnc: text("policy_holder_id_number_enc"),
+  policyHolderAddressEnc: text("policy_holder_address_enc"),
+  insuredIdNumberEnc: text("insured_id_number_enc"),
+  insuredContactEnc: text("insured_contact_enc"),
+  insuredAddressEnc: text("insured_address_enc"),
+  insuredAddressDetailEnc: text("insured_address_detail_enc"),
+  victimContactEnc: text("victim_contact_enc"),
+  victimAddressEnc: text("victim_address_enc"),
+  victimAddressDetailEnc: text("victim_address_detail_enc"),
+  assignedPartnerContactEnc: text("assigned_partner_contact_enc"),
+  assessorEmailHash: text("assessor_email_hash"),
+  investigatorEmailHash: text("investigator_email_hash"),
+  clientPhoneHash: text("client_phone_hash"),
   
   // 사고 및 복구 정보
   accidentType: text("accident_type"), // 사고 유형

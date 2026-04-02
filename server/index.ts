@@ -5,6 +5,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage, warmUpUsersCache, warmUpCasesCache } from "./storage";
 import { initializeEmailTransporter } from "./hiworks-email";
+import { runPiiBackfill } from "./backfill-pii";
 import { pool, dbPoolReady } from "./db";
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import ws from "ws";
@@ -264,6 +265,16 @@ app.use((req, res, next) => {
       }
 
       initializeEmailTransporter();
+
+      if (process.env.PII_ENCRYPTION_KEY) {
+        try {
+          await runPiiBackfill();
+        } catch (error) {
+          console.error("[PII Backfill] Failed:", error);
+        }
+      } else {
+        console.log("[PII] PII_ENCRYPTION_KEY not set - encryption disabled (plaintext mode)");
+      }
     })();
   });
 })();

@@ -80,6 +80,7 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { db, pool } from "./db";
 import { eq, asc, desc, and, or, like, sql } from "drizzle-orm";
+import { encryptUserFields, decryptUserFields, encryptCaseFields, decryptCaseFields, stripEncryptedColumns } from "./pii-service";
 
 const SALT_ROUNDS = 10;
 
@@ -3834,31 +3835,32 @@ export class DbStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const cached = await getCachedUsers();
     const found = cached.find(u => u.id === id);
-    if (found) return found;
+    if (found) return decryptUserFields(found) as User;
     const result = await db.select().from(users).where(eq(users.id, id));
-    return result[0];
+    return result[0] ? decryptUserFields(result[0]) as User : undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const cached = await getCachedUsers();
     const found = cached.find(u => u.username === username);
-    if (found) return found;
+    if (found) return decryptUserFields(found) as User;
     const result = await db
       .select()
       .from(users)
       .where(eq(users.username, username));
-    return result[0];
+    return result[0] ? decryptUserFields(result[0]) as User : undefined;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return getCachedUsers();
+    const cached = await getCachedUsers();
+    return cached.map(u => decryptUserFields(u) as User);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const hashedPassword = await bcrypt.hash(insertUser.password, SALT_ROUNDS);
     const createdAt = getKSTDate();
 
-    const newUser = {
+    let newUser: Record<string, any> = {
       username: insertUser.username,
       password: hashedPassword,
       role: insertUser.role || "사원",
@@ -3882,9 +3884,11 @@ export class DbStorage implements IStorage {
       createdAt,
     };
 
-    const result = await db.insert(users).values(newUser).returning();
+    newUser = encryptUserFields(newUser);
+
+    const result = await db.insert(users).values(newUser as any).returning();
     invalidateUsersCache();
-    return result[0];
+    return decryptUserFields(result[0]) as User;
   }
 
   async verifyPassword(
@@ -3954,14 +3958,16 @@ export class DbStorage implements IStorage {
       return null;
     }
 
+    const encryptedData = encryptUserFields(userData as Record<string, any>);
+
     const result = await db
       .update(users)
-      .set(userData)
+      .set(encryptedData)
       .where(eq(users.id, userId))
       .returning();
 
     invalidateUsersCache();
-    return result[0] || null;
+    return result[0] ? decryptUserFields(result[0]) as User : null;
   }
 
   async updateUserMustChangePassword(userId: string, mustChangePassword: boolean): Promise<User | null> {
@@ -4006,7 +4012,7 @@ export class DbStorage implements IStorage {
     
     if (!result[0]) return null;
     
-    const caseData = result[0];
+    let caseData = result[0];
     
     // 협력사가 배당되어 있지만 담당자 정보가 없는 경우 자동 채우기
     if (caseData.assignedPartner && (!caseData.assignedPartnerManager || !caseData.assignedPartnerContact)) {
@@ -4022,7 +4028,7 @@ export class DbStorage implements IStorage {
         .limit(1);
       
       if (partnerUsers.length > 0) {
-        const partnerUser = partnerUsers[0];
+        const partnerUser = decryptUserFields(partnerUsers[0]) as User;
         const updatedFields: Partial<Case> = {};
         
         if (!caseData.assignedPartnerManager && partnerUser.name) {
@@ -4033,21 +4039,21 @@ export class DbStorage implements IStorage {
         }
         
         if (Object.keys(updatedFields).length > 0) {
-          // 데이터베이스 업데이트
+          const encryptedUpdates = encryptCaseFields(updatedFields as Record<string, any>);
           const updated = await db
             .update(cases)
-            .set(updatedFields)
+            .set(encryptedUpdates)
             .where(eq(cases.id, caseId))
             .returning();
           
           if (updated.length > 0) {
-            return updated[0];
+            caseData = updated[0];
           }
         }
       }
     }
     
-    return caseData;
+    return decryptCaseFields(caseData) as Case;
   }
 
   async getAssignedCasesForUser(user: User, search?: string): Promise<Case[]> {
@@ -4107,7 +4113,7 @@ export class DbStorage implements IStorage {
       );
     }
 
-    return allCases;
+    return allCases.map(c => decryptCaseFields(c) as Case);
   }
 
   async getNextCaseSequence(
@@ -4205,7 +4211,7 @@ export class DbStorage implements IStorage {
       }
     }
 
-    const newCase = {
+    let newCase: Record<string, any> = {
       caseNumber: caseData.caseNumber,
       status: status,
       accidentDate: caseData.accidentDate || null,
@@ -4268,9 +4274,11 @@ export class DbStorage implements IStorage {
       updatedAt: getKSTTimestamp(),
     };
 
-    const result = await db.insert(cases).values(newCase).returning();
+    newCase = encryptCaseFields(newCase);
+
+    const result = await db.insert(cases).values(newCase as any).returning();
     invalidateCasesCache();
-    return result[0];
+    return decryptCaseFields(result[0]) as Case;
   }
 
   async getAllCases(user?: User): Promise<CaseWithLatestProgress[]> {
@@ -4370,8 +4378,9 @@ export class DbStorage implements IStorage {
           }
         }
 
+        const decryptedCase = decryptCaseFields(caseItem) as any;
         return {
-          ...caseItem,
+          ...decryptedCase,
           assessorEmail,
           investigatorEmail,
           latestProgress: latestUpdate
@@ -4416,8 +4425,7 @@ export class DbStorage implements IStorage {
       additionalUpdates.cancellationDate = currentDate;
     }
 
-    // caseNumber도 업데이트 대상에 포함 (updatedAt은 타임스탬프로 저장)
-    const updateData: any = { ...caseData, ...additionalUpdates, updatedAt: currentTimestamp };
+    const updateData: any = { ...encryptCaseFields({ ...caseData }), ...additionalUpdates, updatedAt: currentTimestamp };
     
     // id는 업데이트 대상에서 제외 (duplicate key 오류 방지)
     delete updateData.id;
@@ -4468,7 +4476,7 @@ export class DbStorage implements IStorage {
     }
 
     invalidateCasesCache();
-    return result[0];
+    return decryptCaseFields(result[0]) as Case;
   }
 
   async deleteCase(caseId: string): Promise<void> {

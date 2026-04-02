@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import { storage } from "./storage";
 import { activeUserSessions, sessionStore } from "./session-store";
+import { stripEncryptedColumns } from "./pii-service";
 import {
   loginSchema,
   updatePasswordSchema,
@@ -152,8 +153,31 @@ function solapiHttpsRequest({
   });
 }
 
+function stripPiiFromResponse(data: any): any {
+  if (!data) return data;
+  if (Array.isArray(data)) return data.map(stripPiiFromResponse);
+  if (typeof data === "object" && data !== null) {
+    const stripped = stripEncryptedColumns(data);
+    for (const key of Object.keys(stripped)) {
+      const val = stripped[key];
+      if (val && typeof val === "object") {
+        stripped[key] = stripPiiFromResponse(val);
+      }
+    }
+    return stripped;
+  }
+  return data;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Register Object Storage routes
+  const originalJson = app.response.json;
+  app.response.json = function (body?: any) {
+    if (body && typeof body === "object") {
+      body = stripPiiFromResponse(body);
+    }
+    return originalJson.call(this, body);
+  };
+
   registerObjectStorageRoutes(app);
 
   // Login endpoint

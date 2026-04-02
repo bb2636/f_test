@@ -25,6 +25,7 @@ The system is a full-stack web application utilizing a React-based frontend and 
 
 ### Technical Implementations
 - **Authentication**: Username-based login, bcrypt for password hashing, express-session with PostgreSQL session store for persistent session management, and robust role-based access control (Assessor, Investigator, Insurer, Partner, Client, Administrator) with protected routes.
+- **PII Encryption**: AES-256-GCM encryption for personal data stored in DB (`server/crypto.ts`, `server/pii-service.ts`). SHA-256 hash columns for email/phone duplicate checks. Controlled by `PII_ENCRYPTION_KEY` env var (64-char hex). Transitional mode: plain columns retained alongside `_enc`/`_hash` columns. Auto-backfill on startup (`server/backfill-pii.ts`). API response middleware strips encrypted columns. Guide: `docs/pii-encryption-guide.md`.
 - **Server-side Caching**: Multi-layer caching strategy for performance including user and case data, with invalidation on create/update/delete operations.
 - **User Management (Admin)**: Features a user account table with search, role-based filtering, detailed viewing/editing modals, and a two-step account creation flow with validation, password generation, and soft deletion. Includes super admin access control.
 - **Case Intake System**: Multi-section collapsible form for new insurance claim cases, including automatic case number generation and extensive fields.
