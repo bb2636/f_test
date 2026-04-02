@@ -840,6 +840,39 @@ export default function ComprehensiveProgress() {
     },
   });
 
+  const isNotesTabActive = detailTab === "진행메모" && !!selectedCaseId;
+  const { data: polledCaseData } = useQuery<CaseWithLatestProgress>({
+    queryKey: ["/api/cases", selectedCaseId],
+    queryFn: async () => {
+      const res = await fetch(`/api/cases/${selectedCaseId}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch case");
+      return res.json();
+    },
+    enabled: isNotesTabActive,
+    refetchInterval: isNotesTabActive ? 10000 : false,
+    staleTime: 5000,
+  });
+
+  useEffect(() => {
+    if (polledCaseData && isNotesTabActive) {
+      queryClient.setQueryData<CaseWithLatestProgress[]>(["/api/cases"], (old) => {
+        if (!old) return old;
+        return old.map((c) =>
+          c.id === polledCaseData.id
+            ? {
+                ...c,
+                partnerNotesHistory: polledCaseData.partnerNotesHistory,
+                adminNotesHistory: polledCaseData.adminNotesHistory,
+                specialNotes: polledCaseData.specialNotes,
+                partnerNotesAckedByAdmin: polledCaseData.partnerNotesAckedByAdmin,
+                latestProgress: polledCaseData.latestProgress,
+              }
+            : c,
+        );
+      });
+    }
+  }, [polledCaseData, isNotesTabActive, queryClient]);
+
   // Find selected case
   const selectedCase = cases?.find((c) => c.id === selectedCaseId);
 
