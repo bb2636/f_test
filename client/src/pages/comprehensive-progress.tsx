@@ -3195,9 +3195,9 @@ export default function ComprehensiveProgress() {
                                     key={entry.id || idx}
                                     style={{
                                       padding: "10px 12px",
-                                      background: idx === 0 ? "rgba(0, 143, 237, 0.06)" : "rgba(255, 255, 255, 0.8)",
+                                      background: "rgba(255, 255, 255, 0.8)",
                                       borderRadius: "6px",
-                                      border: idx === 0 ? "1px solid rgba(0, 143, 237, 0.15)" : "1px solid rgba(12, 12, 12, 0.06)",
+                                      border: "1px solid rgba(12, 12, 12, 0.06)",
                                       color: "rgba(12, 12, 12, 0.9)",
                                       whiteSpace: "pre-wrap",
                                       wordBreak: "break-word",
