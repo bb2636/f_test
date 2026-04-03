@@ -8447,7 +8447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUser = await storage.getUser(req.session.userId);
       const kstNow2 = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
       const sentAtStr = kstNow2.toISOString().replace("T", " ").substring(0, 19);
-      const fdAmountSummary = `현장출동비용: ${parsedFieldDispatchAmount.toLocaleString()}원${remarks ? `, 비고: ${remarks}` : ""}`;
+      const fdAmountSummary = `출동비(선견적): ${parsedFieldDispatchAmount.toLocaleString()}원${remarks ? `, 비고: ${remarks}` : ""}`;
 
       for (const id of caseIdsToUpdate) {
         const targetCase = id === caseId ? caseData : await storage.getCaseById(id);
@@ -8463,8 +8463,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createProgressUpdate({
           caseId: id,
           content: isAdditionalSend
-            ? `현장출동비용 청구서 추가 발송 완료 (${fdAmountSummary})`
-            : `현장출동비용 청구서 발송 완료 - 청구 상태로 변경 (${fdAmountSummary})`,
+            ? `인보이스 추가 발송 완료 (${fdAmountSummary})`
+            : `인보이스 발송 완료 - 청구 상태로 변경 (${fdAmountSummary})`,
           createdBy: req.session.userId,
         });
 
@@ -8481,8 +8481,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sentAt: sentAtStr,
           medium: "이메일",
           messageType: isAdditionalSend
-            ? `현장출동비용 청구서 추가 발송 (${fdAmountSummary})`
-            : `현장출동비용 청구서 발송 (${fdAmountSummary})`,
+            ? `인보이스 추가 발송 (${fdAmountSummary})`
+            : `인보이스 발송 (${fdAmountSummary})`,
           recipientType: "보험사",
           recipientCompany: targetCase?.insuranceCompany || "",
           recipientName: "",
