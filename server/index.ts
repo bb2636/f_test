@@ -10,6 +10,14 @@ import { pool, dbPoolReady } from "./db";
 import { clearSessionById } from "./session-store";
 import { getSessionPool } from "./session-pool";
 
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("[FATAL] Unhandled Promise Rejection:", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[FATAL] Uncaught Exception:", err);
+});
+
 const PgStore = connectPgSimple(session);
 
 const app = express();
