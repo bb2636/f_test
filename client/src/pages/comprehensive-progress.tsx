@@ -205,6 +205,8 @@ export default function ComprehensiveProgress() {
   });
   const [showProgressDialog, setShowProgressDialog] = useState(false);
   const [detailTab, setDetailTab] = useState("기본정보");
+  const [progressHistory, setProgressHistory] = useState<Array<{ id: string; content: string; createdAt: string; createdBy: string }>>([]);
+  const [progressHistoryLoading, setProgressHistoryLoading] = useState(false);
   const [showReceptionDetailDialog, setShowReceptionDetailDialog] =
     useState(false);
   const [isReceptionEditMode, setIsReceptionEditMode] = useState(false);
@@ -875,6 +877,21 @@ export default function ComprehensiveProgress() {
 
   // Find selected case
   const selectedCase = cases?.find((c) => c.id === selectedCaseId);
+
+  useEffect(() => {
+    if (selectedCaseId && detailTab === "진행단계") {
+      setProgressHistoryLoading(true);
+      fetch(`/api/progress-updates/${selectedCaseId}`, { credentials: "include" })
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setProgressHistory(data);
+          }
+        })
+        .catch(() => setProgressHistory([]))
+        .finally(() => setProgressHistoryLoading(false));
+    }
+  }, [selectedCaseId, detailTab]);
 
   // Form for special notes
   const specialNotesForm = useForm<z.infer<typeof specialNotesFormSchema>>({
@@ -3146,6 +3163,8 @@ export default function ComprehensiveProgress() {
                             style={{
                               width: "100%",
                               minHeight: "200px",
+                              maxHeight: "400px",
+                              overflowY: "auto",
                               padding: "16px",
                               background: "rgba(12, 12, 12, 0.04)",
                               border: "1px solid rgba(12, 12, 12, 0.1)",
@@ -3153,24 +3172,42 @@ export default function ComprehensiveProgress() {
                               fontFamily: "Pretendard",
                               fontSize: "14px",
                               lineHeight: "1.6",
-                              color: selectedCase.latestProgress?.content
-                                ? "rgba(12, 12, 12, 0.9)"
-                                : "rgba(12, 12, 12, 0.5)",
-                              whiteSpace: "pre-wrap",
-                              wordBreak: "break-word",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "12px",
                             }}
                             data-testid="text-progress-display"
                           >
-                            {(() => {
-                              const content = selectedCase.latestProgress?.content;
-                              if (!content) return "관리자가 입력한 진행단계가 없습니다.";
-                              if (/^(\d{4}-\d{2}-\d{2})\s/.test(content)) return content;
-                              if (/인보이스/.test(content) && selectedCase.latestProgress?.createdAt) {
-                                const dateStr = selectedCase.latestProgress.createdAt.substring(0, 10);
-                                return `${dateStr} ${content}`;
-                              }
-                              return content;
-                            })()}
+                            {progressHistoryLoading ? (
+                              <div style={{ color: "rgba(12, 12, 12, 0.5)" }}>불러오는 중...</div>
+                            ) : progressHistory.length === 0 ? (
+                              <div style={{ color: "rgba(12, 12, 12, 0.5)" }}>관리자가 입력한 진행단계가 없습니다.</div>
+                            ) : (
+                              progressHistory.map((entry, idx) => {
+                                const content = entry.content || "";
+                                const displayContent = /^(\d{4}-\d{2}-\d{2})\s/.test(content)
+                                  ? content
+                                  : /인보이스/.test(content) && entry.createdAt
+                                    ? `${entry.createdAt.substring(0, 10)} ${content}`
+                                    : content;
+                                return (
+                                  <div
+                                    key={entry.id || idx}
+                                    style={{
+                                      padding: "10px 12px",
+                                      background: idx === 0 ? "rgba(0, 143, 237, 0.06)" : "rgba(255, 255, 255, 0.8)",
+                                      borderRadius: "6px",
+                                      border: idx === 0 ? "1px solid rgba(0, 143, 237, 0.15)" : "1px solid rgba(12, 12, 12, 0.06)",
+                                      color: "rgba(12, 12, 12, 0.9)",
+                                      whiteSpace: "pre-wrap",
+                                      wordBreak: "break-word",
+                                    }}
+                                  >
+                                    {displayContent}
+                                  </div>
+                                );
+                              })
+                            )}
                           </div>
                         </div>
                       )}

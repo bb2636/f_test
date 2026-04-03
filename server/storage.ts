@@ -4995,7 +4995,7 @@ export class DbStorage implements IStorage {
       .select()
       .from(progressUpdates)
       .where(eq(progressUpdates.caseId, caseId))
-      .orderBy(asc(progressUpdates.createdAt));
+      .orderBy(desc(progressUpdates.createdAt));
     return result;
   }
 
