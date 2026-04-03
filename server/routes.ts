@@ -8315,17 +8315,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const kstNow2 = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
       const sentAtStr = kstNow2.toISOString().replace("T", " ").substring(0, 19);
 
-      const isFieldDispatchOnly = parsedDamagePreventionAmount === 0 && parsedPropertyRepairAmount === 0 && totalFieldDispatch > 0;
       const amountParts: string[] = [];
-      if (isFieldDispatchOnly) {
+      if (totalFieldDispatch > 0) {
         amountParts.push(`출동비(선견적): ${totalFieldDispatch.toLocaleString()}원`);
       } else {
-        if (parsedDamagePreventionAmount > 0 || parsedPropertyRepairAmount > 0) {
-          amountParts.push(`손해방지비용: ${parsedDamagePreventionAmount.toLocaleString()}원, 대물복구비용: ${parsedPropertyRepairAmount.toLocaleString()}원`);
-        }
-        if (totalFieldDispatch > 0) {
-          amountParts.push(`출동비(선견적): ${totalFieldDispatch.toLocaleString()}원`);
-        }
+        amountParts.push(`손해방지비용: ${parsedDamagePreventionAmount.toLocaleString()}원, 대물복구비용: ${parsedPropertyRepairAmount.toLocaleString()}원`);
       }
       if (remarks) amountParts.push(`비고: ${remarks}`);
       const amountSummary = amountParts.join(", ");
