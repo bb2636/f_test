@@ -187,6 +187,9 @@ const getCaseApprovedForStats = (c: Case): number => {
 };
 
 const getClaimAmount = (c: Case): number => {
+  if (isPreEstimate(c)) {
+    return parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0;
+  }
   return getCaseApprovedForStats(c);
 };
 
@@ -505,16 +508,6 @@ export default function UnsettledCaseStatistics() {
         totalApproved: getGroupApprovedAmount(uniqueCases),
         totalClaim: (() => {
           const active = getActiveCases(uniqueCases);
-          const hasDirectRecovery = active.some(c => isDirectRecovery(c));
-          const allPreEstimate = active.length > 0 && active.every(c => isPreEstimate(c));
-          if (allPreEstimate) {
-            const CLAIMED_STATUSES = ["청구", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
-            const isClaimed = active.some(c => CLAIMED_STATUSES.includes(c.status));
-            return isClaimed ? 100000 : 0;
-          }
-          if (hasDirectRecovery) {
-            return active.filter(c => !isPreEstimate(c)).reduce((sum, c) => sum + getClaimAmount(c), 0);
-          }
           return active.reduce((sum, c) => sum + getClaimAmount(c), 0);
         })(),
       };

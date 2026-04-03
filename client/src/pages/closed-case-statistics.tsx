@@ -194,6 +194,9 @@ const getCaseApprovedForStats = (c: Case): number => {
 };
 
 const getClaimAmount = (c: Case): number => {
+  if (isPreEstimate(c)) {
+    return parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0;
+  }
   return getCaseApprovedForStats(c);
 };
 
@@ -471,14 +474,6 @@ export default function ClosedCaseStatistics() {
         totalApproved: getGroupApprovedAmount(uniqueCases),
         totalClaim: (() => {
           const active = getActiveCases(uniqueCases);
-          const hasDirectRecovery = active.some(c => isDirectRecovery(c));
-          const allPreEstimate = active.length > 0 && active.every(c => isPreEstimate(c));
-          if (allPreEstimate) {
-            return 100000;
-          }
-          if (hasDirectRecovery) {
-            return active.filter(c => !isPreEstimate(c)).reduce((sum, c) => sum + getClaimAmount(c), 0);
-          }
           return active.reduce((sum, c) => sum + getClaimAmount(c), 0);
         })(),
       };
