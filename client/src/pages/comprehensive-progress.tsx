@@ -3161,8 +3161,16 @@ export default function ComprehensiveProgress() {
                             }}
                             data-testid="text-progress-display"
                           >
-                            {selectedCase.latestProgress?.content ||
-                              "관리자가 입력한 진행단계가 없습니다."}
+                            {(() => {
+                              const content = selectedCase.latestProgress?.content;
+                              if (!content) return "관리자가 입력한 진행단계가 없습니다.";
+                              if (/^(\d{4}-\d{2}-\d{2})\s/.test(content)) return content;
+                              if (/인보이스/.test(content) && selectedCase.latestProgress?.createdAt) {
+                                const dateStr = selectedCase.latestProgress.createdAt.substring(0, 10);
+                                return `${dateStr} ${content}`;
+                              }
+                              return content;
+                            })()}
                           </div>
                         </div>
                       )}
