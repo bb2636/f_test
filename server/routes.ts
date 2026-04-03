@@ -8280,6 +8280,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         relatedCaseIds,
         damagePreventionAmount,
         propertyRepairAmount,
+        fieldDispatchPreventionAmount,
+        fieldDispatchPropertyAmount,
         remarks,
       } = req.body;
 
@@ -8291,6 +8293,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsedDamagePreventionAmount =
         parseInt(damagePreventionAmount) || 0;
       const parsedPropertyRepairAmount = parseInt(propertyRepairAmount) || 0;
+      const parsedFieldDispatchPrevention = parseInt(fieldDispatchPreventionAmount) || 0;
+      const parsedFieldDispatchProperty = parseInt(fieldDispatchPropertyAmount) || 0;
+      const totalFieldDispatch = parsedFieldDispatchPrevention + parsedFieldDispatchProperty;
 
       // 케이스 정보 조회
       const caseData = await storage.getCaseById(caseId);
@@ -8309,20 +8314,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUser = await storage.getUser(req.session.userId);
       const kstNow2 = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
       const sentAtStr = kstNow2.toISOString().replace("T", " ").substring(0, 19);
-      const amountSummary = `손해방지비용: ${parsedDamagePreventionAmount.toLocaleString()}원, 대물복구비용: ${parsedPropertyRepairAmount.toLocaleString()}원${remarks ? `, 비고: ${remarks}` : ""}`;
+
+      const isFieldDispatchOnly = parsedDamagePreventionAmount === 0 && parsedPropertyRepairAmount === 0 && totalFieldDispatch > 0;
+      const amountParts: string[] = [];
+      if (isFieldDispatchOnly) {
+        amountParts.push(`출동비(선견적): ${totalFieldDispatch.toLocaleString()}원`);
+      } else {
+        if (parsedDamagePreventionAmount > 0 || parsedPropertyRepairAmount > 0) {
+          amountParts.push(`손해방지비용: ${parsedDamagePreventionAmount.toLocaleString()}원, 대물복구비용: ${parsedPropertyRepairAmount.toLocaleString()}원`);
+        }
+        if (totalFieldDispatch > 0) {
+          amountParts.push(`출동비(선견적): ${totalFieldDispatch.toLocaleString()}원`);
+        }
+      }
+      if (remarks) amountParts.push(`비고: ${remarks}`);
+      const amountSummary = amountParts.join(", ");
 
       for (const id of caseIdsToUpdate) {
         const targetCase = id === caseId ? caseData : await storage.getCaseById(id);
         const isAdditionalSend = targetCase?.status === "청구";
 
-        await storage.updateCase(id, {
+        const updateData: any = {
           status: "청구",
           claimDate: claimDateStr,
           invoiceDamagePreventionAmount:
             parsedDamagePreventionAmount.toString(),
           invoicePropertyRepairAmount: parsedPropertyRepairAmount.toString(),
           invoiceRemarks: remarks || null,
-        });
+        };
+        if (totalFieldDispatch > 0) {
+          updateData.fieldDispatchInvoiceAmount = totalFieldDispatch.toString();
+        }
+        await storage.updateCase(id, updateData);
 
         await storage.createProgressUpdate({
           caseId: id,
