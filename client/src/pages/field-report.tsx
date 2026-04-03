@@ -205,6 +205,7 @@ function safeParseLaborCosts(
       standardPrice: Number(row.standardPrice) || 0,
       quantity: Number(row.quantity) || 0,
       amount: Number(row.amount) || 0,
+      includeInEstimate: row.includeInEstimate === false || row.includeInEstimate === "false" ? false : true,
     }));
 }
 
@@ -235,6 +236,7 @@ function safeParseMaterialCosts(
       기준단가: Number(row.기준단가) || 0,
       수량: Number(row.수량) || 0,
       금액: Number(row.금액) || 0,
+      includeInEstimate: row.includeInEstimate === false || row.includeInEstimate === "false" ? false : true,
     }));
 }
 
@@ -679,7 +681,7 @@ export default function FieldReport() {
     }, 0);
 
     const materialTotalNonExpense = parsedMaterialCosts.reduce((sum, row) => {
-      if (row.includeInEstimate !== false) {
+      if (row.includeInEstimate) {
         return sum + (row.금액 || 0);
       }
       return sum;

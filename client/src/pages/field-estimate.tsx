@@ -2802,6 +2802,7 @@ export default function FieldEstimate() {
             id: `labor-saved-${stableIndex}`,
             ...rest,
             detailWork: fixedDetailWork,
+            includeInEstimate: rest.includeInEstimate === false || rest.includeInEstimate === "false" ? false : true,
           };
         });
         const remappedLaborRows = loadedLaborRows.map((laborRow: any) => {
@@ -2856,7 +2857,7 @@ export default function FieldEstimate() {
             return {
               id: `material-saved-${index}`,
               ...rest,
-              includeInEstimate: rest.includeInEstimate !== false,
+              includeInEstimate: rest.includeInEstimate === false || rest.includeInEstimate === "false" ? false : true,
               sourceLaborRowId,
             };
           });
@@ -2881,7 +2882,7 @@ export default function FieldEstimate() {
             return {
               id: `material-saved-${index}`,
               ...rest,
-              includeInEstimate: rest.includeInEstimate !== false,
+              includeInEstimate: rest.includeInEstimate === false || rest.includeInEstimate === "false" ? false : true,
               sourceLaborRowId: undefined,
             };
           });
@@ -3289,7 +3290,7 @@ export default function FieldEstimate() {
 
     // 자재비 경비가 아닌 항목 (관리비/이윤 포함 대상)
     const materialTotalNonExpense = materialRows.reduce((sum, row) => {
-      if (row.includeInEstimate !== false) {
+      if (row.includeInEstimate) {
         return sum + (row.금액 || 0);
       }
       return sum;
