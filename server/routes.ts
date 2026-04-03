@@ -8327,8 +8327,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createProgressUpdate({
           caseId: id,
           content: isAdditionalSend
-            ? `인보이스 추가 발송 완료 (${amountSummary})`
-            : `인보이스 발송 완료 - 청구 상태로 변경 (${amountSummary})`,
+            ? `${claimDateStr} 인보이스 추가 발송 완료 (${amountSummary})`
+            : `${claimDateStr} 인보이스 발송 완료 - 청구 상태로 변경 (${amountSummary})`,
           createdBy: req.session.userId,
         });
 
@@ -8463,8 +8463,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createProgressUpdate({
           caseId: id,
           content: isAdditionalSend
-            ? `인보이스 추가 발송 완료 (${fdAmountSummary})`
-            : `인보이스 발송 완료 - 청구 상태로 변경 (${fdAmountSummary})`,
+            ? `${claimDateStr} 인보이스 추가 발송 완료 (${fdAmountSummary})`
+            : `${claimDateStr} 인보이스 발송 완료 - 청구 상태로 변경 (${fdAmountSummary})`,
           createdBy: req.session.userId,
         });
 
