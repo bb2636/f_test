@@ -346,7 +346,7 @@ export default function UnsettledCaseStatistics() {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((c) => {
         const cn = (c.caseNumber || "").toLowerCase();
-        const accNo = (c.accidentNumber || "").toLowerCase();
+        const accNo = (c.insuranceAccidentNo || "").toLowerCase();
         const policyNo = (c.insurancePolicyNo || "").toLowerCase();
         return cn.includes(q) || accNo.includes(q) || policyNo.includes(q);
       });
