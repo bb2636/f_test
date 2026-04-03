@@ -8451,10 +8451,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       for (const id of caseIdsToUpdate) {
         const targetCase = id === caseId ? caseData : await storage.getCaseById(id);
-        const isAdditionalSend = targetCase?.status === "청구";
+        const isAdditionalSend = targetCase?.status === "출동비청구(선견적)" || targetCase?.status === "청구";
 
         await storage.updateCase(id, {
-          status: "청구",
+          status: "출동비청구(선견적)",
           claimDate: claimDateStr,
           fieldDispatchInvoiceAmount: parsedFieldDispatchAmount.toString(),
           fieldDispatchInvoiceRemarks: remarks || null,
@@ -8464,7 +8464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           caseId: id,
           content: isAdditionalSend
             ? `${claimDateStr} 인보이스 추가 발송 완료 (${fdAmountSummary})`
-            : `${claimDateStr} 인보이스 발송 완료 - 청구 상태로 변경 (${fdAmountSummary})`,
+            : `${claimDateStr} 인보이스 발송 완료 - 출동비청구(선견적) 상태로 변경 (${fdAmountSummary})`,
           createdBy: req.session.userId,
         });
 
