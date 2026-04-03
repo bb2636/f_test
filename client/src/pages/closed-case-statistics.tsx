@@ -216,8 +216,11 @@ const getGroupEstimateAmount = (groupCases: Case[]): number | null => {
 const getGroupApprovedAmount = (groupCases: Case[]): number | null => {
   const active = getActiveCases(groupCases);
   if (active.length === 0) return null;
-  if (active.every(c => isPreEstimate(c))) return null;
-  return active.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+  const nonPreEstimate = active.filter(c => !isPreEstimate(c));
+  if (nonPreEstimate.length === 0) return null;
+  const hasDirectRecovery = nonPreEstimate.some(c => isDirectRecovery(c));
+  const targets = hasDirectRecovery ? nonPreEstimate.filter(c => isDirectRecovery(c)) : nonPreEstimate;
+  return targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
 };
 
 interface GroupedRow {
@@ -474,7 +477,12 @@ export default function ClosedCaseStatistics() {
         totalApproved: getGroupApprovedAmount(uniqueCases),
         totalClaim: (() => {
           const active = getActiveCases(uniqueCases);
-          return active.reduce((sum, c) => sum + getClaimAmount(c), 0);
+          const preEstimateClaim = active.filter(c => isPreEstimate(c)).reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0);
+          const nonPreEstimate = active.filter(c => !isPreEstimate(c));
+          const hasDirectRecovery = nonPreEstimate.some(c => isDirectRecovery(c));
+          const targets = hasDirectRecovery ? nonPreEstimate.filter(c => isDirectRecovery(c)) : nonPreEstimate;
+          const directClaim = targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+          return preEstimateClaim + directClaim;
         })(),
       };
     });
