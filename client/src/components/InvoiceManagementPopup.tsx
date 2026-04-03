@@ -427,13 +427,12 @@ export function InvoiceManagementPopup({
 
     if (field === "depositAmount") {
       const dep = (value as number) || 0;
-      const payment = Math.round(dep / 1.077);
-      const comm = dep - payment;
-      entry.paymentAmount = payment;
+      const comm = Math.round(dep * 0.077);
       entry.commission = comm;
+      entry.paymentAmount = dep - comm;
     } else if (field === "paymentAmount") {
-      const payment = (value as number) || 0;
-      entry.commission = Math.round(payment * 0.077);
+      const deposit = entry.depositAmount || 0;
+      entry.commission = Math.round(deposit * 0.077);
     }
 
     updated[index] = entry;
