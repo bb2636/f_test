@@ -113,10 +113,16 @@ pgStore.get = function (
 
   const promise = new Promise<session.SessionData | null | undefined>(
     (resolve, reject) => {
+      const timer = setTimeout(() => {
+        SESSION_PENDING.delete(sid);
+        console.error("[SESSION] pgStore.get timeout for sid:", sid);
+        resolve(null);
+      }, 10000);
       sessionPool.query(
         'SELECT sess FROM session WHERE sid = $1',
         [sid],
         (err: any, result: any) => {
+          clearTimeout(timer);
           SESSION_PENDING.delete(sid);
           if (err) {
             reject(err);

@@ -208,7 +208,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      const dbSessionId = await getCurrentSessionId(req.session.userId);
+      const sessionCheckPromise = getCurrentSessionId(req.session.userId);
+      const timeoutPromise = new Promise<string | null>((_, reject) => 
+        setTimeout(() => reject(new Error("[TIMEOUT] getCurrentSessionId exceeded 5000ms")), 5000)
+      );
+      const dbSessionId = await Promise.race([sessionCheckPromise, timeoutPromise]);
 
       if (dbSessionId && dbSessionId !== req.sessionID) {
         console.log("[AUTH] Session invalidated - newer login exists", {
@@ -243,6 +247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Login endpoint
   app.post("/api/login", async (req, res) => {
+    const loginStart = Date.now();
     try {
       const validatedData = loginSchema.parse(req.body);
 
@@ -260,6 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         validatedData.username,
         validatedData.password,
       );
+      console.log("[LOGIN] verifyPassword completed", { elapsed: Date.now() - loginStart });
 
       if (!user) {
         console.log(
@@ -305,15 +311,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error("[LOGIN] Failed to set current_session_id:", dbErr.message);
             return res.status(500).json({ error: "로그인 처리 중 오류가 발생했습니다" });
           }
-          console.log(
-            "[LOGIN] Session saved + current_session_id set, sessionId:",
-            req.sessionID,
-          );
-          const { password, ...userWithoutPassword } = user;
-          console.log("[LOGIN] Response data:", {
-            userId: userWithoutPassword.id,
-            mustChangePassword: userWithoutPassword.mustChangePassword,
+          console.log("[LOGIN COMPLETE]", {
+            sessionId: req.sessionID,
+            userId: user.id,
+            elapsed: Date.now() - loginStart,
           });
+          const { password, ...userWithoutPassword } = user;
           res.json(userWithoutPassword);
         });
         return;

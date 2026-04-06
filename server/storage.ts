@@ -3924,12 +3924,17 @@ export class DbStorage implements IStorage {
     } catch (err) {
       console.error("[getUser] Cache failed, falling back to direct query:", (err as Error).message);
     }
-    const result = await withTimeout(
-      db.select(usersWithoutAttachments).from(users).where(eq(users.id, id)),
-      10000,
-      "getUser:direct",
-    );
-    return result[0] ? decryptUserFields(result[0]) as User : undefined;
+    try {
+      const result = await withTimeout(
+        db.select(usersWithoutAttachments).from(users).where(eq(users.id, id)),
+        10000,
+        "getUser:direct",
+      );
+      return result[0] ? decryptUserFields(result[0]) as User : undefined;
+    } catch (err) {
+      console.error("[getUser] Direct query also failed:", (err as Error).message);
+      return undefined;
+    }
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
@@ -3942,12 +3947,17 @@ export class DbStorage implements IStorage {
     } catch (err) {
       console.error("[getUserByUsername] Cache failed, falling back to direct query:", (err as Error).message);
     }
-    const result = await withTimeout(
-      db.select(usersWithoutAttachments).from(users).where(eq(users.username, username)),
-      10000,
-      "getUserByUsername:direct",
-    );
-    return result[0] ? decryptUserFields(result[0]) as User : undefined;
+    try {
+      const result = await withTimeout(
+        db.select(usersWithoutAttachments).from(users).where(eq(users.username, username)),
+        10000,
+        "getUserByUsername:direct",
+      );
+      return result[0] ? decryptUserFields(result[0]) as User : undefined;
+    } catch (err) {
+      console.error("[getUserByUsername] Direct query also failed:", (err as Error).message);
+      return undefined;
+    }
   }
 
   async getAllUsers(): Promise<User[]> {
@@ -4008,11 +4018,15 @@ export class DbStorage implements IStorage {
     username: string,
     password: string,
   ): Promise<User | null> {
+    const startTime = Date.now();
     let user: User | undefined;
+    let source = "cache";
     try {
       user = await this.getUserByUsername(username);
+      if (!user) source = "cache:not_found";
     } catch (err) {
-      console.error("[VERIFY PASSWORD] Cache lookup failed, trying direct query:", (err as Error).message);
+      console.error("[VERIFY PASSWORD] getUserByUsername failed, trying direct query:", (err as Error).message);
+      source = "direct";
       try {
         const directResult = await withTimeout(
           db.select(usersWithoutAttachments).from(users).where(eq(users.username, username)),
@@ -4020,29 +4034,29 @@ export class DbStorage implements IStorage {
           "verifyPassword:directQuery",
         );
         user = directResult[0] ? decryptUserFields(directResult[0]) as User : undefined;
+        if (!user) source = "direct:not_found";
       } catch (err2) {
         console.error("[VERIFY PASSWORD] Direct query also failed:", (err2 as Error).message);
+        console.log("[VERIFY PASSWORD] All lookups failed", { username, elapsed: Date.now() - startTime });
         return null;
       }
     }
     if (!user) {
-      console.log("[VERIFY PASSWORD] User not found:", username);
+      console.log("[VERIFY PASSWORD] User not found:", { username, source, elapsed: Date.now() - startTime });
       return null;
     }
 
-    // Block login for deleted accounts (soft delete)
     if (user.status === "deleted") {
-      console.log("[VERIFY PASSWORD] Account deleted:", username);
+      console.log("[VERIFY PASSWORD] Account deleted:", { username, elapsed: Date.now() - startTime });
       return null;
     }
 
     const isValid = await bcrypt.compare(password, user.password);
     console.log("[VERIFY PASSWORD]", { 
       username, 
-      userExists: true, 
-      status: user.status,
+      source,
       passwordValid: isValid,
-      hasPasswordHash: !!user.password
+      elapsed: Date.now() - startTime,
     });
     return isValid ? user : null;
   }
