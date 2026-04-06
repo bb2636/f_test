@@ -22,13 +22,13 @@ const PgStore = connectPgSimple(session);
 
 const app = express();
 
-declare module 'http' {
+declare module "http" {
   interface IncomingMessage {
-    rawBody: unknown
+    rawBody: unknown;
   }
 }
 
-declare module 'express-session' {
+declare module "express-session" {
   interface SessionData {
     userId: string;
     userRole: string;
@@ -36,7 +36,9 @@ declare module 'express-session' {
   }
 }
 
-const isProduction = process.env.NODE_ENV === 'production' || process.env.REPLIT_DEPLOYMENT === '1';
+const isProduction =
+  process.env.NODE_ENV === "production" ||
+  process.env.REPLIT_DEPLOYMENT === "1";
 
 console.log("[SESSION CONFIG]", {
   nodeEnv: process.env.NODE_ENV,
@@ -46,15 +48,17 @@ console.log("[SESSION CONFIG]", {
 });
 
 if (isProduction) {
-  app.set('trust proxy', 1);
+  app.set("trust proxy", 1);
   console.log("[SESSION] Trust proxy enabled for production");
 }
 
 const sessionPool = getSessionPool();
 
-const sessionPoolReady = sessionPool.query('SELECT 1').then(() => {
-  console.log("[SESSION] DB pool warmed up (initial connection)");
-  return sessionPool.query(`
+const sessionPoolReady = sessionPool
+  .query("SELECT 1")
+  .then(() => {
+    console.log("[SESSION] DB pool warmed up (initial connection)");
+    return sessionPool.query(`
     CREATE TABLE IF NOT EXISTS "session" (
       "sid" varchar NOT NULL COLLATE "default",
       "sess" json NOT NULL,
@@ -62,21 +66,29 @@ const sessionPoolReady = sessionPool.query('SELECT 1').then(() => {
       CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
     ) WITH (OIDS=FALSE)
   `);
-}).then(() => {
-  return sessionPool.query('SELECT COUNT(*) FROM session');
-}).then((result: any) => {
-  console.log(`[SESSION] Session table ready (${result?.rows?.[0]?.count || 0} sessions)`);
-}).catch((err: any) => {
-  console.error("[SESSION] DB pool warmup failed:", err.message);
-});
+  })
+  .then(() => {
+    return sessionPool.query("SELECT COUNT(*) FROM session");
+  })
+  .then((result: any) => {
+    console.log(
+      `[SESSION] Session table ready (${result?.rows?.[0]?.count || 0} sessions)`,
+    );
+  })
+  .catch((err: any) => {
+    console.error("[SESSION] DB pool warmup failed:", err.message);
+  });
 
 const SESSION_CACHE = new Map<string, { data: any; ts: number }>();
-const SESSION_PENDING = new Map<string, Promise<session.SessionData | null | undefined>>();
+const SESSION_PENDING = new Map<
+  string,
+  Promise<session.SessionData | null | undefined>
+>();
 const SESSION_CACHE_TTL = 60_000;
 
 const pgStore = new PgStore({
   pool: sessionPool as any,
-  tableName: 'session',
+  tableName: "session",
   createTableIfMissing: true,
   pruneSessionInterval: false,
 });
@@ -85,37 +97,49 @@ const originalGet = pgStore.get.bind(pgStore);
 const originalSet = pgStore.set.bind(pgStore);
 const originalDestroy = pgStore.destroy.bind(pgStore);
 
-pgStore.get = function (sid: string, callback: (err: any, session?: session.SessionData | null) => void) {
+pgStore.get = function (
+  sid: string,
+  callback: (err: any, session?: session.SessionData | null) => void,
+) {
   const cached = SESSION_CACHE.get(sid);
-  if (cached && (Date.now() - cached.ts) < SESSION_CACHE_TTL) {
+  if (cached && Date.now() - cached.ts < SESSION_CACHE_TTL) {
     return callback(null, cached.data);
   }
 
   const pending = SESSION_PENDING.get(sid);
   if (pending) {
-    pending.then(data => callback(null, data)).catch(err => callback(err));
+    pending.then((data) => callback(null, data)).catch((err) => callback(err));
     return;
   }
 
-  const promise = new Promise<session.SessionData | null | undefined>((resolve, reject) => {
-    originalGet(sid, (err: any, sessionData: session.SessionData | null | undefined) => {
-      SESSION_PENDING.delete(sid);
-      if (err) {
-        reject(err);
-        return;
-      }
-      if (sessionData) {
-        SESSION_CACHE.set(sid, { data: sessionData, ts: Date.now() });
-      }
-      resolve(sessionData);
-    });
-  });
+  const promise = new Promise<session.SessionData | null | undefined>(
+    (resolve, reject) => {
+      originalGet(
+        sid,
+        (err: any, sessionData: session.SessionData | null | undefined) => {
+          SESSION_PENDING.delete(sid);
+          if (err) {
+            reject(err);
+            return;
+          }
+          if (sessionData) {
+            SESSION_CACHE.set(sid, { data: sessionData, ts: Date.now() });
+          }
+          resolve(sessionData);
+        },
+      );
+    },
+  );
 
   SESSION_PENDING.set(sid, promise);
-  promise.then(data => callback(null, data)).catch(err => callback(err));
+  promise.then((data) => callback(null, data)).catch((err) => callback(err));
 };
 
-pgStore.set = function (sid: string, sessionData: session.SessionData, callback?: (err?: any) => void) {
+pgStore.set = function (
+  sid: string,
+  sessionData: session.SessionData,
+  callback?: (err?: any) => void,
+) {
   SESSION_CACHE.set(sid, { data: sessionData, ts: Date.now() });
   originalSet(sid, sessionData, (err: any) => {
     if (err) console.error("[SESSION] PG set error:", err);
@@ -128,10 +152,14 @@ const SESSION_TOUCH_TIMES = new Map<string, number>();
 const SESSION_TOUCH_INTERVAL = 5 * 60 * 1000;
 
 if (originalTouch) {
-  pgStore.touch = function (sid: string, sess: session.SessionData, callback?: (err?: any) => void) {
+  pgStore.touch = function (
+    sid: string,
+    sess: session.SessionData,
+    callback?: (err?: any) => void,
+  ) {
     const now = Date.now();
     const lastTouched = SESSION_TOUCH_TIMES.get(sid) || 0;
-    if ((now - lastTouched) < SESSION_TOUCH_INTERVAL) {
+    if (now - lastTouched < SESSION_TOUCH_INTERVAL) {
       if (callback) callback();
       return;
     }
@@ -144,50 +172,65 @@ pgStore.destroy = function (sid: string, callback?: (err?: any) => void) {
   SESSION_CACHE.delete(sid);
   SESSION_PENDING.delete(sid);
   SESSION_TOUCH_TIMES.delete(sid);
-  
-  clearSessionById(sid).then((userId) => {
-    if (userId) {
-      console.log("[SESSION] Cleared current_session_id on destroy:", { userId, sessionId: sid });
-    }
-  }).catch((err) => {
-    console.error("[SESSION] Failed to clear current_session_id:", err.message);
-  });
-  
+
+  clearSessionById(sid)
+    .then((userId) => {
+      if (userId) {
+        console.log("[SESSION] Cleared current_session_id on destroy:", {
+          userId,
+          sessionId: sid,
+        });
+      }
+    })
+    .catch((err) => {
+      console.error(
+        "[SESSION] Failed to clear current_session_id:",
+        err.message,
+      );
+    });
+
   originalDestroy(sid, callback);
 };
 
-app.use(session({
-  secret: (() => {
-    const secret = process.env.SESSION_SECRET;
-    if (!secret && isProduction) {
-      throw new Error("SESSION_SECRET must be set in production environment.");
-    }
-    return secret || 'dev-only-session-secret-not-for-production';
-  })(),
-  resave: false,
-  saveUninitialized: false,
-  rolling: true,
-  proxy: isProduction,
-  store: pgStore,
-  cookie: {
-    secure: isProduction,
-    httpOnly: true,
-    maxAge: 30 * 60 * 1000,
-    sameSite: isProduction ? 'none' : 'lax',
-  },
-}));
+app.use(
+  session({
+    secret: (() => {
+      const secret = process.env.SESSION_SECRET;
+      if (!secret && isProduction) {
+        throw new Error(
+          "SESSION_SECRET must be set in production environment.",
+        );
+      }
+      return secret || "dev-only-session-secret-not-for-production";
+    })(),
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    proxy: isProduction,
+    store: pgStore,
+    cookie: {
+      secure: isProduction,
+      httpOnly: true,
+      maxAge: 60 * 1000,
+      // maxAge: 30 * 60 * 1000,
+      sameSite: isProduction ? "none" : "lax",
+    },
+  }),
+);
 
 app.get("/_health", (_req, res) => {
   res.status(200).send("OK");
 });
 
-app.use(express.json({
-  limit: '500mb',
-  verify: (req, _res, buf) => {
-    req.rawBody = buf;
-  }
-}));
-app.use(express.urlencoded({ extended: false, limit: '500mb' }));
+app.use(
+  express.json({
+    limit: "500mb",
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
+app.use(express.urlencoded({ extended: false, limit: "500mb" }));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -223,7 +266,9 @@ app.use((req, res, next) => {
   const warmupStart = Date.now();
   console.log("[STARTUP] Warming up database connections...");
   await Promise.all([dbPoolReady, sessionPoolReady]);
-  console.log(`[STARTUP] Database connections ready (${Date.now() - warmupStart}ms)`);
+  console.log(
+    `[STARTUP] Database connections ready (${Date.now() - warmupStart}ms)`,
+  );
 
   const server = await registerRoutes(app);
 
@@ -241,43 +286,48 @@ app.use((req, res, next) => {
     await setupVite(app, server);
   }
 
-  const port = parseInt(process.env.PORT || '5000', 10);
-  
+  const port = parseInt(process.env.PORT || "5000", 10);
+
   server.timeout = 300000;
   server.keepAliveTimeout = 120000;
   server.headersTimeout = 310000;
-  
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port} (timeout: ${server.timeout}ms)`);
 
-    warmUpUsersCache();
-    warmUpCasesCache();
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port} (timeout: ${server.timeout}ms)`);
 
-    (async () => {
-      try {
-        const migratedCount = await storage.migrateExistingCaseDates();
-        if (migratedCount > 0) {
-          log(`Date migration completed: ${migratedCount} cases updated`);
-        }
-      } catch (error) {
-        console.error("Date migration failed:", error);
-      }
+      warmUpUsersCache();
+      warmUpCasesCache();
 
-      initializeEmailTransporter();
-
-      if (process.env.PII_ENCRYPTION_KEY) {
+      (async () => {
         try {
-          await runPiiBackfill();
+          const migratedCount = await storage.migrateExistingCaseDates();
+          if (migratedCount > 0) {
+            log(`Date migration completed: ${migratedCount} cases updated`);
+          }
         } catch (error) {
-          console.error("[PII Backfill] Failed:", error);
+          console.error("Date migration failed:", error);
         }
-      } else {
-        console.log("[PII] PII_ENCRYPTION_KEY not set - encryption disabled (plaintext mode)");
-      }
-    })();
-  });
+
+        initializeEmailTransporter();
+
+        if (process.env.PII_ENCRYPTION_KEY) {
+          try {
+            await runPiiBackfill();
+          } catch (error) {
+            console.error("[PII Backfill] Failed:", error);
+          }
+        } else {
+          console.log(
+            "[PII] PII_ENCRYPTION_KEY not set - encryption disabled (plaintext mode)",
+          );
+        }
+      })();
+    },
+  );
 })();
