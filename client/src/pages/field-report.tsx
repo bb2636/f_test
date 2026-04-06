@@ -3038,33 +3038,33 @@ export default function FieldReport() {
                   {caseData.assignedPartnerManager || "미정"}
                 </span>
               </div>
+              {caseData.insuredAddress && (
+                <div className="flex items-center gap-1.5">
+                  <span
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "16px",
+                      fontWeight: 400,
+                      letterSpacing: "-0.02em",
+                      color: "rgba(12, 12, 12, 0.5)",
+                    }}
+                  >
+                    주소
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "16px",
+                      fontWeight: 400,
+                      letterSpacing: "-0.02em",
+                      color: "rgba(12, 12, 12, 0.7)",
+                    }}
+                  >
+                    {caseData.insuredAddress}{caseData.victimAddressDetail ? ` (${caseData.victimAddressDetail})` : ""}
+                  </span>
+                </div>
+              )}
             </div>
-            {caseData.insuredAddress && (
-              <div className="flex items-center gap-1.5" style={{ paddingLeft: "24px", marginTop: "4px" }}>
-                <span
-                  style={{
-                    fontFamily: "Pretendard",
-                    fontSize: "16px",
-                    fontWeight: 400,
-                    letterSpacing: "-0.02em",
-                    color: "rgba(12, 12, 12, 0.5)",
-                  }}
-                >
-                  주소
-                </span>
-                <span
-                  style={{
-                    fontFamily: "Pretendard",
-                    fontSize: "16px",
-                    fontWeight: 400,
-                    letterSpacing: "-0.02em",
-                    color: "rgba(12, 12, 12, 0.7)",
-                  }}
-                >
-                  {caseData.insuredAddress}{caseData.victimAddressDetail ? ` (${caseData.victimAddressDetail})` : ""}
-                </span>
-              </div>
-            )}
           </div>
         </div>
       </div>
