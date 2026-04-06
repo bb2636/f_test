@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Search, X, ChevronDown, ChevronUp, Upload, ChevronRight, Download, Printer, CheckCircle2, Star, ZoomIn, Trash2, Shield, ArrowUpDown } from "lucide-react";
@@ -436,6 +436,10 @@ export default function AdminSettings() {
   const [showNoticeCancelConfirmModal, setShowNoticeCancelConfirmModal] = useState(false);
   const [noticeTitle, setNoticeTitle] = useState("");
   const [noticeContent, setNoticeContent] = useState("");
+  const [noticeImages, setNoticeImages] = useState<Array<{ url: string; fileName: string; storageKey: string; fileSize: number; fileType: string }>>([]);
+  const [noticeImageUploading, setNoticeImageUploading] = useState(false);
+  const [noticeImageDragging, setNoticeImageDragging] = useState(false);
+  const noticeImageInputRef = useRef<HTMLInputElement>(null);
   const [viewingNotice, setViewingNotice] = useState<Notice | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ type: "inquiry" | "notice"; id: string; title: string } | null>(null);
   const [createAccountForm, setCreateAccountForm] = useState({
@@ -1111,8 +1115,36 @@ export default function AdminSettings() {
   });
 
   // Notice mutations
+  const handleNoticeImageUpload = async (files: FileList | File[]) => {
+    const imageFiles = Array.from(files).filter((f) =>
+      ["image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp"].includes(f.type)
+    );
+    if (imageFiles.length === 0) {
+      toast({ title: "업로드 오류", description: "이미지 파일만 업로드할 수 있습니다 (jpg, png, gif, webp, bmp)", variant: "destructive" });
+      return;
+    }
+    setNoticeImageUploading(true);
+    try {
+      for (const file of imageFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/notices/upload-image", { method: "POST", credentials: "include", body: formData });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "이미지 업로드 실패");
+        }
+        const data = await res.json();
+        setNoticeImages((prev) => [...prev, data]);
+      }
+    } catch (error: any) {
+      toast({ title: "업로드 실패", description: error.message || "이미지 업로드 중 오류가 발생했습니다.", variant: "destructive" });
+    } finally {
+      setNoticeImageUploading(false);
+    }
+  };
+
   const createNoticeMutation = useMutation({
-    mutationFn: async (data: { title: string; content: string }) => {
+    mutationFn: async (data: { title: string; content: string; images?: Array<{ url: string; fileName: string; storageKey: string; fileSize: number; fileType: string }> }) => {
       return await apiRequest("POST", "/api/notices", data);
     },
     onSuccess: () => {
@@ -1120,6 +1152,7 @@ export default function AdminSettings() {
       setShowAddNoticeModal(false);
       setNoticeTitle("");
       setNoticeContent("");
+      setNoticeImages([]);
       toast({
         description: (
           <div className="flex items-center gap-3">
@@ -9613,6 +9646,7 @@ export default function AdminSettings() {
                 setShowAddNoticeModal(false);
                 setNoticeTitle("");
                 setNoticeContent("");
+                setNoticeImages([]);
               }
             }}
             data-testid="modal-overlay-add-notice"
@@ -9623,6 +9657,8 @@ export default function AdminSettings() {
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50"
             style={{
               width: "420px",
+              maxHeight: "90vh",
+              overflowY: "auto",
               background: "#FDFDFD",
               borderRadius: "12px",
               padding: "24px",
@@ -9722,16 +9758,147 @@ export default function AdminSettings() {
               </div>
             </div>
 
+            {/* Image Upload */}
+            <div className="mb-2 mt-4">
+              <label
+                className="block mb-2"
+                style={{
+                  fontFamily: "Pretendard",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  color: "#0C0C0C",
+                }}
+              >
+                이미지 첨부
+              </label>
+              <input
+                ref={noticeImageInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    handleNoticeImageUpload(e.target.files);
+                    e.target.value = "";
+                  }
+                }}
+                data-testid="input-notice-image-upload"
+              />
+              <div
+                className="rounded-xl p-6 transition-all cursor-pointer"
+                style={{
+                  background: noticeImageDragging ? "rgba(0, 143, 237, 0.08)" : "rgba(0, 143, 237, 0.03)",
+                  border: "none",
+                }}
+                onDragOver={(e) => { e.preventDefault(); setNoticeImageDragging(true); }}
+                onDragLeave={() => setNoticeImageDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setNoticeImageDragging(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleNoticeImageUpload(e.dataTransfer.files);
+                  }
+                }}
+                onClick={() => noticeImageInputRef.current?.click()}
+                data-testid="notice-image-upload-area"
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ background: "rgba(0, 143, 237, 0.1)" }}
+                  >
+                    <Upload className="w-6 h-6" style={{ color: "#008FED" }} />
+                  </div>
+                  <div className="text-center">
+                    <div
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "13px",
+                        fontWeight: 400,
+                        letterSpacing: "-0.02em",
+                        color: "rgba(12, 12, 12, 0.5)",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      {noticeImageUploading ? "업로드 중..." : "이미지를 이곳에 올려주세요"}
+                    </div>
+                    <span
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        letterSpacing: "-0.02em",
+                        color: "#008FED",
+                      }}
+                    >
+                      파일 찾기
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {noticeImages.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {noticeImages.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 p-2 rounded-lg"
+                      style={{ background: "rgba(0, 0, 0, 0.03)" }}
+                    >
+                      <img
+                        src={img.url}
+                        alt={img.fileName}
+                        className="w-12 h-12 rounded object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className="truncate"
+                          style={{
+                            fontFamily: "Pretendard",
+                            fontSize: "13px",
+                            fontWeight: 400,
+                            color: "#0C0C0C",
+                          }}
+                        >
+                          {img.fileName}
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: "Pretendard",
+                            fontSize: "11px",
+                            color: "#686A6E",
+                          }}
+                        >
+                          {(img.fileSize / 1024).toFixed(1)}KB
+                        </div>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setNoticeImages((prev) => prev.filter((_, i) => i !== idx));
+                        }}
+                        className="p-1 rounded hover:bg-gray-200"
+                        data-testid={`button-remove-notice-image-${idx}`}
+                      >
+                        <X className="w-4 h-4" style={{ color: "#686A6E" }} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Buttons */}
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
-                  if (noticeTitle.trim() || noticeContent.trim()) {
+                  if (noticeTitle.trim() || noticeContent.trim() || noticeImages.length > 0) {
                     setShowNoticeCancelConfirmModal(true);
                   } else {
                     setShowAddNoticeModal(false);
                     setNoticeTitle("");
                     setNoticeContent("");
+                    setNoticeImages([]);
                   }
                 }}
                 className="flex-1 py-3"
@@ -9847,6 +10014,7 @@ export default function AdminSettings() {
                   createNoticeMutation.mutate({
                     title: noticeTitle.trim(),
                     content: noticeContent.trim(),
+                    images: noticeImages.length > 0 ? noticeImages : undefined,
                   });
                   setShowNoticeConfirmModal(false);
                 }}
@@ -9943,6 +10111,7 @@ export default function AdminSettings() {
                   setShowAddNoticeModal(false);
                   setNoticeTitle("");
                   setNoticeContent("");
+                  setNoticeImages([]);
                 }}
                 className="flex-1 py-3"
                 style={{
@@ -10092,6 +10261,42 @@ export default function AdminSettings() {
                 {viewingNotice.content}
               </div>
             </div>
+
+            {viewingNotice.images && (() => {
+              try {
+                const imgs = JSON.parse(viewingNotice.images);
+                if (Array.isArray(imgs) && imgs.length > 0) {
+                  return (
+                    <div className="mb-4">
+                      <label
+                        className="block mb-2"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "14px",
+                          fontWeight: 500,
+                          color: "#0C0C0C",
+                        }}
+                      >
+                        첨부 이미지
+                      </label>
+                      <div className="space-y-2">
+                        {imgs.map((img: any, i: number) => (
+                          <img
+                            key={i}
+                            src={img.url}
+                            alt={img.fileName || "첨부 이미지"}
+                            className="w-full rounded-lg border border-slate-200 cursor-pointer"
+                            style={{ maxHeight: "300px", objectFit: "contain" }}
+                            onClick={() => window.open(img.url, "_blank")}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              } catch { return null; }
+            })()}
 
             {/* Close Button */}
             <div className="flex justify-center">

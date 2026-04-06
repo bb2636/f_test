@@ -8647,9 +8647,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "제목과 내용을 입력해주세요" });
       }
 
+      const { images } = req.body;
+
       const notice = await storage.createNotice({
         title,
         content,
+        images: images ? JSON.stringify(images) : null,
         authorId: req.session.userId,
       });
 
@@ -8678,13 +8681,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const { id } = req.params;
-      const { title, content } = req.body;
+      const { title, content, images } = req.body;
 
       if (!title || !content) {
         return res.status(400).json({ error: "제목과 내용을 입력해주세요" });
       }
 
-      const updated = await storage.updateNotice(id, { title, content });
+      const updated = await storage.updateNotice(id, { title, content, images: images ? JSON.stringify(images) : null });
 
       if (!updated) {
         return res.status(404).json({ error: "공지사항을 찾을 수 없습니다" });
@@ -8723,6 +8726,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .status(500)
         .json({ error: "공지사항을 삭제하는 중 오류가 발생했습니다" });
     }
+  });
+
+  app.post("/api/notices/upload-image", (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+
+    multipartUploadLimit.single("file")(req, res, async (multerErr) => {
+      if (multerErr) {
+        return res.status(400).json({ error: "파일 업로드 실패: " + multerErr.message });
+      }
+
+      try {
+        const user = await storage.getUser(req.session!.userId!);
+        if (!user || user.role !== "관리자") {
+          return res.status(403).json({ error: "관리자만 이미지를 업로드할 수 있습니다" });
+        }
+
+        const file = req.file;
+        if (!file) {
+          return res.status(400).json({ error: "파일이 없습니다" });
+        }
+
+        const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp"];
+        if (!allowedTypes.includes(file.mimetype)) {
+          return res.status(400).json({ error: "이미지 파일만 업로드할 수 있습니다 (jpg, png, gif, webp, bmp)" });
+        }
+
+        const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+        if (!bucketId) {
+          return res.status(500).json({ error: "Object Storage 설정이 필요합니다" });
+        }
+
+        const bucket = objectStorageClient.bucket(bucketId);
+        const ext = file.originalname.split(".").pop() || "jpg";
+        const objectName = `public/notice-images/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const bucketFile = bucket.file(objectName);
+
+        await bucketFile.save(file.buffer, {
+          contentType: file.mimetype,
+          metadata: {
+            "custom:aclPolicy": JSON.stringify({
+              owner: user.id,
+              visibility: "public",
+            }),
+          },
+        });
+
+        const SIGNED_URL_TTL_SEC = 365 * 24 * 60 * 60;
+        const imageUrl = await signObjectURL({
+          bucketName: bucketId,
+          objectName,
+          method: "GET",
+          ttlSec: SIGNED_URL_TTL_SEC,
+        });
+
+        res.json({
+          url: imageUrl,
+          fileName: file.originalname,
+          storageKey: `${bucketId}/${objectName}`,
+          fileSize: file.size,
+          fileType: file.mimetype,
+        });
+      } catch (error) {
+        console.error("Notice image upload error:", error);
+        res.status(500).json({ error: "이미지 업로드 중 오류가 발생했습니다" });
+      }
+    });
   });
 
   // Get change logs for a specific case

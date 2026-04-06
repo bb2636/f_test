@@ -477,7 +477,7 @@ export interface IStorage {
   createNotice(data: InsertNotice): Promise<Notice>;
   updateNotice(
     id: string,
-    data: { title: string; content: string },
+    data: { title: string; content: string; images?: string | null },
   ): Promise<Notice | null>;
   deleteNotice(id: string): Promise<void>;
   deleteInquiry(id: string): Promise<void>;
@@ -2668,7 +2668,7 @@ export class MemStorage implements IStorage {
 
   async updateNotice(
     id: string,
-    data: { title: string; content: string },
+    data: { title: string; content: string; images?: string | null },
   ): Promise<Notice | null> {
     throw new Error("Notice methods not implemented in MemStorage");
   }
@@ -6253,13 +6253,14 @@ export class DbStorage implements IStorage {
 
   async updateNotice(
     id: string,
-    data: { title: string; content: string },
+    data: { title: string; content: string; images?: string | null },
   ): Promise<Notice | null> {
     const [updated] = await db
       .update(notices)
       .set({
         title: data.title,
         content: data.content,
+        images: data.images !== undefined ? data.images : undefined,
         updatedAt: new Date(),
       })
       .where(eq(notices.id, id))

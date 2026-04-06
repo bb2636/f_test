@@ -1645,6 +1645,28 @@ export default function Dashboard() {
                       {notice.content}
                     </p>
                   )}
+                  {notice.images && (() => {
+                    try {
+                      const imgs = JSON.parse(notice.images);
+                      if (Array.isArray(imgs) && imgs.length > 0) {
+                        return (
+                          <div className="mt-3 space-y-2">
+                            {imgs.map((img: any, i: number) => (
+                              <img
+                                key={i}
+                                src={img.url}
+                                alt={img.fileName || "첨부 이미지"}
+                                className="w-full rounded-lg border border-slate-200 cursor-pointer"
+                                style={{ maxHeight: "300px", objectFit: "contain" }}
+                                onClick={() => window.open(img.url, "_blank")}
+                              />
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    } catch { return null; }
+                  })()}
                 </div>
               ))
             )}
