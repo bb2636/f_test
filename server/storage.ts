@@ -85,6 +85,8 @@ import { encryptUserFields, decryptUserFields, encryptCaseFields, decryptCaseFie
 const SALT_ROUNDS = 10;
 
 const USERS_CACHE_TTL = 5 * 60 * 1000;
+const USERS_STALE_TTL = 30 * 1000;
+const DB_QUERY_TIMEOUT = 15000;
 let usersCache: User[] | null = null;
 let usersCacheTime = 0;
 let usersCacheFetching: Promise<User[]> | null = null;
@@ -92,6 +94,16 @@ let usersCacheFetching: Promise<User[]> | null = null;
 export function invalidateUsersCache() {
   usersCache = null;
   usersCacheTime = 0;
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`[TIMEOUT] ${label} exceeded ${ms}ms`)), ms);
+    promise.then(
+      (val) => { clearTimeout(timer); resolve(val); },
+      (err) => { clearTimeout(timer); reject(err); },
+    );
+  });
 }
 
 async function getCachedUsers(): Promise<User[]> {
@@ -102,15 +114,25 @@ async function getCachedUsers(): Promise<User[]> {
   if (usersCacheFetching) {
     return usersCacheFetching;
   }
+  const staleCache = usersCache;
   usersCacheFetching = (async () => {
     try {
-      const result = await db
-        .select()
-        .from(users)
-        .where(eq(users.status, "active"));
+      const result = await withTimeout(
+        db.select().from(users).where(eq(users.status, "active")),
+        DB_QUERY_TIMEOUT,
+        "getCachedUsers",
+      );
       usersCache = result;
       usersCacheTime = Date.now();
       return result;
+    } catch (err) {
+      console.error("[CACHE] getCachedUsers failed:", (err as Error).message);
+      if (staleCache) {
+        console.log("[CACHE] Returning stale users cache");
+        usersCacheTime = Date.now() - USERS_CACHE_TTL + USERS_STALE_TTL;
+        return staleCache;
+      }
+      return [];
     } finally {
       usersCacheFetching = null;
     }
@@ -119,6 +141,7 @@ async function getCachedUsers(): Promise<User[]> {
 }
 
 const CASES_CACHE_TTL = 30 * 1000;
+const CASES_STALE_TTL = 15 * 1000;
 let casesRawCache: { cases: any[]; progress: any[]; ts: number } | null = null;
 let casesRawFetching: Promise<{ cases: any[]; progress: any[] }> | null = null;
 
@@ -130,14 +153,31 @@ async function getCachedCasesRaw(): Promise<{ cases: any[]; progress: any[] }> {
   if (casesRawFetching) {
     return casesRawFetching;
   }
+  const staleCache = casesRawCache;
   casesRawFetching = (async () => {
     try {
       const [allCases, allProgress] = await Promise.all([
-        db.select().from(cases).orderBy(asc(cases.createdAt)),
-        db.select().from(progressUpdates),
+        withTimeout(
+          db.select().from(cases).orderBy(asc(cases.createdAt)),
+          DB_QUERY_TIMEOUT,
+          "getCachedCasesRaw:cases",
+        ),
+        withTimeout(
+          db.select().from(progressUpdates),
+          DB_QUERY_TIMEOUT,
+          "getCachedCasesRaw:progress",
+        ),
       ]);
       casesRawCache = { cases: allCases, progress: allProgress, ts: Date.now() };
       return { cases: allCases, progress: allProgress };
+    } catch (err) {
+      console.error("[CACHE] getCachedCasesRaw failed:", (err as Error).message);
+      if (staleCache) {
+        console.log("[CACHE] Returning stale cases cache");
+        staleCache.ts = Date.now() - CASES_CACHE_TTL + CASES_STALE_TTL;
+        return { cases: staleCache.cases, progress: staleCache.progress };
+      }
+      return { cases: [], progress: [] };
     } finally {
       casesRawFetching = null;
     }
@@ -3902,7 +3942,23 @@ export class DbStorage implements IStorage {
     username: string,
     password: string,
   ): Promise<User | null> {
-    const user = await this.getUserByUsername(username);
+    let user: User | undefined;
+    try {
+      user = await this.getUserByUsername(username);
+    } catch (err) {
+      console.error("[VERIFY PASSWORD] Cache lookup failed, trying direct query:", (err as Error).message);
+      try {
+        const directResult = await withTimeout(
+          db.select().from(users).where(eq(users.username, username)),
+          10000,
+          "verifyPassword:directQuery",
+        );
+        user = directResult[0] ? decryptUserFields(directResult[0]) as User : undefined;
+      } catch (err2) {
+        console.error("[VERIFY PASSWORD] Direct query also failed:", (err2 as Error).message);
+        return null;
+      }
+    }
     if (!user) {
       console.log("[VERIFY PASSWORD] User not found:", username);
       return null;

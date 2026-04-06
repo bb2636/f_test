@@ -16,6 +16,7 @@ export function getSessionPool(): Pool {
       connectionString: sessionDbUrl,
       max: 10,
       connectionTimeoutMillis: 10000,
+      idleTimeoutMillis: 30000,
     });
   }
   return _sessionPool;

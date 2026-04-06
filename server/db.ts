@@ -35,6 +35,7 @@ export const pool = new Pool({
   connectionString: databaseUrl,
   max: 20,
   connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
 });
 
 export const dbPoolReady = pool.query('SELECT 1').then(() => {
