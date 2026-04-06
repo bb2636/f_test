@@ -3039,7 +3039,7 @@ export default function FieldReport() {
                 </span>
               </div>
             </div>
-            {(caseData.insuredAddress || caseData.insuredAddressDetail) && (
+            {caseData.insuredAddress && (
               <div
                 style={{
                   paddingLeft: "24px",
@@ -3055,7 +3055,7 @@ export default function FieldReport() {
                     color: "rgba(12, 12, 12, 0.5)",
                   }}
                 >
-                  {caseData.insuredAddress || ""}{caseData.insuredAddressDetail ? ` (${caseData.insuredAddressDetail})` : ""}
+                  {caseData.insuredAddress}{caseData.victimAddressDetail ? ` (${caseData.victimAddressDetail})` : ""}
                 </span>
               </div>
             )}

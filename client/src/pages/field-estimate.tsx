@@ -4450,7 +4450,7 @@ export default function FieldEstimate() {
               <span>피보험자 {selectedCase.policyHolderName || selectedCase.clientName || "미정"}</span>
               <span>담당자 {selectedCase.assignedPartnerManager || "미정"}</span>
             </div>
-            {(selectedCase.insuredAddress || selectedCase.insuredAddressDetail) && (
+            {selectedCase.insuredAddress && (
               <div
                 style={{
                   fontFamily: "Pretendard",
@@ -4462,7 +4462,7 @@ export default function FieldEstimate() {
                   marginTop: "4px",
                 }}
               >
-                {selectedCase.insuredAddress || ""}{selectedCase.insuredAddressDetail ? ` (${selectedCase.insuredAddressDetail})` : ""}
+                {selectedCase.insuredAddress}{selectedCase.victimAddressDetail ? ` (${selectedCase.victimAddressDetail})` : ""}
               </div>
             )}
           </div>

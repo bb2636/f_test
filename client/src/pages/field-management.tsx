@@ -946,9 +946,9 @@ export default function FieldManagement() {
                 <span>피보험자 {selectedCaseData.insuredName || "-"}</span>
                 <span>담당자 {selectedCaseData.assignedPartnerManager || "-"}</span>
               </div>
-              {(selectedCaseData.insuredAddress || selectedCaseData.insuredAddressDetail) && (
+              {selectedCaseData.insuredAddress && (
                 <div className="mt-1 text-[12px] text-[#6B7280]" style={{ paddingLeft: "0px" }}>
-                  {selectedCaseData.insuredAddress || ""}{selectedCaseData.insuredAddressDetail ? ` (${selectedCaseData.insuredAddressDetail})` : ""}
+                  {selectedCaseData.insuredAddress}{selectedCaseData.victimAddressDetail ? ` (${selectedCaseData.victimAddressDetail})` : ""}
                 </div>
               )}
             </div>
