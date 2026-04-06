@@ -278,9 +278,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (req.session) {
-        const existingSessionId = await getCurrentSessionId(user.id);
+        let existingSessionId: string | null = null;
+        try {
+          const p = getCurrentSessionId(user.id);
+          const t = new Promise<string | null>((_, reject) => setTimeout(() => reject(new Error("[TIMEOUT] login:getCurrentSessionId exceeded 5000ms")), 5000));
+          existingSessionId = await Promise.race([p, t]);
+        } catch (err: any) {
+          console.error("[LOGIN] getCurrentSessionId failed, proceeding without old session cleanup:", err.message);
+        }
         if (existingSessionId && existingSessionId !== req.sessionID) {
-          await destroyPgSession(getSessionPool(), existingSessionId);
+          await destroyPgSession(getSessionPool(), existingSessionId).catch((err: any) => {
+            console.error("[LOGIN] destroyPgSession failed:", err.message);
+          });
           console.log("[LOGIN] Destroyed existing PG session for userId:", user.id, "old sessionId:", existingSessionId);
         }
 
@@ -306,7 +315,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               .json({ error: "세션 저장 중 오류가 발생했습니다" });
           }
           try {
-            await setCurrentSession(user.id, req.sessionID);
+            const setP = setCurrentSession(user.id, req.sessionID);
+            const setT = new Promise<void>((_, reject) => setTimeout(() => reject(new Error("[TIMEOUT] setCurrentSession exceeded 5000ms")), 5000));
+            await Promise.race([setP, setT]);
           } catch (dbErr: any) {
             console.error("[LOGIN] Failed to set current_session_id:", dbErr.message);
             return res.status(500).json({ error: "로그인 처리 중 오류가 발생했습니다" });
@@ -339,9 +350,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const currentSid = req.sessionID;
       if (userId) {
-        const dbSessionId = await getCurrentSessionId(userId);
-        if (dbSessionId === currentSid) {
-          await clearCurrentSession(userId);
+        try {
+          const p = getCurrentSessionId(userId);
+          const t = new Promise<string | null>((_, reject) => setTimeout(() => reject(new Error("[TIMEOUT] logout:getCurrentSessionId exceeded 5000ms")), 5000));
+          const dbSessionId = await Promise.race([p, t]);
+          if (dbSessionId === currentSid) {
+            await Promise.race([
+              clearCurrentSession(userId),
+              new Promise<void>((_, reject) => setTimeout(() => reject(new Error("[TIMEOUT] logout:clearCurrentSession exceeded 5000ms")), 5000)),
+            ]);
+          }
+        } catch (err: any) {
+          console.error("[LOGOUT] Session cleanup failed, proceeding with destroy:", err.message);
         }
       }
       req.session.destroy((err) => {
@@ -449,15 +469,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check session endpoint
   app.get("/api/check-session", async (req, res) => {
     if (req.session?.userId) {
-      const dbSessionId = await getCurrentSessionId(req.session.userId);
-      if (dbSessionId && dbSessionId !== req.sessionID) {
-        console.log("[CHECK-SESSION] Session invalidated - newer login exists", {
-          userId: req.session.userId,
-          currentSessionId: req.sessionID,
-          activeSessionId: dbSessionId,
-        });
-        req.session.destroy(() => {});
-        return res.json({ authenticated: false, reason: "DUPLICATE_LOGIN" });
+      try {
+        const p = getCurrentSessionId(req.session.userId);
+        const t = new Promise<string | null>((_, reject) => setTimeout(() => reject(new Error("[TIMEOUT] check-session:getCurrentSessionId exceeded 5000ms")), 5000));
+        const dbSessionId = await Promise.race([p, t]);
+        if (dbSessionId && dbSessionId !== req.sessionID) {
+          console.log("[CHECK-SESSION] Session invalidated - newer login exists", {
+            userId: req.session.userId,
+            currentSessionId: req.sessionID,
+            activeSessionId: dbSessionId,
+          });
+          req.session.destroy(() => {});
+          return res.json({ authenticated: false, reason: "DUPLICATE_LOGIN" });
+        }
+      } catch (err: any) {
+        console.error("[CHECK-SESSION] getCurrentSessionId failed:", err.message);
+        return res.json({ authenticated: false });
       }
       
       const user = await storage.getUser(req.session.userId);

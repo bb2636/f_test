@@ -3961,7 +3961,12 @@ export class DbStorage implements IStorage {
   }
 
   async getAllUsers(): Promise<User[]> {
-    const cached = await getCachedUsers();
+    let cached: User[] = [];
+    try {
+      cached = await getCachedUsers();
+    } catch (err) {
+      console.error("[getAllUsers] Cache failed:", (err as Error).message);
+    }
     if (cached.length > 0) {
       return cached.map(u => decryptUserFields(u) as User);
     }
