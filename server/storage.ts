@@ -84,6 +84,41 @@ import { encryptUserFields, decryptUserFields, encryptCaseFields, decryptCaseFie
 
 const SALT_ROUNDS = 10;
 
+const usersWithoutAttachments = {
+  id: users.id,
+  username: users.username,
+  password: users.password,
+  role: users.role,
+  name: users.name,
+  company: users.company,
+  department: users.department,
+  position: users.position,
+  email: users.email,
+  phone: users.phone,
+  office: users.office,
+  address: users.address,
+  addressDetail: users.addressDetail,
+  emailEnc: users.emailEnc,
+  phoneEnc: users.phoneEnc,
+  addressEnc: users.addressEnc,
+  addressDetailEnc: users.addressDetailEnc,
+  emailHash: users.emailHash,
+  phoneHash: users.phoneHash,
+  businessRegistrationNumber: users.businessRegistrationNumber,
+  representativeName: users.representativeName,
+  bankName: users.bankName,
+  accountNumber: users.accountNumber,
+  accountHolder: users.accountHolder,
+  serviceRegions: users.serviceRegions,
+  accountType: users.accountType,
+  isSuperAdmin: users.isSuperAdmin,
+  status: users.status,
+  mustChangePassword: users.mustChangePassword,
+  currentSessionId: users.currentSessionId,
+  lastLoginAt: users.lastLoginAt,
+  createdAt: users.createdAt,
+};
+
 const USERS_CACHE_TTL = 5 * 60 * 1000;
 const USERS_STALE_TTL = 30 * 1000;
 const DB_QUERY_TIMEOUT = 30000;
@@ -118,7 +153,7 @@ async function getCachedUsers(): Promise<User[]> {
   usersCacheFetching = (async () => {
     try {
       const result = await withTimeout(
-        db.select().from(users).where(eq(users.status, "active")),
+        db.select(usersWithoutAttachments).from(users).where(eq(users.status, "active")),
         DB_QUERY_TIMEOUT,
         "getCachedUsers",
       );
@@ -1771,7 +1806,7 @@ export class MemStorage implements IStorage {
     allCases.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
     // 모든 사용자 정보 가져오기 (담당자 이름 조회용)
-    const allUsers = await db.select().from(users);
+    const allUsers = await db.select(usersWithoutAttachments).from(users);
     const userMap = new Map(allUsers.map((u) => [u.id, u]));
 
     // 각 케이스의 최신 진행상황 및 담당자 이름 찾기
@@ -2969,7 +3004,7 @@ export class DbStorage implements IStorage {
   private async initDatabase() {
     try {
       // Check if we have any users
-      const existingUsers = await db.select().from(users);
+      const existingUsers = await db.select(usersWithoutAttachments).from(users);
 
       // Seed users if no users exist (only for fresh database)
       if (existingUsers.length === 0) {
@@ -3152,7 +3187,7 @@ export class DbStorage implements IStorage {
     const currentDate = getKSTDate();
 
     // Get users for case assignment
-    const allUsers = await db.select().from(users);
+    const allUsers = await db.select(usersWithoutAttachments).from(users);
     const admin01 = allUsers.find((u) => u.username === "admin01");
     const assessor01 = allUsers.find((u) => u.username === "assessor01");
     const assessor02 = allUsers.find((u) => u.username === "assessor02");
@@ -3395,7 +3430,7 @@ export class DbStorage implements IStorage {
 
       // Get admin user for createdBy
       const adminUsers = await db
-        .select()
+        .select(usersWithoutAttachments)
         .from(users)
         .where(sql`${users.role} = '관리자'`);
       const admin01 = adminUsers.find((u) => u.username === "admin01");
@@ -3890,7 +3925,7 @@ export class DbStorage implements IStorage {
       console.error("[getUser] Cache failed, falling back to direct query:", (err as Error).message);
     }
     const result = await withTimeout(
-      db.select().from(users).where(eq(users.id, id)),
+      db.select(usersWithoutAttachments).from(users).where(eq(users.id, id)),
       10000,
       "getUser:direct",
     );
@@ -3908,7 +3943,7 @@ export class DbStorage implements IStorage {
       console.error("[getUserByUsername] Cache failed, falling back to direct query:", (err as Error).message);
     }
     const result = await withTimeout(
-      db.select().from(users).where(eq(users.username, username)),
+      db.select(usersWithoutAttachments).from(users).where(eq(users.username, username)),
       10000,
       "getUserByUsername:direct",
     );
@@ -3923,7 +3958,7 @@ export class DbStorage implements IStorage {
     console.log("[getAllUsers] Cache empty, falling back to direct query");
     try {
       const result = await withTimeout(
-        db.select().from(users).where(eq(users.status, "active")),
+        db.select(usersWithoutAttachments).from(users).where(eq(users.status, "active")),
         DB_QUERY_TIMEOUT,
         "getAllUsers:direct",
       );
@@ -3980,7 +4015,7 @@ export class DbStorage implements IStorage {
       console.error("[VERIFY PASSWORD] Cache lookup failed, trying direct query:", (err as Error).message);
       try {
         const directResult = await withTimeout(
-          db.select().from(users).where(eq(users.username, username)),
+          db.select(usersWithoutAttachments).from(users).where(eq(users.username, username)),
           10000,
           "verifyPassword:directQuery",
         );
@@ -4111,7 +4146,7 @@ export class DbStorage implements IStorage {
     // 협력사가 배당되어 있지만 담당자 정보가 없는 경우 자동 채우기
     if (caseData.assignedPartner && (!caseData.assignedPartnerManager || !caseData.assignedPartnerContact)) {
       const partnerUsers = await db
-        .select()
+        .select(usersWithoutAttachments)
         .from(users)
         .where(
           and(
@@ -5022,7 +5057,7 @@ export class DbStorage implements IStorage {
   async getPartnerStats(): Promise<PartnerStats[]> {
     const allCases = await db.select().from(cases);
     const allUsers = await db
-      .select()
+      .select(usersWithoutAttachments)
       .from(users)
       .where(eq(users.role, "협력사"));
 
@@ -5090,7 +5125,7 @@ export class DbStorage implements IStorage {
     // Get all cases and users
     const allCases = await db.select().from(cases);
     const allUsers = await db
-      .select()
+      .select(usersWithoutAttachments)
       .from(users)
       .where(eq(users.status, "active"));
 
