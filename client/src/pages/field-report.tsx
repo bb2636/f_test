@@ -3040,7 +3040,7 @@ export default function FieldReport() {
               </div>
             </div>
             {caseData.insuredAddress && (
-              <div className="flex items-center gap-1.5" style={{ marginTop: "4px" }}>
+              <div className="flex items-center gap-1.5" style={{ paddingLeft: "24px", marginTop: "4px" }}>
                 <span
                   style={{
                     fontFamily: "Pretendard",
