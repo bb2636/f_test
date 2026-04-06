@@ -93,7 +93,6 @@ const pgStore = new PgStore({
   pruneSessionInterval: false,
 });
 
-const originalGet = pgStore.get.bind(pgStore);
 const originalSet = pgStore.set.bind(pgStore);
 const originalDestroy = pgStore.destroy.bind(pgStore);
 
@@ -114,14 +113,16 @@ pgStore.get = function (
 
   const promise = new Promise<session.SessionData | null | undefined>(
     (resolve, reject) => {
-      originalGet(
-        sid,
-        (err: any, sessionData: session.SessionData | null | undefined) => {
+      sessionPool.query(
+        'SELECT sess FROM session WHERE sid = $1',
+        [sid],
+        (err: any, result: any) => {
           SESSION_PENDING.delete(sid);
           if (err) {
             reject(err);
             return;
           }
+          const sessionData = result?.rows?.[0]?.sess || null;
           if (sessionData) {
             SESSION_CACHE.set(sid, { data: sessionData, ts: Date.now() });
           }
@@ -147,31 +148,17 @@ pgStore.set = function (
   });
 };
 
-const originalTouch = pgStore.touch?.bind(pgStore);
-const SESSION_TOUCH_TIMES = new Map<string, number>();
-const SESSION_TOUCH_INTERVAL = 5 * 60 * 1000;
-
-if (originalTouch) {
-  pgStore.touch = function (
-    sid: string,
-    sess: session.SessionData,
-    callback?: (err?: any) => void,
-  ) {
-    const now = Date.now();
-    const lastTouched = SESSION_TOUCH_TIMES.get(sid) || 0;
-    if (now - lastTouched < SESSION_TOUCH_INTERVAL) {
-      if (callback) callback();
-      return;
-    }
-    SESSION_TOUCH_TIMES.set(sid, now);
-    originalTouch(sid, sess, callback);
-  };
-}
+pgStore.touch = function (
+  _sid: string,
+  _sess: session.SessionData,
+  callback?: (err?: any) => void,
+) {
+  if (callback) callback();
+};
 
 pgStore.destroy = function (sid: string, callback?: (err?: any) => void) {
   SESSION_CACHE.delete(sid);
   SESSION_PENDING.delete(sid);
-  SESSION_TOUCH_TIMES.delete(sid);
 
   clearSessionById(sid)
     .then((userId) => {
