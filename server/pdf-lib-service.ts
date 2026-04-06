@@ -1248,10 +1248,6 @@ async function renderFieldReportPage(
         align: "left",
       },
     ],
-    [
-      { text: "사고원인", width: 90, isHeader: true, align: "center" },
-      { text: caseData.accidentCause || "-", width: 425, align: "left" },
-    ],
   ];
 
   y = drawTable(page, {
@@ -1262,6 +1258,76 @@ async function renderFieldReportPage(
     fontSize: 9,
     rowHeight: 24,
   });
+
+  {
+    const causeText = normalizeText(caseData.accidentCause || "-");
+    const causeHeaderWidth = 90;
+    const causeContentWidth = 425;
+    const causePadding = 6;
+    const causeFontSize = 9;
+    const causeLineHeight = causeFontSize * 1.4;
+    const causeLines = wrapText(causeText, fonts.regular, causeFontSize, causeContentWidth - causePadding * 2);
+    const minRowHeight = 24;
+    const causeRowHeight = Math.max(minRowHeight, causeLines.length * causeLineHeight + causePadding * 2);
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - causeRowHeight,
+      width: causeHeaderWidth,
+      height: causeRowHeight,
+      color: rgb(0.94, 0.94, 0.94),
+    });
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - causeRowHeight,
+      width: causeHeaderWidth,
+      height: causeRowHeight,
+      borderColor: rgb(0.3, 0.3, 0.3),
+      borderWidth: 0.5,
+    });
+
+    const headerTextY = y - causeRowHeight / 2 - causeFontSize / 3;
+    const headerText = "사고원인";
+    const headerTextWidth = measureTextWidthAdjusted(headerText, fonts.bold, causeFontSize);
+    try {
+      drawTextCharByChar(
+        page,
+        headerText,
+        MARGIN + (causeHeaderWidth - headerTextWidth) / 2,
+        headerTextY,
+        fonts.bold,
+        causeFontSize,
+        { r: 0, g: 0, b: 0 },
+      );
+    } catch (e) {}
+
+    page.drawRectangle({
+      x: MARGIN + causeHeaderWidth,
+      y: y - causeRowHeight,
+      width: causeContentWidth,
+      height: causeRowHeight,
+      borderColor: rgb(0.3, 0.3, 0.3),
+      borderWidth: 0.5,
+    });
+
+    let textY = y - causePadding - causeFontSize;
+    for (const line of causeLines) {
+      try {
+        drawTextCharByChar(
+          page,
+          line,
+          MARGIN + causeHeaderWidth + causePadding,
+          textY,
+          fonts.regular,
+          causeFontSize,
+          { r: 0, g: 0, b: 0 },
+        );
+      } catch (e) {}
+      textY -= causeLineHeight;
+    }
+
+    y -= causeRowHeight;
+  }
 
   y -= 15;
 
