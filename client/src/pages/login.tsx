@@ -42,7 +42,6 @@ export default function Login() {
     defaultValues: {
       username: "",
       password: "",
-      rememberMe: false,
     },
   });
 
@@ -71,10 +70,6 @@ export default function Login() {
       setSaveUsername(true);
     }
 
-    const savedRememberMe = localStorage.getItem("rememberMe");
-    if (savedRememberMe === "true") {
-      form.setValue("rememberMe", true);
-    }
   }, [setLocation, form]);
 
   const loginMutation = useMutation({
@@ -83,12 +78,6 @@ export default function Login() {
       return await response.json();
     },
     onSuccess: (data: any, variables) => {
-      if (variables.rememberMe) {
-        localStorage.setItem("rememberMe", "true");
-      } else {
-        localStorage.removeItem("rememberMe");
-      }
-
       if (saveUsername) {
         localStorage.setItem("savedUsername", variables.username);
       } else {

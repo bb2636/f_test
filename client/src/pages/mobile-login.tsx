@@ -6,7 +6,7 @@ import { useLocation } from "wouter";
 import { loginSchema, type LoginInput } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Eye, EyeOff, Check } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -36,7 +36,6 @@ export default function MobileLogin() {
     defaultValues: {
       username: "",
       password: "",
-      rememberMe: false,
     },
   });
 
@@ -55,10 +54,6 @@ export default function MobileLogin() {
 
     checkSession();
 
-    const savedRememberMe = localStorage.getItem("rememberMe");
-    if (savedRememberMe === "true") {
-      form.setValue("rememberMe", true);
-    }
   }, [setLocation, form]);
 
   const loginMutation = useMutation({
@@ -66,12 +61,6 @@ export default function MobileLogin() {
       return await apiRequest("POST", "/api/login", data);
     },
     onSuccess: (data, variables) => {
-      if (variables.rememberMe) {
-        localStorage.setItem("rememberMe", "true");
-      } else {
-        localStorage.removeItem("rememberMe");
-      }
-
       toast({
         title: "로그인 성공",
         description: "환영합니다!",
@@ -274,56 +263,6 @@ export default function MobileLogin() {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="rememberMe"
-                render={({ field }) => (
-                  <FormItem>
-                    <div 
-                      className="flex items-center cursor-pointer"
-                      style={{
-                        gap: '6px',
-                      }}
-                      onClick={() => field.onChange(!field.value)}
-                    >
-                      <div
-                        style={{
-                          width: '22px',
-                          height: '22px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderRadius: '4px',
-                          border: field.value 
-                            ? '1px solid #008FED' 
-                            : '1px solid rgba(12, 12, 12, 0.24)',
-                          background: field.value ? '#008FED' : 'transparent',
-                        }}
-                        data-testid="checkbox-mobile-remember"
-                      >
-                        {field.value && (
-                          <Check 
-                            className="w-[14px] h-[14px]" 
-                            style={{ color: '#FFFFFF' }}
-                          />
-                        )}
-                      </div>
-                      <span
-                        style={{
-                          fontFamily: 'Pretendard',
-                          fontWeight: 500,
-                          fontSize: '14px',
-                          lineHeight: '128%',
-                          letterSpacing: '-0.01em',
-                          color: 'rgba(12, 12, 12, 0.8)',
-                        }}
-                      >
-                        자동로그인
-                      </span>
-                    </div>
-                  </FormItem>
-                )}
-              />
             </div>
 
             <button

@@ -281,7 +281,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.userId = user.id;
         req.session.userRole = user.role;
         req.session.isSuperAdmin = user.isSuperAdmin || false;
-        req.session.rememberMe = validatedData.rememberMe;
 
         console.log("[LOGIN SUCCESS]", {
           userId: user.id,
@@ -291,12 +290,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cookieSecure: req.session.cookie.secure,
           cookieSameSite: req.session.cookie.sameSite,
         });
-
-        if (validatedData.rememberMe) {
-          req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30일
-        } else {
-          req.session.cookie.maxAge = 30 * 60 * 1000; // 30분
-        }
 
         // Force session save and then respond
         req.session.save(async (err) => {

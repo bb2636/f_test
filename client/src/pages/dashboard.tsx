@@ -196,8 +196,6 @@ export default function Dashboard() {
     },
     onSuccess: () => {
       queryClient.clear();
-      localStorage.removeItem("rememberMe");
-
       toast({
         title: "로그아웃 완료",
         description: "안전하게 로그아웃되었습니다.",

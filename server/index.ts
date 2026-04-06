@@ -33,7 +33,6 @@ declare module 'express-session' {
     userId: string;
     userRole: string;
     isSuperAdmin: boolean;
-    rememberMe: boolean;
   }
 }
 
@@ -79,7 +78,7 @@ const pgStore = new PgStore({
   pool: sessionPool as any,
   tableName: 'session',
   createTableIfMissing: true,
-  pruneSessionInterval: 60 * 15,
+  pruneSessionInterval: false,
 });
 
 const originalGet = pgStore.get.bind(pgStore);
@@ -173,7 +172,7 @@ app.use(session({
   cookie: {
     secure: isProduction,
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 30 * 60 * 1000,
     sameSite: isProduction ? 'none' : 'lax',
   },
 }));
