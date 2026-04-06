@@ -208,11 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      const sessionCheckPromise = getCurrentSessionId(req.session.userId);
-      const timeoutPromise = new Promise<string | null>((_, reject) => 
-        setTimeout(() => reject(new Error("[TIMEOUT] getCurrentSessionId exceeded 5000ms")), 5000)
-      );
-      const dbSessionId = await Promise.race([sessionCheckPromise, timeoutPromise]);
+      const dbSessionId = await getCurrentSessionId(req.session.userId);
 
       if (dbSessionId && dbSessionId !== req.sessionID) {
         console.log("[AUTH] Session invalidated - newer login exists", {
@@ -280,9 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.session) {
         let existingSessionId: string | null = null;
         try {
-          const p = getCurrentSessionId(user.id);
-          const t = new Promise<string | null>((_, reject) => setTimeout(() => reject(new Error("[TIMEOUT] login:getCurrentSessionId exceeded 5000ms")), 5000));
-          existingSessionId = await Promise.race([p, t]);
+          existingSessionId = await getCurrentSessionId(user.id);
         } catch (err: any) {
           console.error("[LOGIN] getCurrentSessionId failed, proceeding without old session cleanup:", err.message);
         }
@@ -315,9 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               .json({ error: "세션 저장 중 오류가 발생했습니다" });
           }
           try {
-            const setP = setCurrentSession(user.id, req.sessionID);
-            const setT = new Promise<void>((_, reject) => setTimeout(() => reject(new Error("[TIMEOUT] setCurrentSession exceeded 5000ms")), 5000));
-            await Promise.race([setP, setT]);
+            await setCurrentSession(user.id, req.sessionID);
           } catch (dbErr: any) {
             console.error("[LOGIN] Failed to set current_session_id:", dbErr.message);
             return res.status(500).json({ error: "로그인 처리 중 오류가 발생했습니다" });
@@ -351,14 +343,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentSid = req.sessionID;
       if (userId) {
         try {
-          const p = getCurrentSessionId(userId);
-          const t = new Promise<string | null>((_, reject) => setTimeout(() => reject(new Error("[TIMEOUT] logout:getCurrentSessionId exceeded 5000ms")), 5000));
-          const dbSessionId = await Promise.race([p, t]);
+          const dbSessionId = await getCurrentSessionId(userId);
           if (dbSessionId === currentSid) {
-            await Promise.race([
-              clearCurrentSession(userId),
-              new Promise<void>((_, reject) => setTimeout(() => reject(new Error("[TIMEOUT] logout:clearCurrentSession exceeded 5000ms")), 5000)),
-            ]);
+            await clearCurrentSession(userId);
           }
         } catch (err: any) {
           console.error("[LOGOUT] Session cleanup failed, proceeding with destroy:", err.message);

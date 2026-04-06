@@ -13,6 +13,7 @@ import {
   users,
 } from "@shared/schema";
 import { eq, and, inArray, ilike, sql } from "drizzle-orm";
+import { USERS_SAFE_COLUMNS } from "./user-columns";
 import { ObjectStorageService } from "./replit_integrations/object_storage/objectStorage";
 
 const objectStorage = new ObjectStorageService();
@@ -3725,20 +3726,20 @@ export async function generatePdfWithPdfLib(
   if (caseData.assignedPartner) {
     const trimmedPartnerName = caseData.assignedPartner.trim();
     let partners = await db
-      .select()
+      .select(USERS_SAFE_COLUMNS)
       .from(users)
       .where(sql`TRIM(${users.company}) = ${trimmedPartnerName}`);
 
     if (partners.length === 0) {
       partners = await db
-        .select()
+        .select(USERS_SAFE_COLUMNS)
         .from(users)
         .where(ilike(users.company, `%${trimmedPartnerName}%`));
     }
 
     if (partners.length === 0 && caseData.assignedPartnerManager) {
       partners = await db
-        .select()
+        .select(USERS_SAFE_COLUMNS)
         .from(users)
         .where(eq(users.name, caseData.assignedPartnerManager.trim()));
     }

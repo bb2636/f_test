@@ -36,6 +36,7 @@ export async function backfillUsersPii(): Promise<{ updated: number; skipped: nu
     return { updated: 0, skipped: 0 };
   }
 
+  // NOTE: SELECT * is intentional here — backfill needs ALL columns including attachments
   const allUsers = await db.select().from(users);
   let updated = 0;
   let skipped = 0;

@@ -81,47 +81,14 @@ import bcrypt from "bcrypt";
 import { db, pool } from "./db";
 import { eq, asc, desc, and, or, like, sql } from "drizzle-orm";
 import { encryptUserFields, decryptUserFields, encryptCaseFields, decryptCaseFields, stripEncryptedColumns } from "./pii-service";
+import { USERS_SAFE_COLUMNS, withTimeout, DB_QUERY_TIMEOUT, AUTH_QUERY_TIMEOUT } from "./user-columns";
 
 const SALT_ROUNDS = 10;
 
-const usersWithoutAttachments = {
-  id: users.id,
-  username: users.username,
-  password: users.password,
-  role: users.role,
-  name: users.name,
-  company: users.company,
-  department: users.department,
-  position: users.position,
-  email: users.email,
-  phone: users.phone,
-  office: users.office,
-  address: users.address,
-  addressDetail: users.addressDetail,
-  emailEnc: users.emailEnc,
-  phoneEnc: users.phoneEnc,
-  addressEnc: users.addressEnc,
-  addressDetailEnc: users.addressDetailEnc,
-  emailHash: users.emailHash,
-  phoneHash: users.phoneHash,
-  businessRegistrationNumber: users.businessRegistrationNumber,
-  representativeName: users.representativeName,
-  bankName: users.bankName,
-  accountNumber: users.accountNumber,
-  accountHolder: users.accountHolder,
-  serviceRegions: users.serviceRegions,
-  accountType: users.accountType,
-  isSuperAdmin: users.isSuperAdmin,
-  status: users.status,
-  mustChangePassword: users.mustChangePassword,
-  currentSessionId: users.currentSessionId,
-  lastLoginAt: users.lastLoginAt,
-  createdAt: users.createdAt,
-};
+const usersWithoutAttachments = USERS_SAFE_COLUMNS;
 
 const USERS_CACHE_TTL = 5 * 60 * 1000;
 const USERS_STALE_TTL = 30 * 1000;
-const DB_QUERY_TIMEOUT = 30000;
 let usersCache: User[] | null = null;
 let usersCacheTime = 0;
 let usersCacheFetching: Promise<User[]> | null = null;
@@ -129,16 +96,6 @@ let usersCacheFetching: Promise<User[]> | null = null;
 export function invalidateUsersCache() {
   usersCache = null;
   usersCacheTime = 0;
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(`[TIMEOUT] ${label} exceeded ${ms}ms`)), ms);
-    promise.then(
-      (val) => { clearTimeout(timer); resolve(val); },
-      (err) => { clearTimeout(timer); reject(err); },
-    );
-  });
 }
 
 async function getCachedUsers(): Promise<User[]> {
