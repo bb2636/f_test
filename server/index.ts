@@ -195,6 +195,7 @@ pgStore.destroy = function (sid: string, callback?: (err?: any) => void) {
 app.use(
   session({
     secret: (() => {
+      console.log("asdfasdf");
       const secret = process.env.SESSION_SECRET;
       if (!secret && isProduction) {
         throw new Error(
