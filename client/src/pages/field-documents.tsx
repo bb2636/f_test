@@ -1682,7 +1682,11 @@ export default function FieldDocuments() {
                 <span>
                   <span style={{ color: "rgba(12, 12, 12, 0.5)" }}>주소</span>{" "}
                   <span style={{ color: "rgba(12, 12, 12, 0.7)" }}>
-                    {selectedCase.insuredAddress}{selectedCase.victimAddressDetail ? ` (${selectedCase.victimAddressDetail})` : ""}
+                    {selectedCase.insuredAddress}{(() => {
+                      const suffix = selectedCase.caseNumber?.split("-").pop();
+                      const detail = suffix === "0" ? selectedCase.insuredAddressDetail : selectedCase.victimAddressDetail;
+                      return detail ? ` (${detail})` : "";
+                    })()}
                   </span>
                 </span>
               )}

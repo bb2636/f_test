@@ -949,7 +949,11 @@ export default function FieldManagement() {
                   <span>
                     <span style={{ color: "#6B7280" }}>주소</span>{" "}
                     <span style={{ color: "rgba(12, 12, 12, 0.7)" }}>
-                      {selectedCaseData.insuredAddress}{selectedCaseData.victimAddressDetail ? ` (${selectedCaseData.victimAddressDetail})` : ""}
+                      {selectedCaseData.insuredAddress}{(() => {
+                        const suffix = selectedCaseData.caseNumber?.split("-").pop();
+                        const detail = suffix === "0" ? selectedCaseData.insuredAddressDetail : selectedCaseData.victimAddressDetail;
+                        return detail ? ` (${detail})` : "";
+                      })()}
                     </span>
                   </span>
                 )}

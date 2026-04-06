@@ -3060,7 +3060,11 @@ export default function FieldReport() {
                       color: "rgba(12, 12, 12, 0.7)",
                     }}
                   >
-                    {caseData.insuredAddress}{caseData.victimAddressDetail ? ` (${caseData.victimAddressDetail})` : ""}
+                    {caseData.insuredAddress}{(() => {
+                      const suffix = caseData.caseNumber?.split("-").pop();
+                      const detail = suffix === "0" ? caseData.insuredAddressDetail : caseData.victimAddressDetail;
+                      return detail ? ` (${detail})` : "";
+                    })()}
                   </span>
                 </div>
               )}
