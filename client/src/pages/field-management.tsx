@@ -945,12 +945,15 @@ export default function FieldManagement() {
                 <span>접수번호 {formatCaseNumber(selectedCaseData.caseNumber) || "-"}</span>
                 <span>피보험자 {selectedCaseData.insuredName || "-"}</span>
                 <span>담당자 {selectedCaseData.assignedPartnerManager || "-"}</span>
+                {selectedCaseData.insuredAddress && (
+                  <span>
+                    <span style={{ color: "#6B7280" }}>주소</span>{" "}
+                    <span style={{ color: "rgba(12, 12, 12, 0.7)" }}>
+                      {selectedCaseData.insuredAddress}{selectedCaseData.victimAddressDetail ? ` (${selectedCaseData.victimAddressDetail})` : ""}
+                    </span>
+                  </span>
+                )}
               </div>
-              {selectedCaseData.insuredAddress && (
-                <div className="mt-1 text-[12px] text-[#6B7280]" style={{ paddingLeft: "0px" }}>
-                  {selectedCaseData.insuredAddress}{selectedCaseData.victimAddressDetail ? ` (${selectedCaseData.victimAddressDetail})` : ""}
-                </div>
-              )}
             </div>
 
             <section className="mt-6">
