@@ -6805,19 +6805,16 @@ export default function FieldEstimate() {
                               defaultValue={row.pricePerSqm > 0 ? row.pricePerSqm.toLocaleString() : ''}
                               key={`price-sqm-${row.id}-${row.pricePerSqm}`}
                               onFocus={(e) => {
-                                // 포커스 시 콤마 제거하여 편집 용이하게
                                 const rawValue = e.target.value.replace(/[,\s]/g, '');
                                 e.target.value = rawValue;
                               }}
                               onBlur={(e) => {
-                                // blur 시 콤마 추가 및 상태 업데이트
                                 const rawValue = e.target.value.replace(/[,\s]/g, '');
                                 const val = parseInt(rawValue, 10) || 0;
                                 e.target.value = val > 0 ? val.toLocaleString() : '';
                                 setLaborCostRows(prev => prev.map(r => r.id === row.id ? { ...r, pricePerSqm: val } : r));
                               }}
                               onKeyDown={(e) => {
-                                // Enter 키로도 blur 트리거
                                 if (e.key === 'Enter') {
                                   e.currentTarget.blur();
                                 }
@@ -6825,6 +6822,63 @@ export default function FieldEstimate() {
                               className="h-9 border-0 bg-transparent text-right"
                               style={{ fontFamily: "Pretendard", fontSize: "14px", minWidth: "100px" }}
                               data-testid={`input-price-sqm-${index}`}
+                            />
+                          </td>
+
+                          {/* 피해면적 - Read-only */}
+                          <td style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", color: "rgba(12, 12, 12, 0.8)", textAlign: "right" }}>
+                            {(row.damageArea || 0) > 0 ? Number(row.damageArea).toLocaleString() : "-"}
+                          </td>
+
+                          {/* 공제(원) - Editable Input */}
+                          <td style={{ padding: "0 8px", background: "#EFF6FF" }}>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              defaultValue={row.deduction > 0 ? row.deduction.toLocaleString() : ''}
+                              key={`deduction-${row.id}-${row.deduction}`}
+                              onFocus={(e) => {
+                                const rawValue = e.target.value.replace(/[,\s]/g, '');
+                                e.target.value = rawValue;
+                              }}
+                              onBlur={(e) => {
+                                const rawValue = e.target.value.replace(/[,\s]/g, '');
+                                const val = parseInt(rawValue, 10) || 0;
+                                e.target.value = val > 0 ? val.toLocaleString() : '';
+                                setLaborCostRows(prev => prev.map(r => r.id === row.id ? { ...r, deduction: val } : r));
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                              className="h-9 border-0 bg-transparent text-right"
+                              style={{ fontFamily: "Pretendard", fontSize: "14px", minWidth: "80px" }}
+                              data-testid={`input-deduction-${index}`}
+                            />
+                          </td>
+
+                          {/* 경비여부 - Checkbox toggle */}
+                          <td style={{ padding: "0 12px", textAlign: "center" }}>
+                            <Checkbox
+                              checked={!row.includeInEstimate}
+                              onCheckedChange={(checked) => {
+                                setLaborCostRows(prev => prev.map(r => r.id === row.id ? { ...r, includeInEstimate: !checked } : r));
+                              }}
+                              data-testid={`checkbox-expense-${index}`}
+                            />
+                          </td>
+
+                          {/* 요청 - Editable Input */}
+                          <td style={{ padding: "0 8px", background: "#EFF6FF" }}>
+                            <Input
+                              value={row.request || ''}
+                              onChange={(e) => {
+                                setLaborCostRows(prev => prev.map(r => r.id === row.id ? { ...r, request: e.target.value } : r));
+                              }}
+                              className="h-9 border-0 bg-transparent"
+                              style={{ fontFamily: "Pretendard", fontSize: "14px", minWidth: "80px" }}
+                              data-testid={`input-request-${index}`}
                             />
                           </td>
                         </tr>

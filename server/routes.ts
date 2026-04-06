@@ -7945,35 +7945,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         laborCostData: any,
         materialCostData: any,
       ): number => {
-        let laborTotalWithExpense = 0;
-        let laborTotalWithoutExpense = 0;
+        let laborTotalNonExpense = 0;
+        let laborTotalExpense = 0;
         let materialTotal = 0;
+        let materialTotalNonExpense = 0;
 
-        // Calculate labor costs
         if (Array.isArray(laborCostData)) {
           laborCostData.forEach((row: any) => {
             const amount = row.amount || 0;
-            if (row.includeInEstimate) {
-              laborTotalWithExpense += amount;
+            if (row.includeInEstimate === false || row.includeInEstimate === "false") {
+              laborTotalExpense += amount;
             } else {
-              laborTotalWithoutExpense += amount;
+              laborTotalNonExpense += amount;
             }
           });
         }
 
-        // Calculate material costs
         if (Array.isArray(materialCostData)) {
           materialCostData.forEach((row: any) => {
-            materialTotal += row.금액 || 0;
+            const amt = row.금액 || 0;
+            materialTotal += amt;
+            if (row.includeInEstimate === false || row.includeInEstimate === "false") {
+            } else {
+              materialTotalNonExpense += amt;
+            }
           });
         }
 
-        // 소계 (전체)
         const subtotal =
-          laborTotalWithExpense + laborTotalWithoutExpense + materialTotal;
+          laborTotalNonExpense + laborTotalExpense + materialTotal;
 
-        // 일반관리비와 이윤 계산 대상 (경비 제외)
-        const baseForFees = laborTotalWithoutExpense + materialTotal;
+        const baseForFees = laborTotalNonExpense + materialTotalNonExpense;
 
         // 일반관리비 (6%) - 경비 제외 항목에만 적용
         const managementFee = Math.round(baseForFees * 0.06);
