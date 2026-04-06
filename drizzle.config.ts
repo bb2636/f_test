@@ -1,7 +1,17 @@
 import { defineConfig } from "drizzle-kit";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL, ensure the database is provisioned");
+const isProduction = process.env.REPLIT_DEPLOYMENT === '1' || process.env.NODE_ENV === 'production';
+
+const databaseUrl = isProduction
+  ? (process.env.PROD_DATABASE_URL || process.env.DATABASE_URL)
+  : (process.env.DEV_DATABASE_URL || process.env.DATABASE_URL);
+
+if (!databaseUrl) {
+  throw new Error(
+    isProduction
+      ? "PROD_DATABASE_URL (or DATABASE_URL) must be set for production."
+      : "DEV_DATABASE_URL (or DATABASE_URL) must be set for development."
+  );
 }
 
 export default defineConfig({
@@ -9,6 +19,6 @@ export default defineConfig({
   schema: "./shared/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    url: databaseUrl,
   },
 });

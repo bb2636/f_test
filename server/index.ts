@@ -9,6 +9,7 @@ import { runPiiBackfill } from "./backfill-pii";
 import { pool, dbPoolReady } from "./db";
 import { clearSessionById } from "./session-store";
 import { getSessionPool } from "./session-pool";
+import { autoSchemaSync } from "./auto-schema-sync";
 
 process.on("unhandledRejection", (reason, promise) => {
   console.error("[FATAL] Unhandled Promise Rejection:", reason);
@@ -257,6 +258,12 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  try {
+    await autoSchemaSync();
+  } catch (err: any) {
+    console.error("[STARTUP] Schema sync failed (non-fatal):", err.message);
+  }
+
   const warmupStart = Date.now();
   console.log("[STARTUP] Warming up database connections...");
   await Promise.all([dbPoolReady, sessionPoolReady]);

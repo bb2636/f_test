@@ -14,9 +14,21 @@ export function getSessionPool(): Pool {
   if (!_sessionPool) {
     _sessionPool = new Pool({
       connectionString: sessionDbUrl,
-      max: 10,
+      max: 5,
       connectionTimeoutMillis: 10000,
-      idleTimeoutMillis: 30000,
+      idleTimeoutMillis: 20000,
+      maxUses: 7500,
+      allowExitOnIdle: false,
+    });
+
+    _sessionPool.on('error', (err: Error) => {
+      console.error('[SESSION-POOL] Background error (connection recycled):', err.message);
+    });
+
+    _sessionPool.on('connect', (client: any) => {
+      client.on('error', (err: Error) => {
+        console.error('[SESSION-POOL] Client error:', err.message);
+      });
     });
   }
   return _sessionPool;
