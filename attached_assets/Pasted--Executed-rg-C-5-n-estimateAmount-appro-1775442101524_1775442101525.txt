@@ -1,0 +1,84 @@
+종결건 통계에서 금액이 잘못 표시되는 원인을 파악하겠습니다. 코드 수정 없이 분석만 진행합니다.
+
+
+Executed rg -C 5 -n 'estimateAmount|approvedAmount|견적금액|승인금액|청구액|claimAmount' client/src/pages/closed-case-statistics.tsx
+이제 그룹별 금액 합산 로직을 확인하겠습니다.
+
+
+2 actions
+이제 핵심 로직을 모두 파악했습니다. 정산조회 페이지의 동일 케이스에 대한 금액 계산 방식도 비교하겠습니다.
+
+
+Opened client/src/pages/closed-case-statistics.tsx
+이제 정산조회 페이지와 비교하겠습니다.
+
+
+Opened client/src/pages/settlements-inquiry.tsx
+이제 핵심적인 차이를 모두 파악했습니다. 정리해드리겠습니다.
+
+종결건 통계 금액 불일치 원인 분석
+핵심 로직 비교
+1. 견적금액 (getGroupEstimateAmount)
+// closed-case-statistics.tsx (종결건 통계)
+const getCaseEstimateForStats = (c) => {
+  return parseFloat(c.initialEstimateAmount || c.estimateAmount || "0") || 0;
+};
+const getGroupEstimateAmount = (groupCases) => {
+  const eligible = getEstimateEligibleCases(groupCases); // 접수취소, 선견적 제외
+  const hasDirectRecovery = eligible.some(c => isDirectRecovery(c));
+  const targets = hasDirectRecovery 
+    ? eligible.filter(c => isDirectRecovery(c))  // 직접복구 건만
+    : eligible;
+  return targets.reduce((sum, c) => sum + getCaseEstimateForStats(c), 0);
+};
+
+문제점: 직접복구 건이 하나라도 있으면, 직접복구 건의 견적금액만 합산합니다. 선견적 건의 견적금액은 무시됩니다.
+
+2. 승인금액 (getGroupApprovedAmount)
+const getCaseApprovedForStats = (c) => {
+  const approved = parseFloat(c.approvedAmount || "0") || 0;
+  if (approved > 0) return approved;
+  const isApproved = c.reviewDecision === "승인" || APPROVED_STATUSES.includes(c.status);
+  if (isApproved) return getCaseEstimateForStats(c);  // fallback: 견적금액
+  return 0;
+};
+const getGroupApprovedAmount = (groupCases) => {
+  const active = getActiveCases(groupCases); // 접수취소만 제외
+  if (active.every(c => isPreEstimate(c))) return null;
+  return active.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);  // ★ 모든 active 케이스 합산
+};
+
+문제점:
+
+견적금액은 직접복구 건만 합산하는데
+승인금액은 선견적 건 포함 모든 active 건을 합산 → 선견적 건의 승인금액(또는 fallback 견적금액)이 추가로 합산됨
+이로 인해 승인금액 > 견적금액 또는 불일치 발생
+3. 청구액 (totalClaim)
+totalClaim: (() => {
+  const active = getActiveCases(uniqueCases);
+  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
+  const allPreEstimate = active.every(c => isPreEstimate(c));
+  if (allPreEstimate) return 100000;  // 전부 선견적이면 10만원
+  if (hasDirectRecovery) {
+    return active.filter(c => !isPreEstimate(c)).reduce(...);  // 선견적 제외
+  }
+  return active.reduce(...);
+})()
+
+문제점:
+
+allPreEstimate 조건이 true여야만 10만원이 됨
+직접복구 + 선견적이 혼합된 경우: allPreEstimate = false, hasDirectRecovery = true → 선견적 건을 제외하고 합산
+하지만 getClaimAmount(c) → getCaseApprovedForStats(c)를 호출하는데, 이때 선견적 건이 아닌 건의 approvedAmount가 0이면 fallback으로 견적금액을 사용 → 실제 승인되지 않은 건도 금액이 잡힘
+사고번호별 예상 시나리오
+2603373488, 2603578844 건의 경우:
+
+계산 항목	포함 범위	문제
+견적금액	직접복구 건만	선견적 건 제외
+승인금액	모든 active 건	선견적 건도 포함 → 불일치
+청구액	직접복구+선견적 혼합 시 선견적 제외	10만원이 아니라 직접복구 건의 승인금액이 청구액으로 잡힘
+근본 원인 요약
+견적금액과 승인금액의 필터링 기준 불일치: 견적은 isDirectRecovery 건만, 승인은 모든 active 건 포함
+선견적 건 처리 불일치: 견적금액에서는 선견적 제외하지만, 승인금액에서는 선견적 건의 approvedAmount 또는 fallback 견적금액이 합산됨
+청구액 10만원 조건: 직접복구+선견적 혼합 케이스에서 allPreEstimate가 false가 되어 10만원이 아닌 직접복구 건의 승인금액이 청구액으로 표시됨
+수정 방향: getGroupApprovedAmount에서도 getGroupEstimateAmount와 동일한 필터링 로직을 적용하고, 청구액 계산에서 선견적 혼합 케이스를 별도 처리해야 합니다. 수정 진행할까요?
