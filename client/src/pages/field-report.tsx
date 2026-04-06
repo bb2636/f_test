@@ -53,6 +53,7 @@ interface Case {
   insuredName: string;
   insuredContact: string;
   insuredAddress: string;
+  insuredAddressDetail: string | null;
   accidentDate: string;
   accidentTime: string;
   assignedPartner: string;
@@ -3038,6 +3039,26 @@ export default function FieldReport() {
                 </span>
               </div>
             </div>
+            {(caseData.insuredAddress || caseData.insuredAddressDetail) && (
+              <div
+                style={{
+                  paddingLeft: "24px",
+                  marginTop: "4px",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "Pretendard",
+                    fontSize: "16px",
+                    fontWeight: 400,
+                    letterSpacing: "-0.02em",
+                    color: "rgba(12, 12, 12, 0.5)",
+                  }}
+                >
+                  {caseData.insuredAddress || ""}{caseData.insuredAddressDetail ? ` (${caseData.insuredAddressDetail})` : ""}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

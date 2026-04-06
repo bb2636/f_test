@@ -1681,6 +1681,21 @@ export default function FieldDocuments() {
                 담당자 {selectedCase.assignedPartnerManager || "미정"}
               </span>
             </div>
+            {(selectedCase.insuredAddress || selectedCase.insuredAddressDetail) && (
+              <div
+                style={{
+                  fontFamily: "Pretendard",
+                  fontSize: "13px",
+                  fontWeight: 400,
+                  letterSpacing: "-0.02em",
+                  color: "rgba(12, 12, 12, 0.5)",
+                  paddingLeft: "12px",
+                  marginTop: "4px",
+                }}
+              >
+                {selectedCase.insuredAddress || ""}{selectedCase.insuredAddressDetail ? ` (${selectedCase.insuredAddressDetail})` : ""}
+              </div>
+            )}
           </div>
         </div>
       )}
