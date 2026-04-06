@@ -3040,12 +3040,7 @@ export default function FieldReport() {
               </div>
             </div>
             {caseData.insuredAddress && (
-              <div
-                style={{
-                  paddingLeft: "24px",
-                  marginTop: "4px",
-                }}
-              >
+              <div className="flex items-center gap-1.5" style={{ marginTop: "4px" }}>
                 <span
                   style={{
                     fontFamily: "Pretendard",
@@ -3053,6 +3048,17 @@ export default function FieldReport() {
                     fontWeight: 400,
                     letterSpacing: "-0.02em",
                     color: "rgba(12, 12, 12, 0.5)",
+                  }}
+                >
+                  주소
+                </span>
+                <span
+                  style={{
+                    fontFamily: "Pretendard",
+                    fontSize: "16px",
+                    fontWeight: 400,
+                    letterSpacing: "-0.02em",
+                    color: "rgba(12, 12, 12, 0.7)",
                   }}
                 >
                   {caseData.insuredAddress}{caseData.victimAddressDetail ? ` (${caseData.victimAddressDetail})` : ""}
