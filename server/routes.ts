@@ -8754,38 +8754,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: "이미지 파일만 업로드할 수 있습니다 (jpg, png, gif, webp, bmp)" });
         }
 
-        const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-        if (!bucketId) {
-          return res.status(500).json({ error: "Object Storage 설정이 필요합니다" });
+        const info = getStorageBucketInfo();
+        const storageStatus = await checkStorageAuth();
+
+        if (info && storageStatus.available) {
+          try {
+            const bucket = objectStorageClient.bucket(info.bucketId);
+            const ext = file.originalname.split(".").pop() || "jpg";
+            const objectName = `public/notice-images/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const bucketFile = bucket.file(objectName);
+
+            await bucketFile.save(file.buffer, {
+              contentType: file.mimetype,
+              metadata: {
+                "custom:aclPolicy": JSON.stringify({
+                  owner: user.id,
+                  visibility: "public",
+                }),
+              },
+            });
+
+            const SIGNED_URL_TTL_SEC = 365 * 24 * 60 * 60;
+            const imageUrl = await signObjectURL({
+              bucketName: info.bucketId,
+              objectName,
+              method: "GET",
+              ttlSec: SIGNED_URL_TTL_SEC,
+            });
+
+            console.log(`[notice-image] Uploaded to Object Storage: ${file.originalname} (${(file.size / 1024).toFixed(0)}KB)`);
+            return res.json({
+              url: imageUrl,
+              fileName: file.originalname,
+              storageKey: `${info.bucketId}/${objectName}`,
+              fileSize: file.size,
+              fileType: file.mimetype,
+            });
+          } catch (gcsErr: any) {
+            console.warn(`[notice-image] Object Storage failed: ${gcsErr.message}, falling back to base64`);
+          }
+        } else {
+          console.log(`[notice-image] Object Storage unavailable, using base64 fallback`);
         }
 
-        const bucket = objectStorageClient.bucket(bucketId);
-        const ext = file.originalname.split(".").pop() || "jpg";
-        const objectName = `public/notice-images/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const bucketFile = bucket.file(objectName);
-
-        await bucketFile.save(file.buffer, {
-          contentType: file.mimetype,
-          metadata: {
-            "custom:aclPolicy": JSON.stringify({
-              owner: user.id,
-              visibility: "public",
-            }),
-          },
-        });
-
-        const SIGNED_URL_TTL_SEC = 365 * 24 * 60 * 60;
-        const imageUrl = await signObjectURL({
-          bucketName: bucketId,
-          objectName,
-          method: "GET",
-          ttlSec: SIGNED_URL_TTL_SEC,
-        });
-
-        res.json({
-          url: imageUrl,
+        const base64Url = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+        console.log(`[notice-image] Base64 fallback: ${file.originalname} (${(file.size / 1024).toFixed(0)}KB)`);
+        return res.json({
+          url: base64Url,
           fileName: file.originalname,
-          storageKey: `${bucketId}/${objectName}`,
+          storageKey: "",
           fileSize: file.size,
           fileType: file.mimetype,
         });
