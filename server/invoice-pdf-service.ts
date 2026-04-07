@@ -706,9 +706,9 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       "<부가가치세 포함>",
       tableX + tableWidth - cellPadding,
       y - totalRowHeight - 14,
-      fonts.regular,
-      9,
-      { r: 0.4, g: 0.4, b: 0.4 },
+      fonts.bold,
+      10,
+      { r: 0, g: 0.24, b: 0.56 },
     );
   }
 

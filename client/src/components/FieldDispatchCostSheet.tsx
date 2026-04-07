@@ -659,11 +659,11 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
               }}>
                 <span style={{
                   fontFamily: "Pretendard",
-                  fontWeight: 400,
-                  fontSize: "12px",
+                  fontWeight: 600,
+                  fontSize: "14px",
                   lineHeight: "128%",
-                  letterSpacing: "-0.01em",
-                  color: "rgba(12, 12, 12, 0.5)",
+                  letterSpacing: "-0.02em",
+                  color: "#003D8F",
                 }}>
                   &lt;부가가치세 포함&gt;
                 </span>
