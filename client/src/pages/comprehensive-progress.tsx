@@ -1729,7 +1729,6 @@ export default function ComprehensiveProgress() {
                   <div
                     key={caseItem.id}
                     className="data-table-row"
-                    onClick={() => setSelectedCaseId(caseItem.id)}
                     style={{
                       display: "grid",
                       gridTemplateColumns:
@@ -1739,7 +1738,7 @@ export default function ComprehensiveProgress() {
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
-                      cursor: "pointer",
+                      cursor: "default",
                     }}
                     data-testid={`case-row-${caseItem.id}`}
                   >
