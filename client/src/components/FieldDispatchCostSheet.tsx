@@ -663,7 +663,7 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
                   fontSize: "14px",
                   lineHeight: "128%",
                   letterSpacing: "-0.02em",
-                  color: "#003D8F",
+                  color: "#0037FF",
                 }}>
                   &lt;부가가치세 포함&gt;
                 </span>

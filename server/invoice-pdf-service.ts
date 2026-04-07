@@ -708,7 +708,7 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       y - totalRowHeight - 14,
       fonts.bold,
       10,
-      { r: 0, g: 0.24, b: 0.56 },
+      { r: 0, g: 0.216, b: 1 },
     );
   }
 
