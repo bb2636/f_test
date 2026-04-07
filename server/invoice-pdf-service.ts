@@ -22,6 +22,7 @@ interface InvoiceData {
   }>;
   totalAmount: number;
   remarks?: string;
+  isOnlyFieldDispatch?: boolean;
 }
 
 interface FontSet {
@@ -699,8 +700,20 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     { r: 0.8, g: 0, b: 0 },
   );
 
+  if (data.isOnlyFieldDispatch) {
+    drawRightAlignedText(
+      page,
+      "<부가가치세 포함>",
+      tableX + tableWidth - cellPadding,
+      y - totalRowHeight - 14,
+      fonts.regular,
+      9,
+      { r: 0.4, g: 0.4, b: 0.4 },
+    );
+  }
+
   // === 4. 계좌 정보 박스 ===
-  y -= totalRowHeight + 35;
+  y -= totalRowHeight + (data.isOnlyFieldDispatch ? 50 : 35);
 
   const accountBoxWidth = CONTENT_WIDTH;
 

@@ -481,6 +481,8 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
     (parseInt(fieldDispatchPreventionAmount || "0") || 0) +
     (parseInt(fieldDispatchPropertyAmount || "0") || 0);
 
+  const isOnlyFieldDispatch = allCases.length > 0 && allCases.every(c => c.recoveryType === "선견적요청");
+
   const handleDownloadPdf = async () => {
     if (!caseData?.id) {
       toast({
@@ -522,6 +524,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
           totalAmount: totalAmount,
           remarks: invoiceRemarks,
           selectedDocumentIds: selectedDocumentIds,
+          isOnlyFieldDispatch: isOnlyFieldDispatch,
         }),
       });
 
@@ -1168,6 +1171,26 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                     </span>
                   </div>
                 </div>
+                {isOnlyFieldDispatch && (
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    padding: "4px 16px 0px",
+                    width: "604px",
+                  }}>
+                    <span style={{
+                      fontFamily: "'Pretendard'",
+                      fontStyle: "normal",
+                      fontWeight: 400,
+                      fontSize: "12px",
+                      lineHeight: "128%",
+                      letterSpacing: "-0.01em",
+                      color: "rgba(12, 12, 12, 0.5)",
+                    }}>
+                      &lt;부가가치세 포함&gt;
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

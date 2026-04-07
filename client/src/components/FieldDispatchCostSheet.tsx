@@ -651,6 +651,23 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
                   {totalAmount.toLocaleString()}원
                 </span>
               </div>
+              <div style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                padding: "4px 0 0",
+                width: "100%",
+              }}>
+                <span style={{
+                  fontFamily: "Pretendard",
+                  fontWeight: 400,
+                  fontSize: "12px",
+                  lineHeight: "128%",
+                  letterSpacing: "-0.01em",
+                  color: "rgba(12, 12, 12, 0.5)",
+                }}>
+                  &lt;부가가치세 포함&gt;
+                </span>
+              </div>
             </div>
 
             <div style={{

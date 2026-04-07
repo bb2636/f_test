@@ -9617,6 +9617,7 @@ FLOXN`;
     totalAmount: z.number().optional(),
     remarks: z.string().optional(),
     selectedDocumentIds: z.array(z.string()).optional().default([]),
+    isOnlyFieldDispatch: z.boolean().optional().default(false),
   });
 
   app.post("/api/generate-invoice-pdf", async (req, res) => {
@@ -9655,6 +9656,7 @@ FLOXN`;
         totalAmount: clientTotalAmount,
         remarks,
         selectedDocumentIds,
+        isOnlyFieldDispatch,
       } = validationResult.data;
 
       // Get case data
@@ -9882,6 +9884,7 @@ FLOXN`;
         particulars,
         totalAmount,
         remarks,
+        isOnlyFieldDispatch,
       };
 
       console.log(`[Invoice PDF] Generating PDF for download - case ${caseId}`);
