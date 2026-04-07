@@ -1664,12 +1664,22 @@ export default function Dashboard() {
                                   onClick={() => window.open(img.url, "_blank")}
                                 />
                               ) : (
-                                <a
+                                <div
                                   key={i}
-                                  href={img.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+                                  onClick={() => {
+                                    const url = img.url;
+                                    if (url.startsWith("data:")) {
+                                      const link = document.createElement("a");
+                                      link.href = url;
+                                      link.download = img.fileName || "첨부파일";
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
+                                    } else {
+                                      window.open(url, "_blank");
+                                    }
+                                  }}
                                 >
                                   <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: "rgba(0, 143, 237, 0.1)" }}>
                                     <FileText className="w-5 h-5" style={{ color: "#008FED" }} />
@@ -1685,7 +1695,7 @@ export default function Dashboard() {
                                     )}
                                   </div>
                                   <Download className="w-4 h-4" style={{ color: "#686A6E" }} />
-                                </a>
+                                </div>
                               )
                             )}
                           </div>
