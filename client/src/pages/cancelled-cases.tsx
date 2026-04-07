@@ -792,14 +792,13 @@ export default function CancelledCases() {
               return (
                 <div
                   key={caseItem.id}
-                  onClick={() => { if (canViewDetail) { setDetailTab("기본정보"); setSelectedCaseId(caseItem.id); } }}
                   style={{
                     display: "grid",
                     gridTemplateColumns,
                     padding: "0 20px",
                     borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                     alignItems: "stretch",
-                    cursor: canViewDetail ? "pointer" : "default",
+                    cursor: "default",
                   }}
                   data-testid={`cancelled-case-row-${caseItem.id}`}
                 >
