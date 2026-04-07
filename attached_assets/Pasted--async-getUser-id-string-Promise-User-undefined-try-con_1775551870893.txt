@@ -1,0 +1,147 @@
+  async getUser(id: string): Promise<User | undefined> {
+    try {
+      const cached = await getCachedUsers();
+<<<<<<< HEAD
+      const found = cached.find(u => u.id === id);
+      if (found) return found;
+    } catch (err) {
+      console.error("[getUser] Cache failed, trying direct query:", err);
+    }
+    const result = await withTimeout(
+      db.select().from(users).where(eq(users.id, id)),
+      10_000,
+      "getUser-direct",
+    );
+    return result[0];
+=======
+      if (cached.length > 0) {
+        const found = cached.find(u => u.id === id);
+        if (found) return decryptUserFields(found) as User;
+      }
+    } catch (err) {
+      console.error("[getUser] Cache failed, falling back to direct query:", (err as Error).message);
+    }
+    try {
+      const result = await withTimeout(
+        db.select(usersWithoutAttachments).from(users).where(eq(users.id, id)),
+        10000,
+        "getUser:direct",
+      );
+      return result[0] ? decryptUserFields(result[0]) as User : undefined;
+    } catch (err) {
+      console.error("[getUser] Direct query also failed:", (err as Error).message);
+      return undefined;
+    }
+>>>>>>> 9841d0c9d0c974262044c76fb89b2ad403d8e207
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    try {
+      const cached = await getCachedUsers();
+<<<<<<< HEAD
+      const found = cached.find(u => u.username === username);
+      if (found) return found;
+    } catch (err) {
+      console.error("[getUserByUsername] Cache failed, trying direct query:", err);
+    }
+    const result = await withTimeout(
+      db.select().from(users).where(eq(users.username, username)),
+      10_000,
+      "getUserByUsername-direct",
+    );
+    return result[0];
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    try {
+      const cached = await getCachedUsers();
+      if (cached.length > 0) return cached;
+    } catch (err) {
+      console.error("[getAllUsers] Cache failed:", err);
+    }
+    console.log("[getAllUsers] Falling back to direct DB query");
+    try {
+      const result = await withTimeout(
+        db.select({
+          id: users.id,
+          username: users.username,
+          password: users.password,
+          role: users.role,
+          name: users.name,
+          company: users.company,
+          department: users.department,
+          position: users.position,
+          email: users.email,
+          phone: users.phone,
+          office: users.office,
+          address: users.address,
+          addressDetail: users.addressDetail,
+          businessRegistrationNumber: users.businessRegistrationNumber,
+          representativeName: users.representativeName,
+          bankName: users.bankName,
+          accountNumber: users.accountNumber,
+          accountHolder: users.accountHolder,
+          serviceRegions: users.serviceRegions,
+          attachments: sql<string[] | null>`NULL`.as("attachments"),
+          accountType: users.accountType,
+          isSuperAdmin: users.isSuperAdmin,
+          status: users.status,
+          mustChangePassword: users.mustChangePassword,
+          createdAt: users.createdAt,
+        }).from(users).where(eq(users.status, "active")),
+        CACHE_FETCH_TIMEOUT,
+        "getAllUsers-direct",
+      );
+      if (result.length > 0) {
+        usersCache = result;
+        usersCacheTime = Date.now();
+      }
+      return result;
+    } catch (err2) {
+      console.error("[getAllUsers] Direct query also failed:", err2);
+      return usersCache || [];
+=======
+      if (cached.length > 0) {
+        const found = cached.find(u => u.username === username);
+        if (found) return decryptUserFields(found) as User;
+      }
+    } catch (err) {
+      console.error("[getUserByUsername] Cache failed, falling back to direct query:", (err as Error).message);
+    }
+    try {
+      const result = await withTimeout(
+        db.select(usersWithoutAttachments).from(users).where(eq(users.username, username)),
+        10000,
+        "getUserByUsername:direct",
+      );
+      return result[0] ? decryptUserFields(result[0]) as User : undefined;
+    } catch (err) {
+      console.error("[getUserByUsername] Direct query also failed:", (err as Error).message);
+      return undefined;
+    }
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    let cached: User[] = [];
+    try {
+      cached = await getCachedUsers();
+    } catch (err) {
+      console.error("[getAllUsers] Cache failed:", (err as Error).message);
+    }
+    if (cached.length > 0) {
+      return cached.map(u => decryptUserFields(u) as User);
+    }
+    console.log("[getAllUsers] Cache empty, falling back to direct query");
+    try {
+      const result = await withTimeout(
+        db.select(usersWithoutAttachments).from(users).where(eq(users.status, "active")),
+        DB_QUERY_TIMEOUT,
+        "getAllUsers:direct",
+      );
+      return result.map(u => decryptUserFields(u) as User);
+    } catch (err) {
+      console.error("[getAllUsers] Direct query failed:", (err as Error).message);
+      return [];
+>>>>>>> 9841d0c9d0c974262044c76fb89b2ad403d8e207
+    }
+  }
