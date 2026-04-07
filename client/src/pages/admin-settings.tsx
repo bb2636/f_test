@@ -9828,7 +9828,7 @@ export default function AdminSettings() {
                         marginBottom: "8px",
                       }}
                     >
-                      {noticeImageUploading ? "업로드 중..." : "파일을 이곳에 올려주세요"}
+                      {noticeImageUploading ? "업로드 중..." : "파일 또는 이미지를 이곳에 올려주세요."}
                     </div>
                     <span
                       style={{
