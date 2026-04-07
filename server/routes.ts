@@ -8751,6 +8751,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: "파일이 없습니다" });
         }
 
+        try {
+          file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
+        } catch {}
+
         const allowedTypes = [
           "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp",
           "application/pdf",
