@@ -8732,6 +8732,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/notices/request-upload", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+    try {
+      const user = await storage.getUser(req.session.userId);
+      if (!user || user.role !== "관리자") {
+        return res.status(403).json({ error: "관리자만 파일을 업로드할 수 있습니다" });
+      }
+
+      const { fileName, fileType, fileSize } = req.body;
+      if (!fileName || !fileType || !fileSize) {
+        return res.status(400).json({ error: "필수 필드가 누락되었습니다 (fileName, fileType, fileSize)" });
+      }
+
+      const allowedTypes = [
+        "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp",
+        "application/pdf",
+        "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/zip", "application/x-zip-compressed",
+        "text/plain", "text/csv",
+      ];
+      if (!allowedTypes.includes(fileType)) {
+        return res.status(400).json({ error: "지원하지 않는 파일 형식입니다. (이미지, PDF, 문서, 엑셀, PPT, ZIP, TXT, CSV)" });
+      }
+
+      const MAX_SIZE = 50 * 1024 * 1024;
+      if (fileSize > MAX_SIZE) {
+        return res.status(400).json({ error: `파일 크기가 너무 큽니다 (최대 ${MAX_SIZE / 1024 / 1024}MB)` });
+      }
+
+      const authStatus = await checkStorageAuth();
+      if (!authStatus.available) {
+        return res.status(200).json({
+          fallback: true,
+          multipartFallback: true,
+          error: "파일 저장소를 사용할 수 없습니다",
+        });
+      }
+
+      const info = getStorageBucketInfo();
+      if (!info) {
+        return res.status(200).json({ fallback: true, multipartFallback: true, error: "스토리지 정보 없음" });
+      }
+
+      const ext = fileName.split(".").pop() || "bin";
+      const safeFileName = fileName.replace(/[^a-zA-Z0-9가-힣._-]/g, "_");
+      const objectName = `public/notice-attachments/${Date.now()}_${crypto.randomUUID()}_${safeFileName}`;
+
+      const uploadURL = await signObjectURL({
+        bucketName: info.bucketId,
+        objectName,
+        method: "PUT",
+        ttlSec: 900,
+      });
+
+      const SIGNED_URL_TTL_SEC = 365 * 24 * 60 * 60;
+      const downloadURL = await signObjectURL({
+        bucketName: info.bucketId,
+        objectName,
+        method: "GET",
+        ttlSec: SIGNED_URL_TTL_SEC,
+      });
+
+      console.log(`[notice-upload] Presigned URL issued: ${fileName} (${(fileSize / 1024).toFixed(0)}KB)`);
+      res.json({
+        uploadURL,
+        downloadURL,
+        storageKey: `${info.bucketId}/${objectName}`,
+        fileName,
+        fileType,
+        fileSize,
+      });
+    } catch (error: any) {
+      console.error("[notice-upload] request-upload error:", error.message);
+      res.status(500).json({ error: "업로드 URL 발급 중 오류가 발생했습니다" });
+    }
+  });
+
   app.post("/api/notices/upload-image", (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -8745,7 +8826,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const user = await storage.getUser(req.session!.userId!);
         if (!user || user.role !== "관리자") {
-          return res.status(403).json({ error: "관리자만 이미지를 업로드할 수 있습니다" });
+          return res.status(403).json({ error: "관리자만 파일을 업로드할 수 있습니다" });
         }
 
         const file = req.file;
@@ -8776,45 +8857,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (info && storageStatus.available) {
           try {
             const bucket = objectStorageClient.bucket(info.bucketId);
-            const ext = file.originalname.split(".").pop() || "jpg";
-            const objectName = `public/notice-attachments/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const objectName = `public/notice-attachments/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${file.originalname.split(".").pop() || "bin"}`;
             const bucketFile = bucket.file(objectName);
 
             await bucketFile.save(file.buffer, {
               contentType: file.mimetype,
-              metadata: {
-                "custom:aclPolicy": JSON.stringify({
-                  owner: user.id,
-                  visibility: "public",
-                }),
-              },
             });
 
             const SIGNED_URL_TTL_SEC = 365 * 24 * 60 * 60;
-            const imageUrl = await signObjectURL({
+            const downloadUrl = await signObjectURL({
               bucketName: info.bucketId,
               objectName,
               method: "GET",
               ttlSec: SIGNED_URL_TTL_SEC,
             });
 
-            console.log(`[notice-image] Uploaded to Object Storage: ${file.originalname} (${(file.size / 1024).toFixed(0)}KB)`);
+            console.log(`[notice-upload] Multipart fallback OK: ${file.originalname} (${(file.size / 1024).toFixed(0)}KB)`);
             return res.json({
-              url: imageUrl,
+              url: downloadUrl,
               fileName: file.originalname,
               storageKey: `${info.bucketId}/${objectName}`,
               fileSize: file.size,
               fileType: file.mimetype,
             });
           } catch (gcsErr: any) {
-            console.warn(`[notice-image] Object Storage failed: ${gcsErr.message}, falling back to base64`);
+            console.warn(`[notice-upload] Object Storage multipart failed: ${gcsErr.message}, falling back to base64`);
           }
-        } else {
-          console.log(`[notice-image] Object Storage unavailable, using base64 fallback`);
         }
 
         const base64Url = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
-        console.log(`[notice-image] Base64 fallback: ${file.originalname} (${(file.size / 1024).toFixed(0)}KB)`);
+        console.log(`[notice-upload] Base64 fallback: ${file.originalname} (${(file.size / 1024).toFixed(0)}KB)`);
         return res.json({
           url: base64Url,
           fileName: file.originalname,
@@ -8823,8 +8895,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fileType: file.mimetype,
         });
       } catch (error) {
-        console.error("Notice image upload error:", error);
-        res.status(500).json({ error: "이미지 업로드 중 오류가 발생했습니다" });
+        console.error("Notice upload error:", error);
+        res.status(500).json({ error: "파일 업로드 중 오류가 발생했습니다" });
       }
     });
   });

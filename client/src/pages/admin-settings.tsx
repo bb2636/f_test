@@ -1115,6 +1115,55 @@ export default function AdminSettings() {
   });
 
   // Notice mutations
+  const uploadNoticeViaPresigned = async (file: File): Promise<{ url: string; fileName: string; storageKey: string; fileSize: number; fileType: string }> => {
+    const urlRes = await fetch("/api/notices/request-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        fileName: file.name,
+        fileType: file.type || "application/octet-stream",
+        fileSize: file.size,
+      }),
+    });
+    const urlBody = await urlRes.json().catch(() => ({}));
+    if (!urlRes.ok) {
+      throw Object.assign(new Error(urlBody.error || "업로드 URL 발급 실패"), { fallback: true });
+    }
+    if (urlBody.fallback) {
+      throw Object.assign(new Error(urlBody.error || "저장소 사용 불가"), { fallback: true });
+    }
+
+    const { uploadURL, downloadURL, storageKey } = urlBody;
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error(`Object Storage 업로드 실패 (${xhr.status})`));
+      };
+      xhr.onerror = () => reject(new Error("Object Storage 연결 실패"));
+      xhr.ontimeout = () => reject(new Error("업로드 시간 초과 (300초)"));
+      xhr.timeout = 300000;
+      xhr.open("PUT", uploadURL);
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+      xhr.send(file);
+    });
+
+    return { url: downloadURL, fileName: file.name, storageKey, fileSize: file.size, fileType: file.type };
+  };
+
+  const uploadNoticeViaMultipart = async (file: File): Promise<{ url: string; fileName: string; storageKey: string; fileSize: number; fileType: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/notices/upload-image", { method: "POST", credentials: "include", body: formData });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "파일 업로드 실패");
+    }
+    return await res.json();
+  };
+
   const handleNoticeImageUpload = async (files: FileList | File[]) => {
     const allowedTypes = [
       "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp",
@@ -1133,14 +1182,16 @@ export default function AdminSettings() {
     setNoticeImageUploading(true);
     try {
       for (const file of validFiles) {
-        const formData = new FormData();
-        formData.append("file", file);
-        const res = await fetch("/api/notices/upload-image", { method: "POST", credentials: "include", body: formData });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || "파일 업로드 실패");
+        let data;
+        try {
+          data = await uploadNoticeViaPresigned(file);
+        } catch (presignedErr: any) {
+          if (presignedErr.fallback) {
+            data = await uploadNoticeViaMultipart(file);
+          } else {
+            throw presignedErr;
+          }
         }
-        const data = await res.json();
         setNoticeImages((prev) => [...prev, data]);
       }
     } catch (error: any) {
