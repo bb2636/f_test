@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Search, X, ChevronDown, ChevronUp, Upload, ChevronRight, Download, Printer, CheckCircle2, Star, ZoomIn, Trash2, Shield, ArrowUpDown } from "lucide-react";
+import { Search, X, ChevronDown, ChevronUp, Upload, ChevronRight, Download, Printer, CheckCircle2, Star, ZoomIn, Trash2, Shield, ArrowUpDown, FileText } from "lucide-react";
 import logoIcon from "@assets/Frame 2_1762217940686.png";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -1116,28 +1116,35 @@ export default function AdminSettings() {
 
   // Notice mutations
   const handleNoticeImageUpload = async (files: FileList | File[]) => {
-    const imageFiles = Array.from(files).filter((f) =>
-      ["image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp"].includes(f.type)
-    );
-    if (imageFiles.length === 0) {
-      toast({ title: "업로드 오류", description: "이미지 파일만 업로드할 수 있습니다 (jpg, png, gif, webp, bmp)", variant: "destructive" });
+    const allowedTypes = [
+      "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp",
+      "application/pdf",
+      "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/zip", "application/x-zip-compressed",
+      "text/plain", "text/csv",
+    ];
+    const validFiles = Array.from(files).filter((f) => allowedTypes.includes(f.type));
+    if (validFiles.length === 0) {
+      toast({ title: "업로드 오류", description: "지원하지 않는 파일 형식입니다. (이미지, PDF, 문서, 엑셀, PPT, ZIP, TXT, CSV)", variant: "destructive" });
       return;
     }
     setNoticeImageUploading(true);
     try {
-      for (const file of imageFiles) {
+      for (const file of validFiles) {
         const formData = new FormData();
         formData.append("file", file);
         const res = await fetch("/api/notices/upload-image", { method: "POST", credentials: "include", body: formData });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || "이미지 업로드 실패");
+          throw new Error(err.error || "파일 업로드 실패");
         }
         const data = await res.json();
         setNoticeImages((prev) => [...prev, data]);
       }
     } catch (error: any) {
-      toast({ title: "업로드 실패", description: error.message || "이미지 업로드 중 오류가 발생했습니다.", variant: "destructive" });
+      toast({ title: "업로드 실패", description: error.message || "파일 업로드 중 오류가 발생했습니다.", variant: "destructive" });
     } finally {
       setNoticeImageUploading(false);
     }
@@ -9769,12 +9776,12 @@ export default function AdminSettings() {
                   color: "#0C0C0C",
                 }}
               >
-                이미지 첨부
+                첨부파일
               </label>
               <input
                 ref={noticeImageInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.csv"
                 multiple
                 className="hidden"
                 onChange={(e) => {
@@ -9821,7 +9828,7 @@ export default function AdminSettings() {
                         marginBottom: "8px",
                       }}
                     >
-                      {noticeImageUploading ? "업로드 중..." : "이미지를 이곳에 올려주세요"}
+                      {noticeImageUploading ? "업로드 중..." : "파일을 이곳에 올려주세요"}
                     </div>
                     <span
                       style={{
@@ -9845,11 +9852,17 @@ export default function AdminSettings() {
                       className="flex items-center gap-3 p-2 rounded-lg"
                       style={{ background: "rgba(0, 0, 0, 0.03)" }}
                     >
-                      <img
-                        src={img.url}
-                        alt={img.fileName}
-                        className="w-12 h-12 rounded object-cover"
-                      />
+                      {img.fileType?.startsWith("image/") ? (
+                        <img
+                          src={img.url}
+                          alt={img.fileName}
+                          className="w-12 h-12 rounded object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded flex items-center justify-center" style={{ background: "rgba(0, 143, 237, 0.1)" }}>
+                          <FileText className="w-6 h-6" style={{ color: "#008FED" }} />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div
                           className="truncate"
@@ -10277,19 +10290,44 @@ export default function AdminSettings() {
                           color: "#0C0C0C",
                         }}
                       >
-                        첨부 이미지
+                        첨부파일
                       </label>
                       <div className="space-y-2">
-                        {imgs.map((img: any, i: number) => (
-                          <img
-                            key={i}
-                            src={img.url}
-                            alt={img.fileName || "첨부 이미지"}
-                            className="w-full rounded-lg border border-slate-200 cursor-pointer"
-                            style={{ maxHeight: "300px", objectFit: "contain" }}
-                            onClick={() => window.open(img.url, "_blank")}
-                          />
-                        ))}
+                        {imgs.map((img: any, i: number) =>
+                          img.fileType?.startsWith("image/") || (!img.fileType && img.url && !img.url.endsWith(".pdf")) ? (
+                            <img
+                              key={i}
+                              src={img.url}
+                              alt={img.fileName || "첨부 이미지"}
+                              className="w-full rounded-lg border border-slate-200 cursor-pointer"
+                              style={{ maxHeight: "300px", objectFit: "contain" }}
+                              onClick={() => window.open(img.url, "_blank")}
+                            />
+                          ) : (
+                            <a
+                              key={i}
+                              href={img.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                            >
+                              <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: "rgba(0, 143, 237, 0.1)" }}>
+                                <FileText className="w-5 h-5" style={{ color: "#008FED" }} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="truncate" style={{ fontFamily: "Pretendard", fontSize: "13px", fontWeight: 500, color: "#0C0C0C" }}>
+                                  {img.fileName || "첨부파일"}
+                                </div>
+                                {img.fileSize && (
+                                  <div style={{ fontFamily: "Pretendard", fontSize: "11px", color: "#686A6E" }}>
+                                    {(img.fileSize / 1024).toFixed(1)}KB
+                                  </div>
+                                )}
+                              </div>
+                              <Download className="w-4 h-4" style={{ color: "#686A6E" }} />
+                            </a>
+                          )
+                        )}
                       </div>
                     </div>
                   );

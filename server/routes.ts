@@ -8751,9 +8751,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ error: "파일이 없습니다" });
         }
 
-        const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp"];
+        const allowedTypes = [
+          "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp",
+          "application/pdf",
+          "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "application/zip", "application/x-zip-compressed",
+          "text/plain", "text/csv",
+        ];
         if (!allowedTypes.includes(file.mimetype)) {
-          return res.status(400).json({ error: "이미지 파일만 업로드할 수 있습니다 (jpg, png, gif, webp, bmp)" });
+          return res.status(400).json({ error: "지원하지 않는 파일 형식입니다. (이미지, PDF, 문서, 엑셀, PPT, ZIP, TXT, CSV)" });
         }
 
         const info = getStorageBucketInfo();
@@ -8763,7 +8771,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             const bucket = objectStorageClient.bucket(info.bucketId);
             const ext = file.originalname.split(".").pop() || "jpg";
-            const objectName = `public/notice-images/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const objectName = `public/notice-attachments/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
             const bucketFile = bucket.file(objectName);
 
             await bucketFile.save(file.buffer, {

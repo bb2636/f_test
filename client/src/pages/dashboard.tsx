@@ -30,6 +30,8 @@ import {
   Mail,
   Loader2,
   HelpCircle,
+  FileText,
+  Download,
 } from "lucide-react";
 import logoIcon from "@assets/Vector_1762589710900.png";
 import {
@@ -1651,16 +1653,41 @@ export default function Dashboard() {
                       if (Array.isArray(imgs) && imgs.length > 0) {
                         return (
                           <div className="mt-3 space-y-2">
-                            {imgs.map((img: any, i: number) => (
-                              <img
-                                key={i}
-                                src={img.url}
-                                alt={img.fileName || "첨부 이미지"}
-                                className="w-full rounded-lg border border-slate-200 cursor-pointer"
-                                style={{ maxHeight: "300px", objectFit: "contain" }}
-                                onClick={() => window.open(img.url, "_blank")}
-                              />
-                            ))}
+                            {imgs.map((img: any, i: number) =>
+                              img.fileType?.startsWith("image/") || (!img.fileType && img.url && !img.url.endsWith(".pdf")) ? (
+                                <img
+                                  key={i}
+                                  src={img.url}
+                                  alt={img.fileName || "첨부 이미지"}
+                                  className="w-full rounded-lg border border-slate-200 cursor-pointer"
+                                  style={{ maxHeight: "300px", objectFit: "contain" }}
+                                  onClick={() => window.open(img.url, "_blank")}
+                                />
+                              ) : (
+                                <a
+                                  key={i}
+                                  href={img.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                                >
+                                  <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: "rgba(0, 143, 237, 0.1)" }}>
+                                    <FileText className="w-5 h-5" style={{ color: "#008FED" }} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="truncate" style={{ fontFamily: "Pretendard", fontSize: "13px", fontWeight: 500, color: "#0C0C0C" }}>
+                                      {img.fileName || "첨부파일"}
+                                    </div>
+                                    {img.fileSize && (
+                                      <div style={{ fontFamily: "Pretendard", fontSize: "11px", color: "#686A6E" }}>
+                                        {(img.fileSize / 1024).toFixed(1)}KB
+                                      </div>
+                                    )}
+                                  </div>
+                                  <Download className="w-4 h-4" style={{ color: "#686A6E" }} />
+                                </a>
+                              )
+                            )}
                           </div>
                         );
                       }
