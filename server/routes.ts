@@ -14569,8 +14569,9 @@ https://www.floxn.co.kr/
       try {
         const logoPath = path.join(
           process.cwd(),
-          "attached_assets",
-          "logo_1767744300048.png",
+          "server",
+          "assets",
+          "logo.png",
         );
         if (fs.existsSync(logoPath)) {
           logoBuffer = fs.readFileSync(logoPath);
