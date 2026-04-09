@@ -30,6 +30,37 @@ interface LinkSettingRow {
 
 const LOCATIONS = ["천장", "벽면", "바닥"];
 
+const DEFAULT_LINK_ITEMS: Array<{ location: string; category: string; workName: string }> = [
+  { location: "천장", category: "목공사", workName: "반자틀" },
+  { location: "천장", category: "목공사", workName: "합판" },
+  { location: "천장", category: "목공사", workName: "석고보드" },
+  { location: "천장", category: "목공사", workName: "몰딩" },
+  { location: "천장", category: "수장공사", workName: "도배" },
+  { location: "천장", category: "도장공사", workName: "수성페인트" },
+  { location: "천장", category: "도장공사", workName: "탄성코트" },
+  { location: "천장", category: "도장공사", workName: "무늬코트" },
+  { location: "천장", category: "욕실공사", workName: "SMC" },
+  { location: "천장", category: "욕실공사", workName: "리빙보드" },
+  { location: "천장", category: "욕실공사", workName: "도기류" },
+  { location: "벽면", category: "목공사", workName: "합판" },
+  { location: "벽면", category: "목공사", workName: "석고보드" },
+  { location: "벽면", category: "목공사", workName: "걸레받이" },
+  { location: "벽면", category: "수장공사", workName: "도배" },
+  { location: "벽면", category: "도장공사", workName: "수성페인트" },
+  { location: "벽면", category: "도장공사", workName: "탄성코트" },
+  { location: "벽면", category: "도장공사", workName: "무늬코트" },
+  { location: "벽면", category: "타일공사", workName: "줄눈" },
+  { location: "벽면", category: "타일공사", workName: "타일" },
+  { location: "바닥", category: "수장공사", workName: "마루" },
+  { location: "바닥", category: "수장공사", workName: "장판" },
+  { location: "바닥", category: "가설공사", workName: "건축물현장정리" },
+  { location: "바닥", category: "타일공사", workName: "줄눈" },
+  { location: "바닥", category: "타일공사", workName: "타일" },
+  { location: "바닥", category: "욕실공사", workName: "SMC" },
+  { location: "바닥", category: "욕실공사", workName: "리빙보드" },
+  { location: "바닥", category: "욕실공사", workName: "도기류" },
+];
+
 interface IlwidaegaLinkSettingsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -86,7 +117,12 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
         workName: s.workName,
       })));
     } else if (savedSettings && savedSettings.length === 0) {
-      setRows([]);
+      setRows(DEFAULT_LINK_ITEMS.map((item, idx) => ({
+        id: `default-${idx}`,
+        location: item.location,
+        category: item.category,
+        workName: item.workName,
+      })));
     }
   }, [savedSettings]);
 

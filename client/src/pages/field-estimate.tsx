@@ -442,11 +442,6 @@ export default function FieldEstimate() {
 
   const { data: ilwidaegaLinkSettings = [] } = useQuery<Array<{ id: number; location: string; category: string; workName: string }>>({
     queryKey: ['/api/ilwidaega-link-settings'],
-    queryFn: async () => {
-      const res = await fetch('/api/ilwidaega-link-settings', { credentials: 'include' });
-      if (!res.ok) return [];
-      return res.json();
-    },
   });
 
   // 단가 오버라이드 조회 (admin-configured D values)
