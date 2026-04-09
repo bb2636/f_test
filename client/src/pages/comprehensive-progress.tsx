@@ -8,7 +8,7 @@ import {
   type Invoice,
   type Settlement,
 } from "@shared/schema";
-import { Search, Cloud, Star, Plus, CalendarIcon, X } from "lucide-react";
+import { Search, Cloud, Star, Plus, CalendarIcon, X, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -242,6 +242,9 @@ export default function ComprehensiveProgress() {
   const skipSmsForCancelRef = useRef(false);
   const pendingCancelNavigationRef = useRef(false);
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingCaseId, setDeletingCaseId] = useState<string | null>(null);
+
   // 상태 변경 확인 다이얼로그 상태
   const [statusChangeDialogOpen, setStatusChangeDialogOpen] = useState(false);
   const [statusChangeTarget, setStatusChangeTarget] = useState<{
@@ -402,6 +405,29 @@ export default function ComprehensiveProgress() {
       toast({
         title: "즐겨찾기 처리 실패",
         description: "다시 시도해주세요.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteCaseMutation = useMutation({
+    mutationFn: async (caseId: string) => {
+      return await apiRequest("DELETE", `/api/cases/${caseId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      setSelectedCaseId(null);
+      setShowDeleteConfirm(false);
+      setDeletingCaseId(null);
+      toast({
+        title: "삭제 완료",
+        description: "접수건이 삭제되었습니다.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "삭제 실패",
+        description: error.message || "접수건 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
@@ -2319,6 +2345,24 @@ export default function ComprehensiveProgress() {
                 진행건 상세보기
               </SheetTitle>
               <div style={{ display: "flex", gap: "8px" }}>
+                {/* 접수건 삭제 버튼 - 권한이 있는 관리자만 표시 */}
+                {user?.role === "관리자" &&
+                  hasItem("종합진행관리", "접수건 삭제 권한") &&
+                  selectedCaseId && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setDeletingCaseId(selectedCaseId);
+                        setShowDeleteConfirm(true);
+                      }}
+                      style={{ color: "#DC2626", borderColor: "#DC2626" }}
+                      data-testid="button-delete-case"
+                    >
+                      <Trash2 style={{ width: "14px", height: "14px", marginRight: "4px" }} />
+                      삭제
+                    </Button>
+                  )}
                 {/* 접수완료 이후 상태에서만 접수건 상세보기 버튼 표시 (심사사/조사사는 숨김) */}
                 {user?.role !== "심사사" &&
                   user?.role !== "조사사" &&
@@ -2333,7 +2377,7 @@ export default function ComprehensiveProgress() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setIsReceptionEditMode(false); // 수정모드 리셋
+                          setIsReceptionEditMode(false);
                           setShowReceptionDetailDialog(true);
                         }}
                         data-testid="button-reception-detail"
@@ -4895,6 +4939,41 @@ export default function ComprehensiveProgress() {
               data-testid="button-confirm-cancellation"
             >
               확인
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>접수건 삭제 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              {(() => {
+                const target = cases?.find((c) => c.id === deletingCaseId);
+                return target
+                  ? `[${target.accidentNumber || target.caseNumber}] 건을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.`
+                  : "해당 접수건을 삭제하시겠습니까?";
+              })()}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setDeletingCaseId(null);
+              }}
+            >
+              취소
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingCaseId) {
+                  deleteCaseMutation.mutate(deletingCaseId);
+                }
+              }}
+              style={{ backgroundColor: "#DC2626" }}
+            >
+              삭제
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
