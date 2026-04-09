@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { User } from "@shared/schema";
-import logoIcon from "@assets/Frame 2_1762217940686.png";
+import logoIcon from "@assets/logo-frame.svg";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";

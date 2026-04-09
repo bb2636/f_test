@@ -33,7 +33,7 @@ import {
   FileText,
   Download,
 } from "lucide-react";
-import logoIcon from "@assets/Vector_1762589710900.png";
+import logoIcon from "@assets/logo-frame.svg";
 import {
   Sheet,
   SheetContent,

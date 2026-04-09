@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Search, X, ChevronDown, ChevronUp, Upload, ChevronRight, Download, Printer, CheckCircle2, Star, ZoomIn, Trash2, Shield, ArrowUpDown, FileText } from "lucide-react";
-import logoIcon from "@assets/Frame 2_1762217940686.png";
+import logoIcon from "@assets/logo-frame.svg";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { User, VALID_ROLES, type ExcelData, type Inquiry, type MasterData, type InsertMasterData, type Notice, type CaseChangeLog, type UnitPriceOverride } from "@shared/schema";

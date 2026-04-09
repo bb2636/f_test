@@ -14,7 +14,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import logoIcon from "@assets/Frame 2_1762217940686.png";
+import logoIcon from "@assets/logo-frame.svg";
 
 export default function MobileLogin() {
   const [, setLocation] = useLocation();

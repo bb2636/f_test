@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import logoIcon from "@assets/Frame 2_1762217940686.png";
+import logoIcon from "@assets/logo-frame.svg";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
