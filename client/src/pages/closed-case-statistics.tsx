@@ -205,22 +205,34 @@ const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
 };
 
 const getGroupEstimateAmount = (groupCases: Case[]): number | null => {
-  const eligible = getEstimateEligibleCases(groupCases);
-  if (eligible.length === 0) return null;
-  if (eligible.every(c => isPreEstimate(c))) return null;
-  const hasDirectRecovery = eligible.some(c => isDirectRecovery(c));
-  const targets = hasDirectRecovery ? eligible.filter(c => isDirectRecovery(c)) : eligible;
+  const active = getActiveCases(groupCases);
+  if (active.length === 0) return null;
+  if (active.every(c => isPreEstimate(c))) {
+    return active.reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0) || null;
+  }
+  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
+  const targets = hasDirectRecovery ? active.filter(c => isDirectRecovery(c)) : active.filter(c => !isPreEstimate(c));
   return targets.reduce((sum, c) => sum + getCaseEstimateForStats(c), 0);
 };
 
 const getGroupApprovedAmount = (groupCases: Case[]): number | null => {
   const active = getActiveCases(groupCases);
   if (active.length === 0) return null;
+  if (active.every(c => isPreEstimate(c))) {
+    return active.reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0) || null;
+  }
   const nonPreEstimate = active.filter(c => !isPreEstimate(c));
   if (nonPreEstimate.length === 0) return null;
   const hasDirectRecovery = nonPreEstimate.some(c => isDirectRecovery(c));
   const targets = hasDirectRecovery ? nonPreEstimate.filter(c => isDirectRecovery(c)) : nonPreEstimate;
   return targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+};
+
+const getGroupDate = (groupCases: Case[], field: keyof Case): string | null => {
+  const active = getActiveCases(groupCases);
+  const dates = active.map(c => c[field] as string).filter(d => d && d.trim() !== "");
+  if (dates.length === 0) return null;
+  return dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
 };
 
 interface GroupedRow {
@@ -624,10 +636,10 @@ export default function ClosedCaseStatistics() {
           extractRegion(address),
           extractCityDistrict(address),
           c.status,
-          (isPreEstimate(c) || c.status === "접수취소") ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : ""),
-          formatDate(c.siteInvestigationSubmitDate),
-          (isPreEstimate(c) || c.status === "접수취소") ? "-" : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : ""),
-          formatDate(c.secondApprovalDate),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? ((parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0) ? (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0).toLocaleString() : "") : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
+          c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.siteInvestigationSubmitDate),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? ((parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0) ? (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0).toLocaleString() : "") : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : "")),
+          c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.secondApprovalDate),
         ];
       });
     } else {
@@ -663,11 +675,11 @@ export default function ClosedCaseStatistics() {
           extractCityDistrict(address),
           getLatestStatus(g.cases),
           g.totalEstimate !== null ? (g.totalEstimate ? g.totalEstimate.toLocaleString() : "0") : "-",
-          g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-",
+          g.totalEstimate !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-",
           g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-",
-          g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-",
+          g.totalApproved !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-",
           g.totalClaim !== null ? (claimAmount ? claimAmount.toLocaleString() : "0") : "-",
-          g.totalClaim !== null ? formatDate(rep.claimDate) : "-",
+          g.totalClaim !== null ? formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate) : "-",
           deposit.amount ? deposit.amount.toLocaleString() : "-",
           formatDate(deposit.date),
           sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "-",
@@ -748,11 +760,11 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{extractCityDistrict(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={{ ...cellStyle, fontWeight: 500 }}>{getLatestStatus(g.cases)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalEstimate !== null ? formatAmount(g.totalEstimate) : "-"}</td>
-        <td style={cellStyle}>{g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-"}</td>
+        <td style={cellStyle}>{g.totalEstimate !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalApproved !== null ? formatAmount(g.totalApproved) : "-"}</td>
-        <td style={cellStyle}>{g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-"}</td>
+        <td style={cellStyle}>{g.totalApproved !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalClaim !== null ? formatAmount(g.totalClaim) : "-"}</td>
-        <td style={cellStyle}>{g.totalClaim !== null ? formatDate(rep.claimDate) : "-"}</td>
+        <td style={cellStyle}>{g.totalClaim !== null ? formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
         <td style={cellStyle}>{formatDate(deposit.date)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.partnerPayment)}</td>
@@ -766,9 +778,11 @@ export default function ClosedCaseStatistics() {
   const renderIndividualRow = (c: Case) => {
     const deposit = getDepositInfo(c);
     const settlement = settlementMap[c.id];
-    const estimateAmt = getCaseEstimateForStats(c);
-    const approvedAmt = getCaseApprovedForStats(c);
-    const blankAmounts = isPreEstimate(c) || c.status === "접수취소";
+    const preEst = isPreEstimate(c);
+    const fieldDispatchAmt = parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0;
+    const estimateAmt = preEst ? fieldDispatchAmt : getCaseEstimateForStats(c);
+    const approvedAmt = preEst ? fieldDispatchAmt : getCaseApprovedForStats(c);
+    const blankAmounts = c.status === "접수취소";
 
     return (
       <tr key={c.id} data-testid={`row-case-${c.id}`}>
@@ -796,9 +810,9 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{extractCityDistrict(c.insuredAddress || c.victimAddress)}</td>
         <td style={{ ...cellStyle, fontWeight: 500 }}>{c.status}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : formatAmount(estimateAmt)}</td>
-        <td style={cellStyle}>{formatDate(c.siteInvestigationSubmitDate)}</td>
+        <td style={cellStyle}>{blankAmounts ? "-" : formatDate(preEst ? c.claimDate : c.siteInvestigationSubmitDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : formatAmount(approvedAmt)}</td>
-        <td style={{ ...cellStyle, borderRight: "none" }}>{formatDate(c.secondApprovalDate)}</td>
+        <td style={{ ...cellStyle, borderRight: "none" }}>{blankAmounts ? "-" : formatDate(preEst ? c.claimDate : c.secondApprovalDate)}</td>
       </tr>
     );
   };
