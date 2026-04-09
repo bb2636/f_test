@@ -440,6 +440,15 @@ export default function FieldEstimate() {
     queryKey: ['/api/ilwidaega-catalog'],
   });
 
+  const { data: ilwidaegaLinkSettings = [] } = useQuery<Array<{ id: number; location: string; category: string; workName: string }>>({
+    queryKey: ['/api/ilwidaega-link-settings'],
+    queryFn: async () => {
+      const res = await fetch('/api/ilwidaega-link-settings', { credentials: 'include' });
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
   // 단가 오버라이드 조회 (admin-configured D values)
   const { data: unitPriceOverrides = [] } = useQuery<UnitPriceOverride[]>({
     queryKey: ['/api/unit-price-overrides'],
@@ -1713,15 +1722,13 @@ export default function FieldEstimate() {
   // 노무비/자재비 연동 제외 공종 (공종 단위로 연동 차단)
   const AREA_DISPLAY_ONLY_WORK_TYPES = ['타일공사', '욕실공사'];
   
-  // 위치별 공종 매핑 (복구면적 산출표용)
-  const WORK_TYPES_BY_LOCATION: Record<string, string[]> = {
+  const DEFAULT_WORK_TYPES_BY_LOCATION: Record<string, string[]> = {
     '천장': ['목공사', '수장공사', '도장공사', '욕실공사'],
     '벽면': ['목공사', '수장공사', '도장공사', '타일공사'],
     '바닥': ['수장공사', '가설공사', '타일공사', '욕실공사'],
   };
   
-  // 위치+공종별 공사명 매핑 (복구면적 산출표용 - 하드코딩)
-  const WORK_NAMES_BY_LOCATION_AND_TYPE: Record<string, Record<string, string[]>> = {
+  const DEFAULT_WORK_NAMES_BY_LOCATION_AND_TYPE: Record<string, Record<string, string[]>> = {
     '천장': {
       '목공사': ['반자틀', '합판', '석고보드', '몰딩'],
       '수장공사': ['도배'],
@@ -1741,13 +1748,36 @@ export default function FieldEstimate() {
       '욕실공사': ['SMC', '리빙보드', '도기류'],
     },
   };
+
+  const WORK_TYPES_BY_LOCATION = useMemo(() => {
+    if (ilwidaegaLinkSettings.length === 0) return DEFAULT_WORK_TYPES_BY_LOCATION;
+    const result: Record<string, string[]> = {};
+    ilwidaegaLinkSettings.forEach(s => {
+      if (!result[s.location]) result[s.location] = [];
+      if (!result[s.location].includes(s.category)) {
+        result[s.location].push(s.category);
+      }
+    });
+    return result;
+  }, [ilwidaegaLinkSettings]);
+
+  const WORK_NAMES_BY_LOCATION_AND_TYPE = useMemo(() => {
+    if (ilwidaegaLinkSettings.length === 0) return DEFAULT_WORK_NAMES_BY_LOCATION_AND_TYPE;
+    const result: Record<string, Record<string, string[]>> = {};
+    ilwidaegaLinkSettings.forEach(s => {
+      if (!result[s.location]) result[s.location] = {};
+      if (!result[s.location][s.category]) result[s.location][s.category] = [];
+      if (!result[s.location][s.category].includes(s.workName)) {
+        result[s.location][s.category].push(s.workName);
+      }
+    });
+    return result;
+  }, [ilwidaegaLinkSettings]);
   
-  // 위치에 따른 공종 옵션 가져오기
   const getWorkTypesByLocation = (location: string): string[] => {
     return WORK_TYPES_BY_LOCATION[location] || AREA_CALCULATION_WORK_TYPES;
   };
   
-  // 위치+공종에 따른 공사명 옵션 가져오기 (하드코딩 매핑)
   const getWorkNamesByWorkType = (workType: string, location?: string): string[] => {
     if (location && WORK_NAMES_BY_LOCATION_AND_TYPE[location]?.[workType]) {
       return WORK_NAMES_BY_LOCATION_AND_TYPE[location][workType];

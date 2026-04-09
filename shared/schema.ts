@@ -1099,5 +1099,27 @@ export const insertCaseStatusHistorySchema = createInsertSchema(caseStatusHistor
 export type CaseStatusHistory = typeof caseStatusHistory.$inferSelect;
 export type InsertCaseStatusHistory = z.infer<typeof insertCaseStatusHistorySchema>;
 
+// 일위대가 연동 설정 테이블 (복구면적 산출표 ↔ 일위대가 연동 항목 관리)
+export const ilwidaegaLinkSettings = pgTable("ilwidaega_link_settings", {
+  id: serial("id").primaryKey(),
+  location: text("location").notNull(), // 위치: 천장, 벽면, 바닥
+  category: text("category").notNull(), // 공종
+  workName: text("work_name").notNull(), // 공사명
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  unqKey: unique().on(table.location, table.category, table.workName),
+}));
+
+export const insertIlwidaegaLinkSettingSchema = createInsertSchema(ilwidaegaLinkSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type IlwidaegaLinkSetting = typeof ilwidaegaLinkSettings.$inferSelect;
+export type InsertIlwidaegaLinkSetting = z.infer<typeof insertIlwidaegaLinkSettingSchema>;
+
 // Chat models for AI integration
 export * from "./models/chat";

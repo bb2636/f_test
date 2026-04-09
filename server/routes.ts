@@ -7110,6 +7110,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/ilwidaega-link-settings", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+    try {
+      const settings = await storage.getAllIlwidaegaLinkSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Get ilwidaega link settings error:", error);
+      res.status(500).json({ error: "일위대가 연동 설정을 조회하는 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.post("/api/ilwidaega-link-settings", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+    const user = await storage.getUser(req.session.userId);
+    if (!user || user.role !== "관리자") {
+      return res.status(403).json({ error: "관리자만 설정을 변경할 수 있습니다" });
+    }
+    try {
+      const { items } = req.body;
+      if (!Array.isArray(items)) {
+        return res.status(400).json({ error: "items 배열이 필요합니다" });
+      }
+      const VALID_LOCATIONS = ["천장", "벽면", "바닥"];
+      for (const item of items) {
+        if (!item.location || !item.category || !item.workName) {
+          return res.status(400).json({ error: "각 항목에 위치, 공종, 공사명이 필요합니다" });
+        }
+        if (!VALID_LOCATIONS.includes(item.location)) {
+          return res.status(400).json({ error: `유효하지 않은 위치: ${item.location}` });
+        }
+      }
+      const seen = new Set<string>();
+      for (const item of items) {
+        const key = `${item.location}|${item.category}|${item.workName}`;
+        if (seen.has(key)) {
+          return res.status(400).json({ error: `중복 항목: ${item.location} - ${item.category} - ${item.workName}` });
+        }
+        seen.add(key);
+      }
+      const saved = await storage.saveIlwidaegaLinkSettings(items);
+      res.json(saved);
+    } catch (error) {
+      console.error("Save ilwidaega link settings error:", error);
+      res.status(500).json({ error: "일위대가 연동 설정 저장 중 오류가 발생했습니다" });
+    }
+  });
+
   // 일위대가 기준작업량(D값) 오버라이드 관리 endpoints
   // Get all D value overrides
   app.get("/api/unit-price-overrides", async (req, res) => {

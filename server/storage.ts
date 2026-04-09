@@ -72,6 +72,9 @@ import {
   type EstimateExclusion,
   type InsertEstimateExclusion,
   estimateExclusions,
+  type IlwidaegaLinkSetting,
+  type InsertIlwidaegaLinkSetting,
+  ilwidaegaLinkSettings,
   type CaseStatusHistory,
   type InsertCaseStatusHistory,
   caseStatusHistory,
@@ -7783,6 +7786,25 @@ export class DbStorage implements IStorage {
       .select()
       .from(caseStatusHistory)
       .orderBy(asc(caseStatusHistory.id));
+  }
+
+  async getAllIlwidaegaLinkSettings(): Promise<IlwidaegaLinkSetting[]> {
+    return await db
+      .select()
+      .from(ilwidaegaLinkSettings)
+      .orderBy(asc(ilwidaegaLinkSettings.sortOrder), asc(ilwidaegaLinkSettings.id));
+  }
+
+  async saveIlwidaegaLinkSettings(items: InsertIlwidaegaLinkSetting[]): Promise<IlwidaegaLinkSetting[]> {
+    return await db.transaction(async (tx) => {
+      await tx.delete(ilwidaegaLinkSettings);
+      if (items.length === 0) return [];
+      const results = await tx
+        .insert(ilwidaegaLinkSettings)
+        .values(items.map((item, idx) => ({ ...item, sortOrder: idx })))
+        .returning();
+      return results;
+    });
   }
 }
 

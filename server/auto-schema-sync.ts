@@ -19,6 +19,16 @@ async function ensureColumns(label: string, dbUrl: string | undefined) {
   try {
     const migrations: string[] = [
       `ALTER TABLE notices ADD COLUMN IF NOT EXISTS images text`,
+      `CREATE TABLE IF NOT EXISTS ilwidaega_link_settings (
+        id SERIAL PRIMARY KEY,
+        location TEXT NOT NULL,
+        category TEXT NOT NULL,
+        work_name TEXT NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        UNIQUE(location, category, work_name)
+      )`,
     ];
 
     let applied = 0;

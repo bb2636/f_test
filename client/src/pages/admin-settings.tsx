@@ -18,6 +18,7 @@ import { AccessControlPanel } from "@/components/access-control-panel";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import { LaborRateTiersButton } from "@/components/labor-rate-tiers-modal";
+import { IlwidaegaLinkSettingsButton } from "@/components/ilwidaega-link-settings-modal";
 import { usePermissions } from "@/hooks/use-permissions";
 
 // Fallback xlsx parser for files with XML namespace prefixes that xlsx library can't handle
@@ -2930,6 +2931,9 @@ export default function AdminSettings() {
               <div className="flex gap-3 mb-6">
                 {dbTab === "일위대가" && (
                   <LaborRateTiersButton />
+                )}
+                {dbTab === "일위대가" && (
+                  <IlwidaegaLinkSettingsButton />
                 )}
                 <button
                   onClick={() => {
