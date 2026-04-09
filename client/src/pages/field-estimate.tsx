@@ -6964,6 +6964,8 @@ export default function FieldEstimate() {
               isLoading={isLoadingMaterialCatalog}
               isReadOnly={isReadOnly}
               caseNumber={selectedCase?.caseNumber || ''}
+              laborTotal={laborCostRows.reduce((sum, row) => sum + (row.amount || 0), 0)}
+              isAdmin={currentUser?.role === "관리자"}
             />
 
             {/* 하단 버튼 */}

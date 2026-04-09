@@ -56,6 +56,8 @@ interface MaterialCostSectionProps {
   isLoading?: boolean;
   isReadOnly?: boolean; // 읽기 전용 모드
   caseNumber?: string;
+  laborTotal?: number;
+  isAdmin?: boolean;
 }
 
 export function MaterialCostSection({
@@ -69,6 +71,8 @@ export function MaterialCostSection({
   isLoading = false,
   isReadOnly = false,
   caseNumber = '',
+  laborTotal = 0,
+  isAdmin = false,
 }: MaterialCostSectionProps) {
   // 직접입력 모드 상태: 공사명, 자재항목 각각 관리
   const [workNameInputMode, setWorkNameInputMode] = useState<{[rowId: string]: boolean}>({});
@@ -1010,6 +1014,24 @@ export function MaterialCostSection({
               {rows.reduce((sum, row) => sum + (row.합계 || 0), 0).toLocaleString()}
             </td>
             <td></td>
+            {isAdmin && (
+              <td colSpan={2} style={{
+                padding: "0 12px",
+                fontFamily: "Pretendard",
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "#008FED",
+                textAlign: "right",
+                whiteSpace: "nowrap",
+              }}>
+                {(() => {
+                  const materialTotal = rows.reduce((sum, row) => sum + (row.합계 || 0), 0);
+                  const denominator = laborTotal + materialTotal;
+                  const ratio = denominator > 0 ? (materialTotal / denominator) * 100 : 0;
+                  return `자재비 구성비 : ${ratio.toFixed(1)}%`;
+                })()}
+              </td>
+            )}
           </tr>
         </tfoot>
       </table>
