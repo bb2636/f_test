@@ -124,6 +124,7 @@ interface LaborCostSectionProps {
   isHydrated?: boolean; // 데이터 로딩 완료 여부 (재계산 방지용)
   laborRateTiers?: LaborRateTier[]; // C/D 비율 적용률 데이터 (DB에서 가져옴)
   isLossPreventionCase?: boolean; // 손해방지 케이스 여부 (누수탐지 경비여부 자동체크용)
+  isPartner?: boolean;
 }
 
 export function LaborCostSection({
@@ -139,10 +140,11 @@ export function LaborCostSection({
   filteredWorkTypes,
   isReadOnly = false,
   onAreaImportToMaterial,
-  enableAreaImport = true, // 기본값 true (하위 호환)
-  isHydrated = true, // 기본값 true (하위 호환)
-  laborRateTiers = DEFAULT_LABOR_RATE_TIERS_FALLBACK, // 기본값: 하드코딩된 요율 (하위 호환)
-  isLossPreventionCase = false, // 기본값 false
+  enableAreaImport = true,
+  isHydrated = true,
+  laborRateTiers = DEFAULT_LABOR_RATE_TIERS_FALLBACK,
+  isLossPreventionCase = false,
+  isPartner = false,
 }: LaborCostSectionProps) {
   const [detailItemInputMode, setDetailItemInputMode] = useState<{[rowId: string]: boolean}>({});
 
@@ -1811,6 +1813,7 @@ export function LaborCostSection({
                     >
                       <input
                         type="checkbox"
+                        disabled={isPartner && group.rows.every((r) => r.isLinkedFromRecovery)}
                         checked={group.rows.every((r) => {
                           // 병합된 행인 경우 모든 원본 ID 확인
                           const mergedRow = r as MergedLaborCostRow;
