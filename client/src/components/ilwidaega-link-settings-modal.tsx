@@ -18,6 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Link2, Plus, Trash2 } from "lucide-react";
 import type { IlwidaegaLinkSetting } from "@shared/schema";
 
@@ -69,6 +70,7 @@ interface IlwidaegaLinkSettingsModalProps {
 export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLinkSettingsModalProps) {
   const { toast } = useToast();
   const [rows, setRows] = useState<LinkSettingRow[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: savedSettings, isLoading: isLoadingSettings } = useQuery<IlwidaegaLinkSetting[]>({
     queryKey: ["/api/ilwidaega-link-settings"],
@@ -157,8 +159,27 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
     }]);
   };
 
-  const removeRow = (id: string) => {
-    setRows(prev => prev.filter(r => r.id !== id));
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === rows.length && rows.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(rows.map(r => r.id)));
+    }
+  };
+
+  const removeSelected = () => {
+    if (selectedIds.size === 0) return;
+    setRows(prev => prev.filter(r => !selectedIds.has(r.id)));
+    setSelectedIds(new Set());
   };
 
   const updateRow = (id: string, field: keyof LinkSettingRow, value: string) => {
@@ -229,7 +250,7 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
           overflowY: "auto",
           padding: "16px 24px",
         }}>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "12px" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginBottom: "12px" }}>
             <Button
               variant="outline"
               size="sm"
@@ -241,7 +262,21 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
               }}
             >
               <Plus className="h-4 w-4" />
-              행 추가
+              행추가
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={removeSelected}
+              disabled={selectedIds.size === 0}
+              style={{
+                borderColor: selectedIds.size > 0 ? "#FF4D4F" : "rgba(12, 12, 12, 0.15)",
+                color: selectedIds.size > 0 ? "#FF4D4F" : "#9ca3af",
+                gap: "4px",
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              선택 삭제
             </Button>
           </div>
 
@@ -258,14 +293,17 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
                 }}>
                   <th style={{
                     padding: "8px 12px",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    color: "#0C0C0C",
                     textAlign: "center",
                     borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                     borderRight: "1px solid rgba(12, 12, 12, 0.06)",
-                    width: "60px",
-                  }}>No.</th>
+                    width: "44px",
+                  }}>
+                    <Checkbox
+                      checked={rows.length > 0 && selectedIds.size === rows.length}
+                      onCheckedChange={toggleSelectAll}
+                      style={{ display: "block", margin: "0 auto" }}
+                    />
+                  </th>
                   <th style={{
                     padding: "8px 12px",
                     fontSize: "13px",
@@ -293,44 +331,40 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
                     color: "#0C0C0C",
                     textAlign: "center",
                     borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
-                    borderRight: "1px solid rgba(12, 12, 12, 0.06)",
                   }}>공사명</th>
-                  <th style={{
-                    padding: "8px 12px",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    color: "#0C0C0C",
-                    textAlign: "center",
-                    borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
-                    width: "60px",
-                  }}>삭제</th>
                 </tr>
               </thead>
               <tbody>
                 {isLoadingSettings ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: "center", padding: "24px", color: "#9ca3af", fontSize: "14px" }}>
+                    <td colSpan={4} style={{ textAlign: "center", padding: "24px", color: "#9ca3af", fontSize: "14px" }}>
                       로딩 중...
                     </td>
                   </tr>
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: "center", padding: "24px", color: "#9ca3af", fontSize: "14px" }}>
-                      등록된 연동 항목이 없습니다. "행 추가" 버튼으로 항목을 추가하세요.
+                    <td colSpan={4} style={{ textAlign: "center", padding: "24px", color: "#9ca3af", fontSize: "14px" }}>
+                      등록된 연동 항목이 없습니다. "행추가" 버튼으로 항목을 추가하세요.
                     </td>
                   </tr>
                 ) : (
-                  rows.map((row, index) => (
+                  rows.map((row) => (
                     <tr key={row.id} style={{
                       height: "48px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.06)",
+                      background: selectedIds.has(row.id) ? "rgba(0, 143, 237, 0.04)" : "transparent",
                     }}>
                       <td style={{
                         textAlign: "center",
-                        fontSize: "13px",
-                        color: "#686A6E",
                         borderRight: "1px solid rgba(12, 12, 12, 0.06)",
-                      }}>{index + 1}</td>
+                        padding: "4px",
+                      }}>
+                        <Checkbox
+                          checked={selectedIds.has(row.id)}
+                          onCheckedChange={() => toggleSelect(row.id)}
+                          style={{ display: "block", margin: "0 auto" }}
+                        />
+                      </td>
                       <td style={{
                         padding: "4px 8px",
                         borderRight: "1px solid rgba(12, 12, 12, 0.06)",
@@ -369,7 +403,6 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
                       </td>
                       <td style={{
                         padding: "4px 8px",
-                        borderRight: "1px solid rgba(12, 12, 12, 0.06)",
                       }}>
                         <Select
                           value={row.workName}
@@ -385,29 +418,6 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
                             ))}
                           </SelectContent>
                         </Select>
-                      </td>
-                      <td style={{
-                        textAlign: "center",
-                        padding: "4px",
-                      }}>
-                        <button
-                          onClick={() => removeRow(row.id)}
-                          style={{
-                            width: "28px",
-                            height: "28px",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: "transparent",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            color: "#FF4D4F",
-                          }}
-                          title="삭제"
-                        >
-                          <Trash2 size={16} />
-                        </button>
                       </td>
                     </tr>
                   ))
