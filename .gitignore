@@ -4,3 +4,15 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# attached_assets - 전체 개요만 유지
+attached_assets/*
+!attached_assets/1. 전체 개요_1762479863576.txt
+
+# 루트 스크린샷/이미지 방지
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+/*.webp
+/*.bmp
