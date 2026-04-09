@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ForceChangePasswordModal } from "@/components/force-change-password-modal";
+import loginIllustration from "@assets/login-illustration.jpg";
 import logoIcon from "@assets/logo-frame.svg";
 
 export default function Login() {
@@ -198,25 +199,11 @@ export default function Login() {
             position: "relative",
           }}
         >
-          <div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              background: "linear-gradient(135deg, #003D8F 0%, #0066CC 50%, #008FED 100%)",
-            }}
-          >
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-            }}>
-              <img
-                src={logoIcon}
-                alt="FLOXN Logo"
-                style={{ width: "200px", opacity: 0.3 }}
-              />
-            </div>
-          </div>
+          <img
+            src={loginIllustration}
+            alt="Login Illustration"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         </div>
 
         {/* Right Panel - Login Form */}
