@@ -111,6 +111,7 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
   }, [ilwidaegaCatalog]);
 
   useEffect(() => {
+    if (!open) return;
     if (savedSettings && savedSettings.length > 0) {
       setRows(savedSettings.map(s => ({
         id: `saved-${s.id}`,
@@ -126,7 +127,8 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
         workName: item.workName,
       })));
     }
-  }, [savedSettings]);
+    setSelectedIds(new Set());
+  }, [savedSettings, open]);
 
   const saveMutation = useMutation({
     mutationFn: async (items: Array<{ location: string; category: string; workName: string }>) => {
