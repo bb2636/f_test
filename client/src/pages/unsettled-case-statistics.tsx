@@ -159,6 +159,13 @@ const isOnlyPreEstimate = (groupCases: Case[]): boolean => {
   return active.every(c => isPreEstimate(c));
 };
 
+const getGroupDate = (groupCases: Case[], field: keyof Case): string | null => {
+  const active = getActiveCases(groupCases);
+  const dates = active.map(c => c[field] as string).filter(d => d && d.trim() !== "");
+  if (dates.length === 0) return null;
+  return dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+};
+
 const groupHasAnyPreEstimate = (groupCases: Case[]): boolean => {
   const active = getActiveCases(groupCases);
   return active.some(c => isPreEstimate(c));
@@ -694,11 +701,11 @@ export default function UnsettledCaseStatistics() {
           extractCityDistrict(address),
           getLatestStatus(g.cases),
           g.totalEstimate !== null ? (g.totalEstimate ? g.totalEstimate.toLocaleString() : "0") : "-",
-          g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-",
+          g.totalEstimate !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-",
           g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-",
-          g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-",
-          claimAmount ? claimAmount.toLocaleString() : "-",
-          claimAmount ? formatDate(rep.claimDate) : "-",
+          g.totalApproved !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-",
+          g.totalClaim !== null ? (claimAmount ? claimAmount.toLocaleString() : "0") : "-",
+          g.totalClaim !== null ? formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate) : "-",
           deposit.amount ? deposit.amount.toLocaleString() : "-",
           formatDate(deposit.date),
           sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "-",
@@ -780,11 +787,11 @@ export default function UnsettledCaseStatistics() {
         <td style={cellStyle}>{extractCityDistrict(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={{ ...cellStyle, fontWeight: 500 }}>{getLatestStatus(g.cases)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalEstimate !== null ? formatAmount(g.totalEstimate) : "-"}</td>
-        <td style={cellStyle}>{g.totalEstimate !== null ? formatDate(rep.siteInvestigationSubmitDate) : "-"}</td>
+        <td style={cellStyle}>{g.totalEstimate !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalApproved !== null ? formatAmount(g.totalApproved) : "-"}</td>
-        <td style={cellStyle}>{g.totalApproved !== null ? formatDate(rep.secondApprovalDate) : "-"}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalClaim ? formatAmount(g.totalClaim) : "-"}</td>
-        <td style={cellStyle}>{g.totalClaim ? formatDate(rep.claimDate) : "-"}</td>
+        <td style={cellStyle}>{g.totalApproved !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-"}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalClaim !== null ? formatAmount(g.totalClaim) : "-"}</td>
+        <td style={cellStyle}>{g.totalClaim !== null ? formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
         <td style={cellStyle}>{formatDate(deposit.date)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.partnerPayment)}</td>
