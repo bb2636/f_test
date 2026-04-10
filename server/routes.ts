@@ -32,7 +32,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
-import { estimates, cases, users } from "@shared/schema";
+import { estimates, cases, users, type User } from "@shared/schema";
 import { sql, inArray, eq, and } from "drizzle-orm";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
@@ -948,7 +948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
       }
 
-      const updatedUser = await storage.updateUser(userId, validatedData);
+      const updatedUser = await storage.updateUser(userId, validatedData as Partial<Omit<User, "id" | "username" | "password" | "attachments" | "status" | "createdAt">>);
 
       if (!updatedUser) {
         return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
@@ -5662,7 +5662,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               fileType,
               fileSize: file.size,
               storageKey,
-              createdBy: req.session.userId,
+              createdBy: req.session.userId!,
             });
             await storage.updateDocumentStatus(document.id, "ready");
 
@@ -5705,7 +5705,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fileType,
             fileSize: file.size,
             fileData: base64Data,
-            createdBy: req.session.userId,
+            createdBy: req.session.userId!,
           });
 
           uploadMetrics.dbFallbackCount++;
@@ -6069,23 +6069,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // For width/height: parse as float (m 단위)
         const toNumber = (
           val: string | number | null | undefined,
-        ): number | null => {
+        ): string | null => {
           if (val === null || val === undefined || val === "" || val === "0")
             return null;
           const num = typeof val === "string" ? parseFloat(val) : val;
-          return !isNaN(num) && num >= 0 ? num : null;
+          return !isNaN(num) && num >= 0 ? String(num) : null;
         };
 
-        // For area: parse as float (m² 단위, 변환 없이 그대로 저장)
         const toArea = (
           val: string | number | null | undefined,
-        ): number | null => {
+        ): string | null => {
           if (val === null || val === undefined || val === "" || val === "0")
             return null;
           const num = typeof val === "string" ? parseFloat(val) : val;
           if (isNaN(num) || num < 0) return null;
-          // 이미 m² 단위이므로 변환 없이 그대로 저장
-          return num;
+          return String(num);
         };
 
         const result = {
@@ -11785,6 +11783,7 @@ FLOXN 드림`;
 
       for (const doc of documents) {
         try {
+          if (!doc.fileData) continue;
           const fileBuffer = Buffer.from(doc.fileData, "base64");
           const sanitizedFileName = doc.fileName.replace(
             /[^a-zA-Z0-9가-힣._-]/g,
@@ -14439,7 +14438,7 @@ https://www.floxn.co.kr/
       );
 
       const { html: htmlContent, text: textContent } = renderCancellationTemplate({
-        accidentNo, insuredName, cancelReason, dateStr, caseNumber, logoBuffer,
+        accidentNo, insuredName, cancelReason: cancelReason ?? null, dateStr, caseNumber, logoBuffer,
       });
 
       const results: { email: string; success: boolean; error?: string }[] = [];

@@ -116,7 +116,7 @@ async function getCachedUsers(): Promise<User[]> {
         db.select(usersWithoutAttachments).from(users).where(eq(users.status, "active")),
         DB_QUERY_TIMEOUT,
         "getCachedUsers",
-      );
+      ) as User[];
       usersCache = result;
       usersCacheTime = Date.now();
       return result;
@@ -582,10 +582,27 @@ export class MemStorage implements IStorage {
     const hashedPassword = await bcrypt.hash("1234", SALT_ROUNDS);
     const currentDate = getKSTDate();
 
+    const piiDefaults = {
+      addressDetail: null,
+      emailEnc: null,
+      phoneEnc: null,
+      addressEnc: null,
+      addressDetailEnc: null,
+      emailHash: null,
+      phoneHash: null,
+      businessRegistrationNumber: null,
+      representativeName: null,
+      accountType: "개인",
+      isSuperAdmin: false,
+      mustChangePassword: false,
+      currentSessionId: null,
+      lastLoginAt: null,
+    };
+
     const testUsers: User[] = [
       // ===== 관리자 5명 =====
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "admin01",
         password: hashedPassword,
@@ -607,7 +624,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "admin02",
         password: hashedPassword,
@@ -629,7 +646,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "admin03",
         password: hashedPassword,
@@ -651,7 +668,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "admin04",
         password: hashedPassword,
@@ -673,7 +690,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "admin05",
         password: hashedPassword,
@@ -697,7 +714,7 @@ export class MemStorage implements IStorage {
 
       // ===== 보험사 5명 =====
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "insure01",
         password: hashedPassword,
@@ -719,7 +736,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "insure02",
         password: hashedPassword,
@@ -741,7 +758,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "insure03",
         password: hashedPassword,
@@ -763,7 +780,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "insure04",
         password: hashedPassword,
@@ -785,7 +802,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "insure05",
         password: hashedPassword,
@@ -809,7 +826,7 @@ export class MemStorage implements IStorage {
 
       // ===== 협력사 5명 =====
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "partner01",
         password: hashedPassword,
@@ -831,7 +848,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "partner02",
         password: hashedPassword,
@@ -853,7 +870,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "partner03",
         password: hashedPassword,
@@ -875,7 +892,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "partner04",
         password: hashedPassword,
@@ -897,7 +914,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "partner05",
         password: hashedPassword,
@@ -921,7 +938,7 @@ export class MemStorage implements IStorage {
 
       // ===== 심사사 5명 =====
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "assessor01",
         password: hashedPassword,
@@ -943,7 +960,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "assessor02",
         password: hashedPassword,
@@ -965,7 +982,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "assessor03",
         password: hashedPassword,
@@ -987,7 +1004,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "assessor04",
         password: hashedPassword,
@@ -1009,7 +1026,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "assessor05",
         password: hashedPassword,
@@ -1033,7 +1050,7 @@ export class MemStorage implements IStorage {
 
       // ===== 조사사 5명 =====
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "investigator01",
         password: hashedPassword,
@@ -1055,7 +1072,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "investigator02",
         password: hashedPassword,
@@ -1077,7 +1094,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "investigator03",
         password: hashedPassword,
@@ -1099,7 +1116,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "investigator04",
         password: hashedPassword,
@@ -1121,7 +1138,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-
+        ...piiDefaults,
         id: randomUUID(),
         username: "investigator05",
         password: hashedPassword,
@@ -1164,7 +1181,7 @@ export class MemStorage implements IStorage {
 
     if (!adminUser) return;
 
-    const testCases: Case[] = [
+    const testCases: Partial<Case>[] = [
       {
         id: randomUUID(),
         caseNumber: "CLM-25145136",
@@ -1345,7 +1362,7 @@ export class MemStorage implements IStorage {
     ];
 
     testCases.forEach((testCase) => {
-      this.cases.set(testCase.id, testCase);
+      this.cases.set(testCase.id!, testCase as Case);
     });
   }
 
@@ -1371,6 +1388,20 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const createdAt = getKSTDate();
     const user: User = {
+      addressDetail: null,
+      emailEnc: null,
+      phoneEnc: null,
+      addressEnc: null,
+      addressDetailEnc: null,
+      emailHash: null,
+      phoneHash: null,
+      businessRegistrationNumber: null,
+      representativeName: null,
+      accountType: "개인",
+      isSuperAdmin: false,
+      mustChangePassword: false,
+      currentSessionId: null,
+      lastLoginAt: null,
       id,
       username: insertUser.username,
       password: hashedPassword,
@@ -2315,6 +2346,7 @@ export class MemStorage implements IStorage {
       title: data.title,
       content: data.content,
       status: data.status || "대기",
+      responseTitle: data.responseTitle || null,
       response: data.response || null,
       respondedBy: data.respondedBy || null,
       respondedAt: data.respondedAt || null,
@@ -2359,7 +2391,13 @@ export class MemStorage implements IStorage {
     const id = Math.random().toString(36).substr(2, 9);
     const drawing: Drawing = {
       id,
-      ...data,
+      caseId: data.caseId,
+      createdBy: data.createdBy,
+      uploadedImages: data.uploadedImages ?? [],
+      rectangles: data.rectangles ?? [],
+      accidentAreas: data.accidentAreas ?? [],
+      leakMarkers: data.leakMarkers ?? [],
+      canvasImage: data.canvasImage ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -2372,7 +2410,7 @@ export class MemStorage implements IStorage {
   }
 
   async getDrawingByCaseId(caseId: string): Promise<Drawing | null> {
-    for (const drawing of this.drawings.values()) {
+    for (const drawing of Array.from(this.drawings.values())) {
       if (drawing.caseId === caseId) {
         return drawing;
       }
@@ -2399,7 +2437,7 @@ export class MemStorage implements IStorage {
 
   async getOrCreateActiveCase(userId: string): Promise<Case> {
     // Find existing active case (작성중) for this user
-    for (const caseItem of this.cases.values()) {
+    for (const caseItem of Array.from(this.cases.values())) {
       if (caseItem.createdBy === userId && caseItem.status === "작성중") {
         return caseItem;
       }
@@ -2407,69 +2445,14 @@ export class MemStorage implements IStorage {
 
     // Create new active case for drawing purposes
     const caseNumber = `CLM-DRAW-${Date.now()}`;
-    const newCase: Case = {
+    const newCase = {
       id: randomUUID(),
       caseNumber,
       status: "작성중",
       createdBy: userId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      accidentDate: null,
-      insuranceCompany: null,
-      insurancePolicyNo: null,
-      insuranceAccidentNo: null,
-      clientResidence: null,
-      clientDepartment: null,
-      clientName: null,
-      clientContact: null,
-      assessorId: null,
-      assessorDepartment: null,
-      assessorTeam: null,
-      assessorContact: null,
-      investigatorTeam: null,
-      investigatorDepartment: null,
-      investigatorTeamName: null,
-      investigatorContact: null,
-      policyHolderName: null,
-      policyHolderIdNumber: null,
-      policyHolderAddress: null,
-      insuredName: null,
-      insuredIdNumber: null,
-      insuredContact: null,
-      insuredAddress: null,
-      victimName: null,
-      victimContact: null,
-      clientPhone: null,
-      clientAddress: null,
-      accidentLocation: null,
-      accidentDescription: null,
-      accidentType: null,
-      accidentTime: null,
-      victimDamageItems: null,
-      specialNotes: null,
-      partnerCompany: null,
-      repairCompanyName: null,
-      assignedAt: null,
-      targetCompletionDate: null,
-      acceptedAt: null,
-      rejectionReason: null,
-      surveyScheduledAt: null,
-      surveyCompletedAt: null,
-      damageScope: null,
-      repairMethod: null,
-      surveyNotes: null,
-      estimateAmount: null,
-      estimateSubmittedAt: null,
-      estimateApprovedAt: null,
-      estimateRejectionReason: null,
-      workStartedAt: null,
-      workCompletedAt: null,
-      finalReportSubmittedAt: null,
-      settlementAmount: null,
-      settlementCompletedAt: null,
-      paymentRequestedAt: null,
-      paymentCompletedAt: null,
-    };
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as Case;
 
     this.cases.set(newCase.id, newCase);
     return newCase;
@@ -2480,7 +2463,17 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const document: CaseDocument = {
       id,
-      ...data,
+      caseId: data.caseId,
+      createdBy: data.createdBy,
+      fileName: data.fileName,
+      category: data.category,
+      fileType: data.fileType,
+      fileSize: data.fileSize,
+      fileData: data.fileData ?? null,
+      storageKey: data.storageKey ?? null,
+      checksum: data.checksum ?? null,
+      displayOrder: data.displayOrder ?? 0,
+      status: data.status ?? "active",
       createdAt: new Date(),
     };
     this.documents.set(id, document);
@@ -2498,7 +2491,7 @@ export class MemStorage implements IStorage {
 
   async getDocumentsByCaseId(caseId: string): Promise<CaseDocument[]> {
     const result: CaseDocument[] = [];
-    for (const doc of this.documents.values()) {
+    for (const doc of Array.from(this.documents.values())) {
       if (doc.caseId === caseId) {
         result.push(doc);
       }
@@ -2978,6 +2971,31 @@ export class MemStorage implements IStorage {
 
   async getAllStatusHistory(): Promise<CaseStatusHistory[]> {
     throw new Error("getAllStatusHistory not implemented in MemStorage");
+  }
+
+  async approveReport(
+    caseId: string,
+    decision: "승인" | "비승인",
+    approvalComment: string | null,
+    approvedBy: string,
+  ): Promise<Case | null> {
+    throw new Error("approveReport not implemented in MemStorage");
+  }
+
+  async deleteDocumentsByCaseId(caseId: string): Promise<number> {
+    throw new Error("deleteDocumentsByCaseId not implemented in MemStorage");
+  }
+
+  async deleteDrawingByCaseId(caseId: string): Promise<boolean> {
+    throw new Error("deleteDrawingByCaseId not implemented in MemStorage");
+  }
+
+  async deleteEstimatesByCaseId(caseId: string): Promise<number> {
+    throw new Error("deleteEstimatesByCaseId not implemented in MemStorage");
+  }
+
+  async resetCaseFieldSurveyData(caseId: string): Promise<void> {
+    throw new Error("resetCaseFieldSurveyData not implemented in MemStorage");
   }
 }
 
@@ -5555,15 +5573,11 @@ export class DbStorage implements IStorage {
     const estimatesDeleted = await this.deleteEstimatesByCaseId(caseId);
     console.log(`[resetCaseFieldSurveyData] Deleted ${estimatesDeleted} estimates`);
     
-    // 4. 승인/이메일/인보이스 관련 필드 초기화
+    // 4. 승인/인보이스 관련 필드 초기화
     await db
       .update(cases)
       .set({
         approvedAmount: null,
-        approvedAt: null,
-        approvedBy: null,
-        emailSentAt: null,
-        emailSentTo: null,
         invoiceDamagePreventionAmount: null,
         invoicePropertyRepairAmount: null,
         invoiceRemarks: null,
@@ -5787,6 +5801,7 @@ export class DbStorage implements IStorage {
             repairArea: repairAreaStr,
             note: row.note || null,
             rowOrder: row.rowOrder,
+            createdAt: new Date(),
           });
         }
 
@@ -5824,24 +5839,7 @@ export class DbStorage implements IStorage {
       .where(eq(estimateRows.estimateId, estimate.id))
       .orderBy(asc(estimateRows.rowOrder));
 
-    // numeric 타입은 문자열로 반환되므로 숫자로 파싱
-    const parseNumeric = (val: any): number | null => {
-      if (val === null || val === undefined) return null;
-      const num = typeof val === 'string' ? parseFloat(val) : val;
-      return isNaN(num) ? null : num;
-    };
-
-    const rows = rawRows.map(row => ({
-      ...row,
-      damageWidth: parseNumeric(row.damageWidth),
-      damageHeight: parseNumeric(row.damageHeight),
-      damageArea: parseNumeric(row.damageArea),
-      repairWidth: parseNumeric(row.repairWidth),
-      repairHeight: parseNumeric(row.repairHeight),
-      repairArea: parseNumeric(row.repairArea),
-    }));
-
-    return { estimate, rows };
+    return { estimate, rows: rawRows };
   }
 
   async getEstimateVersion(
@@ -5868,24 +5866,7 @@ export class DbStorage implements IStorage {
       .where(eq(estimateRows.estimateId, estimate.id))
       .orderBy(asc(estimateRows.rowOrder));
 
-    // numeric 타입은 문자열로 반환되므로 숫자로 파싱
-    const parseNumeric = (val: any): number | null => {
-      if (val === null || val === undefined) return null;
-      const num = typeof val === 'string' ? parseFloat(val) : val;
-      return isNaN(num) ? null : num;
-    };
-
-    const rows = rawRows.map(row => ({
-      ...row,
-      damageWidth: parseNumeric(row.damageWidth),
-      damageHeight: parseNumeric(row.damageHeight),
-      damageArea: parseNumeric(row.damageArea),
-      repairWidth: parseNumeric(row.repairWidth),
-      repairHeight: parseNumeric(row.repairHeight),
-      repairArea: parseNumeric(row.repairArea),
-    }));
-
-    return { estimate, rows };
+    return { estimate, rows: rawRows };
   }
 
   async listEstimateVersions(caseId: string): Promise<Estimate[]> {
@@ -6062,7 +6043,7 @@ export class DbStorage implements IStorage {
 
   // Material methods
   async listMaterials(workType?: string): Promise<Material[]> {
-    let query = db.select().from(materials);
+    let query = db.select().from(materials).$dynamic();
 
     if (workType) {
       query = query.where(
@@ -6787,7 +6768,6 @@ export class DbStorage implements IStorage {
             accidentAreas: sourceDrawing.accidentAreas,
             leakMarkers: sourceDrawing.leakMarkers,
             createdBy: sourceDrawing.createdBy,
-            createdAt: getKSTDate(),
           });
         }
         syncedCount++;
@@ -6849,7 +6829,6 @@ export class DbStorage implements IStorage {
           fileData: newDocument.fileData,
           storageKey: newDocument.storageKey,
           createdBy: newDocument.createdBy,
-          createdAt: getKSTDate(),
         });
         syncedCount++;
         console.log(`[Document Sync] Synced to case ${relatedCase.caseNumber}`);
@@ -6911,10 +6890,9 @@ export class DbStorage implements IStorage {
           caseId: relatedCase.id,
           version: nextVersion,
           createdBy: sourceEstimate.estimate.createdBy,
-          createdAt: new Date(), // Use Date object for timestamp column
+          createdAt: new Date(),
           laborCostData: sourceEstimate.estimate.laborCostData,
           materialCostData: sourceEstimate.estimate.materialCostData,
-          vatIncluded: sourceEstimate.estimate.vatIncluded,
         });
 
         // Copy all rows
@@ -7440,11 +7418,14 @@ export class DbStorage implements IStorage {
       conditions.push(like(cases.caseNumber, `%${filters.caseNumber}%`));
     }
 
-    if (conditions.length > 0) {
-      return await query.where(and(...conditions));
-    }
+    const results = conditions.length > 0
+      ? await query.where(and(...conditions))
+      : await query;
 
-    return await query;
+    return results.map(r => ({
+      ...r,
+      caseNumber: r.caseNumber ?? "",
+    }));
   }
 
   // Settlement methods

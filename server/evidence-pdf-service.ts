@@ -228,7 +228,7 @@ async function createEvidencePdfForTab(
     if (currentImageCount === 0) return;
     
     const pdfBytes = await currentPdf.save();
-    let buffer = Buffer.from(pdfBytes);
+    let buffer: Buffer = Buffer.from(pdfBytes);
     
     // 이메일 첨부용 압축 적용 (7MB 타겟)
     const originalSize = buffer.length;
