@@ -2166,16 +2166,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
       }
 
-      // Debug: log partner info being returned
-      console.log(`[GET /api/cases/${id}] Partner info:`, {
-        caseNumber: caseData.caseNumber,
-        assignedPartner: caseData.assignedPartner,
-        assignedPartnerManager: caseData.assignedPartnerManager,
-        assignedPartnerContact: caseData.assignedPartnerContact,
-      });
-
       // 심사사/조사사 이메일 자동 조회 (DB에 저장되지 않은 경우 users 테이블에서 찾기)
       const allUsers = await storage.getAllUsers();
+
+      if (caseData.managerId) {
+        const managerUser = allUsers.find(u => u.id === caseData.managerId);
+        if (managerUser) {
+          (caseData as any).managerName = managerUser.name;
+        }
+      }
 
       // 심사사 이메일이 없고 심사자 이름이 있으면 조회
       if (!caseData.assessorEmail && caseData.assessorTeam) {

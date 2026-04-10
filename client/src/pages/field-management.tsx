@@ -944,7 +944,7 @@ export default function FieldManagement() {
               <div className="mt-1 flex flex-wrap gap-x-6 gap-y-1 text-[12px] text-[#6B7280]">
                 <span>접수번호 {formatCaseNumber(selectedCaseData.caseNumber) || "-"}</span>
                 <span>피보험자 {selectedCaseData.insuredName || "-"}</span>
-                <span>담당자 {selectedCaseData.assignedPartnerManager || "-"}</span>
+                <span>담당자 {(selectedCaseData as any).managerName || "-"}</span>
                 {selectedCaseData.insuredAddress && (
                   <span>
                     <span style={{ color: "#6B7280" }}>주소</span>{" "}
