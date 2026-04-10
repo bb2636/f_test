@@ -1964,6 +1964,7 @@ export function LaborCostSection({
                       width: "60px",
                     }}
                   >
+                    {(isPartner && row.isLinkedFromRecovery) ? null : (
                     <div
                       style={{
                         display: "flex",
@@ -2016,6 +2017,7 @@ export function LaborCostSection({
                         −
                       </button>
                     </div>
+                    )}
                   </td>
 
                   {/* 공사명 - 각 행마다 별도 셀 (연동 행은 잠금 표시) */}
