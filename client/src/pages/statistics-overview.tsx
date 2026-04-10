@@ -374,7 +374,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
   }, [cases, startDate, endDate]);
 
   // 미결 - 기간별 통계 계산
-  const periodStatistics = useMemo(() => {
+  const periodStatistics = useMemo((): Record<string, any> => {
     const tiers = ["~1개월", "~3개월", "~6개월", "~1년", "1년~"];
     const defaultTier = { 건수: 0, 퍼센트: 0 };
     const defaultStats = Object.fromEntries(tiers.map(t => [t, { ...defaultTier }])) as Record<string, { 건수: number; 퍼센트: number }>;
@@ -420,7 +420,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
   }, [cases, startDate, endDate]);
 
   // 직접복구 - 완료건 금액계층별 통계 계산
-  const completedCostStatistics = useMemo(() => {
+  const completedCostStatistics = useMemo((): Record<string, any> => {
     const tiers = ["~1,000,000", "~2,000,000", "~3,000,000", "~5,000,000", "~10,000,000", "10,000,000~"];
     const defaultTier = { 건수: 0, 퍼센트: 0 };
     const defaultStats = Object.fromEntries(tiers.map(t => [t, { ...defaultTier }])) as Record<string, { 건수: number; 퍼센트: number }>;

@@ -1238,24 +1238,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // 담당자명과 연락처 자동 채우기
           if (partnerUser.name) {
             (validatedData as any).assignedPartnerManager = partnerUser.name;
-            console.log(
-              `[Auto-populate] Partner manager set to: ${partnerUser.name} for company: ${partnerCompanyName}`,
-            );
           }
           if (
             partnerUser.phone &&
             (!validatedData.assignedPartnerContact || isPartnerChangedInPost)
           ) {
             (validatedData as any).assignedPartnerContact = partnerUser.phone;
-            console.log(
-              `[Auto-populate] Partner contact set to: ${partnerUser.phone} for company: ${partnerCompanyName}`,
-            );
           }
         } else if (isPartnerChangedInPost) {
-          // 협력업체가 변경되었지만 해당 협력사 사용자가 없는 경우 연락처 초기화
-          console.log(
-            `[Auto-populate] Partner changed to ${partnerCompanyName}, but no user found - clearing contact`,
-          );
           (validatedData as any).assignedPartnerManager = "";
           (validatedData as any).assignedPartnerContact = "";
         }
@@ -1269,9 +1259,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         if (assessorUser?.email) {
           (validatedData as any).assessorEmail = assessorUser.email;
-          console.log(
-            `[Auto-populate] Assessor email set to: ${assessorUser.email} for assessor: ${validatedData.assessorTeam}`,
-          );
         }
       }
 
@@ -1285,9 +1272,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         if (investigatorUser?.email) {
           (validatedData as any).investigatorEmail = investigatorUser.email;
-          console.log(
-            `[Auto-populate] Investigator email set to: ${investigatorUser.email} for investigator: ${validatedData.investigatorTeamName}`,
-          );
         }
       }
 
@@ -12505,7 +12489,7 @@ FLOXN 드림`;
       });
 
       // Send email with PDF attachment
-      console.log(`[send-pdf] Sending email to: ${to}`);
+      console.log(`[send-pdf] Sending email`);
       try {
         const info = await transporter.sendMail({
           from: `FLOXN <${SMTP_USER}>`,
@@ -13347,7 +13331,7 @@ FLOXN 드림`;
             company: company || undefined,
           });
           results.emailSent = true;
-          console.log(`[send-account-notification] Email sent to ${email}`);
+          console.log(`[send-account-notification] Email sent successfully`);
         } catch (emailError) {
           console.error("[send-account-notification] Email error:", emailError);
           results.errors.push("이메일 전송 실패");
@@ -14505,11 +14489,11 @@ https://www.floxn.co.kr/
           });
 
           if (result.success) {
-            console.log(`[send-cancellation-email] Email sent to: ${email}`);
+            console.log(`[send-cancellation-email] Email sent successfully`);
             results.push({ email, success: true });
           } else {
             console.error(
-              `[send-cancellation-email] Failed to send to ${email}:`,
+              `[send-cancellation-email] Failed to send email:`,
               result.error,
             );
             results.push({ email, success: false, error: result.error });
