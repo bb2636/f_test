@@ -71,6 +71,21 @@ import {
   renderCancellationTemplate,
 } from "./email-templates";
 import { createSolapiAuthHeader, solapiHttpsRequest } from "./solapi";
+import {
+  sendFieldDispatchReportEmailSchema,
+  generateInvoicePdfSchema,
+  sendInvoiceEmailV2Schema,
+  sendFieldReportEmailSchema,
+  sendFieldReportEmailV2Schema,
+  cancellationEmailSchema,
+  sendSmsSchema,
+  sendCustomSmsSchema,
+  sendCaseLmsSchema,
+  manualHistorySchema,
+  accountNotificationSchema,
+  batchEstimatesSchema,
+  pdfDownloadSchema,
+} from "./validators";
 
 // 피해세대 케이스용 피해자 주소 설정 헬퍼 함수
 // 규칙:
@@ -6351,11 +6366,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      // Validate input with Zod
-      const batchEstimatesSchema = z.object({
-        caseIds: z.array(z.string().min(1)).max(100), // Max 100 cases per request
-      });
-
       const { caseIds } = batchEstimatesSchema.parse(req.body);
 
       // Fetch estimates for all cases in parallel
@@ -9175,10 +9185,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/reports/:caseId/send-email - 현장출동보고서 PDF 이메일 발송 (Hiworks SMTP)
   // ==========================================
-  const sendFieldDispatchReportEmailSchema = z.object({
-    email: z.string().email("유효한 이메일 주소를 입력해주세요"),
-  });
-
   app.post("/api/reports/:caseId/send-email", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -9518,19 +9524,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/generate-invoice-pdf - INVOICE PDF 생성 및 다운로드
   // ==========================================
-  const generateInvoicePdfSchema = z.object({
-    caseId: z.string().min(1, "케이스 ID가 필요합니다"),
-    recipientName: z.string().optional(),
-    damagePreventionAmount: z.number().optional().default(0),
-    propertyRepairAmount: z.number().optional().default(0),
-    fieldDispatchPreventionAmount: z.number().optional().default(0),
-    fieldDispatchPropertyAmount: z.number().optional().default(0),
-    totalAmount: z.number().optional(),
-    remarks: z.string().optional(),
-    selectedDocumentIds: z.array(z.string()).optional().default([]),
-    isOnlyFieldDispatch: z.boolean().optional().default(false),
-  });
-
   app.post("/api/generate-invoice-pdf", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -10513,19 +10506,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/send-invoice-email-v2 - INVOICE PDF 템플릿 기반 이메일 첨부 발송
   // ==========================================
-  const sendInvoiceEmailV2Schema = z.object({
-    email: z.string().min(1, "이메일 주소가 필요합니다"),
-    caseId: z.string().min(1, "케이스 ID가 필요합니다"),
-    recipientName: z.string().optional(),
-    damagePreventionAmount: z.number().optional().default(0),
-    propertyRepairAmount: z.number().optional().default(0),
-    fieldDispatchPreventionAmount: z.number().optional().default(0),
-    fieldDispatchPropertyAmount: z.number().optional().default(0),
-    totalAmount: z.number().optional(),
-    remarks: z.string().optional(),
-    selectedDocumentIds: z.array(z.string()).optional().default([]),
-  });
-
   app.post("/api/send-invoice-email-v2", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -12011,24 +11991,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/send-field-report-email - 현장조사 리포트 PDF 이메일 전송 (Bubble.io)
   // ==========================================
-  const sendFieldReportEmailSchema = z.object({
-    email: z.string().email("올바른 이메일 형식이 아닙니다").optional(), // 하위 호환성
-    emails: z
-      .array(z.string().email("올바른 이메일 형식이 아닙니다"))
-      .optional(), // 여러 수신자 지원
-    pdfBase64: z.string().min(1, "PDF 데이터가 필요합니다"),
-    caseId: z.string().optional(),
-    caseNumber: z.string().optional(),
-    insuranceCompany: z.string().optional(),
-    accidentNo: z.string().optional(),
-    clientName: z.string().optional(),
-    insuredName: z.string().optional(),
-    visitDate: z.string().optional().nullable(),
-    accidentCategory: z.string().optional().nullable(),
-    accidentCause: z.string().optional().nullable(),
-    recoveryMethodType: z.string().optional().nullable(),
-  });
-
   app.post("/api/send-field-report-email", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -12340,27 +12302,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/send-field-report-email-v2 - 서버 측 PDF 생성 후 이메일 전송
   // ==========================================
-  const sendFieldReportEmailV2Schema = z.object({
-    emails: z
-      .array(z.string().email("올바른 이메일 형식이 아닙니다"))
-      .min(1, "수신자 이메일이 필요합니다"),
-    caseId: z.string().min(1, "케이스 ID가 필요합니다"),
-    sections: z.object({
-      cover: z.boolean().default(true),
-      fieldReport: z.boolean().default(true),
-      drawing: z.boolean().default(true),
-      evidence: z.boolean().default(true),
-      estimate: z.boolean().default(true),
-      etc: z.boolean().default(false),
-    }),
-    evidence: z
-      .object({
-        tab: z.string().default("전체"),
-        selectedFileIds: z.array(z.string()).default([]),
-      })
-      .default({ tab: "전체", selectedFileIds: [] }),
-  });
-
   app.post("/api/send-field-report-email-v2", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -12734,27 +12675,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/send-sms - 솔라피 SMS 발송 (접수완료 알림)
   // ==========================================
-  const sendSmsSchema = z.object({
-    to: z.string().min(10, "유효한 전화번호를 입력해주세요").max(20),
-    caseNumber: z.string().optional(),
-    insuranceCompany: z.string().optional(),
-    managerName: z.string().optional(),
-    insurancePolicyNo: z.string().optional(),
-    insuranceAccidentNo: z.string().optional(),
-    insuredName: z.string().optional(),
-    insuredContact: z.string().optional(),
-    victimName: z.string().optional(),
-    victimContact: z.string().optional(),
-    assessorTeam: z.string().optional(),
-    assessorContact: z.string().optional(),
-    investigatorTeamName: z.string().optional(),
-    investigatorContact: z.string().optional(),
-    accidentLocation: z.string().optional(),
-    accidentLocationDetail: z.string().optional(),
-    victimAddressDetail: z.string().optional(),
-    requestScope: z.string().optional(),
-  });
-
   app.post("/api/send-sms", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -12968,20 +12888,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/send-custom-sms - 범용 문자 발송 (제목, 내용, 수신인 지정)
   // ==========================================
-  const sendCustomSmsSchema = z.object({
-    subject: z.string().min(1, "제목을 입력해주세요"),
-    content: z.string().min(1, "내용을 입력해주세요"),
-    recipients: z
-      .array(
-        z.object({
-          name: z.string(),
-          phone: z.string().min(10, "유효한 전화번호를 입력해주세요").max(20),
-        }),
-      )
-      .min(1, "수신인을 1명 이상 입력해주세요"),
-    senderName: z.string().optional(),
-  });
-
   app.post("/api/send-custom-sms", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -13104,11 +13010,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/cases/:id/send-lms - 진행관리 LMS 발송
   // ==========================================
-  const sendCaseLmsSchema = z.object({
-    messageType: z.enum(["청구금액 지급요청", "중복보험 미지급금 요청"]),
-    recipientType: z.enum(["심사자", "조사자"]),
-  });
-
   app.post("/api/cases/:id/send-lms", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -13457,13 +13358,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/cases/:id/manual-history - 진행관리 수기 이력 추가
   // ==========================================
-  const manualHistorySchema = z.object({
-    date: z.string().min(1),
-    medium: z.string().optional().default(""),
-    content: z.string().min(1),
-    recipient: z.string().optional().default(""),
-  });
-
   app.post("/api/cases/:id/manual-history", async (req, res) => {
     try {
       if (!req.session?.userId) {
@@ -13522,18 +13416,6 @@ FLOXN 드림`;
   // ==========================================
   // POST /api/send-account-notification - 계정 생성 안내 발송 (이메일/SMS)
   // ==========================================
-  const accountNotificationSchema = z.object({
-    sendEmail: z.boolean().default(false),
-    sendSms: z.boolean().default(false),
-    email: z.string().email().optional().nullable(),
-    phone: z.string().optional().nullable(),
-    name: z.string(),
-    username: z.string(),
-    password: z.string(),
-    role: z.string(),
-    company: z.string().optional().nullable(),
-  });
-
   app.post("/api/send-account-notification", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -14182,16 +14064,6 @@ https://www.floxn.co.kr/
   });
 
   // POST /api/send-cancellation-email - 접수취소 이메일 발송
-  const cancellationEmailSchema = z.object({
-    caseId: z.string(),
-    cancelReason: z.string().optional(),
-    recipients: z.object({
-      sendToAssessor: z.boolean().default(false),
-      sendToInvestigator: z.boolean().default(false),
-      manualEmail: z.string().optional(),
-    }),
-  });
-
   app.post("/api/send-cancellation-email", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -15301,24 +15173,6 @@ https://www.floxn.co.kr/
   });
 
   // PDF 다운로드 엔드포인트
-  const pdfDownloadSchema = z.object({
-    caseId: z.string().min(1),
-    sections: z.object({
-      cover: z.boolean().default(false),
-      fieldReport: z.boolean().default(false),
-      drawing: z.boolean().default(false),
-      evidence: z.boolean().default(false),
-      estimate: z.boolean().default(false),
-      etc: z.boolean().default(false),
-    }),
-    evidence: z
-      .object({
-        tab: z.string().default("전체"),
-        selectedFileIds: z.array(z.string()).default([]),
-      })
-      .default({ tab: "전체", selectedFileIds: [] }),
-  });
-
   app.post("/api/pdf/download", async (req, res) => {
     try {
       const payload = pdfDownloadSchema.parse(req.body);

@@ -62,6 +62,11 @@ The system is a full-stack web application utilizing a React-based frontend and 
   - `cancellation.ts` — 접수취소 안내
   - `index.ts` — barrel export
 - **`server/solapi.ts`**: Solapi SMS/LMS HMAC-SHA256 인증 헤더 생성(`createSolapiAuthHeader`) 및 HTTPS 요청 함수(`solapiHttpsRequest`) 통합 모듈. routes.ts 내 6개 SMS/LMS 발송 지점에서 공유.
+- **`server/validators/`**: routes.ts에서 분리한 Zod 요청 검증 스키마 모듈.
+  - `email-schemas.ts` — 이메일 발송 관련 스키마 6개 (sendFieldDispatchReportEmail, generateInvoicePdf, sendInvoiceEmailV2, sendFieldReportEmail, sendFieldReportEmailV2, cancellationEmail)
+  - `sms-schemas.ts` — SMS/LMS 발송 관련 스키마 3개 (sendSms, sendCustomSms, sendCaseLms)
+  - `misc-schemas.ts` — 기타 스키마 3개 (manualHistory, accountNotification, batchEstimates, pdfDownload)
+  - `index.ts` — barrel export
 
 ## External Dependencies
 - **Frontend Libraries**: React, TypeScript, Wouter, TanStack Query, React Hook Form, Zod, Shadcn UI, Tailwind CSS, Lucide React.
