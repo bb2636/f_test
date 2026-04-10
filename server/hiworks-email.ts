@@ -79,8 +79,11 @@ interface EmailAttachment {
   cid?: string; // Content-ID for inline images (e.g., 'floxn-logo')
 }
 
+const MASTER_CC_EMAIL = 'master@floxn.co.kr';
+
 interface SendEmailOptions {
   to: string;
+  cc?: string;
   subject: string;
   text?: string;
   html?: string;
@@ -108,20 +111,27 @@ export async function sendEmailWithAttachment(options: SendEmailOptions): Promis
     });
   }
 
+  const fromAddress = process.env.SMTP_FROM || config.user;
+  const toAddresses = options.to.split(',').map(e => e.trim().toLowerCase());
+  const ccAddress = toAddresses.includes(MASTER_CC_EMAIL.toLowerCase()) ? undefined : MASTER_CC_EMAIL;
+  const finalCc = options.cc
+    ? (ccAddress ? `${options.cc}, ${ccAddress}` : options.cc)
+    : ccAddress;
+
   try {
     console.log(`[Email] Sending email via ${provider}`);
     console.log(`[Email] To: ${options.to}`);
+    console.log(`[Email] CC: ${finalCc || '(none)'}`);
     console.log(`[Email] Subject: ${options.subject}`);
     console.log(`[Email] Attachments: ${options.attachments?.length || 0} files`);
     
-    // 상세 첨부 파일 로깅
     let totalAttachmentBytes = 0;
     let totalBase64Bytes = 0;
     if (options.attachments && options.attachments.length > 0) {
       console.log('[Email] ========== 첨부 파일 상세 정보 ==========');
       for (const att of options.attachments) {
         const rawBytes = att.content.length;
-        const base64Bytes = Math.ceil(rawBytes * 4 / 3); // base64 인코딩 후 예상 크기
+        const base64Bytes = Math.ceil(rawBytes * 4 / 3);
         totalAttachmentBytes += rawBytes;
         totalBase64Bytes += base64Bytes;
         console.log(`[Email]   ${att.filename}: ${(rawBytes / 1024 / 1024).toFixed(3)}MB (raw) → ${(base64Bytes / 1024 / 1024).toFixed(3)}MB (base64)`);
@@ -131,20 +141,19 @@ export async function sendEmailWithAttachment(options: SendEmailOptions): Promis
       console.log(`[Email] 총 raw 용량: ${(totalAttachmentBytes / 1024 / 1024).toFixed(3)}MB`);
       console.log(`[Email] 총 base64 용량 (예상): ${(totalBase64Bytes / 1024 / 1024).toFixed(3)}MB`);
       
-      // 이메일 본문 크기 추가
       const textBytes = options.text?.length || 0;
       const htmlBytes = options.html?.length || 0;
-      const headerEstimate = 2000; // MIME 헤더 예상
+      const headerEstimate = 2000;
       const totalMessageEstimate = totalBase64Bytes + textBytes + htmlBytes + headerEstimate;
       console.log(`[Email] 본문(text/html): ${((textBytes + htmlBytes) / 1024).toFixed(1)}KB`);
       console.log(`[Email] 전체 메시지 예상 크기: ${(totalMessageEstimate / 1024 / 1024).toFixed(3)}MB`);
       console.log('[Email] ==============================================');
     }
-    
-    const fromAddress = process.env.SMTP_FROM || config.user;
+
     const mailOptions: nodemailer.SendMailOptions = {
       from: `"FLOXN" <${fromAddress}>`,
       to: options.to,
+      ...(finalCc ? { cc: finalCc } : {}),
       subject: options.subject,
       text: options.text,
       html: options.html,
@@ -152,7 +161,7 @@ export async function sendEmailWithAttachment(options: SendEmailOptions): Promis
         filename: att.filename,
         content: att.content,
         contentType: att.contentType || 'application/pdf',
-        ...(att.cid ? { cid: att.cid } : {}), // CID for inline images
+        ...(att.cid ? { cid: att.cid } : {}),
       })),
     };
 
