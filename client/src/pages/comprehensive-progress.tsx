@@ -5007,7 +5007,7 @@ export default function ComprehensiveProgress() {
             <AlertDialogTitle>접수 취소 확인</AlertDialogTitle>
             <AlertDialogDescription>
               [
-              {(cancelTargetCase as any)?.accidentNumber || cancelTargetCase?.caseNumber}
+              {cancelTargetCase?.accidentNumber || cancelTargetCase?.caseNumber}
               ] 건을 접수 취소 하시겠습니까?
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -5063,7 +5063,7 @@ export default function ComprehensiveProgress() {
               {(() => {
                 const target = cases?.find((c) => c.id === deletingCaseId);
                 return target
-                  ? `[${(target as any).accidentNumber || target.caseNumber}] 건을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.`
+                  ? `[${target.accidentNumber || target.caseNumber}] 건을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.`
                   : "해당 접수건을 삭제하시겠습니까?";
               })()}
             </AlertDialogDescription>

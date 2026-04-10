@@ -582,27 +582,10 @@ export class MemStorage implements IStorage {
     const hashedPassword = await bcrypt.hash("1234", SALT_ROUNDS);
     const currentDate = getKSTDate();
 
-    const piiDefaults = {
-      addressDetail: null as string | null,
-      emailEnc: null as string | null,
-      phoneEnc: null as string | null,
-      addressEnc: null as string | null,
-      addressDetailEnc: null as string | null,
-      emailHash: null as string | null,
-      phoneHash: null as string | null,
-      businessRegistrationNumber: null as string | null,
-      representativeName: null as string | null,
-      accountType: "개인" as string,
-      isSuperAdmin: false,
-      mustChangePassword: true,
-      currentSessionId: null as string | null,
-      lastLoginAt: null as string | null,
-    };
-
     const testUsers: User[] = [
       // ===== 관리자 5명 =====
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "admin01",
         password: hashedPassword,
@@ -624,7 +607,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "admin02",
         password: hashedPassword,
@@ -646,7 +629,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "admin03",
         password: hashedPassword,
@@ -668,7 +651,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "admin04",
         password: hashedPassword,
@@ -690,7 +673,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "admin05",
         password: hashedPassword,
@@ -714,7 +697,7 @@ export class MemStorage implements IStorage {
 
       // ===== 보험사 5명 =====
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "insure01",
         password: hashedPassword,
@@ -736,7 +719,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "insure02",
         password: hashedPassword,
@@ -758,7 +741,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "insure03",
         password: hashedPassword,
@@ -780,7 +763,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "insure04",
         password: hashedPassword,
@@ -802,7 +785,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "insure05",
         password: hashedPassword,
@@ -826,7 +809,7 @@ export class MemStorage implements IStorage {
 
       // ===== 협력사 5명 =====
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "partner01",
         password: hashedPassword,
@@ -848,7 +831,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "partner02",
         password: hashedPassword,
@@ -870,7 +853,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "partner03",
         password: hashedPassword,
@@ -892,7 +875,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "partner04",
         password: hashedPassword,
@@ -914,7 +897,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "partner05",
         password: hashedPassword,
@@ -938,7 +921,7 @@ export class MemStorage implements IStorage {
 
       // ===== 심사사 5명 =====
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "assessor01",
         password: hashedPassword,
@@ -960,7 +943,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "assessor02",
         password: hashedPassword,
@@ -982,7 +965,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "assessor03",
         password: hashedPassword,
@@ -1004,7 +987,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "assessor04",
         password: hashedPassword,
@@ -1026,7 +1009,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "assessor05",
         password: hashedPassword,
@@ -1050,7 +1033,7 @@ export class MemStorage implements IStorage {
 
       // ===== 조사사 5명 =====
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "investigator01",
         password: hashedPassword,
@@ -1072,7 +1055,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "investigator02",
         password: hashedPassword,
@@ -1094,7 +1077,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "investigator03",
         password: hashedPassword,
@@ -1116,7 +1099,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "investigator04",
         password: hashedPassword,
@@ -1138,7 +1121,7 @@ export class MemStorage implements IStorage {
         createdAt: currentDate,
       },
       {
-        ...piiDefaults,
+
         id: randomUUID(),
         username: "investigator05",
         password: hashedPassword,
