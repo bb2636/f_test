@@ -86,6 +86,7 @@ interface Case {
   urgency?: string | null;
   status?: string | null;
   reportApprovalDecision?: string | null;
+  reviewDecision?: string | null;
   // 심사사/조사사 정보
   assessorId?: string | null;
   assessorTeam?: string | null;
@@ -131,6 +132,7 @@ interface MaterialCostRow {
   수량?: number;
   합계?: number;
   금액?: number;
+  includeInEstimate?: boolean;
   비고?: string;
 }
 
@@ -547,7 +549,7 @@ export default function FieldReport() {
   // SMS 알림 다이얼로그 상태
   const [smsDialogOpen, setSmsDialogOpen] = useState(false);
   const [smsStage, setSmsStage] = useState<
-    "현장정보입력" | "반려" | "현장정보제출" | "승인반려"
+    "현장정보입력" | "반려" | "현장정보제출" | "승인반려" | "복구요청"
   >("현장정보입력");
   const [smsPreviousStatus, setSmsPreviousStatus] = useState<
     string | undefined

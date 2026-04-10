@@ -1104,15 +1104,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      console.log(
-        "Create account request body:",
-        JSON.stringify(req.body, null, 2),
-      );
-
       // Validate request body with Zod
       const validatedData = createAccountSchema.parse(req.body);
-
-      console.log("Validated data:", JSON.stringify(validatedData, null, 2));
 
       // Check if username already exists
       const existingUser = await storage.getUserByUsername(
@@ -1203,19 +1196,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      // Debug: log incoming sameAsPolicyHolder with type
-      console.log(
-        "📥 Incoming sameAsPolicyHolder:",
-        req.body.sameAsPolicyHolder,
-        "type:",
-        typeof req.body.sameAsPolicyHolder,
-      );
-      console.log("📥 Incoming managerId:", req.body.managerId);
-      console.log(
-        "📥 Incoming assignedPartnerManager:",
-        req.body.assignedPartnerManager,
-      );
-
       const validatedData = insertCaseRequestSchema.parse(req.body);
 
       if (validatedData.id) {
@@ -1224,62 +1204,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           (validatedData as any).receptionDate = existingCaseForDate.receptionDate;
         }
       }
-
-      // Debug: log validated sameAsPolicyHolder with type
-      console.log(
-        "✅ Validated sameAsPolicyHolder:",
-        validatedData.sameAsPolicyHolder,
-        "type:",
-        typeof validatedData.sameAsPolicyHolder,
-      );
-      console.log("✅ Validated managerId:", validatedData.managerId);
-      console.log(
-        "✅ Validated assignedPartnerManager:",
-        validatedData.assignedPartnerManager,
-      );
-      console.log(
-        "✅ Validated assignedPartnerContact:",
-        validatedData.assignedPartnerContact,
-      );
-      console.log(
-        "✅ Validated assignedPartner:",
-        validatedData.assignedPartner,
-      );
-
-      // Debug: log assessor/investigator info for troubleshooting
-      console.log("🔍 Assessor/Investigator Debug:");
-      console.log("  - assessorId:", validatedData.assessorId);
-      console.log("  - assessorDepartment:", validatedData.assessorDepartment);
-      console.log("  - assessorTeam:", validatedData.assessorTeam);
-      console.log("  - assessorContact:", validatedData.assessorContact);
-      console.log("  - investigatorTeam:", validatedData.investigatorTeam);
-      console.log(
-        "  - investigatorDepartment:",
-        validatedData.investigatorDepartment,
-      );
-      console.log(
-        "  - investigatorTeamName:",
-        validatedData.investigatorTeamName,
-      );
-      console.log(
-        "  - investigatorContact:",
-        validatedData.investigatorContact,
-      );
-
-      // Debug: log victim address info for troubleshooting
-      console.log("🏠 Victim Address Debug:");
-      console.log("  - victimName:", validatedData.victimName);
-      console.log("  - victimAddress:", validatedData.victimAddress);
-      console.log(
-        "  - victimAddressDetail:",
-        validatedData.victimAddressDetail,
-      );
-      console.log("  - insuredAddress:", validatedData.insuredAddress);
-      console.log(
-        "  - insuredAddressDetail:",
-        validatedData.insuredAddressDetail,
-      );
-      console.log("  - parentCasePrefix:", (req.body as any).parentCasePrefix);
 
       // 사용자 정보 가져오기 (자동 채우기용)
       const allUsersForAutoPopulate = await storage.getAllUsers();
@@ -6180,55 +6104,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return num;
         };
 
-        // [B] 서버 로깅: request body 수신 직후
-        if (index === 0) {
-          console.log("========================================");
-          console.log("[B] 서버: request body 수신 직후");
-          console.log("케이스 ID:", caseId);
-          console.log("Raw row from request:");
-          console.log(
-            "  repairWidth:",
-            row.repairWidth,
-            "타입:",
-            typeof row.repairWidth,
-          );
-          console.log(
-            "  repairHeight:",
-            row.repairHeight,
-            "타입:",
-            typeof row.repairHeight,
-          );
-          console.log(
-            "  repairArea:",
-            row.repairArea,
-            "타입:",
-            typeof row.repairArea,
-          );
-          console.log(
-            "  damageWidth:",
-            row.damageWidth,
-            "타입:",
-            typeof row.damageWidth,
-          );
-          console.log(
-            "  damageHeight:",
-            row.damageHeight,
-            "타입:",
-            typeof row.damageHeight,
-          );
-          console.log(
-            "  damageArea:",
-            row.damageArea,
-            "타입:",
-            typeof row.damageArea,
-          );
-          console.log("Validated row:");
-          console.log("  repairWidth:", validated.repairWidth);
-          console.log("  repairHeight:", validated.repairHeight);
-          console.log("  repairArea:", validated.repairArea);
-          console.log("========================================");
-        }
-
         const result = {
           category: validated.category,
           location: validated.location === "선택" ? null : validated.location,
@@ -6241,17 +6116,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           repairHeight: toNumber(validated.repairHeight),
           repairArea: toArea(validated.repairArea),
           note: validated.note || null,
-          rowOrder: index + 1, // Server assigns 1-based ordering
+          rowOrder: index + 1,
         };
-
-        // 디버그: 변환 후 값 확인
-        if (index === 0) {
-          console.log("[Estimate Debug] After toNumber conversion:", {
-            repairWidth: result.repairWidth,
-            repairHeight: result.repairHeight,
-            repairArea: result.repairArea,
-          });
-        }
 
         return result;
       });

@@ -747,7 +747,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
           }
           return primaryCase.status;
         })(),
-        allStatuses: [...new Set(casesInGroup.map((c) => c.status))],
+        allStatuses: Array.from(new Set(casesInGroup.map((c) => c.status))),
         partnerPaymentAmount: totalPartnerPaymentAmount,
         partnerPaymentDate: casesInGroup.find((c) => c.partnerPaymentDate && c.partnerPaymentDate !== "-")?.partnerPaymentDate || primaryCase.partnerPaymentDate,
         insuredName: primaryCase.insuredName || "-",

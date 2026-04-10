@@ -392,7 +392,7 @@ export function InvoiceManagementPopup({
     value: unknown,
   ) => {
     const updated = [...depositEntries];
-    (updated[index] as Record<string, unknown>)[field] = value;
+    (updated[index] as unknown as Record<string, unknown>)[field] = value;
     updated[index] = { ...updated[index] };
     setDepositEntries(updated);
   };

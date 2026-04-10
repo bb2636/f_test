@@ -1324,7 +1324,7 @@ export default function AdminSettings() {
         email: (u) => u.email || "",
         username: (u) => u.username || "",
         phone: (u) => u.phone || "",
-        officePhone: (u) => u.officePhone || "",
+        officePhone: (u) => u.office || "",
         createdAt: (u) => u.createdAt || "",
       };
       const getVal = fieldMap[sortField] || fieldMap.company;
@@ -2812,14 +2812,14 @@ export default function AdminSettings() {
               </span>
               <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid rgba(12, 12, 12, 0.1)", borderRadius: "8px" }}>
                 {allUsers
-                  .filter((u) => u.role === "관리자" && u.id !== loggedInUser?.id && !u.isSuperAdmin && !u.isDeactivated)
+                  .filter((u) => u.role === "관리자" && u.id !== loggedInUser?.id && !u.isSuperAdmin && u.status !== "deleted")
                   .length === 0 ? (
                   <div style={{ padding: "24px", textAlign: "center", fontFamily: "Pretendard", fontSize: "14px", color: "rgba(12, 12, 12, 0.5)" }}>
                     위임 가능한 관리자가 없습니다.
                   </div>
                 ) : (
                   allUsers
-                    .filter((u) => u.role === "관리자" && u.id !== loggedInUser?.id && !u.isSuperAdmin && !u.isDeactivated)
+                    .filter((u) => u.role === "관리자" && u.id !== loggedInUser?.id && !u.isSuperAdmin && u.status !== "deleted")
                     .map((adminUser) => (
                       <label
                         key={adminUser.id}
@@ -2833,7 +2833,7 @@ export default function AdminSettings() {
                           type="radio"
                           name="delegate-target"
                           checked={delegateTargetUser?.id === adminUser.id}
-                          onChange={() => setDelegateTargetUser(adminUser)}
+                          onChange={() => setDelegateTargetUser(adminUser as User)}
                           style={{ width: "18px", height: "18px", accentColor: "#008FED" }}
                         />
                         <div className="flex flex-col gap-1">

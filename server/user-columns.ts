@@ -33,7 +33,7 @@ export const USERS_SAFE_COLUMNS = {
   currentSessionId: users.currentSessionId,
   lastLoginAt: users.lastLoginAt,
   createdAt: users.createdAt,
-} as const;
+};
 
 export const USERS_AUTH_COLUMNS = {
   id: users.id,
@@ -47,7 +47,7 @@ export const USERS_AUTH_COLUMNS = {
   mustChangePassword: users.mustChangePassword,
   currentSessionId: users.currentSessionId,
   lastLoginAt: users.lastLoginAt,
-} as const;
+};
 
 export function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {

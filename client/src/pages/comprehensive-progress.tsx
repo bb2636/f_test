@@ -316,6 +316,7 @@ export default function ComprehensiveProgress() {
     bankName: string | null;
     accountNumber: string | null;
     company: string | null;
+    email?: string | null;
   };
 
   // 사용자 목록 가져오기 (담당자 이름 표시용) - 협력사도 접근 가능한 basic 엔드포인트 사용
@@ -1313,7 +1314,7 @@ export default function ComprehensiveProgress() {
   };
 
   // 날짜 포맷팅 (YYYY-MM-DD)
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
     const year = date.getFullYear();
@@ -5006,7 +5007,7 @@ export default function ComprehensiveProgress() {
             <AlertDialogTitle>접수 취소 확인</AlertDialogTitle>
             <AlertDialogDescription>
               [
-              {cancelTargetCase?.accidentNumber || cancelTargetCase?.caseNumber}
+              {(cancelTargetCase as any)?.accidentNumber || cancelTargetCase?.caseNumber}
               ] 건을 접수 취소 하시겠습니까?
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -5062,7 +5063,7 @@ export default function ComprehensiveProgress() {
               {(() => {
                 const target = cases?.find((c) => c.id === deletingCaseId);
                 return target
-                  ? `[${target.accidentNumber || target.caseNumber}] 건을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.`
+                  ? `[${(target as any).accidentNumber || target.caseNumber}] 건을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.`
                   : "해당 접수건을 삭제하시겠습니까?";
               })()}
             </AlertDialogDescription>

@@ -741,12 +741,12 @@ export const estimateRows = pgTable("estimate_rows", {
   location: text("location"), // 위치: 천장, 벽면, 바닥
   workType: text("work_type"), // 공종: 목공사, 수장공사, 철거공사 등
   workName: text("work_name"), // 공사명: 합판, 석고보드, 도배 등
-  damageWidth: numeric("damage_width", { precision: 20, scale: 4, mode: 'number' }), // 피해면적 가로 (m) - 소수점 허용
-  damageHeight: numeric("damage_height", { precision: 20, scale: 4, mode: 'number' }), // 피해면적 세로 (m) - 소수점 허용
-  damageArea: numeric("damage_area", { precision: 20, scale: 4, mode: 'number' }), // 피해면적 면적 (m²) - 계산된 값, 소수점 허용
-  repairWidth: numeric("repair_width", { precision: 20, scale: 4, mode: 'number' }), // 복구면적 가로 (m) - 소수점 허용
-  repairHeight: numeric("repair_height", { precision: 20, scale: 4, mode: 'number' }), // 복구면적 세로 (m) - 소수점 허용
-  repairArea: numeric("repair_area", { precision: 20, scale: 4, mode: 'number' }), // 복구면적 면적 (m²) - 계산된 값, 소수점 허용
+  damageWidth: numeric("damage_width", { precision: 20, scale: 4 }), // 피해면적 가로 (m) - 소수점 허용
+  damageHeight: numeric("damage_height", { precision: 20, scale: 4 }), // 피해면적 세로 (m) - 소수점 허용
+  damageArea: numeric("damage_area", { precision: 20, scale: 4 }), // 피해면적 면적 (m²) - 계산된 값, 소수점 허용
+  repairWidth: numeric("repair_width", { precision: 20, scale: 4 }), // 복구면적 가로 (m) - 소수점 허용
+  repairHeight: numeric("repair_height", { precision: 20, scale: 4 }), // 복구면적 세로 (m) - 소수점 허용
+  repairArea: numeric("repair_area", { precision: 20, scale: 4 }), // 복구면적 면적 (m²) - 계산된 값, 소수점 허용
   note: text("note"), // 비고
   rowOrder: integer("row_order").notNull(), // 행 순서
   createdAt: timestamp("created_at").defaultNow().notNull(),

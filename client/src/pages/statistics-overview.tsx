@@ -137,7 +137,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
     return allCases.filter((c) =>
       (c.caseNumber && c.caseNumber.toLowerCase().includes(q)) ||
       (c.insuranceAccidentNo && c.insuranceAccidentNo.toLowerCase().includes(q)) ||
-      (c.accidentNumber && c.accidentNumber.toLowerCase().includes(q)) ||
+      ((c as any).accidentNumber && (c as any).accidentNumber.toLowerCase().includes(q)) ||
       (c.insurancePolicyNo && c.insurancePolicyNo.toLowerCase().includes(q))
     );
   }, [allCases, searchQuery]);
@@ -333,7 +333,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
   }, [cases, startDate, endDate]);
 
   // 미결 - 수리비 금액계층별 통계 계산
-  const repairCostStatistics = useMemo(() => {
+  const repairCostStatistics = useMemo((): Record<string, any> => {
     const tiers = ["1백만미만", "2백만미만", "3백만미만", "5백만미만", "1천만미만", "1천만초과"];
     const defaultTier = { 건수: 0, 퍼센트: 0 };
     const defaultStats = Object.fromEntries(tiers.map(t => [t, { ...defaultTier }])) as Record<string, { 건수: number; 퍼센트: number }>;
@@ -508,18 +508,18 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
     // 직접복구 의뢰건 (직접복구 타입으로 종결된 건)
     const directRecoveryClosed = closedCases.filter(isDirectRecovery);
     const 직접복구_현장방문 = directRecoveryClosed.filter(c => c.status === "현장방문" || c.visitDate).length;
-    const 직접복구_현장정보입력 = directRecoveryClosed.filter(c => c.status === "현장정보입력" || c.fieldInfoInputDate).length;
+    const 직접복구_현장정보입력 = directRecoveryClosed.filter(c => c.status === "현장정보입력" || (c as any).fieldInfoInputDate).length;
     const 직접복구_직접복구 = directRecoveryClosed.filter(c => c.status === "직접복구" || c.recoveryType === "직접복구").length;
-    const 직접복구_청구자료제출 = directRecoveryClosed.filter(c => c.status === "청구자료제출(복구)" || c.claimSubmitDate).length;
+    const 직접복구_청구자료제출 = directRecoveryClosed.filter(c => c.status === "청구자료제출(복구)" || (c as any).claimSubmitDate).length;
     const 직접복구_청구 = directRecoveryClosed.filter(c => c.status === "청구").length;
     const 직접복구_입금완료 = directRecoveryClosed.filter(c => c.status === "입금완료" || c.status === "정산완료").length;
 
     // 선견적 의뢰건 (선견적요청 타입으로 종결된 건)
     const preEstimateClosed = closedCases.filter(isPreEstimate);
     const 선견적_현장방문 = preEstimateClosed.filter(c => c.status === "현장방문" || c.visitDate).length;
-    const 선견적_현장정보입력 = preEstimateClosed.filter(c => c.status === "현장정보입력" || c.fieldInfoInputDate).length;
+    const 선견적_현장정보입력 = preEstimateClosed.filter(c => c.status === "현장정보입력" || (c as any).fieldInfoInputDate).length;
     const 선견적_직접복구 = preEstimateClosed.filter(c => c.status === "직접복구" || c.recoveryType === "직접복구").length;
-    const 선견적_청구자료제출 = preEstimateClosed.filter(c => c.status === "청구자료제출(복구)" || c.claimSubmitDate).length;
+    const 선견적_청구자료제출 = preEstimateClosed.filter(c => c.status === "청구자료제출(복구)" || (c as any).claimSubmitDate).length;
     const 선견적_청구 = preEstimateClosed.filter(c => c.status === "청구").length;
     const 선견적_입금완료 = preEstimateClosed.filter(c => c.status === "입금완료" || c.status === "정산완료").length;
 
@@ -616,14 +616,14 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
     // 직접복구 케이스
     const directRecoveryCases = filteredCases.filter(isDirectRecovery);
     const 직접_현장방문 = directRecoveryCases.filter(c => c.visitDate || c.status === "현장방문").length;
-    const 직접_현장정보입력 = directRecoveryCases.filter(c => c.fieldInfoInputDate || c.status === "현장정보입력").length;
+    const 직접_현장정보입력 = directRecoveryCases.filter(c => (c as any).fieldInfoInputDate || c.status === "현장정보입력").length;
     const 직접_청구 = directRecoveryCases.filter(c => c.status === "청구" || c.status === "청구자료제출(복구)").length;
     const 직접_입금완료 = directRecoveryCases.filter(c => c.status === "입금완료" || c.status === "정산완료" || c.status === "부분입금").length;
 
     // 선견적 의뢰건 케이스
     const preEstimateCases = filteredCases.filter(isPreEstimate);
     const 선견적_현장방문 = preEstimateCases.filter(c => c.visitDate || c.status === "현장방문").length;
-    const 선견적_현장정보입력 = preEstimateCases.filter(c => c.fieldInfoInputDate || c.status === "현장정보입력").length;
+    const 선견적_현장정보입력 = preEstimateCases.filter(c => (c as any).fieldInfoInputDate || c.status === "현장정보입력").length;
     const 선견적_청구 = preEstimateCases.filter(c => c.status === "청구" || c.status === "출동비청구(선견적)").length;
     const 선견적_입금완료 = preEstimateCases.filter(c => c.status === "입금완료" || c.status === "정산완료" || c.status === "부분입금").length;
 

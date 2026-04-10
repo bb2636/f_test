@@ -3443,6 +3443,7 @@ export default function FieldEstimate() {
       수량: 1,
       합계: unitPrice,
       금액: unitPrice,
+      includeInEstimate: true,
       비고: "",
     };
 
