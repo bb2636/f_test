@@ -61,6 +61,7 @@ The system is a full-stack web application utilizing a React-based frontend and 
   - `field-report-v2.ts` — 현장출동보고서 v2 (로고 CID)
   - `cancellation.ts` — 접수취소 안내
   - `index.ts` — barrel export
+- **`server/solapi.ts`**: Solapi SMS/LMS HMAC-SHA256 인증 헤더 생성(`createSolapiAuthHeader`) 및 HTTPS 요청 함수(`solapiHttpsRequest`) 통합 모듈. routes.ts 내 6개 SMS/LMS 발송 지점에서 공유.
 
 ## External Dependencies
 - **Frontend Libraries**: React, TypeScript, Wouter, TanStack Query, React Hook Form, Zod, Shadcn UI, Tailwind CSS, Lucide React.

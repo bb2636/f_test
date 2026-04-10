@@ -35,7 +35,6 @@ import { db } from "./db";
 import { estimates, cases, users } from "@shared/schema";
 import { sql, inArray, eq, and } from "drizzle-orm";
 import nodemailer from "nodemailer";
-import https from "https";
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
@@ -71,6 +70,7 @@ import {
   renderFieldReportV2Template,
   renderCancellationTemplate,
 } from "./email-templates";
+import { createSolapiAuthHeader, solapiHttpsRequest } from "./solapi";
 
 // 피해세대 케이스용 피해자 주소 설정 헬퍼 함수
 // 규칙:
@@ -92,73 +92,6 @@ function setVictimAddressForRecoveryCase(caseData: any): void {
     caseData.victimAddress = caseData.insuredAddress || "";
     // victimAddressDetail은 그대로 유지 (사용자 입력값)
   }
-}
-
-// Solapi HMAC-SHA256 인증 헤더 생성
-function createSolapiAuthHeader(apiKey: string, apiSecret: string): string {
-  const date = new Date().toISOString();
-  const salt = crypto.randomBytes(32).toString("hex");
-  const signature = crypto
-    .createHmac("sha256", apiSecret)
-    .update(date + salt)
-    .digest("hex");
-  return `HMAC-SHA256 apiKey=${apiKey}, date=${date}, salt=${salt}, signature=${signature}`;
-}
-
-// Solapi HTTPS 요청 함수
-function solapiHttpsRequest({
-  method,
-  path,
-  headers,
-  body,
-}: {
-  method: string;
-  path: string;
-  headers: Record<string, string | number>;
-  body?: string;
-}): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const req = https.request(
-      {
-        hostname: "api.solapi.com",
-        port: 443,
-        method,
-        path,
-        headers,
-        timeout: 15000,
-      },
-      (res) => {
-        let data = "";
-        res.on("data", (c) => (data += c));
-        res.on("end", () => {
-          try {
-            const json = data ? JSON.parse(data) : {};
-            if (
-              res.statusCode &&
-              res.statusCode >= 200 &&
-              res.statusCode < 300
-            ) {
-              return resolve(json);
-            }
-            reject({ statusCode: res.statusCode, body: json });
-          } catch {
-            if (
-              res.statusCode &&
-              res.statusCode >= 200 &&
-              res.statusCode < 300
-            ) {
-              return resolve({ raw: data });
-            }
-            reject({ statusCode: res.statusCode, body: data });
-          }
-        });
-      },
-    );
-    req.on("timeout", () => req.destroy(new Error("REQUEST_TIMEOUT")));
-    req.on("error", reject);
-    if (body) req.write(body);
-    req.end();
-  });
 }
 
 function isPlainObject(val: any): boolean {
