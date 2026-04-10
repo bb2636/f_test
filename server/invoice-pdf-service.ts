@@ -3,6 +3,7 @@ import fontkit from "@pdf-lib/fontkit";
 import nodemailer from "nodemailer";
 import fs from "fs";
 import path from "path";
+import { loadPretendardRegular, loadPretendardSemiBold } from "./font-loader";
 
 const A4_WIDTH = 595.28;
 const A4_HEIGHT = 841.89;
@@ -40,6 +41,7 @@ const fontCache: FontCache = {
   semiBold: null,
 };
 
+
 /**
  * PDF 출력 전에 텍스트 정규화
  * - NBSP/유니코드 공백 포함 제거
@@ -76,87 +78,11 @@ function normalizePdfText(text: string): string {
 }
 
 function loadPretendardFonts(): { regular: Buffer; semiBold: Buffer } {
-  const fontsDir = path.join(process.cwd(), "server/fonts");
-
-  // TTF 파일만 사용 (OTF는 "Not a CFF Font" 에러 발생)
-  const regularPath = path.join(fontsDir, "Pretendard-Regular.ttf");
-  const semiBoldPath = path.join(fontsDir, "Pretendard-SemiBold.ttf");
-
-  console.log(`[Invoice PDF] ========== TTF 폰트 로딩 ==========`);
-  console.log(`[Invoice PDF] Regular 경로: ${regularPath}`);
-  console.log(`[Invoice PDF] SemiBold 경로: ${semiBoldPath}`);
-
-  // 파일 존재 확인 - 없으면 즉시 에러
-  if (!fs.existsSync(regularPath)) {
-    throw new Error(
-      `Pretendard-Regular.ttf를 찾을 수 없습니다: ${regularPath}`,
-    );
-  }
-  if (!fs.existsSync(semiBoldPath)) {
-    throw new Error(
-      `Pretendard-SemiBold.ttf를 찾을 수 없습니다: ${semiBoldPath}`,
-    );
-  }
-
-  // 파일 크기 확인 및 로그
-  const regularStat = fs.statSync(regularPath);
-  const semiBoldStat = fs.statSync(semiBoldPath);
-  console.log(
-    `[Invoice PDF] Regular 파일 크기: ${regularStat.size} bytes (${(regularStat.size / 1024 / 1024).toFixed(2)}MB)`,
-  );
-  console.log(
-    `[Invoice PDF] SemiBold 파일 크기: ${semiBoldStat.size} bytes (${(semiBoldStat.size / 1024 / 1024).toFixed(2)}MB)`,
-  );
-
-  // 캐시된 버전과 크기가 다르면 재로드
-  if (!fontCache.regular || fontCache.regular.length !== regularStat.size) {
-    fontCache.regular = fs.readFileSync(regularPath);
-
-    // 파일 시그니처 검증 (TTF: 0x00010000)
-    const signature = fontCache.regular.slice(0, 4).toString("hex");
-    console.log(`[Invoice PDF] Regular 시그니처: ${signature}`);
-
-    // HTML/에러 페이지 감지 (<!DOCTYPE 또는 <html로 시작하는 경우)
-    const firstChars = fontCache.regular.slice(0, 10).toString("utf8");
-    if (firstChars.includes("<!") || firstChars.includes("<html")) {
-      throw new Error(
-        `Regular 폰트 파일이 HTML/에러 페이지입니다. 첫 10자: ${firstChars}`,
-      );
-    }
-
-    if (signature !== "00010000") {
-      throw new Error(
-        `Regular 폰트가 TTF 형식이 아닙니다. 시그니처: ${signature} (예상: 00010000)`,
-      );
-    }
-  }
-
-  if (!fontCache.semiBold || fontCache.semiBold.length !== semiBoldStat.size) {
-    fontCache.semiBold = fs.readFileSync(semiBoldPath);
-
-    // 파일 시그니처 검증
-    const signature = fontCache.semiBold.slice(0, 4).toString("hex");
-    console.log(`[Invoice PDF] SemiBold 시그니처: ${signature}`);
-
-    // HTML/에러 페이지 감지
-    const firstChars = fontCache.semiBold.slice(0, 10).toString("utf8");
-    if (firstChars.includes("<!") || firstChars.includes("<html")) {
-      throw new Error(
-        `SemiBold 폰트 파일이 HTML/에러 페이지입니다. 첫 10자: ${firstChars}`,
-      );
-    }
-
-    if (signature !== "00010000") {
-      throw new Error(
-        `SemiBold 폰트가 TTF 형식이 아닙니다. 시그니처: ${signature} (예상: 00010000)`,
-      );
-    }
-  }
-
-  console.log(`[Invoice PDF] TTF 폰트 로딩 완료`);
-  console.log(`[Invoice PDF] ================================`);
-
-  return { regular: fontCache.regular, semiBold: fontCache.semiBold };
+  const regular = loadPretendardRegular();
+  const semiBold = loadPretendardSemiBold();
+  fontCache.regular = regular;
+  fontCache.semiBold = semiBold;
+  return { regular, semiBold };
 }
 
 function collectAllInvoiceText(data: InvoiceData): string {

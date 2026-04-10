@@ -15,6 +15,7 @@ import {
 import { eq, and, inArray, ilike, sql } from "drizzle-orm";
 import { USERS_SAFE_COLUMNS } from "./user-columns";
 import { ObjectStorageService } from "./replit_integrations/object_storage/objectStorage";
+import { loadPretendardFontPair } from "./font-loader";
 
 const objectStorage = new ObjectStorageService();
 
@@ -56,48 +57,8 @@ interface FontSet {
   bold: PDFFont;
 }
 
-let cachedFonts: { regular: Buffer; bold: Buffer } | null = null;
-
 function loadFontBytes(): { regular: Buffer; bold: Buffer } {
-  if (cachedFonts) return cachedFonts;
-
-  const fontsDir = path.join(process.cwd(), "server/fonts");
-
-  // Use Pretendard (2.6MB - much smaller than NotoSansKR 16MB)
-  const regularTtf = path.join(fontsDir, "Pretendard-Regular.ttf");
-  const boldTtf = path.join(fontsDir, "Pretendard-SemiBold.ttf");
-
-  let regular: Buffer | null = null;
-  let bold: Buffer | null = null;
-
-  try {
-    if (fs.existsSync(regularTtf)) {
-      regular = fs.readFileSync(regularTtf);
-      console.log(
-        `[pdf-lib] Pretendard-Regular.ttf 로드 완료 (${Math.round((regular.length / 1024 / 1024) * 10) / 10}MB)`,
-      );
-    }
-  } catch (err) {
-    console.error("[pdf-lib] Pretendard-Regular.ttf 로드 실패:", err);
-  }
-
-  try {
-    if (fs.existsSync(boldTtf)) {
-      bold = fs.readFileSync(boldTtf);
-      console.log(`[pdf-lib] Pretendard-SemiBold.ttf 로드 완료`);
-    }
-  } catch (err) {
-    console.error("[pdf-lib] Pretendard-SemiBold.ttf 로드 실패:", err);
-  }
-
-  if (!regular || !bold) {
-    throw new Error(
-      "한글 폰트를 로드할 수 없습니다. server/fonts 디렉토리에 Pretendard-Regular.ttf 파일이 있는지 확인하세요.",
-    );
-  }
-
-  cachedFonts = { regular, bold };
-  return cachedFonts;
+  return loadPretendardFontPair();
 }
 
 async function embedFonts(pdfDoc: PDFDocument): Promise<FontSet> {

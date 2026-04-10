@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { compressPdfForEmail } from './pdf-compression';
 import { ObjectStorageService } from './replit_integrations/object_storage';
+import { loadPretendardRegular } from './font-loader';
 
 const A4_WIDTH = 595.28;
 const A4_HEIGHT = 841.89;
@@ -56,8 +57,6 @@ function getCategoryToTab(category: string): string {
   return '기타';
 }
 
-let cachedFont: Buffer | null = null;
-
 /**
  * 헤더 텍스트 정규화 (Pretendard 폰트용)
  * - 유니코드 공백 제거
@@ -89,24 +88,7 @@ function normalizeHeaderText(text: string): string {
 }
 
 function loadFontBytes(): Buffer {
-  if (cachedFont) return cachedFont;
-  
-  const fontsDir = path.join(process.cwd(), 'server/fonts');
-  const pretendardTtf = path.join(fontsDir, 'Pretendard-Regular.ttf');
-  
-  console.log(`[Evidence PDF] 폰트 경로: ${pretendardTtf}`);
-  
-  try {
-    if (fs.existsSync(pretendardTtf)) {
-      cachedFont = fs.readFileSync(pretendardTtf);
-      console.log(`[Evidence PDF] Pretendard 폰트 로드 완료 (${Math.round(cachedFont.length / 1024 / 1024 * 100) / 100}MB)`);
-      return cachedFont;
-    }
-  } catch (err) {
-    console.error('[Evidence PDF] 폰트 로드 실패:', err);
-  }
-  
-  throw new Error('한글 폰트를 로드할 수 없습니다.');
+  return loadPretendardRegular();
 }
 
 /**
