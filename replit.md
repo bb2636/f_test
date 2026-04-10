@@ -67,6 +67,13 @@ The system is a full-stack web application utilizing a React-based frontend and 
   - `sms-schemas.ts` — SMS/LMS 발송 관련 스키마 3개 (sendSms, sendCustomSms, sendCaseLms)
   - `misc-schemas.ts` — 기타 스키마 3개 (manualHistory, accountNotification, batchEstimates, pdfDownload)
   - `index.ts` — barrel export
+- **`client/src/pages/admin-settings/`**: admin-settings.tsx(10,502줄)에서 분리한 탭별 presentational 컴포넌트.
+  - `notice-management-tab.tsx` — 공지사항 관리 탭 (292줄)
+  - `db-management-tab.tsx` — DB 관리 탭 (857줄, 엑셀 업로드/다운로드/일위대가 D값 편집 포함)
+  - `master-data-tab.tsx` — 기준정보 관리 탭 (551줄, 드래그 앤 드롭 정렬 포함)
+  - `change-log-tab.tsx` — 변경 로그 관리 탭 (323줄)
+  - `index.ts` — barrel export
+  - 부모(admin-settings.tsx)가 상태/mutation/query 소유, props 기반 전달. 1:1 문의 관리/사용자 계정 관리 탭은 모달 결합도가 높아 인라인 유지.
 
 ## External Dependencies
 - **Frontend Libraries**: React, TypeScript, Wouter, TanStack Query, React Hook Form, Zod, Shadcn UI, Tailwind CSS, Lucide React.
