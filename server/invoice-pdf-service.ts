@@ -77,9 +77,11 @@ function normalizePdfText(text: string): string {
   return s.trim();
 }
 
-function loadPretendardFonts(): { regular: Buffer; semiBold: Buffer } {
-  const regular = loadPretendardRegular();
-  const semiBold = loadPretendardSemiBold();
+async function loadPretendardFonts(): Promise<{ regular: Buffer; semiBold: Buffer }> {
+  const [regular, semiBold] = await Promise.all([
+    loadPretendardRegular(),
+    loadPretendardSemiBold(),
+  ]);
   fontCache.regular = regular;
   fontCache.semiBold = semiBold;
   return { regular, semiBold };
@@ -158,7 +160,7 @@ function collectAllInvoiceText(data: InvoiceData): string {
 async function embedPretendardFonts(pdfDoc: PDFDocument): Promise<FontSet> {
   pdfDoc.registerFontkit(fontkit);
 
-  const { regular, semiBold } = loadPretendardFonts();
+  const { regular, semiBold } = await loadPretendardFonts();
 
   console.log(
     `[Invoice PDF] ========== 폰트 임베딩 (subset: false - 전체 폰트) ==========`,

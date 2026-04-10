@@ -5034,11 +5034,11 @@ export class DbStorage implements IStorage {
   }
 
   async getPartnerStats(): Promise<PartnerStats[]> {
-    const allCases = await db.select().from(cases);
-    const allUsers = await db
-      .select(usersWithoutAttachments)
-      .from(users)
-      .where(eq(users.role, "협력사"));
+    const [cachedCasesRaw, allUsers] = await Promise.all([
+      getCachedCasesRaw(),
+      db.select(usersWithoutAttachments).from(users).where(eq(users.role, "협력사")),
+    ]);
+    const allCases = cachedCasesRaw.cases;
 
     const today = getKSTDate();
     const currentMonth = today.substring(0, 7); // YYYY-MM
@@ -5101,12 +5101,11 @@ export class DbStorage implements IStorage {
   }
 
   async getStatisticsFilters(): Promise<StatisticsFilters> {
-    // Get all cases and users
-    const allCases = await db.select().from(cases);
-    const allUsers = await db
-      .select(usersWithoutAttachments)
-      .from(users)
-      .where(eq(users.status, "active"));
+    const [cachedCasesRaw, allUsers] = await Promise.all([
+      getCachedCasesRaw(),
+      getCachedUsers(),
+    ]);
+    const allCases = cachedCasesRaw.cases;
 
     // Get unique insurance companies from cases
     const insuranceCompaniesSet = new Set<string>();

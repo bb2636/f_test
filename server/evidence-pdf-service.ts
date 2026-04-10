@@ -87,7 +87,7 @@ function normalizeHeaderText(text: string): string {
   return s.trim();
 }
 
-function loadFontBytes(): Buffer {
+async function loadFontBytes(): Promise<Buffer> {
   return loadPretendardRegular();
 }
 
@@ -214,7 +214,7 @@ async function createEvidencePdfForTab(
     return results;
   }
   
-  const fontBytes = loadFontBytes();
+  const fontBytes = await loadFontBytes();
   let currentPdf = await PDFDocument.create();
   currentPdf.registerFontkit(fontkit);
   // subset: false로 전체 폰트 임베딩 (한글/숫자/영문 글자 누락 방지)
@@ -583,7 +583,7 @@ async function addHeaderToPdf(
   fileName: string
 ): Promise<Buffer> {
   try {
-    const fontBytes = loadFontBytes();
+    const fontBytes = await loadFontBytes();
     const srcDoc = await PDFDocument.load(pdfBuffer);
     const newDoc = await PDFDocument.create();
     newDoc.registerFontkit(fontkit);

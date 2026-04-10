@@ -57,14 +57,14 @@ interface FontSet {
   bold: PDFFont;
 }
 
-function loadFontBytes(): { regular: Buffer; bold: Buffer } {
+async function loadFontBytes(): Promise<{ regular: Buffer; bold: Buffer }> {
   return loadPretendardFontPair();
 }
 
 async function embedFonts(pdfDoc: PDFDocument): Promise<FontSet> {
   pdfDoc.registerFontkit(fontkit);
 
-  const fontBytes = loadFontBytes();
+  const fontBytes = await loadFontBytes();
 
   // subset: false로 전체 폰트 임베딩 (한글 글자 누락 방지)
   const regular = await pdfDoc.embedFont(fontBytes.regular, { subset: false });
@@ -4507,7 +4507,7 @@ export async function generateEvidencePDFsByTab(
   }
 
   // 폰트 로드
-  const fontBytes = loadFontBytes();
+  const fontBytes = await loadFontBytes();
   const tempPdfDoc = await PDFDocument.create();
   tempPdfDoc.registerFontkit(fontkit);
   const fonts = await embedFonts(tempPdfDoc);

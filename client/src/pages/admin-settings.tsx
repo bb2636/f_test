@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Search, X, ChevronDown, ChevronUp, Upload, ChevronRight, Download, CheckCircle2, Star, ZoomIn, Trash2, Shield, ArrowUpDown, FileText } from "lucide-react";
@@ -511,10 +511,9 @@ export default function AdminSettings() {
     enabled: !!user && user.role === "관리자",
   });
 
-  // 선택된 카테고리의 마스터 데이터 필터링 (활성 항목만 표시)
-  const currentMasterData = masterDataList.filter(
+  const currentMasterData = useMemo(() => masterDataList.filter(
     (item) => item.category === MASTER_DATA_CATEGORIES[selectedCategory] && item.isActive === "true"
-  );
+  ), [masterDataList, selectedCategory]);
 
   // 전체 카테고리 목록 (DB 연동 + 메모리 state)
   const allCategories = [...Object.keys(MASTER_DATA_CATEGORIES), ...Object.keys(categoryItems)];
@@ -952,11 +951,11 @@ export default function AdminSettings() {
     { name: "변경 로그 관리", active: false, permissionItem: null },
   ];
 
-  const sidebarMenus = allSidebarMenus.filter((menu) => {
+  const sidebarMenus = useMemo(() => allSidebarMenus.filter((menu) => {
     if (permissionsLoading) return true;
     if (!menu.permissionItem) return true;
     return hasPermItem("관리자 설정", menu.permissionItem);
-  });
+  }), [permissionsLoading, hasPermItem]);
 
   useEffect(() => {
     if (permissionsLoading) return;
@@ -1032,13 +1031,12 @@ export default function AdminSettings() {
   const isDbManagementFavorite = favorites.some(fav => fav.menuName === "DB 관리");
   const isMasterDataManagementFavorite = favorites.some(fav => fav.menuName === "기준정보 관리");
 
-  // Filter inquiries based on status
-  const filteredInquiries = inquiries.filter((inquiry) => {
+  const filteredInquiries = useMemo(() => inquiries.filter((inquiry) => {
     if (inquiryStatusFilter === "전체") return true;
     if (inquiryStatusFilter === "완료") return inquiry.response !== null && inquiry.response !== "";
     if (inquiryStatusFilter === "대기") return inquiry.response === null || inquiry.response === "";
     return true;
-  });
+  }), [inquiries, inquiryStatusFilter]);
 
   // Toggle favorite mutation
   const toggleFavoriteMutation = useMutation({
@@ -1306,7 +1304,7 @@ export default function AdminSettings() {
     }
   };
 
-  const filteredUsers = allUsers
+  const filteredUsers = useMemo(() => allUsers
     .filter((u) => {
       const matchesRole = roleFilter === "전체" || u.role === roleFilter;
       const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -1342,7 +1340,7 @@ export default function AdminSettings() {
         return (a.name || "").localeCompare(b.name || "", "ko");
       }
       return 0;
-    });
+    }), [allUsers, roleFilter, searchQuery, sortField, sortDirection]);
 
   const handleSearch = () => {
     setSearchQuery(searchInput);

@@ -428,25 +428,30 @@ export default function FieldEstimate() {
   // 노무비 카탈로그 조회 (from excel_data)
   const { data: laborCatalog = [], isLoading: isLoadingLaborCatalog } = useQuery<LaborCatalogItem[]>({
     queryKey: ['/api/labor-catalog'],
+    staleTime: 5 * 60 * 1000,
   });
 
   // 자재비 카탈로그 조회 (from excel_data)
   const { data: materialCatalog = [], isLoading: isLoadingMaterialCatalog } = useQuery<MaterialCatalogItem[]>({
     queryKey: ['/api/materials'],
+    staleTime: 5 * 60 * 1000,
   });
 
   // 일위대가 카탈로그 조회 (from excel_data) - 복구면적 → 노무비 자동생성용
   const { data: ilwidaegaCatalog = [] } = useQuery<IlwidaegaCatalogItem[]>({
     queryKey: ['/api/ilwidaega-catalog'],
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: ilwidaegaLinkSettings = [] } = useQuery<Array<{ id: number; location: string; category: string; workName: string }>>({
     queryKey: ['/api/ilwidaega-link-settings'],
+    staleTime: 5 * 60 * 1000,
   });
 
   // 단가 오버라이드 조회 (admin-configured D values)
   const { data: unitPriceOverrides = [] } = useQuery<UnitPriceOverride[]>({
     queryKey: ['/api/unit-price-overrides'],
+    staleTime: 5 * 60 * 1000,
   });
 
   // 일위대가 카탈로그에 오버라이드 적용 (D값 덮어쓰기, 일위대가 재계산)
@@ -484,6 +489,7 @@ export default function FieldEstimate() {
   // 자재비 카탈로그 조회 (공사명 기준) - 복구면적 → 자재비 자동생성용
   const { data: materialByWorknameCatalog = [] } = useQuery<MaterialByWorknameCatalogItem[]>({
     queryKey: ['/api/materials-by-workname'],
+    staleTime: 5 * 60 * 1000,
   });
 
   // materialByWorknameCatalog를 MaterialCatalogItem 형식으로 변환 (materialCatalog가 비어있을 때 대체)

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
@@ -1002,125 +1002,118 @@ export default function ComprehensiveProgress() {
     })),
   ];
 
-  // 진행상태 필터링 + 협력사 필터링 (모든 케이스 표시)
-  const filteredByStatus = (cases || []).filter((caseItem) => {
-    if (caseItem.status === "종결") return false;
-    if (caseItem.status === "접수취소") return false;
+  const filteredData = useMemo(() => {
+    const filteredByStatus = (cases || []).filter((caseItem) => {
+      if (caseItem.status === "종결") return false;
+      if (caseItem.status === "접수취소") return false;
 
-    // 협력사인 경우: 자신에게 배정된 모든 케이스 표시 (배당대기 제외)
-    if (user?.role === "협력사") {
-      const isAssignedToMe = caseItem.assignedPartner === user.company;
-      const isNotPending = caseItem.status !== "배당대기";
+      if (user?.role === "협력사") {
+        const isAssignedToMe = caseItem.assignedPartner === user.company;
+        const isNotPending = caseItem.status !== "배당대기";
 
-      // 협력사도 진행상태 필터를 선택할 수 있음
-      if (selectedStatus === "전체") {
-        return isAssignedToMe && isNotPending;
+        if (selectedStatus === "전체") {
+          return isAssignedToMe && isNotPending;
+        }
+        if (selectedStatus === "미복구") {
+          return (
+            isAssignedToMe &&
+            (caseItem.status === "미복구" || caseItem.status === "출동비 청구")
+          );
+        }
+        if (selectedStatus === "출동비 청구") {
+          return (
+            isAssignedToMe &&
+            (caseItem.status === "출동비 청구" || caseItem.status === "미복구")
+          );
+        }
+        return isAssignedToMe && caseItem.status === selectedStatus;
       }
+
+      if (selectedStatus === "전체") return true;
       if (selectedStatus === "미복구") {
-        return (
-          isAssignedToMe &&
-          (caseItem.status === "미복구" || caseItem.status === "출동비 청구")
-        );
+        return caseItem.status === "미복구" || caseItem.status === "출동비 청구";
       }
       if (selectedStatus === "출동비 청구") {
-        return (
-          isAssignedToMe &&
-          (caseItem.status === "출동비 청구" || caseItem.status === "미복구")
-        );
+        return caseItem.status === "출동비 청구" || caseItem.status === "미복구";
       }
-      return isAssignedToMe && caseItem.status === selectedStatus;
-    }
+      return caseItem.status === selectedStatus;
+    });
 
-    // 다른 역할은 기존 필터링 로직 유지
-    if (selectedStatus === "전체") return true;
-    // 미복구는 출동비 청구로 정규화되어 저장되므로 둘 다 매칭
-    if (selectedStatus === "미복구") {
-      return caseItem.status === "미복구" || caseItem.status === "출동비 청구";
-    }
-    if (selectedStatus === "출동비 청구") {
-      return caseItem.status === "출동비 청구" || caseItem.status === "미복구";
-    }
-    return caseItem.status === selectedStatus;
-  });
+    const filteredDataUnsorted = filteredByStatus.filter((caseItem) => {
+      const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  // 검색 필터링
-  const filteredDataUnsorted = filteredByStatus.filter((caseItem) => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
+      if (normalizedQuery === "") {
+        return true;
+      }
 
-    if (normalizedQuery === "") {
+      const insuranceCompany = (caseItem.insuranceCompany || "").toLowerCase();
+      const insuranceAccidentNo = (
+        caseItem.insuranceAccidentNo || ""
+      ).toLowerCase();
+      const caseNumber = (caseItem.caseNumber || "").toLowerCase();
+      const insuredName = (caseItem.insuredName || "").toLowerCase();
+      const managerName = (caseItem.managerName || "").toLowerCase();
+      const insuredAddress = (caseItem.insuredAddress || "").toLowerCase();
+      const insuredAddressDetail = (
+        (caseItem as any).insuredAddressDetail || ""
+      ).toLowerCase();
+      const policyNumber = (caseItem.insurancePolicyNo || "").toLowerCase();
+      const assignedPartner = (caseItem.assignedPartner || "").toLowerCase();
+
+      return (
+        insuranceCompany.includes(normalizedQuery) ||
+        insuranceAccidentNo.includes(normalizedQuery) ||
+        caseNumber.includes(normalizedQuery) ||
+        insuredName.includes(normalizedQuery) ||
+        managerName.includes(normalizedQuery) ||
+        insuredAddress.includes(normalizedQuery) ||
+        insuredAddressDetail.includes(normalizedQuery) ||
+        policyNumber.includes(normalizedQuery) ||
+        assignedPartner.includes(normalizedQuery)
+      );
+    });
+
+    const filteredByRole = filteredDataUnsorted.filter((caseItem) => {
+      if (user?.role === "협력사") {
+        return (caseItem.assignedPartner || "") === (user.company || "");
+      }
+      if (user?.role === "심사사") {
+        return (caseItem.assessorId || "") === (user.company || "");
+      }
+      if (user?.role === "조사사") {
+        return (caseItem.investigatorTeam || "") === (user.company || "");
+      }
       return true;
-    }
+    });
 
-    const insuranceCompany = (caseItem.insuranceCompany || "").toLowerCase();
-    const insuranceAccidentNo = (
-      caseItem.insuranceAccidentNo || ""
-    ).toLowerCase();
-    const caseNumber = (caseItem.caseNumber || "").toLowerCase();
-    const insuredName = (caseItem.insuredName || "").toLowerCase();
-    const managerName = (caseItem.managerName || "").toLowerCase();
-    const insuredAddress = (caseItem.insuredAddress || "").toLowerCase();
-    const insuredAddressDetail = (
-      (caseItem as any).insuredAddressDetail || ""
-    ).toLowerCase();
-    const policyNumber = (caseItem.insurancePolicyNo || "").toLowerCase();
-    const assignedPartner = (caseItem.assignedPartner || "").toLowerCase();
+    const filteredByManager = filteredByRole.filter((caseItem) => {
+      const managerValue =
+        selectedManager === "__INIT__" ? "전체" : selectedManager;
+      if (managerValue === "전체") return true;
+      if (user?.role === "협력사") {
+        return (caseItem.assignedPartnerManager || "") === managerValue;
+      }
+      if (user?.role === "심사사") {
+        return (caseItem.assessorTeam || "") === managerValue;
+      }
+      if (user?.role === "조사사") {
+        return (caseItem.investigatorTeamName || "") === managerValue;
+      }
+      return (caseItem.managerName || "") === managerValue;
+    });
 
-    return (
-      insuranceCompany.includes(normalizedQuery) ||
-      insuranceAccidentNo.includes(normalizedQuery) ||
-      caseNumber.includes(normalizedQuery) ||
-      insuredName.includes(normalizedQuery) ||
-      managerName.includes(normalizedQuery) ||
-      insuredAddress.includes(normalizedQuery) ||
-      insuredAddressDetail.includes(normalizedQuery) ||
-      policyNumber.includes(normalizedQuery) ||
-      assignedPartner.includes(normalizedQuery)
-    );
-  });
-
-  const filteredByRole = filteredDataUnsorted.filter((caseItem) => {
-    if (user?.role === "협력사") {
-      return (caseItem.assignedPartner || "") === (user.company || "");
-    }
-    if (user?.role === "심사사") {
-      return (caseItem.assessorId || "") === (user.company || "");
-    }
-    if (user?.role === "조사사") {
-      return (caseItem.investigatorTeam || "") === (user.company || "");
-    }
-    return true;
-  });
-
-  const filteredByManager = filteredByRole.filter((caseItem) => {
-    const managerValue =
-      selectedManager === "__INIT__" ? "전체" : selectedManager;
-    if (managerValue === "전체") return true;
-    if (user?.role === "협력사") {
-      return (caseItem.assignedPartnerManager || "") === managerValue;
-    }
-    if (user?.role === "심사사") {
-      return (caseItem.assessorTeam || "") === managerValue;
-    }
-    if (user?.role === "조사사") {
-      return (caseItem.investigatorTeamName || "") === managerValue;
-    }
-    return (caseItem.managerName || "") === managerValue;
-  });
-
-  // 최신순으로 정렬 (caseNumber 기준 내림차순 - yyMMddxxx 형식)
-  const filteredData = [...filteredByManager].sort((a, b) => {
-    // caseNumber에서 숫자 부분만 추출 (예: "251201001" -> 251201001, "251201001-1" -> 2512010011)
     const extractNumericValue = (caseNumber: string | null) => {
       if (!caseNumber) return 0;
-      // 하이픈 제거하고 숫자만 추출
       const numericStr = caseNumber.replace(/-/g, "");
       return parseInt(numericStr, 10) || 0;
     };
 
-    const numA = extractNumericValue(a.caseNumber);
-    const numB = extractNumericValue(b.caseNumber);
-    return numB - numA;
-  });
+    return [...filteredByManager].sort((a, b) => {
+      const numA = extractNumericValue(a.caseNumber);
+      const numB = extractNumericValue(b.caseNumber);
+      return numB - numA;
+    });
+  }, [cases, selectedStatus, searchQuery, selectedManager, user?.role, user?.company]);
 
   const totalCount = filteredData.length;
 

@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 
 const FONTS_DIR = path.join(process.cwd(), "server/fonts");
@@ -38,25 +38,26 @@ function validateTtfBuffer(buffer: Buffer, label: string): void {
   }
 }
 
-function loadSingleFont(
+async function loadSingleFont(
   fileName: string,
   label: string,
   cached: Buffer | null,
   cachedSize: number,
-): { buffer: Buffer; size: number } {
+): Promise<{ buffer: Buffer; size: number }> {
   const fontPath = path.join(FONTS_DIR, fileName);
 
-  if (!fs.existsSync(fontPath)) {
+  let stat;
+  try {
+    stat = await fs.stat(fontPath);
+  } catch {
     throw new Error(`${fileName}를 찾을 수 없습니다: ${fontPath}`);
   }
-
-  const stat = fs.statSync(fontPath);
 
   if (cached && cached.length === stat.size && cachedSize === stat.size) {
     return { buffer: cached, size: stat.size };
   }
 
-  const buffer = fs.readFileSync(fontPath);
+  const buffer = await fs.readFile(fontPath);
   validateTtfBuffer(buffer, label);
 
   console.log(
@@ -66,8 +67,8 @@ function loadSingleFont(
   return { buffer, size: stat.size };
 }
 
-export function loadPretendardRegular(): Buffer {
-  const result = loadSingleFont(
+export async function loadPretendardRegular(): Promise<Buffer> {
+  const result = await loadSingleFont(
     FONT_FILES.regular,
     "Pretendard-Regular",
     fontBufferCache.regular,
@@ -78,8 +79,8 @@ export function loadPretendardRegular(): Buffer {
   return result.buffer;
 }
 
-export function loadPretendardSemiBold(): Buffer {
-  const result = loadSingleFont(
+export async function loadPretendardSemiBold(): Promise<Buffer> {
+  const result = await loadSingleFont(
     FONT_FILES.semiBold,
     "Pretendard-SemiBold",
     fontBufferCache.semiBold,
@@ -90,9 +91,10 @@ export function loadPretendardSemiBold(): Buffer {
   return result.buffer;
 }
 
-export function loadPretendardFontPair(): { regular: Buffer; bold: Buffer } {
-  return {
-    regular: loadPretendardRegular(),
-    bold: loadPretendardSemiBold(),
-  };
+export async function loadPretendardFontPair(): Promise<{ regular: Buffer; bold: Buffer }> {
+  const [regular, bold] = await Promise.all([
+    loadPretendardRegular(),
+    loadPretendardSemiBold(),
+  ]);
+  return { regular, bold };
 }

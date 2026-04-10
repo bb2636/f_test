@@ -53,7 +53,7 @@ The system is a full-stack web application utilizing a React-based frontend and 
 - **일위대가 연동 설정**: `ilwidaega_link_settings` 테이블에서 위치(천장/벽면/바닥)별 공종+공사명 매핑을 관리자가 동적으로 설정 가능. 설정 항목은 복구면적 산출표의 드롭다운 옵션에 반영되며, 복구면적 → 노무비 자동 연동에 활용. DB 설정이 없으면 기존 하드코딩 기본값으로 fallback. 관리자 설정 > DB관리 > 일위대가 탭의 "일위대가 연동 설정" 버튼으로 접근.
 
 ### Refactoring Modules
-- **`server/font-loader.ts`**: Pretendard TTF 폰트 로딩/캐싱/검증 통합 모듈. `loadPretendardRegular()`, `loadPretendardSemiBold()`, `loadPretendardFontPair()` export. 3개 PDF 서비스(pdf-lib-service, invoice-pdf-service, evidence-pdf-service)에서 공유.
+- **`server/font-loader.ts`**: Pretendard TTF 폰트 비동기 로딩/캐싱/검증 통합 모듈. `loadPretendardRegular()`, `loadPretendardSemiBold()`, `loadPretendardFontPair()` export (모두 async/Promise). 3개 PDF 서비스(pdf-lib-service, invoice-pdf-service, evidence-pdf-service)에서 공유. `loadPretendardFontPair()`는 두 폰트를 `Promise.all`로 병렬 로드.
 - **`server/email-templates/`**: routes.ts에서 분리한 이메일 HTML/텍스트 템플릿 모듈. 각 파일은 순수 함수로 데이터를 받아 `{ html, text }` 반환.
   - `invoice-v1.ts` — INVOICE 송부 (단건 첨부, 구 버전)
   - `invoice-v2.ts` — INVOICE 전달 (다중 수신자, 로고 CID, 신 버전)
