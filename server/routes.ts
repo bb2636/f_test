@@ -5765,7 +5765,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const storageKey = `documents/${caseId}/${timestamp}_${uuid}_${safeFileName}`;
       const { bucketName, objectName } = buildStoragePath(storageKey);
 
-      const buffer = Buffer.from(fileData, "base64");
+      const rawBase64 = fileData.startsWith("data:") ? fileData.split(",")[1] || fileData : fileData;
+      const buffer = Buffer.from(rawBase64, "base64");
       const bucket = objectStorageClient.bucket(bucketName);
       const gcsFile = bucket.file(objectName);
       await gcsFile.save(buffer, { metadata: { contentType: fileType } });
@@ -5934,8 +5935,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // 레거시 문서 (fileData base64)
       if (document.fileData) {
-        const buffer = Buffer.from(document.fileData, "base64");
-        res.set("Content-Type", document.fileType);
+        let rawBase64 = document.fileData;
+        let contentType = document.fileType;
+        if (rawBase64.startsWith("data:")) {
+          const commaIdx = rawBase64.indexOf(",");
+          if (commaIdx !== -1) {
+            const meta = rawBase64.substring(0, commaIdx);
+            const typeMatch = meta.match(/^data:([^;]+)/);
+            if (typeMatch) contentType = typeMatch[1];
+            rawBase64 = rawBase64.substring(commaIdx + 1);
+          }
+        }
+        const buffer = Buffer.from(rawBase64, "base64");
+        res.set("Content-Type", contentType || "application/octet-stream");
         res.set("Content-Length", buffer.length.toString());
         res.set("Cache-Control", "public, max-age=3600");
         return res.send(buffer);
@@ -11784,7 +11796,8 @@ FLOXN 드림`;
       for (const doc of documents) {
         try {
           if (!doc.fileData) continue;
-          const fileBuffer = Buffer.from(doc.fileData, "base64");
+          const rawDocBase64 = doc.fileData.startsWith("data:") ? doc.fileData.split(",")[1] || doc.fileData : doc.fileData;
+          const fileBuffer = Buffer.from(rawDocBase64, "base64");
           const sanitizedFileName = doc.fileName.replace(
             /[^a-zA-Z0-9가-힣._-]/g,
             "_",
@@ -11985,7 +11998,8 @@ FLOXN 드림`;
                 if (!doc.fileData || !doc.category) continue;
 
                 try {
-                  const fileBuffer = Buffer.from(doc.fileData, "base64");
+                  const rawEmailBase64 = doc.fileData.startsWith("data:") ? doc.fileData.split(",")[1] || doc.fileData : doc.fileData;
+                  const fileBuffer = Buffer.from(rawEmailBase64, "base64");
                   const sanitizedFileName = doc.fileName.replace(
                     /[^a-zA-Z0-9가-힣._-]/g,
                     "_",
