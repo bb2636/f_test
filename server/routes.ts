@@ -5278,8 +5278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       : (isProduction || process.env.UPLOAD_PRESIGNED_ONLY === "true"),
     multipartFallback: process.env.UPLOAD_MULTIPART_FALLBACK === "true" ? true
       : (!isProduction && process.env.UPLOAD_MULTIPART_FALLBACK !== "false"),
-    dbFallback: process.env.UPLOAD_DB_FALLBACK === "true" ? true
-      : (!isProduction && process.env.UPLOAD_DB_FALLBACK !== "false"),
+    dbFallback: false,
     successCacheTtl: parseInt(process.env.STORAGE_HEALTHCACHE_SUCCESS_TTL_SEC || "60", 10) * 1000,
     failureCacheTtl: parseInt(process.env.STORAGE_HEALTHCACHE_FAILURE_TTL_SEC || "30", 10) * 1000,
   };
@@ -5688,34 +5687,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
-        if (uploadConfig.dbFallback) {
-          const MAX_DB_FALLBACK_SIZE = 10 * 1024 * 1024;
-          if (file.size > MAX_DB_FALLBACK_SIZE) {
-            return res.status(413).json({
-              code: "DB_FALLBACK_TOO_LARGE",
-              error: `DB fallback은 ${MAX_DB_FALLBACK_SIZE / 1024 / 1024}MB 이하만 허용합니다 (${(file.size / 1024 / 1024).toFixed(1)}MB)`,
-            });
-          }
-
-          const base64Data = `data:${fileType};base64,${file.buffer.toString("base64")}`;
-          const document = await storage.saveDocument({
-            caseId,
-            category,
-            fileName,
-            fileType,
-            fileSize: file.size,
-            fileData: base64Data,
-            createdBy: req.session.userId!,
-          });
-
-          uploadMetrics.dbFallbackCount++;
-          console.log(`[multipart-upload] doc=${document.id} → DB fallback (${(file.size / 1024).toFixed(0)}KB, dev only) [metrics: db=${uploadMetrics.dbFallbackCount}]`);
-          return res.json({ success: true, documentId: document.id });
-        }
-
         return res.status(503).json({
           code: "FILE_STORAGE_UNAVAILABLE",
-          error: "파일 저장소를 사용할 수 없습니다",
+          error: "파일 저장소를 사용할 수 없습니다. 잠시 후 다시 시도해주세요.",
         });
       } catch (error: any) {
         console.error("[multipart-upload] Error:", error.message);
@@ -5883,53 +5857,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (document.storageKey && (document.status === "ready" || document.status === "processing")) {
-        const privateObjectDir = process.env.PRIVATE_OBJECT_DIR;
-        if (!privateObjectDir) {
-          return res
-            .status(500)
-            .json({ error: "Object Storage가 설정되지 않았습니다" });
-        }
-
         try {
-          const fullPath = `${privateObjectDir}/${document.storageKey}`;
-          const pathParts = fullPath.split("/").filter((p: string) => p);
-          const bucketName = pathParts[0];
-          const objectName = pathParts.slice(1).join("/");
-
-          const bucket = objectStorageClient.bucket(bucketName);
-          const gcsFile = bucket.file(objectName);
-          const [contents] = await gcsFile.download();
-
-          res.set("Content-Type", document.fileType || "application/octet-stream");
-          res.set("Content-Length", contents.length.toString());
-          res.set("Cache-Control", "private, max-age=3600");
-          res.set("Content-Disposition", `inline; filename="${encodeURIComponent(document.fileName)}"`);
-          return res.send(contents);
-        } catch (gcsError: any) {
-          const isNotFound = gcsError.code === 404 || gcsError.message?.includes("No such object") || gcsError.message?.includes("not found");
-          if (isNotFound && (document.status === "ready" || document.status === "processing")) {
-            console.error(`[image] doc=${id} file NOT FOUND in storage, marking failed`);
-            await storage.updateDocumentStatus(id, "failed");
-            return res.status(410).json({ code: "FILE_GONE", error: "파일이 저장소에 존재하지 않습니다" });
-          }
-
-          console.warn(`[image] GCS download failed for ${id}, trying signed URL fallback: ${gcsError.message}`);
-          try {
-            const fullPath = `${privateObjectDir}/${document.storageKey}`;
-            const pathParts = fullPath.split("/").filter((p: string) => p);
-            const bucketName = pathParts[0];
-            const objectName = pathParts.slice(1).join("/");
-            const signedUrl = await signObjectURL({
-              bucketName,
-              objectName,
-              method: "GET",
-              ttlSec: 3600,
-            });
-            return res.redirect(signedUrl);
-          } catch (signError: any) {
-            console.error(`[image] Both GCS and signed URL failed for ${id}: ${signError.message}`);
-            return res.status(500).json({ error: "파일을 불러올 수 없습니다" });
-          }
+          const { bucketName, objectName } = buildStoragePath(document.storageKey);
+          const signedUrl = await signObjectURL({
+            bucketName,
+            objectName,
+            method: "GET",
+            ttlSec: 3600,
+          });
+          return res.redirect(signedUrl);
+        } catch (signError: any) {
+          console.error(`[image] Signed URL failed for doc=${id}: ${signError.message}`);
+          return res.status(500).json({ error: "파일을 불러올 수 없습니다" });
         }
       }
 
