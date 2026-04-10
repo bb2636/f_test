@@ -5278,7 +5278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       : (isProduction || process.env.UPLOAD_PRESIGNED_ONLY === "true"),
     multipartFallback: process.env.UPLOAD_MULTIPART_FALLBACK === "true" ? true
       : (!isProduction && process.env.UPLOAD_MULTIPART_FALLBACK !== "false"),
-    dbFallback: false,
+    dbFallback: process.env.UPLOAD_DB_FALLBACK === "false" ? false : true,
     successCacheTtl: parseInt(process.env.STORAGE_HEALTHCACHE_SUCCESS_TTL_SEC || "60", 10) * 1000,
     failureCacheTtl: parseInt(process.env.STORAGE_HEALTHCACHE_FAILURE_TTL_SEC || "30", 10) * 1000,
   };
@@ -5685,6 +5685,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
               error: "파일 저장소를 사용할 수 없습니다",
             });
           }
+        }
+
+        if (uploadConfig.dbFallback) {
+          const MAX_DB_FALLBACK_SIZE = 10 * 1024 * 1024;
+          if (file.size > MAX_DB_FALLBACK_SIZE) {
+            return res.status(413).json({
+              code: "DB_FALLBACK_TOO_LARGE",
+              error: `파일 크기가 ${MAX_DB_FALLBACK_SIZE / 1024 / 1024}MB 제한을 초과합니다 (${(file.size / 1024 / 1024).toFixed(1)}MB)`,
+            });
+          }
+
+          const base64Data = file.buffer.toString("base64");
+          const document = await storage.saveDocument({
+            caseId,
+            category,
+            fileName,
+            fileType,
+            fileSize: file.size,
+            fileData: base64Data,
+            createdBy: req.session.userId!,
+          });
+
+          uploadMetrics.dbFallbackCount++;
+          console.log(`[multipart-upload] doc=${document.id} → DB fallback (${(file.size / 1024).toFixed(0)}KB) [metrics: db=${uploadMetrics.dbFallbackCount}]`);
+          return res.json({ success: true, documentId: document.id });
         }
 
         return res.status(503).json({
