@@ -4480,7 +4480,7 @@ export default function FieldEstimate() {
             >
               <span>접수번호 {formatCaseNumber(selectedCase.caseNumber)}</span>
               <span>피보험자 {selectedCase.insuredName || "미정"}</span>
-              <span>담당자 {selectedCase.assignedPartnerManager || "미정"}</span>
+              <span>담당자 {(selectedCase as any).managerName || "미정"}</span>
               {selectedCase.insuredAddress && (
                 <span>
                   <span style={{ color: "rgba(12, 12, 12, 0.5)" }}>주소</span>{" "}

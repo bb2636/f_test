@@ -3037,7 +3037,7 @@ export default function FieldReport() {
                     color: "rgba(12, 12, 12, 0.7)",
                   }}
                 >
-                  {caseData.assignedPartnerManager || "미정"}
+                  {(caseData as any).managerName || "미정"}
                 </span>
               </div>
               {caseData.insuredAddress && (

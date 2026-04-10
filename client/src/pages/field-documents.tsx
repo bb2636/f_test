@@ -1676,7 +1676,7 @@ export default function FieldDocuments() {
                 {selectedCase.insuredName || "미정"}
               </span>
               <span>
-                담당자 {selectedCase.assignedPartnerManager || "미정"}
+                담당자 {(selectedCase as any).managerName || "미정"}
               </span>
               {selectedCase.insuredAddress && (
                 <span>
