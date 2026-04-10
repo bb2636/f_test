@@ -207,25 +207,31 @@ const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
 const getGroupEstimateAmount = (groupCases: Case[]): number | null => {
   const active = getActiveCases(groupCases);
   if (active.length === 0) return null;
-  if (active.every(c => isPreEstimate(c))) {
-    return active.reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0) || null;
+  const preEstimateCases = active.filter(c => isPreEstimate(c));
+  const nonPreEstimateCases = active.filter(c => !isPreEstimate(c));
+  const preEstimateSum = preEstimateCases.reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0);
+  if (nonPreEstimateCases.length === 0) {
+    return preEstimateSum;
   }
-  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
-  const targets = hasDirectRecovery ? active.filter(c => isDirectRecovery(c)) : active.filter(c => !isPreEstimate(c));
-  return targets.reduce((sum, c) => sum + getCaseEstimateForStats(c), 0);
+  const hasDirectRecovery = nonPreEstimateCases.some(c => isDirectRecovery(c));
+  const targets = hasDirectRecovery ? nonPreEstimateCases.filter(c => isDirectRecovery(c)) : nonPreEstimateCases;
+  const directSum = targets.reduce((sum, c) => sum + getCaseEstimateForStats(c), 0);
+  return preEstimateSum + directSum;
 };
 
 const getGroupApprovedAmount = (groupCases: Case[]): number | null => {
   const active = getActiveCases(groupCases);
   if (active.length === 0) return null;
-  if (active.every(c => isPreEstimate(c))) {
-    return active.reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0) || null;
+  const preEstimateCases = active.filter(c => isPreEstimate(c));
+  const nonPreEstimateCases = active.filter(c => !isPreEstimate(c));
+  const preEstimateSum = preEstimateCases.reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0);
+  if (nonPreEstimateCases.length === 0) {
+    return preEstimateSum;
   }
-  const nonPreEstimate = active.filter(c => !isPreEstimate(c));
-  if (nonPreEstimate.length === 0) return null;
-  const hasDirectRecovery = nonPreEstimate.some(c => isDirectRecovery(c));
-  const targets = hasDirectRecovery ? nonPreEstimate.filter(c => isDirectRecovery(c)) : nonPreEstimate;
-  return targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+  const hasDirectRecovery = nonPreEstimateCases.some(c => isDirectRecovery(c));
+  const targets = hasDirectRecovery ? nonPreEstimateCases.filter(c => isDirectRecovery(c)) : nonPreEstimateCases;
+  const directSum = targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+  return preEstimateSum + directSum;
 };
 
 const getGroupDate = (groupCases: Case[], field: keyof Case): string | null => {
@@ -636,9 +642,9 @@ export default function ClosedCaseStatistics() {
           extractRegion(address),
           extractCityDistrict(address),
           c.status,
-          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? ((parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0) ? (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0).toLocaleString() : "") : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (c.fieldDispatchInvoiceAmount ? (parseFloat(c.fieldDispatchInvoiceAmount) || 0).toLocaleString() : "") : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.siteInvestigationSubmitDate),
-          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? ((parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0) ? (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0).toLocaleString() : "") : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : "")),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (c.fieldDispatchInvoiceAmount ? (parseFloat(c.fieldDispatchInvoiceAmount) || 0).toLocaleString() : "") : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.secondApprovalDate),
         ];
       });

@@ -1145,7 +1145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "active",
       });
 
-      console.log("Created user:", JSON.stringify(newUser, null, 2));
+      console.log("Created user:", newUser.username, "role:", newUser.role);
 
       const { password, ...userWithoutPassword } = newUser;
       res.status(201).json({ success: true, user: userWithoutPassword });
