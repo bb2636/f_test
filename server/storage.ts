@@ -5555,7 +5555,7 @@ export class DbStorage implements IStorage {
     const estimatesDeleted = await this.deleteEstimatesByCaseId(caseId);
     console.log(`[resetCaseFieldSurveyData] Deleted ${estimatesDeleted} estimates`);
     
-    // 4. 현장조사 관련 필드 초기화 (케이스 테이블 필드)
+    // 4. 승인/이메일/인보이스 관련 필드 초기화
     await db
       .update(cases)
       .set({
