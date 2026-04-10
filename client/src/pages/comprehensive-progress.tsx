@@ -67,6 +67,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   SmsNotificationDialog,
   type NotificationStage,
@@ -244,6 +245,8 @@ export default function ComprehensiveProgress() {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingCaseId, setDeletingCaseId] = useState<string | null>(null);
+  const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
   // 상태 변경 확인 다이얼로그 상태
   const [statusChangeDialogOpen, setStatusChangeDialogOpen] = useState(false);
@@ -292,6 +295,7 @@ export default function ComprehensiveProgress() {
   });
 
   const { hasItem } = usePermissions();
+  const canDeleteCases = user?.role === "관리자" && hasItem("종합진행관리", "접수건 삭제 권한");
 
   const { data: cases, isLoading } = useQuery<CaseWithLatestProgress[]>({
     queryKey: ["/api/cases"],
@@ -428,6 +432,40 @@ export default function ComprehensiveProgress() {
       toast({
         title: "삭제 실패",
         description: error.message || "접수건 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (caseIds: string[]) => {
+      const results = await Promise.allSettled(
+        caseIds.map((caseId) => apiRequest("DELETE", `/api/cases/${caseId}`)),
+      );
+      const failedCount = results.filter((r) => r.status === "rejected").length;
+      if (failedCount > 0) {
+        throw new Error(`${failedCount}건 삭제 실패`);
+      }
+      return results;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      const count = selectedCaseIds.length;
+      setSelectedCaseIds([]);
+      setShowBulkDeleteDialog(false);
+      toast({
+        title: "삭제 완료",
+        description: `선택한 ${count}건이 삭제되었습니다.`,
+      });
+    },
+    onError: (error: Error) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      setSelectedCaseIds([]);
+      setShowBulkDeleteDialog(false);
+      toast({
+        title: "일부 삭제 실패",
+        description:
+          error?.message || "일부 접수건 삭제 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
@@ -1583,6 +1621,29 @@ export default function ComprehensiveProgress() {
               {totalCount}
             </span>
           </div>
+          {canDeleteCases && selectedCaseIds.length > 0 && (
+            <button
+              onClick={() => setShowBulkDeleteDialog(true)}
+              style={{
+                fontFamily: "Pretendard",
+                fontWeight: 600,
+                fontSize: "14px",
+                color: "#DC2626",
+                border: "1px solid #DC2626",
+                borderRadius: "8px",
+                padding: "6px 16px",
+                background: "#FFFFFF",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+              data-testid="button-bulk-delete"
+            >
+              <Trash2 style={{ width: "14px", height: "14px" }} />
+              삭제
+            </button>
+          )}
         </div>
 
         {/* Table */}
@@ -1604,9 +1665,13 @@ export default function ComprehensiveProgress() {
               style={{
                 display: "grid",
                 gridTemplateColumns:
-                  user?.role === "협력사"
-                    ? "7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
-                    : "7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%",
+                  canDeleteCases
+                    ? (user?.role === "협력사"
+                      ? "40px 7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                      : "40px 7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%")
+                    : (user?.role === "협력사"
+                      ? "7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                      : "7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%"),
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1615,6 +1680,32 @@ export default function ComprehensiveProgress() {
                 zIndex: 10,
               }}
             >
+              {canDeleteCases && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingTop: "14px",
+                    paddingBottom: "14px",
+                  }}
+                >
+                  <Checkbox
+                    checked={
+                      filteredData.length > 0 &&
+                      selectedCaseIds.length === filteredData.length
+                    }
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedCaseIds(filteredData.map((c) => c.id));
+                      } else {
+                        setSelectedCaseIds([]);
+                      }
+                    }}
+                    data-testid="checkbox-select-all"
+                  />
+                </div>
+              )}
               {[
                 { label: "증권번호", textAlign: "center" as const },
                 { label: "사고번호", textAlign: "center" as const },
@@ -1758,9 +1849,13 @@ export default function ComprehensiveProgress() {
                     style={{
                       display: "grid",
                       gridTemplateColumns:
-                        user?.role === "협력사"
-                          ? "7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
-                          : "7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%",
+                        canDeleteCases
+                          ? (user?.role === "협력사"
+                            ? "40px 7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                            : "40px 7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%")
+                          : (user?.role === "협력사"
+                            ? "7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                            : "7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%"),
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -1768,6 +1863,29 @@ export default function ComprehensiveProgress() {
                     }}
                     data-testid={`case-row-${caseItem.id}`}
                   >
+                    {canDeleteCases && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          paddingTop: "14px",
+                          paddingBottom: "14px",
+                        }}
+                      >
+                        <Checkbox
+                          checked={selectedCaseIds.includes(caseItem.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedCaseIds((prev) => [...prev, caseItem.id]);
+                            } else {
+                              setSelectedCaseIds((prev) => prev.filter((id) => id !== caseItem.id));
+                            }
+                          }}
+                          data-testid={`checkbox-case-${caseItem.id}`}
+                        />
+                      </div>
+                    )}
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -4974,6 +5092,35 @@ export default function ComprehensiveProgress() {
               style={{ backgroundColor: "#DC2626" }}
             >
               삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={showBulkDeleteDialog}
+        onOpenChange={setShowBulkDeleteDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>선택된 접수건 삭제</AlertDialogTitle>
+            <AlertDialogDescription>
+              선택한 {selectedCaseIds.length}건의 접수건을 삭제하시겠습니까?
+              삭제된 데이터는 복구할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-bulk-delete">
+              취소
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                bulkDeleteMutation.mutate(selectedCaseIds);
+              }}
+              disabled={bulkDeleteMutation.isPending}
+              style={{ backgroundColor: "#DC2626" }}
+              data-testid="button-confirm-bulk-delete"
+            >
+              {bulkDeleteMutation.isPending ? "삭제 중..." : "삭제"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
