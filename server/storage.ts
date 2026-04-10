@@ -6846,10 +6846,10 @@ export class DbStorage implements IStorage {
           fileName: newDocument.fileName,
           fileType: newDocument.fileType,
           fileSize: newDocument.fileSize,
-          base64Data: newDocument.base64Data,
-          description: newDocument.description,
-          uploadedBy: newDocument.uploadedBy,
-          uploadedAt: getKSTDate(),
+          fileData: newDocument.fileData,
+          storageKey: newDocument.storageKey,
+          createdBy: newDocument.createdBy,
+          createdAt: getKSTDate(),
         });
         syncedCount++;
         console.log(`[Document Sync] Synced to case ${relatedCase.caseNumber}`);
@@ -6928,12 +6928,12 @@ export class DbStorage implements IStorage {
             location: row.location,
             workType: row.workType,
             workName: row.workName,
-            damageWidthMm: row.damageWidthMm,
-            damageHeightMm: row.damageHeightMm,
-            damageAreaMm2: row.damageAreaMm2,
-            repairWidthMm: row.repairWidthMm,
-            repairHeightMm: row.repairHeightMm,
-            repairAreaMm2: row.repairAreaMm2,
+            damageWidth: row.damageWidth?.toString() ?? null,
+            damageHeight: row.damageHeight?.toString() ?? null,
+            damageArea: row.damageArea?.toString() ?? null,
+            repairWidth: row.repairWidth?.toString() ?? null,
+            repairHeight: row.repairHeight?.toString() ?? null,
+            repairArea: row.repairArea?.toString() ?? null,
             note: row.note,
           });
         }

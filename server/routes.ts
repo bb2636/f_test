@@ -8635,7 +8635,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const objectName = `public/notice-attachments/${Date.now()}_${crypto.randomUUID()}_${safeFileName}`;
 
       const uploadURL = await signObjectURL({
-        bucketName: info.bucketId,
+        bucketName: info.bucketName,
         objectName,
         method: "PUT",
         ttlSec: 900,
@@ -8643,7 +8643,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const SIGNED_URL_TTL_SEC = 365 * 24 * 60 * 60;
       const downloadURL = await signObjectURL({
-        bucketName: info.bucketId,
+        bucketName: info.bucketName,
         objectName,
         method: "GET",
         ttlSec: SIGNED_URL_TTL_SEC,
@@ -8653,7 +8653,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         uploadURL,
         downloadURL,
-        storageKey: `${info.bucketId}/${objectName}`,
+        storageKey: `${info.bucketName}/${objectName}`,
         fileName,
         fileType,
         fileSize,
@@ -8707,7 +8707,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         if (info && storageStatus.available) {
           try {
-            const bucket = objectStorageClient.bucket(info.bucketId);
+            const bucket = objectStorageClient.bucket(info.bucketName);
             const objectName = `public/notice-attachments/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${file.originalname.split(".").pop() || "bin"}`;
             const bucketFile = bucket.file(objectName);
 
@@ -8717,7 +8717,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             const SIGNED_URL_TTL_SEC = 365 * 24 * 60 * 60;
             const downloadUrl = await signObjectURL({
-              bucketName: info.bucketId,
+              bucketName: info.bucketName,
               objectName,
               method: "GET",
               ttlSec: SIGNED_URL_TTL_SEC,
@@ -8727,7 +8727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return res.json({
               url: downloadUrl,
               fileName: file.originalname,
-              storageKey: `${info.bucketId}/${objectName}`,
+              storageKey: `${info.bucketName}/${objectName}`,
               fileSize: file.size,
               fileType: file.mimetype,
             });
@@ -13508,9 +13508,6 @@ https://www.floxn.co.kr/
         recipients,
         additionalMessage,
         cancelReason,
-        recoveryAmount,
-        feeRate,
-        paymentAmount,
         previousStatus,
       } = validatedData;
 
@@ -14994,10 +14991,10 @@ https://www.floxn.co.kr/
         }
 
         const suffix = c.caseNumber.split("-")[1];
-        // 인보이스에는 invoiceAmount > approvedAmount > estimateAmount 순으로 사용
+        // 인보이스에는 approvedAmount > estimateAmount 순으로 사용
         const amount =
           parseInt(
-            c.invoiceAmount || c.approvedAmount || c.estimateAmount || "0",
+            c.approvedAmount || c.estimateAmount || "0",
           ) || 0;
 
         if (suffix === "0") {
