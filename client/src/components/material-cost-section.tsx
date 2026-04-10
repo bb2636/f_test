@@ -1033,7 +1033,7 @@ export function MaterialCostSection({
                   const materialTotal = rows.reduce((sum, row) => sum + (row.합계 || 0), 0);
                   const denominator = laborTotal + materialTotal;
                   const ratio = denominator > 0 ? (materialTotal / denominator) * 100 : 0;
-                  return `자재비 구성비 : ${ratio.toFixed(1)}%`;
+                  return `자재비 구성비 : ${ratio.toFixed(1).padStart(4, '0')}%`;
                 })()}
               </td>
             )}
