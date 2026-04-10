@@ -64,6 +64,13 @@ import {
   logAttachmentSummary,
 } from "./evidence-pdf-service";
 import { compressPdf, isPdfFile, compressPdfForEmail } from "./pdf-compression";
+import {
+  renderInvoiceV1Template,
+  renderInvoiceV2Template,
+  renderFieldDispatchInvoiceTemplate,
+  renderFieldReportV2Template,
+  renderCancellationTemplate,
+} from "./email-templates";
 
 // 피해세대 케이스용 피해자 주소 설정 헬퍼 함수
 // 규칙:
@@ -9188,91 +9195,11 @@ FLOXN 드림`;
       // Send email via Hiworks SMTP with PDF attachment
       const subject = `[FLOXN] INVOICE - ${accidentNo || caseNumber || dateStr}`;
 
-      const htmlContent = `
-        <div style="font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; border-bottom: 2px solid #0066cc; padding-bottom: 10px;">INVOICE 송부</h2>
-          
-          <p style="color: #666; line-height: 1.8;">안녕하세요,</p>
-          
-          <p style="color: #666; line-height: 1.8;">
-            아래 청구건에 대한 <strong>INVOICE</strong>를 첨부하여 송부드립니다.
-          </p>
-          
-          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; width: 30%; font-weight: bold;">보험사</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${insuranceCompany || "-"}</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">사고번호</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${accidentNo || "-"}</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">사건번호</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${caseNumber || "-"}</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">손해방지비용</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${formatAmount(damagePreventionAmount || 0)}원</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">대물복구비용</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${formatAmount(propertyRepairAmount || 0)}원</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">합계</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd; font-weight: bold; color: #0066cc;">${formatAmount(totalAmount || 0)}원</td>
-            </tr>
-            ${
-              remarks
-                ? `<tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">비고</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${remarks}</td>
-            </tr>`
-                : ""
-            }
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">발송일</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${dateStr}</td>
-            </tr>
-          </table>
-          
-          <p style="color: #666; line-height: 1.8;">
-            첨부된 INVOICE PDF 파일을 확인해 주시기 바랍니다.
-          </p>
-          
-          <p style="color: #666; line-height: 1.8; margin-top: 30px;">
-            감사합니다.<br/>
-            <strong>FLOXN</strong>
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          
-          <p style="color: #999; font-size: 12px;">
-            본 메일은 FLOXN 시스템에서 자동 발송되었습니다.
-          </p>
-        </div>
-      `;
-
-      const textContent = `INVOICE 송부
-
-안녕하세요,
-
-아래 청구건에 대한 INVOICE를 첨부하여 송부드립니다.
-
-- 보험사: ${insuranceCompany || "-"}
-- 사고번호: ${accidentNo || "-"}
-- 사건번호: ${caseNumber || "-"}
-- 손해방지비용: ${formatAmount(damagePreventionAmount || 0)}원
-- 대물복구비용: ${formatAmount(propertyRepairAmount || 0)}원
-- 합계: ${formatAmount(totalAmount || 0)}원
-${remarks ? `- 비고: ${remarks}` : ""}
-- 발송일: ${dateStr}
-
-첨부된 INVOICE PDF 파일을 확인해 주시기 바랍니다.
-
-감사합니다.
-FLOXN`;
+      const { html: htmlContent, text: textContent } = renderInvoiceV1Template({
+        insuranceCompany, accidentNo, caseNumber,
+        damagePreventionAmount, propertyRepairAmount, totalAmount,
+        remarks, dateStr, formatAmount,
+      });
 
       // Use Hiworks SMTP with PDF attachment
       const emailResult = await sendEmailWithAttachment({
@@ -11676,83 +11603,15 @@ FLOXN`;
           .filter(Boolean)
           .join(", ") || "-";
 
-      const htmlContent = `
-        <div style="font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; border-bottom: 2px solid #0066cc; padding-bottom: 10px;">INVOICE 전달드립니다</h2>
-          
-          <p style="color: #666; line-height: 1.8;">안녕하세요,</p>
-          
-          <p style="color: #666; line-height: 1.8;">
-            아래 내용의 <strong>INVOICE</strong>를 첨부하여 송부드립니다.
-          </p>
-          
-          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; width: 140px; font-weight: bold;">사고번호</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;" colspan="4">${invoiceData.insuranceAccidentNo || "-"}</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">담당자</td>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold; width: 80px;">심사자</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${assessorName}</td>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold; width: 80px;">조사자</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${investigatorName}</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">청구금액</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;" colspan="4">
-                ${amountLines.map((line) => `<div>${line}</div>`).join("")}
-              </td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">접수번호</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;" colspan="4">${allCaseNumbers}</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">발송일</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;" colspan="4">${dateStr}</td>
-            </tr>
-          </table>
-          
-          <p style="color: #666; line-height: 1.8;">
-            첨부된 PDF 파일을 확인해 주시기 바랍니다.
-          </p>
-          
-          <p style="color: #666; line-height: 1.8; margin-top: 30px;">
-            감사합니다.
-          </p>
-          
-          <div style="border-top: 1px solid #ddd; padding-top: 16px; margin-top: 24px;">
-            ${logoBuffer ? '<img src="cid:floxn-logo" alt="FLOXN" style="height: 24px; margin-bottom: 8px;">' : '<p style="font-size: 18px; font-weight: bold; color: #333; margin: 0 0 4px 0;">FLOXN</p>'}
-            <p style="font-size: 12px; color: #666; margin: 0 0 8px 0;">Front·Line·Ops·Xpert·Net</p>
-            <p style="font-size: 12px; color: #666; margin: 0;">주식회사 플록슨(FLOXN Co., Ltd.)</p>
-            <p style="font-size: 12px; color: #666; margin: 0;">서울특별시 영등포구 당산로 133, 서림빌딩 3층 302호</p>
-          </div>
-        </div>
-      `;
-
-      const textContent = `안녕하세요,
-
-INVOICE를 첨부하여 전달드립니다.
-
-- 사고번호: ${invoiceData.insuranceAccidentNo || "-"}
-- 담당자: 심사자 ${assessorName} / 조사자 ${investigatorName}
-
-청구금액:
-${amountLines.join("\n")}
-
-- 접수번호: ${allCaseNumbers}
-- 발송일: ${dateStr}
-
-첨부된 PDF 파일을 확인해 주시기 바랍니다.
-
-감사합니다.
-
----
-FLOXN
-Front·Line·Ops·Xpert·Net
-주식회사 플록슨(FLOXN Co., Ltd.)
-서울특별시 영등포구 당산로 133, 서림빌딩 3층 302호`;
+      const { html: htmlContent, text: textContent } = renderInvoiceV2Template({
+        accidentNo: invoiceData.insuranceAccidentNo || "-",
+        assessorName,
+        investigatorName,
+        amountLines,
+        allCaseNumbers,
+        dateStr,
+        logoBuffer,
+      });
 
       // Build attachments array: Invoice PDF (with merged documents) + Logo
       const attachments: Array<{
@@ -12036,83 +11895,10 @@ Front·Line·Ops·Xpert·Net
       // Send email via Hiworks SMTP with PDF attachment
       const subject = `[FLOXN] 현장출동비용 청구서 - ${accidentNo || caseNumber || dateStr}`;
 
-      const htmlContent = `
-        <div style="font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; border-bottom: 2px solid #0066cc; padding-bottom: 10px;">현장출동비용 청구서</h2>
-          
-          <p style="color: #666; line-height: 1.8;">안녕하세요,</p>
-          
-          <p style="color: #666; line-height: 1.8;">
-            아래 청구건에 대한 <strong>현장출동비용 청구서</strong>를 첨부하여 송부드립니다.
-          </p>
-          
-          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; width: 30%; font-weight: bold;">보험사</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${insuranceCompany || "-"}</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">사고번호</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${accidentNo || "-"}</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">사건번호</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${caseNumber || "-"}</td>
-            </tr>
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">현장출동비용</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd; font-weight: bold; color: #0066cc;">${formatAmount(fieldDispatchAmount || 0)}원</td>
-            </tr>
-            ${
-              remarks
-                ? `<tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">비고</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${remarks}</td>
-            </tr>`
-                : ""
-            }
-            <tr>
-              <td style="background: #f5f5f5; padding: 10px 15px; border: 1px solid #ddd; font-weight: bold;">발송일</td>
-              <td style="padding: 10px 15px; border: 1px solid #ddd;">${dateStr}</td>
-            </tr>
-          </table>
-          
-          <p style="color: #666; line-height: 1.8;">
-            첨부된 현장출동비용 청구서 PDF 파일을 확인해 주시기 바랍니다.
-          </p>
-          
-          <p style="color: #666; line-height: 1.8; margin-top: 30px;">
-            감사합니다.<br/>
-            <strong>FLOXN</strong><br/>
-            <span style="font-size: 12px; color: #999;">주식회사 플록슨(FLOXN Co., Ltd.)</span>
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          
-          <p style="color: #999; font-size: 12px;">
-            본 메일은 FLOXN 시스템에서 자동 발송되었습니다.
-          </p>
-        </div>
-      `;
-
-      const textContent = `현장출동비용 청구서
-
-안녕하세요,
-
-아래 청구건에 대한 현장출동비용 청구서를 첨부하여 송부드립니다.
-
-- 보험사: ${insuranceCompany || "-"}
-- 사고번호: ${accidentNo || "-"}
-- 사건번호: ${caseNumber || "-"}
-- 현장출동비용: ${formatAmount(fieldDispatchAmount || 0)}원
-${remarks ? `- 비고: ${remarks}` : ""}
-- 발송일: ${dateStr}
-
-첨부된 현장출동비용 청구서 PDF 파일을 확인해 주시기 바랍니다.
-
-감사합니다.
-FLOXN
-주식회사 플록슨(FLOXN Co., Ltd.)`;
+      const { html: htmlContent, text: textContent } = renderFieldDispatchInvoiceTemplate({
+        insuranceCompany, accidentNo, caseNumber,
+        fieldDispatchAmount, remarks, dateStr, formatAmount,
+      });
 
       // Use Hiworks SMTP with PDF attachment
       const emailResult = await sendEmailWithAttachment({
@@ -12794,82 +12580,15 @@ FLOXN 드림`;
         );
       }
 
-      // HTML 이메일 본문 생성 (표 형식, 링크 없음)
-      const emailHtml = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 40px; border-radius: 8px;">
-    <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 8px; color: #333;">현장출동보고서 송부</h1>
-    <hr style="border: none; border-top: 3px solid #e85a1b; margin-bottom: 24px;">
-    
-    <p style="color: #333; margin-bottom: 16px;">안녕하세요.<br>아래 접수건에 대한 현장출동보고서를 첨부하여 송부드립니다.</p>
-    
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
-      <tr>
-        <td style="background-color: #f8f8f8; padding: 12px 16px; border: 1px solid #e0e0e0; font-weight: bold; width: 120px;">사고번호(증권번호)</td>
-        <td style="padding: 12px 16px; border: 1px solid #e0e0e0;" colspan="4">${caseData.insuranceAccidentNo || caseData.insurancePolicyNo || "-"}</td>
-      </tr>
-      <tr>
-        <td style="background-color: #f8f8f8; padding: 12px 16px; border: 1px solid #e0e0e0; font-weight: bold;">담당자</td>
-        <td style="background-color: #f8f8f8; padding: 12px 16px; border: 1px solid #e0e0e0; font-weight: bold; width: 80px;">심사자</td>
-        <td style="padding: 12px 16px; border: 1px solid #e0e0e0;">${caseData.assessorTeam || "-"}</td>
-        <td style="background-color: #f8f8f8; padding: 12px 16px; border: 1px solid #e0e0e0; font-weight: bold; width: 80px;">조사자</td>
-        <td style="padding: 12px 16px; border: 1px solid #e0e0e0;">${caseData.investigatorTeamName || "-"}</td>
-      </tr>
-      <tr>
-        <td style="background-color: #f8f8f8; padding: 12px 16px; border: 1px solid #e0e0e0; font-weight: bold;">피보험자</td>
-        <td style="padding: 12px 16px; border: 1px solid #e0e0e0;" colspan="4">${caseData.insuredName || "-"}</td>
-      </tr>
-      <tr>
-        <td style="background-color: #f8f8f8; padding: 12px 16px; border: 1px solid #e0e0e0; font-weight: bold;">접수번호</td>
-        <td style="padding: 12px 16px; border: 1px solid #e0e0e0;" colspan="4">${caseData.caseNumber || "-"}</td>
-      </tr>
-      <tr>
-        <td style="background-color: #f8f8f8; padding: 12px 16px; border: 1px solid #e0e0e0; font-weight: bold;">발송일</td>
-        <td style="padding: 12px 16px; border: 1px solid #e0e0e0;" colspan="4">${new Date().toISOString().split("T")[0]}</td>
-      </tr>
-    </table>
-    
-    <p style="color: #333; margin-bottom: 24px;">첨부된 PDF 파일을 확인해 주시기 바랍니다.</p>
-    
-    <p style="color: #333; margin-bottom: 16px;">감사합니다.</p>
-    
-    <div style="border-top: 1px solid #e0e0e0; padding-top: 16px; margin-top: 24px;">
-      ${logoBuffer ? '<img src="cid:floxn-logo" alt="FLOXN" style="height: 24px; margin-bottom: 8px;">' : '<p style="font-size: 18px; font-weight: bold; color: #333; margin: 0 0 4px 0;">FLOXN</p>'}
-      <p style="font-size: 12px; color: #666; margin: 0 0 8px 0;">Front·Line·Ops·Xpert·Net</p>
-      <p style="font-size: 12px; color: #666; margin: 0;">주식회사 플록슨(FLOXN Co., Ltd.)</p>
-      <p style="font-size: 12px; color: #666; margin: 0;">서울특별시 영등포구 당산로 133, 서림빌딩 3층 302호</p>
-    </div>
-  </div>
-</body>
-</html>`;
-
-      // 텍스트 버전 (HTML 미지원 클라이언트용)
-      const emailText = `현장출동보고서 송부
-
-안녕하세요.
-아래 접수건에 대한 현장출동보고서를 첨부하여 송부드립니다.
-
-사고번호: ${caseData.insuranceAccidentNo || "-"}
-심사자: ${caseData.assessorTeam || "-"}
-조사자: ${caseData.investigatorTeamName || "-"}
-피보험자: ${caseData.insuredName || "-"}
-접수번호: ${caseData.caseNumber || "-"}
-발송일: ${new Date().toISOString().split("T")[0]}
-
-첨부된 PDF 파일을 확인해 주시기 바랍니다.
-
-감사합니다.
-
----
-FLOXN
-Front·Line·Ops·Xpert·Net
-주식회사 플록슨(FLOXN Co., Ltd.)
-서울특별시 영등포구 당산로 133, 서림빌딩 3층 302호`;
+      const { html: emailHtml, text: emailText } = renderFieldReportV2Template({
+        accidentNo: caseData.insuranceAccidentNo || caseData.insurancePolicyNo || "-",
+        assessorTeam: caseData.assessorTeam || "-",
+        investigatorTeamName: caseData.investigatorTeamName || "-",
+        insuredName: caseData.insuredName || "-",
+        caseNumber: caseData.caseNumber || "-",
+        sendDate: new Date().toISOString().split("T")[0],
+        logoBuffer,
+      });
 
       // ========== 이메일 전송 (PDF 직접 첨부) ==========
       // 최종 첨부파일 배열 생성 (로고 포함)
@@ -15067,60 +14786,9 @@ https://www.floxn.co.kr/
         `[send-cancellation-email] PDF generated: ${pdfBuffer.length} bytes`,
       );
 
-      const htmlContent = `
-        <div style="font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;">접수취소 안내드립니다.</h2>
-          
-          <p style="color: #333; line-height: 1.8; margin-bottom: 20px;">
-            안녕하세요.<br/>
-            아래 내용의 <strong>접수취소</strong> 사유를 첨부하여 송부드립니다.
-          </p>
-          
-          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <tr>
-              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; width: 35%; font-weight: bold;">사고번호(증권번호)</td>
-              <td style="padding: 10px 15px; border: 1px solid #ccc;">${accidentNo}</td>
-            </tr>
-            <tr>
-              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">피보험자명</td>
-              <td style="padding: 10px 15px; border: 1px solid #ccc;">${insuredName}</td>
-            </tr>
-            <tr>
-              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">취소사유</td>
-              <td style="padding: 10px 15px; border: 1px solid #ccc;">${cancelReason || "-"}</td>
-            </tr>
-            <tr>
-              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">발송일</td>
-              <td style="padding: 10px 15px; border: 1px solid #ccc;">${dateStr}</td>
-            </tr>
-          </table>
-          
-          <p style="color: #333; line-height: 1.8; margin: 20px 0;">
-            첨부된 PDF 파일을 확인해주시길 바랍니다. 감사합니다.
-          </p>
-          
-          <div style="border-top: 1px solid #e0e0e0; padding-top: 16px; margin-top: 24px;">
-            ${logoBuffer ? '<img src="cid:floxn-logo" alt="FLOXN" style="height: 24px; margin-bottom: 8px;">' : '<p style="font-size: 14px; font-weight: bold; color: #333; margin: 0 0 8px 0;">FLOXN</p>'}
-            <p style="font-size: 12px; color: #666; margin: 0 0 4px 0;">Front Line Ops Xpert Net</p>
-            <p style="font-size: 12px; color: #666; margin: 0 0 4px 0;">주식회사 플록슨(FLOXN Co., Ltd.)</p>
-            <p style="font-size: 12px; color: #666; margin: 0;">서울특별시 영등포구 당산로 133, 서림빌딩 3층 302호</p>
-          </div>
-        </div>
-      `;
-
-      const textContent = `접수취소 안내드립니다.
-
-안녕하세요.
-아래 내용의 접수취소 사유를 송부드립니다.
-
-- 사고번호(증권번호): ${accidentNo}
-- 접수번호: ${caseNumber}
-- 피보험자명: ${insuredName}
-- 취소사유: ${cancelReason || "-"}
-- 발송일: ${dateStr}
-
-감사합니다.
-FLOXN`;
+      const { html: htmlContent, text: textContent } = renderCancellationTemplate({
+        accidentNo, insuredName, cancelReason, dateStr, caseNumber, logoBuffer,
+      });
 
       const results: { email: string; success: boolean; error?: string }[] = [];
 

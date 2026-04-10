@@ -52,6 +52,16 @@ The system is a full-stack web application utilizing a React-based frontend and 
 - **자동 스키마 동기화**: 서버 시작 시 `auto-schema-sync.ts`가 DEV·PROD DB 모두에 필수 마이그레이션 자동 실행 (ALTER TABLE IF NOT EXISTS 패턴). 새 컬럼 추가 시 해당 파일의 `migrations` 배열에 SQL 추가하면 다른 환경에서도 자동 적용.
 - **일위대가 연동 설정**: `ilwidaega_link_settings` 테이블에서 위치(천장/벽면/바닥)별 공종+공사명 매핑을 관리자가 동적으로 설정 가능. 설정 항목은 복구면적 산출표의 드롭다운 옵션에 반영되며, 복구면적 → 노무비 자동 연동에 활용. DB 설정이 없으면 기존 하드코딩 기본값으로 fallback. 관리자 설정 > DB관리 > 일위대가 탭의 "일위대가 연동 설정" 버튼으로 접근.
 
+### Refactoring Modules
+- **`server/font-loader.ts`**: Pretendard TTF 폰트 로딩/캐싱/검증 통합 모듈. `loadPretendardRegular()`, `loadPretendardSemiBold()`, `loadPretendardFontPair()` export. 3개 PDF 서비스(pdf-lib-service, invoice-pdf-service, evidence-pdf-service)에서 공유.
+- **`server/email-templates/`**: routes.ts에서 분리한 이메일 HTML/텍스트 템플릿 모듈. 각 파일은 순수 함수로 데이터를 받아 `{ html, text }` 반환.
+  - `invoice-v1.ts` — INVOICE 송부 (단건 첨부, 구 버전)
+  - `invoice-v2.ts` — INVOICE 전달 (다중 수신자, 로고 CID, 신 버전)
+  - `field-dispatch-invoice.ts` — 현장출동비용 청구서
+  - `field-report-v2.ts` — 현장출동보고서 v2 (로고 CID)
+  - `cancellation.ts` — 접수취소 안내
+  - `index.ts` — barrel export
+
 ## External Dependencies
 - **Frontend Libraries**: React, TypeScript, Wouter, TanStack Query, React Hook Form, Zod, Shadcn UI, Tailwind CSS, Lucide React.
 - **Backend Libraries**: Express.js, bcrypt, express-session, memorystore, Zod.
