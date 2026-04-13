@@ -18,6 +18,7 @@ const isDirectRecovery = (c: Case): boolean => {
 };
 
 const isPreEstimate = (c: Case): boolean => {
+  if (c.restorationMethod === "직접복구") return false;
   return c.recoveryType === "선견적요청" || c.restorationMethod === "선견적요청" || c.status === "선견적요청" || c.status === "출동비청구(선견적)";
 };
 
