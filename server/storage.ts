@@ -1942,6 +1942,7 @@ export class MemStorage implements IStorage {
         break;
       case "선견적요청":
       case "출동비청구(선견적)":
+        dateUpdates.claimDate = currentDate;
         break;
       case "청구":
         dateUpdates.claimDate = currentDate;
@@ -4718,6 +4719,7 @@ export class DbStorage implements IStorage {
         break;
       case "선견적요청":
       case "출동비청구(선견적)":
+        dateUpdates.claimDate = currentDate;
         break;
       case "청구":
         dateUpdates.claimDate = currentDate;
