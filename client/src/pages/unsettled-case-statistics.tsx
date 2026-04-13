@@ -193,10 +193,19 @@ const getCaseApprovedForStats = (c: Case): number => {
   return 0;
 };
 
+const getCaseInvoiceClaimAmount = (c: Case): number => {
+  const invoiceDamage = parseFloat(c.invoiceDamagePreventionAmount || "0") || 0;
+  const invoiceProperty = parseFloat(c.invoicePropertyRepairAmount || "0") || 0;
+  if (invoiceDamage > 0 || invoiceProperty > 0) return invoiceDamage + invoiceProperty;
+  return 0;
+};
+
 const getClaimAmount = (c: Case): number => {
   if (isPreEstimate(c)) {
     return parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0;
   }
+  const invoiceClaim = getCaseInvoiceClaimAmount(c);
+  if (invoiceClaim > 0) return invoiceClaim;
   return getCaseApprovedForStats(c);
 };
 
@@ -533,7 +542,11 @@ export default function UnsettledCaseStatistics() {
           const nonPreEstimate = active.filter(c => !isPreEstimate(c));
           const hasDirectRecovery = nonPreEstimate.some(c => isDirectRecovery(c));
           const targets = hasDirectRecovery ? nonPreEstimate.filter(c => isDirectRecovery(c)) : nonPreEstimate;
-          const directClaim = targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+          const directClaim = targets.reduce((sum, c) => {
+            const invoiceClaim = getCaseInvoiceClaimAmount(c);
+            if (invoiceClaim > 0) return sum + invoiceClaim;
+            return sum + getCaseApprovedForStats(c);
+          }, 0);
           return preEstimateClaim + directClaim;
         })(),
       };
@@ -675,7 +688,7 @@ export default function UnsettledCaseStatistics() {
           c.status,
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (c.fieldDispatchInvoiceAmount ? (parseFloat(c.fieldDispatchInvoiceAmount) || 0).toLocaleString() : "") : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.siteInvestigationSubmitDate),
-          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (c.fieldDispatchInvoiceAmount ? (parseFloat(c.fieldDispatchInvoiceAmount) || 0).toLocaleString() : "") : (getCaseApprovedForStats(c) ? getCaseApprovedForStats(c).toLocaleString() : "")),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (c.fieldDispatchInvoiceAmount ? (parseFloat(c.fieldDispatchInvoiceAmount) || 0).toLocaleString() : "") : ((getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c)) ? (getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c)).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.secondApprovalDate),
         ];
       });
