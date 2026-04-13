@@ -4720,6 +4720,14 @@ export class DbStorage implements IStorage {
       case "선견적요청":
       case "출동비청구(선견적)":
         dateUpdates.claimDate = currentDate;
+        if (!existingCase.fieldDispatchInvoiceAmount) {
+          try {
+            const invoice = await this.getInvoiceByCaseId(caseId);
+            if (invoice?.fieldDispatchAmount) {
+              dateUpdates.fieldDispatchInvoiceAmount = invoice.fieldDispatchAmount;
+            }
+          } catch {}
+        }
         break;
       case "청구":
         dateUpdates.claimDate = currentDate;
