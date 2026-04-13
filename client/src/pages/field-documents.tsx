@@ -725,9 +725,7 @@ export default function FieldDocuments() {
   ): string[] => {
     switch (tab) {
       case "사진":
-        return submitted
-          ? ["현장출동사진", "수리중 사진", "복구완료 사진"]
-          : ["현장출동사진"];
+        return ["현장출동사진", "수리중 사진", "복구완료 사진"];
       case "기본자료":
         return ["보험금 청구서", "개인정보 동의서(가족용)"];
       case "증빙자료":
@@ -747,7 +745,8 @@ export default function FieldDocuments() {
         // 청구자료 항목은 청구자료 탭이 활성화된 경우에만 표시
         const allOptions = [
           "현장출동사진",
-          ...(submitted ? ["수리중 사진", "복구완료 사진"] : []),
+          "수리중 사진",
+          "복구완료 사진",
           "보험금 청구서",
           "개인정보 동의서(가족용)",
           "주민등록등본",
@@ -1892,69 +1891,64 @@ export default function FieldDocuments() {
             >
               현장출동사진
             </button>
-            {/* 청구 후에만 표시되는 추가 필터 */}
-            {isSubmitted && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setPhotoSubFilter("수리중 사진")}
-                  className="flex items-center justify-center px-1.5 py-1"
-                  style={{
-                    background:
-                      photoSubFilter === "수리중 사진"
-                        ? "#FDFDFD"
-                        : "transparent",
-                    boxShadow:
-                      photoSubFilter === "수리중 사진"
-                        ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
-                        : "none",
-                    borderRadius: "4px",
-                    fontFamily: "Pretendard",
-                    fontSize: "14px",
-                    fontWeight: photoSubFilter === "수리중 사진" ? 500 : 400,
-                    letterSpacing: "-0.01em",
-                    color:
-                      photoSubFilter === "수리중 사진"
-                        ? "#0C0C0C"
-                        : "rgba(12, 12, 12, 0.6)",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                  data-testid="button-filter-repair-photo"
-                >
-                  수리중 사진
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPhotoSubFilter("복구완료 사진")}
-                  className="flex items-center justify-center px-1.5 py-1"
-                  style={{
-                    background:
-                      photoSubFilter === "복구완료 사진"
-                        ? "#FDFDFD"
-                        : "transparent",
-                    boxShadow:
-                      photoSubFilter === "복구완료 사진"
-                        ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
-                        : "none",
-                    borderRadius: "4px",
-                    fontFamily: "Pretendard",
-                    fontSize: "14px",
-                    fontWeight: photoSubFilter === "복구완료 사진" ? 500 : 400,
-                    letterSpacing: "-0.01em",
-                    color:
-                      photoSubFilter === "복구완료 사진"
-                        ? "#0C0C0C"
-                        : "rgba(12, 12, 12, 0.6)",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                  data-testid="button-filter-complete-photo"
-                >
-                  복구완료 사진
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              onClick={() => setPhotoSubFilter("수리중 사진")}
+              className="flex items-center justify-center px-1.5 py-1"
+              style={{
+                background:
+                  photoSubFilter === "수리중 사진"
+                    ? "#FDFDFD"
+                    : "transparent",
+                boxShadow:
+                  photoSubFilter === "수리중 사진"
+                    ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
+                    : "none",
+                borderRadius: "4px",
+                fontFamily: "Pretendard",
+                fontSize: "14px",
+                fontWeight: photoSubFilter === "수리중 사진" ? 500 : 400,
+                letterSpacing: "-0.01em",
+                color:
+                  photoSubFilter === "수리중 사진"
+                    ? "#0C0C0C"
+                    : "rgba(12, 12, 12, 0.6)",
+                border: "none",
+                cursor: "pointer",
+              }}
+              data-testid="button-filter-repair-photo"
+            >
+              수리중 사진
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhotoSubFilter("복구완료 사진")}
+              className="flex items-center justify-center px-1.5 py-1"
+              style={{
+                background:
+                  photoSubFilter === "복구완료 사진"
+                    ? "#FDFDFD"
+                    : "transparent",
+                boxShadow:
+                  photoSubFilter === "복구완료 사진"
+                    ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
+                    : "none",
+                borderRadius: "4px",
+                fontFamily: "Pretendard",
+                fontSize: "14px",
+                fontWeight: photoSubFilter === "복구완료 사진" ? 500 : 400,
+                letterSpacing: "-0.01em",
+                color:
+                  photoSubFilter === "복구완료 사진"
+                    ? "#0C0C0C"
+                    : "rgba(12, 12, 12, 0.6)",
+                border: "none",
+                cursor: "pointer",
+              }}
+              data-testid="button-filter-complete-photo"
+            >
+              복구완료 사진
+            </button>
           </div>
         </div>
       )}
