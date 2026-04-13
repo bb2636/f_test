@@ -53,7 +53,6 @@ const isDirectRecovery = (caseItem: Case): boolean => {
 
 // 선견적요청 관련 상태 확인
 const isPreEstimate = (caseItem: Case): boolean => {
-  if (caseItem.restorationMethod === "직접복구") return false;
   return caseItem.recoveryType === "선견적요청" || 
          caseItem.restorationMethod === "선견적요청" ||
          caseItem.status === "선견적요청" ||

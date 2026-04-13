@@ -25,7 +25,6 @@ const isDirectRecovery = (c: Case): boolean => {
 };
 
 const isPreEstimate = (c: Case): boolean => {
-  if (c.restorationMethod === "직접복구") return false;
   return c.recoveryType === "선견적요청" || c.restorationMethod === "선견적요청" || c.status === "선견적요청" || c.status === "출동비청구(선견적)";
 };
 
@@ -214,12 +213,25 @@ const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
   return groupCases.filter(c => c.status !== "접수취소" && !isPreEstimate(c));
 };
 
-const getGroupEstimateAmount = (groupCases: Case[]): number | null => {
+const getPreEstimateClaimFallback = (c: Case, settMap?: Record<string, Settlement>): number => {
+  const fd = parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0;
+  if (fd > 0) return fd;
+  if (settMap) {
+    const sett = settMap[c.id];
+    if (sett?.depositEntries && sett.depositEntries.length > 0) {
+      const dc = sett.depositEntries.reduce((s, e) => s + (e.claimAmount || 0), 0);
+      if (dc > 0) return dc;
+    }
+  }
+  return 0;
+};
+
+const getGroupEstimateAmount = (groupCases: Case[], settMap?: Record<string, Settlement>): number | null => {
   const active = getActiveCases(groupCases);
   if (active.length === 0) return null;
   const preEstimateCases = active.filter(c => isPreEstimate(c));
   const nonPreEstimateCases = active.filter(c => !isPreEstimate(c));
-  const preEstimateSum = preEstimateCases.reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0);
+  const preEstimateSum = preEstimateCases.reduce((sum, c) => sum + getPreEstimateClaimFallback(c, settMap), 0);
   if (nonPreEstimateCases.length === 0) {
     return preEstimateSum;
   }
@@ -229,12 +241,12 @@ const getGroupEstimateAmount = (groupCases: Case[]): number | null => {
   return preEstimateSum + directSum;
 };
 
-const getGroupApprovedAmount = (groupCases: Case[]): number | null => {
+const getGroupApprovedAmount = (groupCases: Case[], settMap?: Record<string, Settlement>): number | null => {
   const active = getActiveCases(groupCases);
   if (active.length === 0) return null;
   const preEstimateCases = active.filter(c => isPreEstimate(c));
   const nonPreEstimateCases = active.filter(c => !isPreEstimate(c));
-  const preEstimateSum = preEstimateCases.reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0);
+  const preEstimateSum = preEstimateCases.reduce((sum, c) => sum + getPreEstimateClaimFallback(c, settMap), 0);
   if (nonPreEstimateCases.length === 0) {
     return preEstimateSum;
   }
@@ -501,11 +513,11 @@ export default function ClosedCaseStatistics() {
         accidentNo: accNo,
         rep,
         cases: uniqueCases,
-        totalEstimate: getGroupEstimateAmount(uniqueCases),
-        totalApproved: getGroupApprovedAmount(uniqueCases),
+        totalEstimate: getGroupEstimateAmount(uniqueCases, settlementMap),
+        totalApproved: getGroupApprovedAmount(uniqueCases, settlementMap),
         totalClaim: (() => {
           const active = getActiveCases(uniqueCases);
-          const preEstimateClaim = active.filter(c => isPreEstimate(c)).reduce((sum, c) => sum + (parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0), 0);
+          const preEstimateClaim = active.filter(c => isPreEstimate(c)).reduce((sum, c) => sum + getPreEstimateClaimFallback(c, settlementMap), 0);
           const nonPreEstimate = active.filter(c => !isPreEstimate(c));
           const hasDirectRecovery = nonPreEstimate.some(c => isDirectRecovery(c));
           const targets = hasDirectRecovery ? nonPreEstimate.filter(c => isDirectRecovery(c)) : nonPreEstimate;
@@ -656,9 +668,9 @@ export default function ClosedCaseStatistics() {
           extractRegion(address),
           extractCityDistrict(address),
           c.status,
-          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (c.fieldDispatchInvoiceAmount ? (parseFloat(c.fieldDispatchInvoiceAmount) || 0).toLocaleString() : "") : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (() => { const v = getPreEstimateClaimFallback(c, settlementMap); return v > 0 ? v.toLocaleString() : ""; })() : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.siteInvestigationSubmitDate),
-          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (c.fieldDispatchInvoiceAmount ? (parseFloat(c.fieldDispatchInvoiceAmount) || 0).toLocaleString() : "") : ((getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c)) ? (getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c)).toLocaleString() : "")),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (() => { const v = getPreEstimateClaimFallback(c, settlementMap); return v > 0 ? v.toLocaleString() : ""; })() : ((getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c)) ? (getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c)).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.secondApprovalDate),
         ];
       });
@@ -800,8 +812,17 @@ export default function ClosedCaseStatistics() {
     const settlement = settlementMap[c.id];
     const preEst = isPreEstimate(c);
     const fieldDispatchAmt = parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0;
-    const estimateAmt = preEst ? fieldDispatchAmt : getCaseEstimateForStats(c);
-    const approvedAmt = preEst ? fieldDispatchAmt : getCaseApprovedForStats(c);
+    const preEstClaimAmt = (() => {
+      if (fieldDispatchAmt > 0) return fieldDispatchAmt;
+      const sett = settlementMap[c.id];
+      if (sett?.depositEntries?.length) {
+        const dc = sett.depositEntries.reduce((s: number, e: any) => s + (e.claimAmount || 0), 0);
+        if (dc > 0) return dc;
+      }
+      return 0;
+    })();
+    const estimateAmt = preEst ? preEstClaimAmt : getCaseEstimateForStats(c);
+    const approvedAmt = preEst ? preEstClaimAmt : getCaseApprovedForStats(c);
     const blankAmounts = c.status === "접수취소";
 
     return (
