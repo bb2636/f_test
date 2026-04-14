@@ -5883,15 +5883,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (document.storageKey && (document.status === "ready" || document.status === "processing")) {
         try {
           const { bucketName, objectName } = buildStoragePath(document.storageKey);
-          const signedUrl = await signObjectURL({
-            bucketName,
-            objectName,
-            method: "GET",
-            ttlSec: 3600,
-          });
-          return res.redirect(signedUrl);
-        } catch (signError: any) {
-          console.error(`[image] Signed URL failed for doc=${id}: ${signError.message}`);
+          const bucket = objectStorageClient.bucket(bucketName);
+          const gcsFile = bucket.file(objectName);
+          const [fileBuffer] = await gcsFile.download();
+          res.set("Content-Type", document.fileType || "application/octet-stream");
+          res.set("Content-Length", fileBuffer.length.toString());
+          res.set("Cache-Control", "public, max-age=3600");
+          return res.send(fileBuffer);
+        } catch (downloadError: any) {
+          console.error(`[image] Download failed for doc=${id}: ${downloadError.message}`);
           return res.status(500).json({ error: "파일을 불러올 수 없습니다" });
         }
       }
@@ -5921,7 +5921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .json({ error: "이미지 데이터를 찾을 수 없습니다" });
     } catch (error) {
       console.error("[image] Error:", error);
-      res.status(500).json({ error: "이미지 로드 중 오류가 발생o��습니다" });
+      res.status(500).json({ error: "이미지 로드 중 오류가 발생했습니다" });
     }
   });
 
