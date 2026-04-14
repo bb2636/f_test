@@ -257,7 +257,7 @@ export interface IStorage {
   verifyPassword(username: string, password: string): Promise<User | null>;
   updatePassword(username: string, newPassword: string): Promise<User | null>;
   reactivateAccount(username: string): Promise<User | null>;
-  updateUser(userId: string, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'company' | 'createdAt' | 'status'>>): Promise<User | null>;
+  updateUser(userId: string, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'createdAt' | 'status'>>): Promise<User | null>;
   updateUserMustChangePassword(userId: string, mustChangePassword: boolean): Promise<User | null>;
   deleteAccount(username: string): Promise<User | null>;
   getNextCaseSequence(
@@ -1476,7 +1476,7 @@ export class MemStorage implements IStorage {
     return reactivatedUser;
   }
 
-  async updateUser(userId: string, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'company' | 'createdAt' | 'status'>>): Promise<User | null> {
+  async updateUser(userId: string, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'createdAt' | 'status'>>): Promise<User | null> {
     const user = this.users.get(userId);
     if (!user) {
       return null;
@@ -4104,7 +4104,7 @@ export class DbStorage implements IStorage {
     return result[0] || null;
   }
 
-  async updateUser(userId: string, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'company' | 'createdAt' | 'status'>>): Promise<User | null> {
+  async updateUser(userId: string, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'createdAt' | 'status'>>): Promise<User | null> {
     const existingUser = await this.getUser(userId);
     if (!existingUser) {
       return null;

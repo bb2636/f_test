@@ -948,7 +948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
       }
 
-      const updatedUser = await storage.updateUser(userId, validatedData as Partial<Omit<User, "id" | "username" | "password" | "attachments" | "status" | "createdAt">>);
+      const updatedUser = await storage.updateUser(userId, validatedData as Partial<Omit<User, "id" | "username" | "password" | "status" | "createdAt">>);
 
       if (!updatedUser) {
         return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
@@ -2288,6 +2288,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingCase = await storage.getCaseById(id);
       if (!existingCase) {
         return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
+      }
+
+      const currentUser = await storage.getUser(req.session.userId);
+      if (currentUser?.role === "협력사") {
+        const allowedPartnerFields = ["assignedPartnerManager", "assignedPartnerContact"];
+        const requestedFields = Object.keys(updateData);
+        const hasDisallowedFields = requestedFields.some(f => !allowedPartnerFields.includes(f));
+        if (hasDisallowedFields) {
+          return res.status(403).json({ error: "협력사 계정은 담당자 변경만 가능합니다" });
+        }
+        if (currentUser.accountType !== "회사") {
+          return res.status(403).json({ error: "회사 계정만 담당자를 변경할 수 있습니다" });
+        }
+        if (existingCase.assignedPartner !== currentUser.company) {
+          return res.status(403).json({ error: "본인 회사의 케이스만 변경할 수 있습니다" });
+        }
+        if (updateData.assignedPartnerManager) {
+          const allUsers = await storage.getAllUsers();
+          const targetManager = allUsers.find(
+            u => u.name === updateData.assignedPartnerManager && u.role === "협력사" && u.company === currentUser.company
+          );
+          if (!targetManager) {
+            return res.status(400).json({ error: "같은 회사의 담당자만 지정할 수 있습니다" });
+          }
+        }
       }
 
       // 변경 사항 추적

@@ -313,6 +313,9 @@ export default function ComprehensiveProgress() {
   const [selectedCaseIds, setSelectedCaseIds] = useState<string[]>([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
+  const [showPartnerManagerChangeDialog, setShowPartnerManagerChangeDialog] = useState(false);
+  const [selectedNewPartnerManager, setSelectedNewPartnerManager] = useState<string>("");
+
   // 상태 변경 확인 다이얼로그 상태
   const [statusChangeDialogOpen, setStatusChangeDialogOpen] = useState(false);
   const [statusChangeTarget, setStatusChangeTarget] = useState<{
@@ -967,6 +970,46 @@ export default function ComprehensiveProgress() {
       toast({
         title: "추가 실패",
         description: "진행상황 추가 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const sameCompanyPartnerManagers = useMemo(() => {
+    if (!user || user.role !== "협력사" || user.accountType !== "회사") return [];
+    return allUsers.filter(
+      (u) => u.role === "협력사" && u.company === user.company && u.id !== user.id
+    );
+  }, [user, allUsers]);
+
+  const changePartnerManagerMutation = useMutation({
+    mutationFn: async ({
+      caseId,
+      managerName,
+      managerContact,
+    }: {
+      caseId: string;
+      managerName: string;
+      managerContact: string;
+    }) => {
+      return await apiRequest("PATCH", `/api/cases/${caseId}`, {
+        assignedPartnerManager: managerName,
+        assignedPartnerContact: managerContact,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      setShowPartnerManagerChangeDialog(false);
+      setSelectedNewPartnerManager("");
+      toast({
+        variant: "snackbar",
+        title: "담당자가 변경되었습니다",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "변경 실패",
+        description: "담당자 변경 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
@@ -2756,6 +2799,69 @@ export default function ComprehensiveProgress() {
                                 {selectedCase.assignedPartner || "-"}
                               </div>
                             </div>
+
+                            {user?.role === "협력사" && (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  padding: "10px 0px",
+                                  gap: "16px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: "100px",
+                                    fontFamily: "Pretendard",
+                                    fontWeight: 500,
+                                    fontSize: "14px",
+                                    color: "rgba(12, 12, 12, 0.6)",
+                                  }}
+                                >
+                                  협력사 담당자
+                                </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      fontFamily: "Pretendard",
+                                      fontWeight: 400,
+                                      fontSize: "14px",
+                                      color: "rgba(12, 12, 12, 0.9)",
+                                    }}
+                                  >
+                                    {selectedCase.assignedPartnerManager || "-"}
+                                  </div>
+                                  {user?.accountType === "회사" && (
+                                    <button
+                                      onClick={() => {
+                                        setSelectedNewPartnerManager("");
+                                        setShowPartnerManagerChangeDialog(true);
+                                      }}
+                                      style={{
+                                        fontFamily: "Pretendard",
+                                        fontSize: "12px",
+                                        fontWeight: 500,
+                                        color: "#008FED",
+                                        background: "none",
+                                        border: "1px solid #008FED",
+                                        borderRadius: "4px",
+                                        padding: "2px 8px",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      변경
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
 
                             {/* 경과1 */}
                             <div
@@ -5268,6 +5374,106 @@ export default function ComprehensiveProgress() {
               error={pdfError}
               fileName="Invoice_청구서.pdf"
             />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPartnerManagerChangeDialog} onOpenChange={setShowPartnerManagerChangeDialog}>
+        <DialogContent
+          style={{
+            maxWidth: "400px",
+            padding: "24px",
+            borderRadius: "12px",
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle
+              style={{
+                fontFamily: "Pretendard",
+                fontWeight: 600,
+                fontSize: "16px",
+              }}
+            >
+              담당자 변경
+            </DialogTitle>
+          </DialogHeader>
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "8px" }}>
+            <div style={{ fontFamily: "Pretendard", fontSize: "14px", color: "rgba(12, 12, 12, 0.7)" }}>
+              이 건의 담당자를 변경하시겠습니까?
+            </div>
+            <select
+              value={selectedNewPartnerManager}
+              onChange={(e) => setSelectedNewPartnerManager(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "1px solid rgba(12, 12, 12, 0.15)",
+                fontFamily: "Pretendard",
+                fontSize: "14px",
+                color: "rgba(12, 12, 12, 0.9)",
+                background: "#fff",
+              }}
+            >
+              <option value="">담당자 선택</option>
+              {sameCompanyPartnerManagers.map((mgr) => (
+                <option key={mgr.id} value={mgr.name || ""}>
+                  {mgr.name || mgr.username}
+                </option>
+              ))}
+              {user && (
+                <option value={user.name || ""}>
+                  {user.name || user.username} (본인)
+                </option>
+              )}
+            </select>
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "8px" }}>
+              <button
+                onClick={() => setShowPartnerManagerChangeDialog(false)}
+                style={{
+                  fontFamily: "Pretendard",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  padding: "8px 20px",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(12, 12, 12, 0.15)",
+                  background: "#fff",
+                  color: "rgba(12, 12, 12, 0.7)",
+                  cursor: "pointer",
+                }}
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  if (!selectedCaseId || !selectedNewPartnerManager) return;
+                  const selectedMgr = sameCompanyPartnerManagers.find(
+                    (m) => m.name === selectedNewPartnerManager
+                  );
+                  const isSelf = user?.name === selectedNewPartnerManager;
+                  const contact = isSelf ? (user?.phone || "") : (selectedMgr?.contact || "");
+                  changePartnerManagerMutation.mutate({
+                    caseId: selectedCaseId,
+                    managerName: selectedNewPartnerManager,
+                    managerContact: contact,
+                  });
+                }}
+                disabled={!selectedNewPartnerManager || changePartnerManagerMutation.isPending}
+                style={{
+                  fontFamily: "Pretendard",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  padding: "8px 20px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: !selectedNewPartnerManager ? "rgba(0, 143, 237, 0.4)" : "#008FED",
+                  color: "#fff",
+                  cursor: !selectedNewPartnerManager ? "not-allowed" : "pointer",
+                }}
+              >
+                {changePartnerManagerMutation.isPending ? "변경 중..." : "변경"}
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

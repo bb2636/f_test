@@ -119,6 +119,7 @@ export const createAccountSchema = z.object({
 
 export const updateUserSchema = z.object({
   name: z.string().min(1, "이름을 입력해주세요").optional(),
+  company: z.string().optional().nullable(),
   role: z.enum(VALID_ROLES).optional(),
   accountType: z.enum(["개인", "회사"]).optional().nullable(),
   department: z.string().optional().nullable(),

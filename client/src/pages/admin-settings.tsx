@@ -385,7 +385,7 @@ export default function AdminSettings() {
     "password"
   > | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editedUserData, setEditedUserData] = useState<Partial<Omit<User, 'id' | 'username' | 'password' | 'company' | 'createdAt' | 'status'>>>({});
+  const [editedUserData, setEditedUserData] = useState<Partial<Omit<User, 'id' | 'username' | 'password' | 'createdAt' | 'status'>>>({});
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
   const [resetPasswordValue, setResetPasswordValue] = useState("0000");
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
@@ -1251,7 +1251,7 @@ export default function AdminSettings() {
 
   // Update user mutation
   const updateUserMutation = useMutation({
-    mutationFn: async ({ userId, data }: { userId: string; data: Partial<Omit<User, 'id' | 'username' | 'password' | 'company' | 'createdAt' | 'status'>> }) => {
+    mutationFn: async ({ userId, data }: { userId: string; data: Partial<Omit<User, 'id' | 'username' | 'password' | 'createdAt' | 'status'>> }) => {
       return await apiRequest("PATCH", `/api/users/${userId}`, data);
     },
     onSuccess: async (_data, variables) => {
@@ -3576,17 +3576,35 @@ export default function AdminSettings() {
                       >
                         회사명
                       </span>
-                      <span
-                        style={{
-                          fontFamily: "Pretendard",
-                          fontSize: "16px",
-                          fontWeight: 400,
-                          letterSpacing: "-0.02em",
-                          color: isEditMode ? "rgba(12, 12, 12, 0.4)" : "rgba(12, 12, 12, 0.9)",
-                        }}
-                      >
-                        {selectedUser.company}
-                      </span>
+                      {isEditMode ? (
+                        <input
+                          type="text"
+                          value={editedUserData.company !== undefined ? (editedUserData.company || "") : (selectedUser.company || "")}
+                          onChange={(e) => setEditedUserData({ ...editedUserData, company: e.target.value })}
+                          className="px-3 py-2 rounded-lg border"
+                          style={{
+                            fontFamily: "Pretendard",
+                            fontSize: "16px",
+                            fontWeight: 400,
+                            letterSpacing: "-0.02em",
+                            color: "rgba(12, 12, 12, 0.9)",
+                            borderColor: "rgba(12, 12, 12, 0.15)",
+                          }}
+                          placeholder="회사명"
+                        />
+                      ) : (
+                        <span
+                          style={{
+                            fontFamily: "Pretendard",
+                            fontSize: "16px",
+                            fontWeight: 400,
+                            letterSpacing: "-0.02em",
+                            color: "rgba(12, 12, 12, 0.9)",
+                          }}
+                        >
+                          {selectedUser.company}
+                        </span>
+                      )}
                     </div>
                     <div className="flex-1 flex flex-col gap-2">
                       <span
