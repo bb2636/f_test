@@ -313,6 +313,26 @@ export default function UnsettledCaseStatistics() {
     enabled: historicalMode,
   });
 
+  interface InvoiceData {
+    id: string;
+    caseGroupPrefix: string | null;
+    totalApprovedAmount: string | null;
+    deductible: string | null;
+  }
+  const { data: allInvoices = [] } = useQuery<InvoiceData[]>({
+    queryKey: ["/api/invoices"],
+  });
+
+  const invoicesByPrefixMap = useMemo(() => {
+    const map: Record<string, InvoiceData> = {};
+    allInvoices.forEach((inv) => {
+      if (inv.caseGroupPrefix) {
+        map[inv.caseGroupPrefix] = inv;
+      }
+    });
+    return map;
+  }, [allInvoices]);
+
   const settlementMap = useMemo(() => {
     const map: Record<string, Settlement> = {};
     settlements.forEach((s) => {
@@ -551,7 +571,20 @@ export default function UnsettledCaseStatistics() {
           const nonPreEstimate = active.filter(c => !isPreEstimate(c));
           const hasDirectRecovery = nonPreEstimate.some(c => isDirectRecovery(c));
           const targets = hasDirectRecovery ? nonPreEstimate.filter(c => isDirectRecovery(c)) : nonPreEstimate;
+
+          const seenPrefixes = new Set<string>();
           const directClaim = targets.reduce((sum, c) => {
+            const cn = c.caseNumber || "";
+            const lastDash = cn.lastIndexOf("-");
+            const pf = lastDash > 0 ? cn.substring(0, lastDash) : cn;
+            if (pf && !seenPrefixes.has(pf)) {
+              seenPrefixes.add(pf);
+              const inv = invoicesByPrefixMap[pf];
+              const invAmt = inv?.totalApprovedAmount ? parseInt(inv.totalApprovedAmount) : 0;
+              if (invAmt > 0) return sum + invAmt;
+            } else if (pf && seenPrefixes.has(pf)) {
+              return sum;
+            }
             const invoiceClaim = getCaseInvoiceClaimAmount(c);
             if (invoiceClaim > 0) return sum + invoiceClaim;
             return sum + getCaseApprovedForStats(c);
@@ -572,7 +605,7 @@ export default function UnsettledCaseStatistics() {
     });
 
     return rows;
-  }, [cases, searchQuery, searchType, historicalMode, historicalUnsettledCaseIds, settlementMap]);
+  }, [cases, searchQuery, searchType, historicalMode, historicalUnsettledCaseIds, settlementMap, invoicesByPrefixMap]);
 
   const displayCount = searchType === "사고번호" ? groupedRows.length : filteredCases.length;
 
@@ -697,7 +730,7 @@ export default function UnsettledCaseStatistics() {
           c.status,
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : formatDate(c.siteInvestigationSubmitDate)),
-          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (() => { const fd = parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0; if (fd > 0) return fd.toLocaleString(); const st = settlementMap[c.id]; if (st?.depositEntries?.length) { const dc = st.depositEntries.reduce((s: number, e: any) => s + (e.claimAmount || 0), 0); if (dc > 0) return dc.toLocaleString(); } return ""; })() : ((getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c)) ? (getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c)).toLocaleString() : "")),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (() => { const fd = parseFloat(c.fieldDispatchInvoiceAmount || "0") || 0; if (fd > 0) return fd.toLocaleString(); const st = settlementMap[c.id]; if (st?.depositEntries?.length) { const dc = st.depositEntries.reduce((s: number, e: any) => s + (e.claimAmount || 0), 0); if (dc > 0) return dc.toLocaleString(); } return ""; })() : (() => { const cn = c.caseNumber || ""; const ld = cn.lastIndexOf("-"); const pf = ld > 0 ? cn.substring(0, ld) : cn; const inv = pf ? invoicesByPrefixMap[pf] : null; const invAmt = inv?.totalApprovedAmount ? parseInt(inv.totalApprovedAmount) : 0; if (invAmt > 0) return invAmt.toLocaleString(); const caseClaim = getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c); return caseClaim ? caseClaim.toLocaleString() : ""; })()),
           c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.secondApprovalDate),
         ];
       });
