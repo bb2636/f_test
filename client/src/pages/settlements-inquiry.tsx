@@ -164,6 +164,7 @@ interface SettlementsInquiryProps {
 export default function SettlementsInquiry({ filterMode = "claim" }: SettlementsInquiryProps) {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchTarget, setSearchTarget] = useState("전체");
   const [settlementStatus, setSettlementStatus] = useState("전체");
   const [insuranceCompany, setInsuranceCompany] = useState("전체");
   const [assessor, setAssessor] = useState("전체");
@@ -902,6 +903,20 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
     if (searchQuery.trim()) {
       const query = searchQuery.trim().toLowerCase();
       filtered = filtered.filter((row) => {
+        if (searchTarget === "청구액") {
+          const numQuery = Number(query.replace(/,/g, ""));
+          if (!isNaN(numQuery) && numQuery > 0) {
+            return row.claimAmount === numQuery;
+          }
+          return row.claimAmount.toLocaleString().includes(query) || String(row.claimAmount).includes(query);
+        }
+        if (searchTarget === "입금액") {
+          const numQuery = Number(query.replace(/,/g, ""));
+          if (!isNaN(numQuery) && numQuery > 0) {
+            return row.settlementDeposit === numQuery;
+          }
+          return row.settlementDeposit.toLocaleString().includes(query) || String(row.settlementDeposit).includes(query);
+        }
         return (
           (row.caseNumber || "").toLowerCase().includes(query) ||
           (row.insuranceCompany || "").toLowerCase().includes(query) ||
@@ -932,6 +947,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
   }, [
     tableRows,
     searchQuery,
+    searchTarget,
     settlementStatus,
     insuranceCompany,
     assessor,
@@ -945,6 +961,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
 
   const handleReset = () => {
     setSearchQuery("");
+    setSearchTarget("전체");
     setSettlementStatus("전체");
     setInsuranceCompany("전체");
     setAssessor("전체");
@@ -1273,6 +1290,30 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
             선택된 조건 검색하기
           </Button>
 
+          {/* 검색대상 */}
+          <div style={{ flex: "0 0 auto", minWidth: "120px" }}>
+            <Select value={searchTarget} onValueChange={setSearchTarget}>
+              <SelectTrigger
+                style={{
+                  height: "40px",
+                  background: "#F5F5F5",
+                  border: "1px solid rgba(12, 12, 12, 0.1)",
+                  borderRadius: "8px",
+                  fontFamily: "Pretendard",
+                  fontSize: "14px",
+                }}
+                data-testid="select-search-target"
+              >
+                <SelectValue placeholder="검색대상" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="전체">전체</SelectItem>
+                <SelectItem value="청구액">청구액</SelectItem>
+                <SelectItem value="입금액">입금액</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Search input */}
           <div className="relative" style={{ flex: "1 1 auto", minWidth: "180px" }}>
             <Search
@@ -1282,7 +1323,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
             />
             <Input
               type="text"
-              placeholder="검색어를 직접 검색"
+              placeholder={searchTarget === "청구액" ? "청구액 검색 (예: 100000)" : searchTarget === "입금액" ? "입금액 검색 (예: 100000)" : "검색어를 직접 검색"}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
