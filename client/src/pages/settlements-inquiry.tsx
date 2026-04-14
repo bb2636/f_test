@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
@@ -7,7 +8,7 @@ import {
   Estimate,
   Settlement,
 } from "@shared/schema";
-import { Search, Calendar as CalendarIcon, X } from "lucide-react";
+import { Search, Calendar as CalendarIcon, X, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -86,6 +87,75 @@ interface SettlementRow {
   assessorName: string; // 심사자 (assessorTeam)
   claimElapsed: string; // 경과 (청구일~현재, 입금완료 시 "-")
 }
+
+const HeaderTooltip = ({ text }: { text: React.ReactNode }) => {
+  const [show, setShow] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    if (show && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, left: rect.left + rect.width / 2 });
+    } else {
+      setPos(null);
+    }
+  }, [show]);
+
+  return (
+    <span
+      ref={ref}
+      style={{ display: "inline-flex", alignItems: "center", marginLeft: "3px", cursor: "help" }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <HelpCircle size={13} color="rgba(12,12,12,0.35)" />
+      {show && pos && ReactDOM.createPortal(
+        <div
+          style={{
+            position: "fixed",
+            top: pos.top,
+            left: pos.left,
+            transform: "translateX(-50%)",
+            background: "rgba(30,30,30,0.95)",
+            color: "#fff",
+            fontSize: "12px",
+            fontWeight: 400,
+            lineHeight: "1.5",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            whiteSpace: "pre-line",
+            minWidth: "180px",
+            maxWidth: "260px",
+            zIndex: 99999,
+            pointerEvents: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              bottom: "100%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: 0,
+              height: 0,
+              borderLeft: "5px solid transparent",
+              borderRight: "5px solid transparent",
+              borderBottom: "5px solid rgba(30,30,30,0.95)",
+            }}
+          />
+          {text}
+        </div>,
+        document.body
+      )}
+    </span>
+  );
+};
+
+const HEADER_TOOLTIPS: Record<string, string> = {
+  "경과": "청구일로부터 입금완료까지 경과일",
+};
 
 interface SettlementsInquiryProps {
   filterMode?: "claim" | "closed";
@@ -1330,6 +1400,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       }}
                     >
                       {label}
+                      {HEADER_TOOLTIPS[label] && <HeaderTooltip text={HEADER_TOOLTIPS[label]} />}
                     </th>
                   );
                 })}
