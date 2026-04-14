@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import ReactDOM from "react-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
@@ -92,19 +93,32 @@ const safeParseNotesHistory = (
 
 const HeaderTooltip = ({ text }: { text: React.ReactNode }) => {
   const [show, setShow] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    if (show && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, left: rect.left + rect.width / 2 });
+    } else {
+      setPos(null);
+    }
+  }, [show]);
+
   return (
     <span
-      style={{ position: "relative", display: "inline-flex", alignItems: "center", marginLeft: "3px", cursor: "help" }}
+      ref={ref}
+      style={{ display: "inline-flex", alignItems: "center", marginLeft: "3px", cursor: "help" }}
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
     >
       <HelpCircle size={13} color="rgba(12,12,12,0.35)" />
-      {show && (
+      {show && pos && ReactDOM.createPortal(
         <div
           style={{
-            position: "absolute",
-            bottom: "calc(100% + 6px)",
-            left: "50%",
+            position: "fixed",
+            top: pos.top,
+            left: pos.left,
             transform: "translateX(-50%)",
             background: "rgba(30,30,30,0.95)",
             color: "#fff",
@@ -116,26 +130,27 @@ const HeaderTooltip = ({ text }: { text: React.ReactNode }) => {
             whiteSpace: "pre-line",
             minWidth: "180px",
             maxWidth: "260px",
-            zIndex: 9999,
+            zIndex: 99999,
             pointerEvents: "none",
             boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
           }}
         >
-          {text}
           <div
             style={{
               position: "absolute",
-              top: "100%",
+              bottom: "100%",
               left: "50%",
               transform: "translateX(-50%)",
               width: 0,
               height: 0,
               borderLeft: "5px solid transparent",
               borderRight: "5px solid transparent",
-              borderTop: "5px solid rgba(30,30,30,0.95)",
+              borderBottom: "5px solid rgba(30,30,30,0.95)",
             }}
           />
-        </div>
+          {text}
+        </div>,
+        document.body
       )}
     </span>
   );
