@@ -8,7 +8,7 @@ import {
   type Invoice,
   type Settlement,
 } from "@shared/schema";
-import { Search, Cloud, Star, Plus, CalendarIcon, X, Trash2 } from "lucide-react";
+import { Search, Cloud, Star, Plus, CalendarIcon, X, Trash2, HelpCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -90,7 +90,57 @@ const safeParseNotesHistory = (
   }
 };
 
-// 금액 포맷 함수 (DB에 저장된 값 그대로 표시)
+const HeaderTooltip = ({ text }: { text: React.ReactNode }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <span
+      style={{ position: "relative", display: "inline-flex", alignItems: "center", marginLeft: "3px", cursor: "help" }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      <HelpCircle size={13} color="rgba(12,12,12,0.35)" />
+      {show && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 6px)",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(30,30,30,0.95)",
+            color: "#fff",
+            fontSize: "12px",
+            fontWeight: 400,
+            lineHeight: "1.5",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            whiteSpace: "pre-line",
+            minWidth: "180px",
+            maxWidth: "260px",
+            zIndex: 9999,
+            pointerEvents: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+          }}
+        >
+          {text}
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: 0,
+              height: 0,
+              borderLeft: "5px solid transparent",
+              borderRight: "5px solid transparent",
+              borderTop: "5px solid rgba(30,30,30,0.95)",
+            }}
+          />
+        </div>
+      )}
+    </span>
+  );
+};
+
 const formatAmount = (amount: string | number | null | undefined): string => {
   if (!amount) return "-";
   const numAmount = typeof amount === "string" ? parseInt(amount) : amount;
@@ -1710,11 +1760,11 @@ export default function ComprehensiveProgress() {
                 { label: "담당자", textAlign: "center" as const },
                 { label: "협력사", textAlign: "center" as const },
                 { label: "승인금액", textAlign: "center" as const },
-                { label: "경과1", textAlign: "center" as const },
-                { label: "경과2", textAlign: "center" as const },
-                { label: "경과3", textAlign: "center" as const },
+                { label: "경과1", textAlign: "center" as const, tooltip: "접수일로부터 현재까지 경과일" },
+                { label: "경과2", textAlign: "center" as const, tooltip: "현장출동보고서 제출일부터\n복구요청(2차승인)까지 경과일" },
+                { label: "경과3", textAlign: "center" as const, tooltip: "청구일로부터 입금완료까지 경과일" },
                 { label: "진행상태", textAlign: "center" as const },
-                { label: "메모", textAlign: "center" as const },
+                { label: "메모", textAlign: "center" as const, tooltipNode: true },
                 ...(user?.role === "협력사" ? [{ label: "수행업무", textAlign: "center" as const }] : []),
                 { label: "상세보기", textAlign: "center" as const, isLast: true },
               ].map((col, idx) => (
@@ -1737,6 +1787,24 @@ export default function ComprehensiveProgress() {
                   }}
                 >
                   {col.label}
+                  {(col as any).tooltip && <HeaderTooltip text={(col as any).tooltip} />}
+                  {(col as any).tooltipNode && (
+                    <HeaderTooltip
+                      text={
+                        <span>
+                          협력업체(
+                          <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#ED1C00", verticalAlign: "middle" }} />
+                          )와 플록슨(
+                          <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#008FED", verticalAlign: "middle" }} />
+                          )의 메모를{"\n"}상대방이 확인(버튼 클릭)하면{"\n"}
+                          <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", border: "2px solid #ED1C00", background: "transparent", verticalAlign: "middle", boxSizing: "border-box" }} />
+                          ,{" "}
+                          <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", border: "2px solid #008FED", background: "transparent", verticalAlign: "middle", boxSizing: "border-box" }} />
+                          {" "}로 바뀝니다
+                        </span>
+                      }
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -2694,6 +2762,7 @@ export default function ComprehensiveProgress() {
                                 }}
                               >
                                 경과1
+                                <HeaderTooltip text="접수일로부터 현재까지 경과일" />
                               </div>
                               <div
                                 style={{
@@ -2727,6 +2796,7 @@ export default function ComprehensiveProgress() {
                                 }}
                               >
                                 경과2
+                                <HeaderTooltip text={"현장출동보고서 제출일부터\n복구요청(2차승인)까지 경과일"} />
                               </div>
                               <div
                                 style={{
@@ -2760,6 +2830,7 @@ export default function ComprehensiveProgress() {
                                 }}
                               >
                                 경과3
+                                <HeaderTooltip text="청구일로부터 입금완료까지 경과일" />
                               </div>
                               <div
                                 style={{
