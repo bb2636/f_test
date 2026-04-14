@@ -460,6 +460,9 @@ export default function Intake({
   const [editCaseId, setEditCaseId] = useState<string | null>(null);
   const [clientOfficePhone, setClientOfficePhone] = useState("");
   const [assessorOfficePhone, setAssessorOfficePhone] = useState("");
+
+  const [showPartnerManagerChangeDialog, setShowPartnerManagerChangeDialog] = useState(false);
+  const [selectedNewPartnerManager, setSelectedNewPartnerManager] = useState<string>("");
   const [formData, setFormData] = useState({
     managerId: "",
     managerDepartment: "",
@@ -1517,6 +1520,54 @@ export default function Intake({
     },
     onError: (error: Error) => {
       toast({ description: error.message, variant: "destructive" });
+    },
+  });
+
+  const sameCompanyPartnerManagers = useMemo(() => {
+    if (!user || user.role !== "협력사" || user.accountType !== "회사") return [];
+    if (!partners) return [];
+    return partners.filter(
+      (p) => p.company === user.company && p.id !== user.id
+    );
+  }, [user, partners]);
+
+  const changePartnerManagerMutation = useMutation({
+    mutationFn: async ({
+      caseId,
+      managerName,
+      managerContact,
+    }: {
+      caseId: string;
+      managerName: string;
+      managerContact: string;
+    }) => {
+      return await apiRequest("PATCH", `/api/cases/${caseId}`, {
+        assignedPartnerManager: managerName,
+        assignedPartnerContact: managerContact,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      setShowPartnerManagerChangeDialog(false);
+      setSelectedNewPartnerManager("");
+      setFormData((prev) => ({
+        ...prev,
+        assignedPartnerManager: selectedNewPartnerManager,
+        assignedPartnerContact:
+          sameCompanyPartnerManagers.find((m) => m.name === selectedNewPartnerManager)?.phone ||
+          (user?.name === selectedNewPartnerManager ? (user?.phone || "") : ""),
+      }));
+      toast({
+        variant: "snackbar" as any,
+        title: "담당자가 변경되었습니다",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "변경 실패",
+        description: "담당자 변경 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -2742,35 +2793,59 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>담당자</label>
-                  <Select
-                    key={`partner-manager-${initialCaseId || editCaseId || 'new'}-${loadedCaseNumber}-${selectedPartner?.name || ''}`}
-                    value={formData.assignedPartnerManager}
-                    onValueChange={(value) =>
-                      handleInputChange("assignedPartnerManager", value)
-                    }
-                    disabled={readOnly || !selectedPartner}
-                  >
-                    <SelectTrigger
-                      className={selectTriggerClasses}
-                      data-testid="select-partner-manager"
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", flex: 1 }}>
+                    <Select
+                      key={`partner-manager-${initialCaseId || editCaseId || 'new'}-${loadedCaseNumber}-${selectedPartner?.name || ''}`}
+                      value={formData.assignedPartnerManager}
+                      onValueChange={(value) =>
+                        handleInputChange("assignedPartnerManager", value)
+                      }
+                      disabled={readOnly || !selectedPartner}
                     >
-                      <SelectValue placeholder="담당자" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {partnerManagers.map((mgr) => (
-                        <SelectItem key={mgr.id} value={mgr.name}>
-                          {mgr.name}
-                        </SelectItem>
-                      ))}
-                      {/* Fallback for saved value not in current list */}
-                      {formData.assignedPartnerManager && 
-                        !partnerManagers.some(m => m.name === formData.assignedPartnerManager) && (
-                        <SelectItem value={formData.assignedPartnerManager}>
-                          {formData.assignedPartnerManager}
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
+                      <SelectTrigger
+                        className={selectTriggerClasses}
+                        data-testid="select-partner-manager"
+                      >
+                        <SelectValue placeholder="담당자" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {partnerManagers.map((mgr) => (
+                          <SelectItem key={mgr.id} value={mgr.name}>
+                            {mgr.name}
+                          </SelectItem>
+                        ))}
+                        {formData.assignedPartnerManager && 
+                          !partnerManagers.some(m => m.name === formData.assignedPartnerManager) && (
+                          <SelectItem value={formData.assignedPartnerManager}>
+                            {formData.assignedPartnerManager}
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {readOnly && user?.role === "협력사" && user?.accountType === "회사" && (initialCaseId || editCaseId) && (
+                      <button
+                        onClick={() => {
+                          setSelectedNewPartnerManager("");
+                          setShowPartnerManagerChangeDialog(true);
+                        }}
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "12px",
+                          fontWeight: 500,
+                          color: "#008FED",
+                          background: "none",
+                          border: "1px solid #008FED",
+                          borderRadius: "4px",
+                          padding: "4px 10px",
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                          flexShrink: 0,
+                        }}
+                      >
+                        변경
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -3508,6 +3583,108 @@ export default function Intake({
             </div>
           </div>
         )}
+
+      <Dialog open={showPartnerManagerChangeDialog} onOpenChange={setShowPartnerManagerChangeDialog}>
+        <DialogContent
+          style={{
+            maxWidth: "400px",
+            padding: "24px",
+            borderRadius: "12px",
+            zIndex: 200,
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle
+              style={{
+                fontFamily: "Pretendard",
+                fontWeight: 600,
+                fontSize: "16px",
+              }}
+            >
+              담당자 변경
+            </DialogTitle>
+          </DialogHeader>
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "8px" }}>
+            <div style={{ fontFamily: "Pretendard", fontSize: "14px", color: "rgba(12, 12, 12, 0.7)" }}>
+              이 건의 담당자를 변경하시겠습니까?
+            </div>
+            <select
+              value={selectedNewPartnerManager}
+              onChange={(e) => setSelectedNewPartnerManager(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "1px solid rgba(12, 12, 12, 0.15)",
+                fontFamily: "Pretendard",
+                fontSize: "14px",
+                color: "rgba(12, 12, 12, 0.9)",
+                background: "#fff",
+              }}
+            >
+              <option value="">담당자 선택</option>
+              {sameCompanyPartnerManagers.map((mgr) => (
+                <option key={mgr.id} value={mgr.name || ""}>
+                  {mgr.name || mgr.username}
+                </option>
+              ))}
+              {user && (
+                <option value={user.name || ""}>
+                  {user.name || user.username} (본인)
+                </option>
+              )}
+            </select>
+            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", marginTop: "8px" }}>
+              <button
+                onClick={() => setShowPartnerManagerChangeDialog(false)}
+                style={{
+                  fontFamily: "Pretendard",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  padding: "8px 20px",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(12, 12, 12, 0.15)",
+                  background: "#fff",
+                  color: "rgba(12, 12, 12, 0.7)",
+                  cursor: "pointer",
+                }}
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  const caseId = initialCaseId || editCaseId;
+                  if (!caseId || !selectedNewPartnerManager) return;
+                  const selectedMgr = sameCompanyPartnerManagers.find(
+                    (m) => m.name === selectedNewPartnerManager
+                  );
+                  const isSelf = user?.name === selectedNewPartnerManager;
+                  const contact = isSelf ? (user?.phone || "") : (selectedMgr?.phone || "");
+                  changePartnerManagerMutation.mutate({
+                    caseId,
+                    managerName: selectedNewPartnerManager,
+                    managerContact: contact,
+                  });
+                }}
+                disabled={!selectedNewPartnerManager || changePartnerManagerMutation.isPending}
+                style={{
+                  fontFamily: "Pretendard",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  padding: "8px 20px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: !selectedNewPartnerManager ? "rgba(0, 143, 237, 0.4)" : "#008FED",
+                  color: "#fff",
+                  cursor: !selectedNewPartnerManager ? "not-allowed" : "pointer",
+                }}
+              >
+                {changePartnerManagerMutation.isPending ? "변경 중..." : "변경"}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
