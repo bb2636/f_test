@@ -545,7 +545,7 @@ export function SmsNotificationDialog({
               </span>
             </div>
             <Textarea
-              placeholder="취소사유를 입력해주세요"
+              placeholder="원인세대/피해세대 구분하고 추가사항을 입력해 주세요."
               value={cancelReason}
               onChange={(e) => {
                 if (e.target.value.length <= 800) {

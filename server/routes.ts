@@ -13732,6 +13732,15 @@ https://www.floxn.co.kr/
 
 위 접수건은 접수 취소 되었음을 알려드립니다.
 취소 사유 : ${cancelReason || "-"}`;
+
+        if (cancelReason) {
+          try {
+            await storage.updateCase(caseId, { specialNotes: `[취소사유] ${cancelReason}` });
+            console.log(`[send-stage-notification] 접수취소 사유 저장 완료: caseId=${caseId}`);
+          } catch (saveErr) {
+            console.error(`[send-stage-notification] 접수취소 사유 저장 실패:`, saveErr);
+          }
+        }
       } else if (stage === "종결") {
         const settlements = await storage.getSettlementsByCaseId(caseId);
         const latestSettlement =
@@ -13981,6 +13990,15 @@ https://www.floxn.co.kr/
         return res
           .status(400)
           .json({ error: "수신자 이메일이 선택되지 않았습니다" });
+      }
+
+      if (cancelReason) {
+        try {
+          await storage.updateCase(caseId, { specialNotes: `[취소사유] ${cancelReason}` });
+          console.log(`[send-cancellation-email] 접수취소 사유 저장 완료: caseId=${caseId}`);
+        } catch (saveErr) {
+          console.error(`[send-cancellation-email] 접수취소 사유 저장 실패:`, saveErr);
+        }
       }
 
       const subjectIdentifier =
