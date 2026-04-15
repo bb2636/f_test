@@ -533,7 +533,9 @@ export default function ClosedCaseStatistics() {
         totalApproved: getGroupApprovedAmount(uniqueCases),
         totalClaim: (() => {
           const active = getActiveCases(uniqueCases);
-          const preEstimateClaim = active.filter(c => isPreEstimate(c)).reduce((sum, c) => sum + getPreEstimateClaimFallback(c, settlementMap), 0);
+          const onlyPreEstimate = active.length > 0 && active.every(c => isPreEstimate(c));
+          const hasPreEstimate = active.some(c => isPreEstimate(c));
+          const preEstimateClaim = hasPreEstimate ? 100000 : 0;
           const nonPreEstimate = active.filter(c => !isPreEstimate(c));
           const hasDirectRecovery = nonPreEstimate.some(c => isDirectRecovery(c));
           const targets = hasDirectRecovery ? nonPreEstimate.filter(c => isDirectRecovery(c)) : nonPreEstimate;
@@ -555,7 +557,15 @@ export default function ClosedCaseStatistics() {
             if (invoiceClaim > 0) return sum + invoiceClaim;
             return sum + getCaseApprovedForStats(c);
           }, 0);
-          return preEstimateClaim + directClaim;
+          const total = preEstimateClaim + directClaim;
+          if (total > 0) return total;
+          const hasClaimDate = active.some(c => c.claimDate && c.claimDate.trim() !== "");
+          if (hasClaimDate && onlyPreEstimate) return 100000;
+          if (hasClaimDate && !onlyPreEstimate) {
+            const fallback = targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+            if (fallback > 0) return fallback;
+          }
+          return total;
         })(),
       };
     });
@@ -699,8 +709,8 @@ export default function ClosedCaseStatistics() {
           c.status,
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : formatDate(c.siteInvestigationSubmitDate)),
-          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? (() => { const v = getPreEstimateClaimFallback(c, settlementMap); return v > 0 ? v.toLocaleString() : ""; })() : (() => { const cn = c.caseNumber || ""; const ld = cn.lastIndexOf("-"); const pf = ld > 0 ? cn.substring(0, ld) : cn; const inv = pf ? invoicesByPrefixMap[pf] : null; const invAmt = inv?.totalApprovedAmount ? parseInt(inv.totalApprovedAmount) : 0; if (invAmt > 0) return invAmt.toLocaleString(); const caseClaim = getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c); return caseClaim ? caseClaim.toLocaleString() : ""; })()),
-          c.status === "접수취소" ? "-" : formatDate(isPreEstimate(c) ? c.claimDate : c.secondApprovalDate),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : (() => { const cn = c.caseNumber || ""; const ld = cn.lastIndexOf("-"); const pf = ld > 0 ? cn.substring(0, ld) : cn; const inv = pf ? invoicesByPrefixMap[pf] : null; const invAmt = inv?.totalApprovedAmount ? parseInt(inv.totalApprovedAmount) : 0; if (invAmt > 0) return invAmt.toLocaleString(); const caseClaim = getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c); return caseClaim ? caseClaim.toLocaleString() : ""; })()),
+          c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : formatDate(c.secondApprovalDate)),
         ];
       });
     } else {
@@ -735,12 +745,12 @@ export default function ClosedCaseStatistics() {
           extractRegion(address),
           extractCityDistrict(address),
           getLatestStatus(g.cases),
-          g.totalEstimate !== null ? (g.totalEstimate ? g.totalEstimate.toLocaleString() : "0") : "-",
-          g.totalEstimate !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-",
-          g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-",
-          g.totalApproved !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-",
-          g.totalClaim !== null ? (claimAmount ? claimAmount.toLocaleString() : "0") : "-",
-          g.totalClaim !== null ? formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate) : "-",
+          isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? (g.totalEstimate ? g.totalEstimate.toLocaleString() : "0") : "-"),
+          isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatDate(getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-"),
+          isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-"),
+          isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? formatDate(getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-"),
+          (() => { const cd = getGroupDate(g.cases, "claimDate") || rep.claimDate; if (claimAmount && claimAmount > 0) return claimAmount.toLocaleString(); if (cd && isOnlyPreEstimate(g.cases)) return "100,000"; return "-"; })(),
+          formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate),
           deposit.amount ? deposit.amount.toLocaleString() : "-",
           formatDate(deposit.date),
           sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "-",
@@ -820,12 +830,12 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{extractRegion(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={cellStyle}>{extractCityDistrict(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={{ ...cellStyle, fontWeight: 500 }}>{getLatestStatus(g.cases)}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalEstimate !== null ? formatAmount(g.totalEstimate) : "-"}</td>
-        <td style={cellStyle}>{g.totalEstimate !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-"}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalApproved !== null ? formatAmount(g.totalApproved) : "-"}</td>
-        <td style={cellStyle}>{g.totalApproved !== null ? formatDate(isOnlyPreEstimate(g.cases) ? getGroupDate(g.cases, "claimDate") : getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-"}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{g.totalClaim !== null ? formatAmount(g.totalClaim) : "-"}</td>
-        <td style={cellStyle}>{g.totalClaim !== null ? formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate) : "-"}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatAmount(g.totalEstimate) : "-")}</td>
+        <td style={cellStyle}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatDate(getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-")}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? formatAmount(g.totalApproved) : "-")}</td>
+        <td style={cellStyle}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? formatDate(getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-")}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{(() => { const claimDate = getGroupDate(g.cases, "claimDate") || rep.claimDate; if (g.totalClaim && g.totalClaim > 0) return formatAmount(g.totalClaim); if (claimDate && isOnlyPreEstimate(g.cases)) return formatAmount(100000); return "-"; })()}</td>
+        <td style={cellStyle}>{formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
         <td style={cellStyle}>{formatDate(deposit.date)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.partnerPayment)}</td>
@@ -879,10 +889,10 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{extractRegion(c.insuredAddress || c.victimAddress)}</td>
         <td style={cellStyle}>{extractCityDistrict(c.insuredAddress || c.victimAddress)}</td>
         <td style={{ ...cellStyle, fontWeight: 500 }}>{c.status}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : formatAmount(estimateAmt)}</td>
-        <td style={cellStyle}>{blankAmounts ? "-" : formatDate(preEst ? c.claimDate : c.siteInvestigationSubmitDate)}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : formatAmount(approvedAmt)}</td>
-        <td style={{ ...cellStyle, borderRight: "none" }}>{blankAmounts ? "-" : formatDate(preEst ? c.claimDate : c.secondApprovalDate)}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : (preEst ? "-" : formatAmount(estimateAmt))}</td>
+        <td style={cellStyle}>{blankAmounts ? "-" : (preEst ? "-" : formatDate(c.siteInvestigationSubmitDate))}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : (preEst ? "-" : formatAmount(approvedAmt))}</td>
+        <td style={{ ...cellStyle, borderRight: "none" }}>{blankAmounts ? "-" : (preEst ? "-" : formatDate(c.secondApprovalDate))}</td>
       </tr>
     );
   };
