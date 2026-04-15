@@ -598,6 +598,16 @@ export default function UnsettledCaseStatistics() {
           if (hasClaimDate && !onlyPreEstimate) {
             const fallback = targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
             if (fallback > 0) return fallback;
+            const settClaimFallback = active.reduce((sum, c) => {
+              const sett = settlementMap[c.id];
+              if (sett?.depositEntries?.length) {
+                return sum + sett.depositEntries.reduce((s: number, e: any) => s + (e.claimAmount || 0), 0);
+              }
+              return sum;
+            }, 0);
+            if (settClaimFallback > 0) return settClaimFallback;
+            const estFallback = targets.reduce((sum, c) => sum + getCaseEstimateForStats(c), 0);
+            if (estFallback > 0) return estFallback;
           }
           return total;
         })(),
