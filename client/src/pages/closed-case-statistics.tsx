@@ -749,7 +749,7 @@ export default function ClosedCaseStatistics() {
           isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatDate(getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-"),
           isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-"),
           isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? formatDate(getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-"),
-          (() => { const cd = getGroupDate(g.cases, "claimDate") || rep.claimDate; if (claimAmount && claimAmount > 0) return claimAmount.toLocaleString(); if (cd) { if (isOnlyPreEstimate(g.cases)) return "100,000"; if (g.totalApproved && g.totalApproved > 0) return g.totalApproved.toLocaleString(); if (g.totalEstimate && g.totalEstimate > 0) return g.totalEstimate.toLocaleString(); } return "-"; })(),
+          (() => { const cd = getGroupDate(g.cases, "claimDate") || rep.claimDate; if (!cd) return "-"; if (claimAmount && claimAmount > 0) return claimAmount.toLocaleString(); if (isOnlyPreEstimate(g.cases)) return "100,000"; if (g.totalApproved && g.totalApproved > 0) return g.totalApproved.toLocaleString(); if (g.totalEstimate && g.totalEstimate > 0) return g.totalEstimate.toLocaleString(); return "-"; })(),
           formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate),
           deposit.amount ? deposit.amount.toLocaleString() : "-",
           formatDate(deposit.date),
@@ -834,7 +834,7 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatDate(getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-")}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? formatAmount(g.totalApproved) : "-")}</td>
         <td style={cellStyle}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? formatDate(getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-")}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{(() => { const claimDate = getGroupDate(g.cases, "claimDate") || rep.claimDate; if (g.totalClaim && g.totalClaim > 0) return formatAmount(g.totalClaim); if (claimDate) { if (isOnlyPreEstimate(g.cases)) return formatAmount(100000); if (g.totalApproved && g.totalApproved > 0) return formatAmount(g.totalApproved); if (g.totalEstimate && g.totalEstimate > 0) return formatAmount(g.totalEstimate); } return "-"; })()}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{(() => { const claimDate = getGroupDate(g.cases, "claimDate") || rep.claimDate; if (!claimDate) return "-"; if (g.totalClaim && g.totalClaim > 0) return formatAmount(g.totalClaim); if (isOnlyPreEstimate(g.cases)) return formatAmount(100000); if (g.totalApproved && g.totalApproved > 0) return formatAmount(g.totalApproved); if (g.totalEstimate && g.totalEstimate > 0) return formatAmount(g.totalEstimate); return "-"; })()}</td>
         <td style={cellStyle}>{formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
         <td style={cellStyle}>{formatDate(deposit.date)}</td>
