@@ -1022,8 +1022,8 @@ export default function FieldEstimate() {
       const workName = row.workName || '';
       if (!workType) return;
       
-      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(workType)) return;
-      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(workName)) return;
+      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(workType) && !isItemInLinkSettings(workType, workName)) return;
+      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(workName) && !isItemInLinkSettings(workType, workName)) return;
       
       if (!workTypeMap.has(workType)) {
         workTypeMap.set(workType, new Map());
@@ -1048,8 +1048,8 @@ export default function FieldEstimate() {
 
     rows.forEach(row => {
       if (!row.workType || !row.workName || row.workType === '철거공사') return;
-      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType)) return;
-      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName)) return;
+      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType) && !isItemInLinkSettings(row.workType, row.workName)) return;
+      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName) && !isItemInLinkSettings(row.workType, row.workName)) return;
       const matchedName = matchDemolitionWorkName(row.workName);
       if (!matchedName) return;
 
@@ -1299,14 +1299,14 @@ export default function FieldEstimate() {
       const workName = row.workName || '';
       if (!workType || !workName) return;
       
-      // 연동 제외 공종은 자재비 연동 제외
-      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(workType)) return;
+      // 연동 제외 공종은 자재비 연동 제외 (일위대가 연동 설정에 등록된 항목은 허용)
+      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(workType) && !isItemInLinkSettings(workType, workName)) return;
       
       // 반자틀은 자동 연동 제외
       if (workName === '반자틀') return;
       
-      // 자동 연동 대상만 처리
-      if (!AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName)) return;
+      // 자동 연동 대상 또는 일위대가 연동 설정에 등록된 항목만 처리
+      if (!AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName) && !isItemInLinkSettings(workType, workName)) return;
       
       const key = `${workType}|${workName}`;
       if (!workMap.has(key)) {
@@ -1722,6 +1722,10 @@ export default function FieldEstimate() {
   
   // 노무비/자재비 연동 제외 공종 (공종 단위로 연동 차단)
   const AREA_DISPLAY_ONLY_WORK_TYPES = ['타일공사', '욕실공사'];
+
+  const isItemInLinkSettings = (workType: string, workName: string): boolean => {
+    return ilwidaegaLinkSettings.some(s => s.category === workType && s.workName === workName);
+  };
   
   const DEFAULT_WORK_TYPES_BY_LOCATION: Record<string, string[]> = {
     '천장': ['목공사', '수장공사', '도장공사', '욕실공사'],
@@ -1899,7 +1903,8 @@ export default function FieldEstimate() {
       if (category === '가설공사' && workName !== '건축물현장정리') return true;
       // 자동 연동 대상 공사명은 syncMaterialFromRecoveryArea에서 처리하므로 노무비→자재비 연동 제외
       // 이 공사명들은 복구면적에서 직접 자재비로 연동되어야 함 (노무비 경유 X)
-      if (AUTO_MATERIAL_SYNC_WORK_NAMES.includes(workName)) {
+      // 일위대가 연동 설정에 등록된 항목도 syncMaterialFromRecoveryArea에서 직접 처리
+      if (AUTO_MATERIAL_SYNC_WORK_NAMES.includes(workName) || isItemInLinkSettings(category, workName)) {
         console.log('[노무비→자재비 useEffect] 자동연동 대상 제외:', category, workName);
         return true;
       }
@@ -2027,8 +2032,8 @@ export default function FieldEstimate() {
         row.workType && row.workType !== '' &&
         row.workName && row.workName !== '선택' && row.workName !== '';
       
-      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType || '')) return false;
-      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName || '')) return false;
+      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType || '') && !isItemInLinkSettings(row.workType || '', row.workName || '')) return false;
+      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName || '') && !isItemInLinkSettings(row.workType || '', row.workName || '')) return false;
       
       const notYetSynced = !existingSourceAreaIds.has(row.id) &&
         !existingLinkedWorkNames.has(normalizeForMatch(row.workName || ''));
@@ -2176,8 +2181,9 @@ export default function FieldEstimate() {
           
           return true;
         } else {
-          if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(linkedAreaRow.workType || '') || 
-              AREA_DISPLAY_ONLY_WORK_NAMES.includes(linkedAreaRow.workName || '')) {
+          if ((AREA_DISPLAY_ONLY_WORK_TYPES.includes(linkedAreaRow.workType || '') || 
+              AREA_DISPLAY_ONLY_WORK_NAMES.includes(linkedAreaRow.workName || '')) &&
+              !isItemInLinkSettings(linkedAreaRow.workType || '', linkedAreaRow.workName || '')) {
             console.log('[Reconcile] 연동 제외 대상 → 기존 행 삭제:', linkedAreaRow.workType, linkedAreaRow.workName);
             return false;
           }
@@ -2396,9 +2402,9 @@ export default function FieldEstimate() {
     
     rows.forEach(row => {
       if (row.workType && row.workName && row.workType !== '철거공사') {
-        // 연동 제외 공종/공사명은 철거공사 연동도 제외
-        if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType)) return;
-        if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName)) return;
+        // 연동 제외 공종/공사명은 철거공사 연동도 제외 (일위대가 연동 설정 항목은 허용)
+        if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType) && !isItemInLinkSettings(row.workType, row.workName)) return;
+        if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName) && !isItemInLinkSettings(row.workType, row.workName)) return;
         
         const matchedWorkName = matchDemolitionWorkName(row.workName);
         if (matchedWorkName) {
@@ -3712,7 +3718,7 @@ export default function FieldEstimate() {
     if (!workType || !workName) return;
     
     // 연동 제외 공종/공사명으로 변경된 경우: 기존 연동 행 제거
-    if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(workType) || AREA_DISPLAY_ONLY_WORK_NAMES.includes(workName)) {
+    if ((AREA_DISPLAY_ONLY_WORK_TYPES.includes(workType) || AREA_DISPLAY_ONLY_WORK_NAMES.includes(workName)) && !isItemInLinkSettings(workType, workName)) {
       console.log('[일위대가 연동] 연동 제외 대상 - 기존 행 제거:', workType, workName);
       setLaborCostRows(prev => prev.filter(r => 
         r.sourceAreaRowId !== sourceRowId && 

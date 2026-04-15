@@ -50,7 +50,7 @@ The system is a full-stack web application utilizing a React-based frontend and 
 - **Database**: PostgreSQL (Neon-backed) with Drizzle ORM for persistent data storage and automatic schema management.
 - **DB 안정성**: 메인 풀 max=10, 세션 풀 max=5, `idleTimeoutMillis=20000`, `maxUses=7500`으로 연결 재활용. pool/client `error` 이벤트 핸들러 추가로 uncaught exception 방지. Neon WebSocket 연결 끊김 시 자동 재연결.
 - **자동 스키마 동기화**: 서버 시작 시 `auto-schema-sync.ts`가 DEV·PROD DB 모두에 필수 마이그레이션 자동 실행 (ALTER TABLE IF NOT EXISTS 패턴). 새 컬럼 추가 시 해당 파일의 `migrations` 배열에 SQL 추가하면 다른 환경에서도 자동 적용.
-- **일위대가 연동 설정**: `ilwidaega_link_settings` 테이블에서 위치(천장/벽면/바닥)별 공종+공사명 매핑을 관리자가 동적으로 설정 가능. 설정 항목은 복구면적 산출표의 드롭다운 옵션에 반영되며, 복구면적 → 노무비 자동 연동에 활용. DB 설정이 없으면 기존 하드코딩 기본값으로 fallback. 관리자 설정 > DB관리 > 일위대가 탭의 "일위대가 연동 설정" 버튼으로 접근.
+- **일위대가 연동 설정**: `ilwidaega_link_settings` 테이블에서 위치(천장/벽면/바닥)별 공종+공사명 매핑을 관리자가 동적으로 설정 가능. 설정 항목은 복구면적 산출표의 드롭다운 옵션에 반영되며, 복구면적 → 노무비/자재비 자동 연동에 활용. 연동 설정에 등록된 항목은 기존 하드코딩 제외 목록(`AREA_DISPLAY_ONLY_WORK_TYPES`, `AREA_DISPLAY_ONLY_WORK_NAMES`)을 우회하여 노무비·자재비까지 완전 연동됨. `isItemInLinkSettings()` 헬퍼가 모든 차단 지점에서 연동 설정 항목을 허용. DB 설정이 없으면 기존 하드코딩 기본값으로 fallback. 관리자 설정 > DB관리 > 일위대가 탭의 "일위대가 연동 설정" 버튼으로 접근.
 
 ### Refactoring Modules
 - **`server/font-loader.ts`**: Pretendard TTF 폰트 비동기 로딩/캐싱/검증 통합 모듈. `loadPretendardRegular()`, `loadPretendardSemiBold()`, `loadPretendardFontPair()` export (모두 async/Promise). 3개 PDF 서비스(pdf-lib-service, invoice-pdf-service, evidence-pdf-service)에서 공유. `loadPretendardFontPair()`는 두 폰트를 `Promise.all`로 병렬 로드.
