@@ -2343,47 +2343,7 @@ async function renderPhotoPage(
       : firstImage.tab,
   );
 
-  page.drawRectangle({
-    x: MARGIN,
-    y: A4_HEIGHT - MARGIN - 30,
-    width: CONTENT_WIDTH,
-    height: 30,
-    color: rgb(0.2, 0.2, 0.2),
-  });
-
-  const totalTextLength =
-    leftText.length + centerText.length + rightText.length;
-  const fontSize = totalTextLength > 70 ? 8 : totalTextLength > 50 ? 9 : 10;
-
-  drawText(page, {
-    x: MARGIN + 15,
-    y: A4_HEIGHT - MARGIN - 22,
-    text: leftText,
-    font: fonts.bold,
-    size: fontSize,
-    color: { r: 1, g: 1, b: 1 },
-  });
-
-  const centerTextWidth = fonts.bold.widthOfTextAtSize(centerText, fontSize);
-  const centerX = MARGIN + (CONTENT_WIDTH - centerTextWidth) / 2;
-  drawText(page, {
-    x: centerX,
-    y: A4_HEIGHT - MARGIN - 22,
-    text: centerText,
-    font: fonts.bold,
-    size: fontSize,
-    color: { r: 1, g: 1, b: 1 },
-  });
-
-  const rightTextWidth = fonts.bold.widthOfTextAtSize(rightText, fontSize);
-  drawText(page, {
-    x: A4_WIDTH - MARGIN - 15 - rightTextWidth,
-    y: A4_HEIGHT - MARGIN - 22,
-    text: rightText,
-    font: fonts.bold,
-    size: fontSize,
-    color: { r: 1, g: 1, b: 1 },
-  });
+  drawEvidenceHeader(page, fonts, leftText, centerText, rightText);
 
   const categoryLabelHeight = 22;
   const imageHeight = 295;
@@ -2520,6 +2480,130 @@ async function renderPhotoPage(
   }
 }
 
+function drawEvidenceHeader(
+  page: PDFPage,
+  fonts: FontSet,
+  leftText: string,
+  centerText: string,
+  rightText: string,
+) {
+  page.drawRectangle({
+    x: MARGIN,
+    y: A4_HEIGHT - MARGIN - 30,
+    width: CONTENT_WIDTH,
+    height: 30,
+    color: rgb(0.2, 0.2, 0.2),
+  });
+
+  const totalTextLength = leftText.length + centerText.length + rightText.length;
+  const fontSize = totalTextLength > 70 ? 8 : totalTextLength > 50 ? 9 : 10;
+
+  const leftWidth = fonts.bold.widthOfTextAtSize(leftText, fontSize);
+  const rightWidth = fonts.bold.widthOfTextAtSize(rightText, fontSize);
+  const centerWidth = fonts.bold.widthOfTextAtSize(centerText, fontSize);
+  const availableWidth = CONTENT_WIDTH - 30;
+  const minGap = 10;
+  const totalNeeded = leftWidth + centerWidth + rightWidth + minGap * 2;
+
+  if (totalNeeded > availableWidth && centerText.length > 0) {
+    let smallerFont = Math.max(fontSize - 1, 7);
+    const line1LeftWidth = fonts.bold.widthOfTextAtSize(leftText, smallerFont);
+    const line1RightWidth = fonts.bold.widthOfTextAtSize(rightText, smallerFont);
+    while (line1LeftWidth + line1RightWidth + minGap > availableWidth && smallerFont > 6) {
+      smallerFont -= 0.5;
+    }
+    const line1Y = A4_HEIGHT - MARGIN - 13;
+    drawText(page, {
+      x: MARGIN + 15,
+      y: line1Y,
+      text: leftText,
+      font: fonts.bold,
+      size: smallerFont,
+      color: { r: 1, g: 1, b: 1 },
+    });
+    const rw = fonts.bold.widthOfTextAtSize(rightText, smallerFont);
+    drawText(page, {
+      x: A4_WIDTH - MARGIN - 15 - rw,
+      y: line1Y,
+      text: rightText,
+      font: fonts.bold,
+      size: smallerFont,
+      color: { r: 1, g: 1, b: 1 },
+    });
+    const line2Y = A4_HEIGHT - MARGIN - 25;
+    let addrFontSize = smallerFont;
+    let addressText = centerText;
+    const maxAddrWidth = availableWidth;
+    while (fonts.bold.widthOfTextAtSize(addressText, addrFontSize) > maxAddrWidth && addrFontSize > 6) {
+      addrFontSize -= 0.5;
+    }
+    if (fonts.bold.widthOfTextAtSize(addressText, addrFontSize) > maxAddrWidth) {
+      while (fonts.bold.widthOfTextAtSize(addressText + '...', addrFontSize) > maxAddrWidth && addressText.length > 10) {
+        addressText = addressText.slice(0, -1);
+      }
+      addressText += '...';
+    }
+    drawText(page, {
+      x: MARGIN + 15,
+      y: line2Y,
+      text: addressText,
+      font: fonts.bold,
+      size: addrFontSize,
+      color: { r: 1, g: 1, b: 1 },
+    });
+  } else if (leftWidth + rightWidth + minGap > availableWidth) {
+    let shrunkFont = fontSize;
+    while (fonts.bold.widthOfTextAtSize(leftText, shrunkFont) + fonts.bold.widthOfTextAtSize(rightText, shrunkFont) + minGap > availableWidth && shrunkFont > 6) {
+      shrunkFont -= 0.5;
+    }
+    drawText(page, {
+      x: MARGIN + 15,
+      y: A4_HEIGHT - MARGIN - 22,
+      text: leftText,
+      font: fonts.bold,
+      size: shrunkFont,
+      color: { r: 1, g: 1, b: 1 },
+    });
+    const rw = fonts.bold.widthOfTextAtSize(rightText, shrunkFont);
+    drawText(page, {
+      x: A4_WIDTH - MARGIN - 15 - rw,
+      y: A4_HEIGHT - MARGIN - 22,
+      text: rightText,
+      font: fonts.bold,
+      size: shrunkFont,
+      color: { r: 1, g: 1, b: 1 },
+    });
+  } else {
+    drawText(page, {
+      x: MARGIN + 15,
+      y: A4_HEIGHT - MARGIN - 22,
+      text: leftText,
+      font: fonts.bold,
+      size: fontSize,
+      color: { r: 1, g: 1, b: 1 },
+    });
+    const cw = fonts.bold.widthOfTextAtSize(centerText, fontSize);
+    const cx = MARGIN + (CONTENT_WIDTH - cw) / 2;
+    drawText(page, {
+      x: cx,
+      y: A4_HEIGHT - MARGIN - 22,
+      text: centerText,
+      font: fonts.bold,
+      size: fontSize,
+      color: { r: 1, g: 1, b: 1 },
+    });
+    const rw = fonts.bold.widthOfTextAtSize(rightText, fontSize);
+    drawText(page, {
+      x: A4_WIDTH - MARGIN - 15 - rw,
+      y: A4_HEIGHT - MARGIN - 22,
+      text: rightText,
+      font: fonts.bold,
+      size: fontSize,
+      color: { r: 1, g: 1, b: 1 },
+    });
+  }
+}
+
 // 비사진 카테고리 이미지 1장 페이지 렌더링 헬퍼
 async function renderSingleImagePage(
   pdfDoc: PDFDocument,
@@ -2565,47 +2649,7 @@ async function renderSingleImagePage(
       : imageDoc.tab,
   );
 
-  page.drawRectangle({
-    x: MARGIN,
-    y: A4_HEIGHT - MARGIN - 30,
-    width: CONTENT_WIDTH,
-    height: 30,
-    color: rgb(0.2, 0.2, 0.2),
-  });
-
-  const totalTextLength =
-    leftText.length + centerText.length + rightText.length;
-  const fontSize = totalTextLength > 70 ? 8 : totalTextLength > 50 ? 9 : 10;
-
-  drawText(page, {
-    x: MARGIN + 15,
-    y: A4_HEIGHT - MARGIN - 22,
-    text: leftText,
-    font: fonts.bold,
-    size: fontSize,
-    color: { r: 1, g: 1, b: 1 },
-  });
-
-  const centerTextWidth = fonts.bold.widthOfTextAtSize(centerText, fontSize);
-  const centerX = MARGIN + (CONTENT_WIDTH - centerTextWidth) / 2;
-  drawText(page, {
-    x: centerX,
-    y: A4_HEIGHT - MARGIN - 22,
-    text: centerText,
-    font: fonts.bold,
-    size: fontSize,
-    color: { r: 1, g: 1, b: 1 },
-  });
-
-  const rightTextWidth = fonts.bold.widthOfTextAtSize(rightText, fontSize);
-  drawText(page, {
-    x: A4_WIDTH - MARGIN - 15 - rightTextWidth,
-    y: A4_HEIGHT - MARGIN - 22,
-    text: rightText,
-    font: fonts.bold,
-    size: fontSize,
-    color: { r: 1, g: 1, b: 1 },
-  });
+  drawEvidenceHeader(page, fonts, leftText, centerText, rightText);
 
   const singleImageHeight = 650;
 

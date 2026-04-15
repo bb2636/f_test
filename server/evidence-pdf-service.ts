@@ -315,7 +315,33 @@ async function createEvidencePdfForTab(
       const suffix = cleanFullAddress 
         ? ` ${cleanFullAddress} ${categoryDisplay}`
         : ` ${categoryDisplay}`;
-      page.drawText(suffix, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+      const maxRight = A4_WIDTH - MARGIN - 10;
+      const suffixWidth = font.widthOfTextAtSize(suffix, fontSize);
+      if (cursorX + suffixWidth > maxRight && cleanFullAddress) {
+        const categoryOnly = ` ${categoryDisplay}`;
+        const categoryWidth = font.widthOfTextAtSize(categoryOnly, fontSize);
+        const addressMaxWidth = maxRight - cursorX - categoryWidth - 5;
+        if (addressMaxWidth <= 0) {
+          page.drawText(categoryOnly, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+        } else {
+          let addressText = cleanFullAddress;
+          while (font.widthOfTextAtSize(` ${addressText}...`, fontSize) > addressMaxWidth && addressText.length > 10) {
+            addressText = addressText.slice(0, -1);
+          }
+          if (addressText.length < cleanFullAddress.length) {
+            addressText = addressText.trim() + '...';
+          }
+          if (font.widthOfTextAtSize(` ${addressText}`, fontSize) > addressMaxWidth) {
+            page.drawText(categoryOnly, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+          } else {
+            page.drawText(` ${addressText}`, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+            cursorX += font.widthOfTextAtSize(` ${addressText}`, fontSize);
+            page.drawText(categoryOnly, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+          }
+        }
+      } else {
+        page.drawText(suffix, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+      }
     } catch (e) {
       console.warn(`[Evidence PDF] Failed to draw header text: ${headerText}`);
     }
@@ -496,7 +522,33 @@ async function createEvidencePdfForTab(
           const suffix2 = cleanFullAddress2 
             ? ` ${cleanFullAddress2} ${categoryDisplay2}`
             : ` ${categoryDisplay2}`;
-          newPage.drawText(suffix2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
+          const maxRight2 = A4_WIDTH - MARGIN - 10;
+          const suffixWidth2 = font.widthOfTextAtSize(suffix2, fontSize2);
+          if (cursorX2 + suffixWidth2 > maxRight2 && cleanFullAddress2) {
+            const categoryOnly2 = ` ${categoryDisplay2}`;
+            const categoryWidth2 = font.widthOfTextAtSize(categoryOnly2, fontSize2);
+            const addressMaxWidth2 = maxRight2 - cursorX2 - categoryWidth2 - 5;
+            if (addressMaxWidth2 <= 0) {
+              newPage.drawText(categoryOnly2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
+            } else {
+              let addressText2 = cleanFullAddress2;
+              while (font.widthOfTextAtSize(` ${addressText2}...`, fontSize2) > addressMaxWidth2 && addressText2.length > 10) {
+                addressText2 = addressText2.slice(0, -1);
+              }
+              if (addressText2.length < cleanFullAddress2.length) {
+                addressText2 = addressText2.trim() + '...';
+              }
+              if (font.widthOfTextAtSize(` ${addressText2}`, fontSize2) > addressMaxWidth2) {
+                newPage.drawText(categoryOnly2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
+              } else {
+                newPage.drawText(` ${addressText2}`, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
+                cursorX2 += font.widthOfTextAtSize(` ${addressText2}`, fontSize2);
+                newPage.drawText(categoryOnly2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
+              }
+            }
+          } else {
+            newPage.drawText(suffix2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
+          }
         } catch (e) {
           // Silent fail
         }
