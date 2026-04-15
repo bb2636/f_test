@@ -682,7 +682,15 @@ export default function UnsettledCaseStatistics() {
     groupCases.forEach((c) => {
       const s = settlementMap[c.id];
       if (s) {
-        partnerPayment += parseFloat(s.partnerPaymentAmount || "0") || 0;
+        const topAmount = parseFloat(s.partnerPaymentAmount || "0") || 0;
+        if (topAmount > 0) {
+          partnerPayment += topAmount;
+        } else {
+          const entries = s.paymentEntries as any[];
+          if (entries && entries.length > 0) {
+            partnerPayment += entries.reduce((sum: number, e: any) => sum + (parseFloat(e.paymentAmount || "0") || 0), 0);
+          }
+        }
         commission += parseFloat(s.commission || "0") || 0;
         const payDate = getLatestPaymentDate(s);
         if (payDate && payDate > latestPartnerDate) latestPartnerDate = payDate;
@@ -778,14 +786,14 @@ export default function UnsettledCaseStatistics() {
           getLatestStatus(g.cases),
           isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? (g.totalEstimate ? g.totalEstimate.toLocaleString() : "0") : "-"),
           isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatDate(getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-"),
-          isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-"),
-          isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? formatDate(getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-"),
+          (() => { if (isOnlyPreEstimate(g.cases)) return "-"; const ad = getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate; if (!ad) return "-"; return g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-"; })(),
+          (() => { if (isOnlyPreEstimate(g.cases)) return "-"; const ad = getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate; if (!ad) return "-"; return g.totalApproved !== null ? formatDate(ad) : "-"; })(),
           (() => { const cd = getGroupDate(g.cases, "claimDate") || rep.claimDate; if (!cd) return "-"; if (claimAmount && claimAmount > 0) return claimAmount.toLocaleString(); if (isOnlyPreEstimate(g.cases)) return "100,000"; if (g.totalApproved && g.totalApproved > 0) return g.totalApproved.toLocaleString(); if (g.totalEstimate && g.totalEstimate > 0) return g.totalEstimate.toLocaleString(); return "-"; })(),
           formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate),
           deposit.amount ? deposit.amount.toLocaleString() : "-",
           formatDate(deposit.date),
-          sett.partnerPayment ? sett.partnerPayment.toLocaleString() : "-",
-          formatDate(sett.partnerPaymentDate),
+          sett.partnerPayment > 0 ? sett.partnerPayment.toLocaleString() : "-",
+          sett.partnerPayment > 0 ? formatDate(sett.partnerPaymentDate) : "-",
           sett.commission ? sett.commission.toLocaleString() : "-",
           formatDate(sett.closingDate),
         ];
@@ -864,14 +872,14 @@ export default function UnsettledCaseStatistics() {
         <td style={{ ...cellStyle, fontWeight: 500 }}>{getLatestStatus(g.cases)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatAmount(g.totalEstimate) : "-")}</td>
         <td style={cellStyle}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatDate(getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-")}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? formatAmount(g.totalApproved) : "-")}</td>
-        <td style={cellStyle}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalApproved !== null ? formatDate(getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate) : "-")}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{(() => { if (isOnlyPreEstimate(g.cases)) return "-"; const approvalDate = getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate; if (!approvalDate) return "-"; return g.totalApproved !== null ? formatAmount(g.totalApproved) : "-"; })()}</td>
+        <td style={cellStyle}>{(() => { if (isOnlyPreEstimate(g.cases)) return "-"; const approvalDate = getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate; if (!approvalDate) return "-"; return g.totalApproved !== null ? formatDate(approvalDate) : "-"; })()}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{(() => { const claimDate = getGroupDate(g.cases, "claimDate") || rep.claimDate; if (!claimDate) return "-"; if (g.totalClaim && g.totalClaim > 0) return formatAmount(g.totalClaim); if (isOnlyPreEstimate(g.cases)) return formatAmount(100000); if (g.totalApproved && g.totalApproved > 0) return formatAmount(g.totalApproved); if (g.totalEstimate && g.totalEstimate > 0) return formatAmount(g.totalEstimate); return "-"; })()}</td>
         <td style={cellStyle}>{formatDate(getGroupDate(g.cases, "claimDate") || rep.claimDate)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(deposit.amount)}</td>
         <td style={cellStyle}>{formatDate(deposit.date)}</td>
-        <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.partnerPayment)}</td>
-        <td style={cellStyle}>{formatDate(sett.partnerPaymentDate)}</td>
+        <td style={{ ...cellStyle, textAlign: "right" }}>{sett.partnerPayment > 0 ? formatAmount(sett.partnerPayment) : "-"}</td>
+        <td style={cellStyle}>{sett.partnerPayment > 0 ? formatDate(sett.partnerPaymentDate) : "-"}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{formatAmount(sett.commission)}</td>
         <td style={{ ...cellStyle, borderRight: "none" }}>{formatDate(sett.closingDate)}</td>
       </tr>
