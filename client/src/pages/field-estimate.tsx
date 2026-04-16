@@ -1284,7 +1284,7 @@ export default function FieldEstimate() {
   };
 
   // 자동 연동 대상 공사명 (반자틀 제외)
-  const AUTO_SYNC_MATERIAL_WORK_NAMES = ['합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리', '수성페인트', '무늬코트', '탄성코트', 'SMC', '리빙보드', '도기류', '붙박이장'];
+  const AUTO_SYNC_MATERIAL_WORK_NAMES = ['합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리', '수성페인트', '무늬코트', '탄성코트', 'SMC', '리빙보드', '도기류', '붙박이장', '상부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
   
   // 복구면적 산출표에서 자재비로 동기화 (자재비DB 기반 자동 생성)
   // 핵심: 동일 Key(공종+공사명+자재항목)는 1행으로 merge, 전체 합산 후 마지막에 ceil 적용
@@ -1473,7 +1473,7 @@ export default function FieldEstimate() {
         return;
       }
 
-      const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장'];
+      const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장', '상부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
       const isFixedIlwidaega = FIXED_ILWIDAEGA_WORK_NAMES.includes(data.공사명);
 
       if (isFixedIlwidaega) {
@@ -1917,7 +1917,7 @@ export default function FieldEstimate() {
   const AREA_CALCULATION_WORK_TYPES = ['도장공사', '목공사', '수장공사'];
   
   // 산출표 표기 전용 공사명 (노무비/자재비 연동 제외)
-  const AREA_DISPLAY_ONLY_WORK_NAMES = ['수성페인트', '탄성코트', '무늬코트', '줄눈', '타일', 'SMC', '리빙보드', '도기류'];
+  const AREA_DISPLAY_ONLY_WORK_NAMES = ['수성페인트', '탄성코트', '무늬코트', '줄눈', '타일', 'SMC', '리빙보드', '도기류', '상부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장', '붙박이장'];
   
   // 노무비/자재비 연동 제외 공종 (공종 단위로 연동 차단)
   const AREA_DISPLAY_ONLY_WORK_TYPES = ['타일공사', '욕실공사'];
@@ -2113,7 +2113,7 @@ export default function FieldEstimate() {
     materialCatalogLoadedRef.current = true;
 
     const PAINTING_WORK_NAMES = ['수성페인트', '무늬코트', '탄성코트'];
-    const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장'];
+    const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장', '상부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
 
     setMaterialRows(prev => {
       let changed = false;
