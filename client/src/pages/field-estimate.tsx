@@ -2425,6 +2425,7 @@ export default function FieldEstimate() {
         } else {
           // 일반 행 업데이트 (장소, 위치, 피해면적 + 적용단가/수량/합계 재계산)
           const laborCategory = getLaborCategory(linkedAreaRow.workType, linkedAreaRow.workName);
+          const catalogLookupWorkName = isBatangRow2 ? (laborRow.workName || linkedAreaRow.workName) : linkedAreaRow.workName;
           
           // standardWorkQuantity가 0이면 카탈로그 동기화 강제 (D/E 조회 필요)
           // pricePerSqm이 0이고 standardPrice가 있으면 재계산 필요 (새로 추가된 행)
@@ -2444,11 +2445,11 @@ export default function FieldEstimate() {
             let D = laborRow.standardWorkQuantity || 0;
             let E = laborRow.standardPrice || 0;
             
-            // D가 0이면 일위대가 카탈로그에서 조회 (새로 계산된 laborCategory와 linkedAreaRow.workName 사용, 오버라이드 적용된 값 사용)
-            if (D === 0 && laborCategory && linkedAreaRow.workName) {
+            // D가 0이면 일위대가 카탈로그에서 조회 (companion은 laborRow.workName 사용, 오버라이드 적용된 값 사용)
+            if (D === 0 && laborCategory && catalogLookupWorkName) {
               const catalogItem = mergedIlwidaegaCatalog.find(item => 
                 normalizeForMatch(item.공종) === normalizeForMatch(laborCategory) &&
-                normalizeForMatch(item.공사명) === normalizeForMatch(linkedAreaRow.workName) &&
+                normalizeForMatch(item.공사명) === normalizeForMatch(catalogLookupWorkName) &&
                 (!laborRow.detailItem || normalizeForMatch(item.노임항목) === normalizeForMatch(laborRow.detailItem))
               );
               if (catalogItem) {
