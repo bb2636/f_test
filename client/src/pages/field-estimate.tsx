@@ -1506,7 +1506,7 @@ export default function FieldEstimate() {
             ...existingRow,
             autoKey,
             단위: dbUnit,
-            단가: fixedTotal,
+            단가: laborUnitPrice,
             기준단가: laborUnitPrice,
             수량m2: calculatedQty,
             수량EA: fixedQty,
@@ -1518,7 +1518,7 @@ export default function FieldEstimate() {
             autoUnitType: 'EA',
             isManualPriceEntry: false,
           });
-          console.log(`[자재비 집계] ${data.공종} ${data.공사명}: 기존 행 업데이트 (일위대가: ${fixedTotal}, 노임단가: ${laborUnitPrice}, 단위: ${dbUnit})`);
+          console.log(`[자재비 집계] ${data.공종} ${data.공사명}: 기존 행 업데이트 (일위대가: ${fixedTotal}, 노임단가(적용단가): ${laborUnitPrice}, 수량: ${fixedQty}, 단위: ${dbUnit})`);
         } else {
           resultRowsMap.set(autoKey, {
             id: `material-auto-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -1528,7 +1528,7 @@ export default function FieldEstimate() {
             자재: data.공사명,
             규격: '',
             단위: dbUnit,
-            단가: fixedTotal,
+            단가: laborUnitPrice,
             기준단가: laborUnitPrice,
             수량m2: calculatedQty,
             수량EA: fixedQty,
@@ -1546,7 +1546,7 @@ export default function FieldEstimate() {
             autoUnitType: 'EA',
             isManualPriceEntry: false,
           });
-          console.log(`[자재비 집계] ${data.공종} ${data.공사명}: 새 행 생성 (일위대가: ${fixedTotal}, 노임단가: ${laborUnitPrice}, 단위: ${dbUnit})`);
+          console.log(`[자재비 집계] ${data.공종} ${data.공사명}: 새 행 생성 (일위대가: ${fixedTotal}, 노임단가(적용단가): ${laborUnitPrice}, 수량: ${fixedQty}, 단위: ${dbUnit})`);
         }
         return;
       }
