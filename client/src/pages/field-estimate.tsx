@@ -1922,8 +1922,8 @@ export default function FieldEstimate() {
 
   const getCeilingMultiplier = (workType: string, location: string): number => {
     if (workType === '욕실공사') return 1.0;
+    if (workType === '도장공사') return 1.2;
     if (location === '천장') {
-      if (workType === '도장공사') return 1.2;
       return 1.3;
     }
     return 1.0;
