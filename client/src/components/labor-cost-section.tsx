@@ -2183,6 +2183,9 @@ export function LaborCostSection({
                                 {opt}
                               </SelectItem>
                             ))}
+                          <SelectItem key="__직접입력__" value="직접입력" className="text-blue-500 border-t">
+                            직접입력
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     )}
