@@ -1326,6 +1326,9 @@ export default function FieldEstimate() {
       // 반자틀은 자동 연동 제외
       if (workName === '반자틀') return;
       
+      // 바탕만들기 행은 자재비 연동 제외
+      if (workName.startsWith('바탕만들기')) return;
+      
       // 자동 연동 대상 또는 일위대가 연동 설정에 등록된 항목만 처리
       if (!AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName) && !isItemInLinkSettings(workType, workName)) return;
       
@@ -2193,8 +2196,11 @@ export default function FieldEstimate() {
     };
 
     setMaterialRows(prev => {
-      // 1. 먼저 목공사-반자틀로 변경된 노무비 행에 연결된 자재비 행 제거
+      // 1. 먼저 제외 대상 자재비 행 제거 (바탕만들기, 목공사-반자틀 등)
       const filteredRows = prev.filter(matRow => {
+        // 자재비 행의 공사명이 바탕만들기면 직접 제거 (모든 경로)
+        if ((matRow.공사명 || '').startsWith('바탕만들기')) return false;
+        
         // 복구면적 연동 자재비 행은 유지 (별도 경로로 관리)
         if (matRow.isLinkedFromRecovery) return true;
         if (!matRow.sourceLaborRowId) return true;
@@ -2202,7 +2208,7 @@ export default function FieldEstimate() {
         const linkedLaborRow = laborCostRows.find(lr => lr.id === matRow.sourceLaborRowId);
         if (!linkedLaborRow) return true;
         
-        // 연결된 노무비 행이 목공사-반자틀이면 자재비 행 제거
+        // 연결된 노무비 행이 제외 대상이면 자재비 행 제거
         return !shouldExcludeFromMaterialSync(linkedLaborRow.category || '', linkedLaborRow.workName || '', linkedLaborRow.isLinkedFromRecovery);
       });
       
