@@ -246,37 +246,38 @@ export function LaborCostSection({
     }
   };
 
-  // 공사명별 복구면적 자동 계산 함수
-  // - 천장: ×1.3 적용
-  // - 걸레받이/몰딩: 복구면적 산출표에서 이미 m² 단위로 계산됨 (변환 불필요)
-  //   - 복구면적 산출표: 가로(mm) × 1000(mm) / 1000000 = 가로/1000 (m²)
-  //   - 즉, repairArea 값이 4.00이면 4m 길이를 의미 (높이 1m 고정이므로)
-  const calculateRecoveryAreaByWorkName = useMemo(() => {
-    // 공사명별로 복구면적 산출표 데이터를 그룹화하여 합계 계산
-    const workNameAreas: Record<string, number> = {};
+  const getCeilingMultiplier = (workType: string, location: string): number => {
+    if (workType === '욕실공사') return 1.0;
+    if (location === '천장') {
+      if (workType === '도장공사') return 1.2;
+      return 1.3;
+    }
+    return 1.0;
+  };
 
-    // 길이 기반 공사 (복구면적 산출표에서 이미 올바르게 계산됨)
+  const BATANG_COMPANION_MAP: Record<string, string> = {
+    '수성페인트': '바탕만들기(수성페인트)',
+    '무늬코트': '바탕만들기(무늬코트)',
+    '탄성코트': '바탕만들기(탄성코트)',
+  };
+
+  const calculateRecoveryAreaByWorkName = useMemo(() => {
+    const workNameAreas: Record<string, number> = {};
     const lengthBasedWorkNames = ["걸레받이", "몰딩"];
 
     areaCalculationRows.forEach((row) => {
       const workName = row.workName || "";
+      const workType = row.workType || "";
       if (!workName) return;
 
       const area = parseFloat(row.repairArea) || 0;
       const location = row.location || "";
-
       const isLengthBased = lengthBasedWorkNames.includes(workName);
 
-      // 천장인 경우 × 1.3 적용 (걸레받이/몰딩은 제외)
-      const isCeiling =
-        !isLengthBased && (location.includes("천장") || location === "천장");
-
       let adjustedArea = area;
-      // 걸레받이/몰딩: 복구면적 산출표에서 이미 올바른 값 (m 단위)으로 계산됨
-      // 변환 불필요 - repairArea가 그대로 복구면적(m)으로 사용됨
-      if (isCeiling) {
-        // 천장: ×1.3
-        adjustedArea = area * 1.3;
+      if (!isLengthBased) {
+        const ceilingMult = getCeilingMultiplier(workType, location);
+        adjustedArea = area * ceilingMult;
       }
 
       if (!workNameAreas[workName]) {
@@ -285,16 +286,19 @@ export function LaborCostSection({
       workNameAreas[workName] += adjustedArea;
     });
 
-    // 소수점 둘째 자리까지 반올림 (길이 기반은 더 정밀하게)
     Object.keys(workNameAreas).forEach((workName) => {
       const isLengthBased = lengthBasedWorkNames.includes(workName);
       if (isLengthBased) {
-        // 걸레받이/몰딩: 소수점 둘째 자리
         workNameAreas[workName] =
           Math.round(workNameAreas[workName] * 100) / 100;
       } else {
-        // 일반: 소수점 첫째 자리
         workNameAreas[workName] = Math.round(workNameAreas[workName] * 10) / 10;
+      }
+    });
+
+    Object.entries(BATANG_COMPANION_MAP).forEach(([parentName, companionName]) => {
+      if (workNameAreas[parentName] !== undefined && workNameAreas[companionName] === undefined) {
+        workNameAreas[companionName] = workNameAreas[parentName];
       }
     });
 
@@ -2185,7 +2189,7 @@ export function LaborCostSection({
                   </td>
 
                   {/* 복구면적 - 연동행만 같은 공사명끼리 rowspan 병합, 직접추가는 개별 셀 (0 고정) */}
-                  {/* 복구면적은 공사명별로 합산 (바닥+벽체+천장×1.3) - 연동행만 적용 */}
+                  {/* 복구면적은 공사명별로 합산 (바닥+벽체+천장×할증) - 연동행만 적용 */}
                   {(() => {
                     // 직접 추가 행은 개별 셀로 표시 (항상 0, 수정 불가)
                     if (!isLinkedRow) {
@@ -2262,7 +2266,7 @@ export function LaborCostSection({
                             color: "rgba(59, 130, 246, 0.9)",
                           }}
                           disabled={true}
-                          title="복구면적에서 자동 계산됨 (바닥+벽체+천장×1.3)"
+                          title="복구면적에서 자동 계산됨 (도장공사 천장×1.2, 욕실공사×1.0, 기타 천장×1.3)"
                           data-testid={`input-recoveryArea-labor-${globalIndex}`}
                         />
                       </td>
