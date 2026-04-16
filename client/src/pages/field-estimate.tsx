@@ -2988,6 +2988,12 @@ export default function FieldEstimate() {
           if (!laborRow.sourceAreaRowId || !laborRow.isLinkedFromRecovery) return laborRow;
           
           if (loadedRows.some((r: any) => r.id === laborRow.sourceAreaRowId)) return laborRow;
+          
+          const isBatangHydrate = laborRow.sourceAreaRowId.includes('::batang');
+          const strippedSourceId = isBatangHydrate ? laborRow.sourceAreaRowId.replace(/::batang$/, '') : laborRow.sourceAreaRowId;
+          
+          if (isBatangHydrate && loadedRows.some((r: any) => r.id === strippedSourceId)) return laborRow;
+          
           if (laborRow.sourceAreaRowId.startsWith('demolition-')) {
             const rawIds = laborRow.sourceAreaRowId.replace('demolition-', '');
             const alreadyValid = rawIds.split(',').some((srcId: string) =>
@@ -3001,6 +3007,16 @@ export default function FieldEstimate() {
             });
             if (matchingAreaRows.length > 0) {
               return { ...laborRow, sourceAreaRowId: 'demolition-' + matchingAreaRows.map((r: any) => r.id).join(',') };
+            }
+          } else if (isBatangHydrate) {
+            const parentWorkName = Object.entries(BATANG_COMPANION_MAP).find(([, v]) => v === laborRow.workName)?.[0];
+            if (parentWorkName) {
+              const matchingAreaRow = loadedRows.find((areaRow: any) =>
+                normalizeForMatch(areaRow.workName || '') === normalizeForMatch(parentWorkName)
+              );
+              if (matchingAreaRow) {
+                return { ...laborRow, sourceAreaRowId: `${matchingAreaRow.id}::batang` };
+              }
             }
           } else {
             const matchingAreaRow = loadedRows.find((areaRow: any) =>
