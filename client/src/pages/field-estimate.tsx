@@ -403,8 +403,7 @@ export default function FieldEstimate() {
   const matchDemolitionWorkName = (workName: string): string | null => {
     const normalized = normalizeForMatch(workName);
     for (const name of DEMOLITION_WORK_NAMES) {
-      const normalizedTarget = normalizeForMatch(name);
-      if (normalized.includes(normalizedTarget) || normalizedTarget === normalized) {
+      if (normalizeForMatch(name) === normalized) {
         return name;
       }
     }
