@@ -2362,10 +2362,9 @@ export default function FieldEstimate() {
         }
         if (!linkedAreaRow) return laborRow;
         
-        // 복구면적 값 (숫자로 변환) + 천장 할증 계수 적용
+        // 복구면적 값 (숫자로 변환) + 천장 할증 계수 적용 (항상 원본 면적 행의 workType 사용)
         const rawDamageArea = Number(linkedAreaRow.repairArea) || 0;
-        const autoSyncWorkType = isDemolitionRow ? (laborRow.sourceWorkType || linkedAreaRow.workType || '') : (linkedAreaRow.workType || '');
-        const autoSyncCeilingMult = getCeilingMultiplier(autoSyncWorkType, linkedAreaRow.location || '');
+        const autoSyncCeilingMult = getCeilingMultiplier(linkedAreaRow.workType || '', linkedAreaRow.location || '');
         const damageAreaValue = Math.round(rawDamageArea * autoSyncCeilingMult * 100) / 100;
         
         if (isDemolitionRow) {
