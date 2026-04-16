@@ -148,6 +148,7 @@ export function LaborCostSection({
   isPartner = false,
 }: LaborCostSectionProps) {
   const [directInputMode, setDirectInputMode] = useState<Set<string>>(new Set());
+  const [workNameInputMode, setWorkNameInputMode] = useState<Set<string>>(new Set());
 
   // 드래그 앤 드롭 상태
   const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
@@ -2033,19 +2034,39 @@ export function LaborCostSection({
                         />
                         {row.workName || ""}
                       </div>
-                    ) : row.category?.includes("기타") ? (
-                      <Input
-                        value={row.workName || ""}
-                        onChange={(e) => handleWorkNameChange(row.id, e.target.value)}
-                        className="h-9 border-0"
-                        style={{ fontFamily: "Pretendard", fontSize: "14px" }}
-                        placeholder="공사명 직접 입력"
-                        data-testid={`input-workName-labor-${globalIndex}`}
-                      />
+                    ) : (row.category?.includes("기타") || workNameInputMode.has(row.id) || (row.workName === "직접입력")) ? (
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={(row.workName === "직접입력" ? "" : row.workName) || ""}
+                          onChange={(e) => handleWorkNameChange(row.id, e.target.value)}
+                          className="h-9 border-0 flex-1"
+                          style={{ fontFamily: "Pretendard", fontSize: "14px" }}
+                          placeholder="공사명 직접 입력"
+                          data-testid={`input-workName-labor-${globalIndex}`}
+                        />
+                        {!row.category?.includes("기타") && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setWorkNameInputMode(prev => { const next = new Set(prev); next.delete(row.id); return next; });
+                              onRowsChange(rows.map(r => r.id === row.id ? { ...r, workName: "", detailWork: "", detailItem: "", unit: "", standardPrice: 0, pricePerSqm: 0 } : r));
+                            }}
+                            style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", color: "rgba(12,12,12,0.4)", fontSize: "14px" }}
+                            title="목록 선택으로 돌아가기"
+                          >×</button>
+                        )}
+                      </div>
                     ) : (
                       <Select
                         value={row.workName || undefined}
-                        onValueChange={(value) => handleWorkNameChange(row.id, value)}
+                        onValueChange={(value) => {
+                          if (value === "__직접입력__") {
+                            setWorkNameInputMode(prev => new Set(prev).add(row.id));
+                            onRowsChange(rows.map(r => r.id === row.id ? { ...r, workName: "", detailWork: "", detailItem: "", unit: "", standardPrice: 0, pricePerSqm: 0 } : r));
+                          } else {
+                            handleWorkNameChange(row.id, value);
+                          }
+                        }}
                         disabled={!row.category}
                       >
                         <SelectTrigger
@@ -2059,12 +2080,15 @@ export function LaborCostSection({
                         </SelectTrigger>
                         <SelectContent>
                           {getWorkNameOptions(row.category, row.workName)
-                            .filter((opt) => opt && opt.trim() !== "")
+                            .filter((opt) => opt && opt.trim() !== "" && opt !== "직접입력")
                             .map((opt) => (
                               <SelectItem key={opt} value={opt}>
                                 {opt}
                               </SelectItem>
                             ))}
+                          <SelectItem value="__직접입력__">
+                            직접입력
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     )}
