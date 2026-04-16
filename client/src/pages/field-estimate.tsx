@@ -397,7 +397,7 @@ export default function FieldEstimate() {
   };
 
   // 철거공사 필요한 공사명 목록 (컴포넌트 레벨 - 삭제 추적 및 reconcile에서 공통 사용)
-  const DEMOLITION_WORK_NAMES = ['합판', '석고보드', '도배', '마루', '장판'];
+  const DEMOLITION_WORK_NAMES = ['합판', '석고보드', '도배', '마루', '장판', '상부장', '상부장&하부장', '상부장&키큰장', '키큰장', '상부장&하부장&키큰장', '붙박이장', 'SMC', '리빙보드'];
   
   // 정규화된 공사명 → 원본 DEMOLITION_WORK_NAMES 매핑 함수
   const matchDemolitionWorkName = (workName: string): string | null => {
@@ -596,15 +596,7 @@ export default function FieldEstimate() {
   
   // 철거공사 추가 필요 여부 확인 (일위대가DB의 철거공사 공사명과 매칭)
   const needsDemolitionRow = (workType: string, workName: string): boolean => {
-    // 목공사: 합판, 석고보드 → 일위대가DB 철거공사에 있음 (반자틀 제외)
-    if (workType === '목공사' && (workName === '합판' || workName === '석고보드')) {
-      return true;
-    }
-    // 수장공사: 도배, 마루, 장판 → 일위대가DB 철거공사에 있음
-    if (workType === '수장공사' && (workName === '도배' || workName === '마루' || workName === '장판')) {
-      return true;
-    }
-    return false;
+    return DEMOLITION_WORK_NAMES.includes(workName);
   };
   
   // 철거공사 공사명 매핑 (복구면적 공사명 → 일위대가DB 철거공사 공사명)
@@ -2330,8 +2322,23 @@ export default function FieldEstimate() {
       return hasRequiredFields && notYetSynced;
     });
 
+    // AREA_DISPLAY_ONLY로 제외된 항목 중 철거공사가 필요한 항목 (가구공사/욕실공사 FIXED 항목)
+    const demolitionOnlyAreaRows = rows.filter(row => {
+      const hasRequiredFields = 
+        row.workType && row.workType !== '' &&
+        row.workName && row.workName !== '선택' && row.workName !== '';
+      if (!hasRequiredFields) return false;
+      if (!needsDemolitionRow(row.workType || '', row.workName || '')) return false;
+      // completedAreaRows에 이미 포함되어 있으면 제외
+      if (completedAreaRows.find(r => r.id === row.id)) return false;
+      // 이미 철거공사 행이 생성되어 있으면 제외
+      const demolitionSourceId = `demolition-${row.id}`;
+      if (laborCostRows.find(r => r.sourceAreaRowId === demolitionSourceId)) return false;
+      return true;
+    });
+
     // 연동할 행이 있으면 노무비에 추가 (일위대가DB 기반 모든 노임항목 생성)
-    if (completedAreaRows.length > 0) {
+    if (completedAreaRows.length > 0 || demolitionOnlyAreaRows.length > 0) {
       const newLaborRows: LaborCostRow[] = [];
       
       completedAreaRows.forEach(areaRow => {
@@ -2450,13 +2457,37 @@ export default function FieldEstimate() {
           });
         });
 
-        // 철거공사는 별도 Reconcile useEffect에서 생성 (중복 방지)
-        // 철거공사 Reconcile useEffect가 rows 변경 감지하여 자동 생성함
+        // 철거공사 자동 생성 (needsDemolitionRow 대상 항목)
+        if (needsDemolitionRow(workType, workName)) {
+          const demolitionSourceId = `demolition-${areaRow.id}`;
+          const existingDemolition = laborCostRows.find(r => r.sourceAreaRowId === demolitionSourceId);
+          if (!existingDemolition) {
+            const demolitionCatalogItem = mergedIlwidaegaCatalog.find(
+              item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
+                     normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
+            );
+            const demolitionRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
+            newLaborRows.push(demolitionRow);
+            console.log('[자동연동] 철거공사 행 생성:', workName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)');
+          }
+        }
+      });
+
+      // AREA_DISPLAY_ONLY 항목의 철거공사 행 생성 (가구공사/욕실공사 FIXED 항목)
+      demolitionOnlyAreaRows.forEach(areaRow => {
+        const workName = areaRow.workName;
+        const rawRepairArea = Number(areaRow.repairArea) || 0;
+        const demolitionCatalogItem = mergedIlwidaegaCatalog.find(
+          item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
+                 normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
+        );
+        const demolitionRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
+        newLaborRows.push(demolitionRow);
+        console.log('[자동연동] FIXED 항목 철거공사 행 생성:', workName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)');
       });
 
       lastLaborSetSourceRef.current = 'autoSync-addNewRows';
       setLaborCostRows(prev => {
-        // 빈 행 필터링 (첫 행이 완전히 비어있으면 제거)
         const nonEmptyRows = prev.filter(row => 
           row.sourceAreaRowId || row.place || row.position || row.category || row.workName
         );
