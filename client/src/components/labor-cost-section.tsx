@@ -2152,58 +2152,43 @@ export function LaborCostSection({
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1">
-                        <Select
-                          value={row.detailItem || undefined}
-                          onValueChange={(value) => {
+                      <Select
+                        value={row.detailItem || undefined}
+                        onValueChange={(value) => {
+                          if (value === "__직접입력__") {
+                            setTimeout(() => {
+                              setDetailItemInputMode(prev => ({ ...prev, [row.id]: true }));
+                            }, 0);
+                          } else {
                             updateRow(row.id, "detailItem", value);
-                          }}
-                          disabled={!row.workName}
+                          }
+                        }}
+                        disabled={!row.workName}
+                      >
+                        <SelectTrigger
+                          className="h-9 border-0"
+                          style={{ fontFamily: "Pretendard", fontSize: "14px" }}
+                          data-testid={`select-laborItem-${globalIndex}`}
                         >
-                          <SelectTrigger
-                            className="h-9 border-0 flex-1"
-                            style={{ fontFamily: "Pretendard", fontSize: "14px" }}
-                            data-testid={`select-laborItem-${globalIndex}`}
-                          >
-                            <SelectValue placeholder="선택" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getDetailItemOptions(
-                              row.category,
-                              row.workName,
-                              row.detailWork || "노무비",
-                            )
-                              .filter((opt) => opt && opt.trim() !== "")
-                              .map((opt) => (
-                                <SelectItem key={opt} value={opt}>
-                                  {opt}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDetailItemInputMode(prev => ({ ...prev, [row.id]: true }));
-                            updateRow(row.id, "detailItem", "");
-                          }}
-                          style={{
-                            padding: "2px 6px",
-                            fontSize: "11px",
-                            color: "rgba(59, 130, 246, 0.9)",
-                            background: "rgba(59, 130, 246, 0.08)",
-                            border: "1px solid rgba(59, 130, 246, 0.2)",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            whiteSpace: "nowrap",
-                            flexShrink: 0,
-                          }}
-                          title="직접 입력 모드로 전환"
-                          data-testid={`button-laborItem-direct-${globalIndex}`}
-                        >
-                          직접입력
-                        </button>
-                      </div>
+                          <SelectValue placeholder="선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getDetailItemOptions(
+                            row.category,
+                            row.workName,
+                            row.detailWork || "노무비",
+                          )
+                            .filter((opt) => opt && opt.trim() !== "")
+                            .map((opt) => (
+                              <SelectItem key={opt} value={opt}>
+                                {opt}
+                              </SelectItem>
+                            ))}
+                          <SelectItem value="__직접입력__">
+                            직접입력
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     )}
                   </td>
 
