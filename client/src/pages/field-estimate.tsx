@@ -2095,6 +2095,13 @@ export default function FieldEstimate() {
     syncMaterialFromRecoveryArea();
   }, [recoverySignature, isLossPreventionCase, isReadOnly]);
 
+  useEffect(() => {
+    if (selectedCategory !== "자재비") return;
+    if (!isHydratedRef.current) return;
+    if (isLossPreventionCase || isReadOnly) return;
+    syncMaterialFromRecoveryArea();
+  }, [selectedCategory]);
+
   const materialCatalogLoadedRef = useRef(false);
   useEffect(() => {
     if (!isHydratedRef.current) return;
@@ -4931,12 +4938,7 @@ export default function FieldEstimate() {
             <button
               key={category}
               type="button"
-              onClick={() => {
-                setSelectedCategory(category);
-                if (category === "자재비" && !isLossPreventionCase && !isReadOnly && isHydratedRef.current) {
-                  syncMaterialFromRecoveryArea();
-                }
-              }}
+              onClick={() => setSelectedCategory(category)}
               className="pb-3 transition-all relative"
               style={{
                 fontFamily: "Pretendard",
