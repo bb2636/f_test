@@ -1835,6 +1835,7 @@ export default function FieldEstimate() {
           const catalogNames = catalogWorkNamesByCategory[category];
           if (catalogNames) {
             catalogNames.forEach(wn => {
+              if ((wn || '').startsWith('바탕만들기(') || (wn || '').startsWith('바탕만들기 (')) return;
               if (!result[location][category].includes(wn)) {
                 result[location][category].push(wn);
               }
