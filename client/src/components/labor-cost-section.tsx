@@ -2117,11 +2117,13 @@ export function LaborCostSection({
                         />
                         {row.detailItem || ""}
                       </div>
-                    ) : detailItemInputMode[row.id] ? (
+                    ) : (row.detailItem === "__직접입력__" || detailItemInputMode[row.id]) ? (
                       <div className="flex items-center gap-1">
                         <Input
-                          value={row.detailItem === "직접입력" ? "" : (row.detailItem || "")}
-                          onChange={(e) => updateRow(row.id, "detailItem", e.target.value)}
+                          value={row.detailItem === "__직접입력__" ? "" : (row.detailItem && !getDetailItemOptions(row.category, row.workName, row.detailWork || "노무비").includes(row.detailItem) ? row.detailItem : (row.detailItem || ""))}
+                          onChange={(e) => {
+                            onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: e.target.value } : r));
+                          }}
                           className="h-9 border-0 flex-1"
                           style={{ fontFamily: "Pretendard", fontSize: "14px" }}
                           placeholder="직접 입력"
@@ -2131,7 +2133,7 @@ export function LaborCostSection({
                           type="button"
                           onClick={() => {
                             setDetailItemInputMode(prev => ({ ...prev, [row.id]: false }));
-                            updateRow(row.id, "detailItem", "");
+                            onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: "" } : r));
                           }}
                           style={{
                             width: "20px",
@@ -2156,9 +2158,7 @@ export function LaborCostSection({
                         value={row.detailItem || undefined}
                         onValueChange={(value) => {
                           if (value === "__직접입력__") {
-                            setTimeout(() => {
-                              setDetailItemInputMode(prev => ({ ...prev, [row.id]: true }));
-                            }, 0);
+                            onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: "__직접입력__" } : r));
                           } else {
                             updateRow(row.id, "detailItem", value);
                           }
