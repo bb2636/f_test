@@ -1645,18 +1645,19 @@ export default function FieldEstimate() {
   const workNamesByWorkType = useMemo(() => {
     if (!laborCatalog.length) return {} as Record<string, string[]>;
     const mapping: Record<string, Set<string>> = {};
+    const batangPrefixes = ['바탕만들기(', '바탕만들기 ('];
     laborCatalog.forEach(item => {
+      const isBatang = batangPrefixes.some(prefix => (item.공사명 || '').startsWith(prefix));
+      if (isBatang) return;
       if (!mapping[item.공종]) {
         mapping[item.공종] = new Set();
       }
-      // 목공사 공종의 공사명 "목공사"를 "걸레받이"로 변경
       if (normalizeForMatch(item.공종 || '') === normalizeForMatch('목공사') && normalizeForMatch(item.공사명 || '') === normalizeForMatch('목공사')) {
         mapping[item.공종].add('걸레받이');
       } else {
         mapping[item.공종].add(item.공사명);
       }
     });
-    // Set을 배열로 변환하고 정렬
     const result: Record<string, string[]> = {};
     Object.keys(mapping).forEach(key => {
       result[key] = Array.from(mapping[key]).sort();
