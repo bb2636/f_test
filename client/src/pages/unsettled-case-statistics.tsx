@@ -580,10 +580,12 @@ export default function UnsettledCaseStatistics() {
             const lastDash = cn.lastIndexOf("-");
             const pf = lastDash > 0 ? cn.substring(0, lastDash) : cn;
             if (pf && !seenPrefixes.has(pf)) {
-              seenPrefixes.add(pf);
               const inv = invoicesByPrefixMap[pf];
               const invAmt = inv?.totalApprovedAmount ? parseInt(inv.totalApprovedAmount) : 0;
-              if (invAmt > 0) return sum + invAmt;
+              if (invAmt > 0) {
+                seenPrefixes.add(pf);
+                return sum + invAmt;
+              }
             } else if (pf && seenPrefixes.has(pf)) {
               return sum;
             }
