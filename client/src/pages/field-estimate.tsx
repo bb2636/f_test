@@ -1042,6 +1042,19 @@ export default function FieldEstimate() {
       workNameData.totalArea += Math.round(rawArea * ceilingMult * 100) / 100;
       workNameData.areaRows.push(row);
     });
+
+    workTypeMap.forEach((workNameMap, wt) => {
+      const companionEntries: Array<{ companionName: string; data: { totalArea: number; areaRows: AreaCalculationRow[] } }> = [];
+      workNameMap.forEach((data, wn) => {
+        const companions = getCompanionWorkNames(wt, wn);
+        companions.forEach(cn => {
+          if (!workNameMap.has(cn)) {
+            companionEntries.push({ companionName: cn, data: { totalArea: data.totalArea, areaRows: [...data.areaRows] } });
+          }
+        });
+      });
+      companionEntries.forEach(e => workNameMap.set(e.companionName, e.data));
+    });
     
     // 철거공사 행: 기존 보존 + 삭제된 항목 복구
     const existingDemolitionRows = existingLinkedRows.filter(row => row.category === '철거공사');
@@ -1128,7 +1141,9 @@ export default function FieldEstimate() {
       
       sortedWorkNames.forEach(workName => {
         const workNameData = workNameMap.get(workName)!;
-        const sourceAreaRowId = workNameData.areaRows[0]?.id || '';
+        const isBatangCompanion = Object.values(BATANG_COMPANION_MAP).includes(workName);
+        const rawSourceAreaRowId = workNameData.areaRows[0]?.id || '';
+        const sourceAreaRowId = isBatangCompanion ? `${rawSourceAreaRowId}::batang` : rawSourceAreaRowId;
         const totalArea = Math.round(workNameData.totalArea * 10) / 10;
         
         const matchingCatalogItems = mergedIlwidaegaCatalog.filter(
@@ -1741,6 +1756,23 @@ export default function FieldEstimate() {
     }
     return 1.0;
   };
+
+  const BATANG_COMPANION_MAP: Record<string, string> = {
+    '수성페인트': '바탕만들기(수성페인트)',
+    '무늬코트': '바탕만들기(무늬코트)',
+    '탄성코트': '바탕만들기(탄성코트)',
+  };
+  const getCompanionWorkNames = (workType: string, workName: string): string[] => {
+    if (workType !== '도장공사') return [];
+    const companion = BATANG_COMPANION_MAP[workName];
+    return companion ? [companion] : [];
+  };
+  const isCompanionSourceId = (sourceAreaRowId: string | undefined): boolean => {
+    return !!sourceAreaRowId && sourceAreaRowId.includes('::batang');
+  };
+  const extractOriginalSourceId = (sourceAreaRowId: string): string => {
+    return sourceAreaRowId.replace(/::batang$/, '');
+  };
   
   const DEFAULT_WORK_TYPES_BY_LOCATION: Record<string, string[]> = {
     '천장': ['목공사', '수장공사', '도장공사', '욕실공사'],
@@ -2045,12 +2077,14 @@ export default function FieldEstimate() {
       return;
     }
 
-    // 이미 연동된 복구면적 산출표 행 ID 목록 (demolition- 접두사 제거하여 원본 ID 추출)
+    // 이미 연동된 복구면적 산출표 행 ID 목록 (demolition- 접두사, ::batang 접미사 제거하여 원본 ID 추출)
     const existingSourceAreaIds = new Set(
       laborCostRows.map(row => {
-        const sourceId = row.sourceAreaRowId;
+        let sourceId = row.sourceAreaRowId;
         if (!sourceId) return null;
-        return sourceId.startsWith('demolition-') ? sourceId.replace('demolition-', '') : sourceId;
+        if (sourceId.startsWith('demolition-')) sourceId = sourceId.replace('demolition-', '');
+        if (sourceId.includes('::batang')) sourceId = extractOriginalSourceId(sourceId);
+        return sourceId;
       }).filter(Boolean)
     );
     
@@ -2149,6 +2183,50 @@ export default function FieldEstimate() {
           newLaborRows.push(mainRow);
         }
         
+        // 바탕만들기 companion 행 자동 생성
+        const autoCompanions = getCompanionWorkNames(workType, workName);
+        autoCompanions.forEach(companionName => {
+          const companionSourceId = `${areaRow.id}::batang`;
+          const companionItems = mergedIlwidaegaCatalog.filter(
+            item => normalizeForMatch(item.공종 || '') === normalizeForMatch(laborCategory) &&
+                   normalizeForMatch(item.공사명 || '') === normalizeForMatch(companionName)
+          );
+          companionItems.forEach((catalogItem, cidx) => {
+            const cD = catalogItem.기준작업량 || 0;
+            const cE = catalogItem.노임단가 || 0;
+            let cQty = 1, cAmt = 0, cPps = 0;
+            if (cD > 0 && cE > 0 && damageAreaValue > 0) {
+              cAmt = calculateIWithTiers(damageAreaValue, cD, cE, laborRateTiers);
+              cPps = calculateAppliedUnitPriceWithTiers(damageAreaValue, cD, cE, laborRateTiers);
+              cQty = calculateQuantityWithTiers(damageAreaValue, cD, cE, laborRateTiers);
+            }
+            newLaborRows.push({
+              id: `labor-linked-${Date.now()}-${Math.random()}-batang-${cidx}`,
+              sourceAreaRowId: companionSourceId,
+              isLinkedFromRecovery: true,
+              place: areaRow.category || '',
+              position: areaRow.location || '',
+              category: laborCategory,
+              workName: companionName,
+              detailWork: '일위대가',
+              detailItem: catalogItem.노임항목,
+              priceStandard: '',
+              unit: '㎡',
+              standardPrice: cE,
+              standardWorkQuantity: cD,
+              quantity: cQty,
+              applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
+              salesMarkupRate: 0,
+              pricePerSqm: cPps,
+              damageArea: damageAreaValue,
+              deduction: 0,
+              includeInEstimate: true,
+              request: '',
+              amount: cAmt,
+            });
+          });
+        });
+
         // 철거공사는 별도 Reconcile useEffect에서 생성 (중복 방지)
         // 철거공사 Reconcile useEffect가 rows 변경 감지하여 자동 생성함
       });
@@ -2170,9 +2248,10 @@ export default function FieldEstimate() {
         if (!laborRow.isLinkedFromRecovery || !laborRow.sourceAreaRowId) return true;
         
         const isDemolitionRow = laborRow.sourceAreaRowId.startsWith('demolition-');
-        const originalAreaRowId = isDemolitionRow 
-          ? laborRow.sourceAreaRowId.replace('demolition-', '') 
-          : laborRow.sourceAreaRowId;
+        const isBatangRow = isCompanionSourceId(laborRow.sourceAreaRowId);
+        let originalAreaRowId = laborRow.sourceAreaRowId;
+        if (isDemolitionRow) originalAreaRowId = originalAreaRowId.replace('demolition-', '');
+        if (isBatangRow) originalAreaRowId = extractOriginalSourceId(originalAreaRowId);
         
         let linkedAreaRow = rows.find(r => r.id === originalAreaRowId);
         
@@ -2182,15 +2261,22 @@ export default function FieldEstimate() {
               const matchedName = matchDemolitionWorkName(r.workName || '');
               return matchedName && normalizeForMatch(matchedName) === normalizeForMatch(laborRow.workName || '');
             });
+          } else if (isBatangRow) {
+            const parentWorkName = Object.entries(BATANG_COMPANION_MAP).find(([, v]) => v === laborRow.workName)?.[0];
+            if (parentWorkName) {
+              linkedAreaRow = rows.find(r =>
+                normalizeForMatch(r.workName || '') === normalizeForMatch(parentWorkName)
+              );
+            }
           } else {
             linkedAreaRow = rows.find(r =>
               normalizeForMatch(r.workName || '') === normalizeForMatch(laborRow.workName || '')
             );
           }
           if (linkedAreaRow) {
-            laborRow.sourceAreaRowId = isDemolitionRow
-              ? `demolition-${linkedAreaRow.id}`
-              : linkedAreaRow.id;
+            if (isDemolitionRow) laborRow.sourceAreaRowId = `demolition-${linkedAreaRow.id}`;
+            else if (isBatangRow) laborRow.sourceAreaRowId = `${linkedAreaRow.id}::batang`;
+            else laborRow.sourceAreaRowId = linkedAreaRow.id;
           }
         }
         
@@ -2214,6 +2300,13 @@ export default function FieldEstimate() {
           }
           
           return true;
+        } else if (isBatangRow) {
+          const expectedCompanions = getCompanionWorkNames(linkedAreaRow.workType || '', linkedAreaRow.workName || '');
+          if (!expectedCompanions.includes(laborRow.workName || '')) {
+            console.log('[Reconcile] 바탕만들기 companion 불일치 → 기존 행 삭제:', laborRow.workName);
+            return false;
+          }
+          return true;
         } else {
           if ((AREA_DISPLAY_ONLY_WORK_TYPES.includes(linkedAreaRow.workType || '') || 
               AREA_DISPLAY_ONLY_WORK_NAMES.includes(linkedAreaRow.workName || '')) &&
@@ -2235,26 +2328,34 @@ export default function FieldEstimate() {
         
         // 피해철거공사 행인지 확인 (demolition- 접두사)
         const isDemolitionRow = laborRow.sourceAreaRowId.startsWith('demolition-');
-        const originalAreaRowId = isDemolitionRow 
-          ? laborRow.sourceAreaRowId.replace('demolition-', '') 
-          : laborRow.sourceAreaRowId;
+        const isBatangRow2 = isCompanionSourceId(laborRow.sourceAreaRowId);
+        let originalAreaRowId2 = laborRow.sourceAreaRowId;
+        if (isDemolitionRow) originalAreaRowId2 = originalAreaRowId2.replace('demolition-', '');
+        if (isBatangRow2) originalAreaRowId2 = extractOriginalSourceId(originalAreaRowId2);
         
-        let linkedAreaRow = rows.find(r => r.id === originalAreaRowId);
+        let linkedAreaRow = rows.find(r => r.id === originalAreaRowId2);
         if (!linkedAreaRow && laborRow.workName) {
           if (isDemolitionRow) {
             linkedAreaRow = rows.find(r => {
               const matchedName = matchDemolitionWorkName(r.workName || '');
               return matchedName && normalizeForMatch(matchedName) === normalizeForMatch(laborRow.workName || '');
             });
+          } else if (isBatangRow2) {
+            const parentWorkName2 = Object.entries(BATANG_COMPANION_MAP).find(([, v]) => v === laborRow.workName)?.[0];
+            if (parentWorkName2) {
+              linkedAreaRow = rows.find(r =>
+                normalizeForMatch(r.workName || '') === normalizeForMatch(parentWorkName2)
+              );
+            }
           } else {
             linkedAreaRow = rows.find(r =>
               normalizeForMatch(r.workName || '') === normalizeForMatch(laborRow.workName || '')
             );
           }
           if (linkedAreaRow) {
-            laborRow.sourceAreaRowId = isDemolitionRow
-              ? `demolition-${linkedAreaRow.id}`
-              : linkedAreaRow.id;
+            if (isDemolitionRow) laborRow.sourceAreaRowId = `demolition-${linkedAreaRow.id}`;
+            else if (isBatangRow2) laborRow.sourceAreaRowId = `${linkedAreaRow.id}::batang`;
+            else laborRow.sourceAreaRowId = linkedAreaRow.id;
           }
         }
         if (!linkedAreaRow) return laborRow;
@@ -4038,6 +4139,55 @@ export default function FieldEstimate() {
         }
       }
       
+      // 바탕만들기 companion 행 생성 (도장공사 + 수성페인트/무늬코트/탄성코트)
+      const companions = getCompanionWorkNames(workType, workName);
+      companions.forEach(companionName => {
+        const companionSourceId = `${sourceRowId}::batang`;
+        const companionCatalogItems = mergedIlwidaegaCatalog.filter(item =>
+          normalizeForMatch(item.공종 || '') === normalizedWorkType &&
+          normalizeForMatch(item.공사명 || '') === normalizeForMatch(companionName)
+        );
+        if (companionCatalogItems.length > 0) {
+          companionCatalogItems.forEach((catalogItem, idx) => {
+            const detailItem = catalogItem.노임항목 || '';
+            const deletionKey = makeLinkedLaborDeletionKey(companionSourceId, workType, companionName, detailItem);
+            if (deletedLinkedLaborKeys.has(deletionKey)) return;
+            const existingRow = filteredRows.find(r =>
+              r.isLinkedFromRecovery && r.category === workType && r.workName === companionName && r.detailItem === detailItem
+            );
+            if (existingRow) return;
+            if (newLaborRows.some(r => r.category === workType && r.workName === companionName && r.detailItem === detailItem)) return;
+            const D = catalogItem.기준작업량 || 0;
+            const E = catalogItem.노임단가 || 0;
+            newLaborRows.push({
+              id: `labor-ilwidaega-${Date.now()}-${Math.random()}-companion-${idx}`,
+              sourceAreaRowId: companionSourceId,
+              isLinkedFromRecovery: true,
+              place: '',
+              position: '',
+              category: workType,
+              workName: companionName,
+              detailWork: '일위대가',
+              detailItem,
+              priceStandard: '',
+              unit: '㎡',
+              standardPrice: E,
+              standardWorkQuantity: D,
+              quantity: 1,
+              applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
+              salesMarkupRate: 0,
+              pricePerSqm: 0,
+              damageArea: adjustedRepairArea,
+              deduction: 0,
+              includeInEstimate: true,
+              request: '',
+              amount: 0,
+            });
+          });
+          console.log('[일위대가 연동] 바탕만들기 행 생성:', companionName, companionCatalogItems.length, '개');
+        }
+      });
+
       // 철거공사는 별도 Reconcile useEffect에서 자동 생성됨 (중복 방지)
       // 철거공사 Reconcile useEffect가 rows 변경 감지하여 생성함
       
