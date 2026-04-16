@@ -4937,7 +4937,12 @@ export default function FieldEstimate() {
             <button
               key={category}
               type="button"
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => {
+                setSelectedCategory(category);
+                if (category === "자재비" && !isLossPreventionCase && !isReadOnly && isHydratedRef.current) {
+                  syncMaterialFromRecoveryArea();
+                }
+              }}
               className="pb-3 transition-all relative"
               style={{
                 fontFamily: "Pretendard",
