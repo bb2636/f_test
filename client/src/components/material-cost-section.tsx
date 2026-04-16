@@ -814,12 +814,21 @@ export function MaterialCostSection({
                         e.target.value = rawValue;
                       }}
                       onBlur={(e) => {
-                        // blur 시 콤마 추가 및 상태 업데이트
                         const rawValue = e.target.value.replace(/[,\s]/g, '');
                         const val = parseInt(rawValue, 10) || 0;
                         e.target.value = val > 0 ? val.toLocaleString() : '';
                         onRowsChange(rows.map(r => {
                           if (r.id === row.id) {
+                            const isPaint = r.공종 === '도장공사' && ['수성페인트', '무늬코트', '탄성코트'].includes(r.공사명 || '');
+                            if (isPaint) {
+                              const area = r.수량m2 || 0;
+                              const newTotal = Math.round(val * area);
+                              const laborPrice = r.기준단가 || 0;
+                              const newQty = laborPrice > 0 && newTotal > 0
+                                ? Math.round((newTotal / laborPrice) * 10) / 10
+                                : area;
+                              return { ...r, 단가: val, 수량EA: newQty, 수량: newQty, 합계: newTotal, 금액: newTotal, isOverridden: true };
+                            }
                             const qty = (r.수량m2 || 0) + (r.수량EA || 0);
                             const newTotal = Math.round(val * qty);
                             return { ...r, 단가: val, 기준단가: val, 합계: newTotal, 금액: newTotal };
