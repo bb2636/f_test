@@ -2155,9 +2155,14 @@ export function LaborCostSection({
                       <Select
                         value={row.detailItem || undefined}
                         onValueChange={(value) => {
+                          console.log("[노임항목 onValueChange]", value, "rowId:", row.id);
                           if (value === "직접입력") {
-                            setDetailItemInputMode(prev => ({ ...prev, [row.id]: true }));
-                            updateRow(row.id, "detailItem", "");
+                            console.log("[노임항목] 직접입력 선택됨 → 인풋 모드 전환");
+                            setDetailItemInputMode(prev => {
+                              const next = { ...prev, [row.id]: true };
+                              console.log("[노임항목] detailItemInputMode:", next);
+                              return next;
+                            });
                           } else {
                             updateRow(row.id, "detailItem", value);
                           }
