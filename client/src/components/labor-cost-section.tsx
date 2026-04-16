@@ -147,6 +147,8 @@ export function LaborCostSection({
   isLossPreventionCase = false,
   isPartner = false,
 }: LaborCostSectionProps) {
+  const [directInputMode, setDirectInputMode] = useState<Set<string>>(new Set());
+
   // 드래그 앤 드롭 상태
   const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
   const [dragOverRowId, setDragOverRowId] = useState<string | null>(null);
@@ -2096,12 +2098,12 @@ export function LaborCostSection({
                         />
                         {row.detailItem || ""}
                       </div>
-                    ) : (row.isDetailItemDirectInput || (row.detailItem && row.detailItem.trim() !== "" && !getDetailItemOptions(row.category, row.workName, row.detailWork || "노무비").includes(row.detailItem))) ? (
+                    ) : (directInputMode.has(row.id) || row.isDetailItemDirectInput || (row.detailItem && row.detailItem.trim() !== "" && !getDetailItemOptions(row.category, row.workName, row.detailWork || "노무비").includes(row.detailItem))) ? (
                       <div className="flex items-center gap-1">
                         <Input
                           value={row.detailItem || ""}
                           onChange={(e) => {
-                            onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: e.target.value } : r));
+                            onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: e.target.value, isDetailItemDirectInput: true } : r));
                           }}
                           className="h-9 border-0 flex-1"
                           style={{ fontFamily: "Pretendard", fontSize: "14px" }}
@@ -2111,31 +2113,20 @@ export function LaborCostSection({
                         <button
                           type="button"
                           onClick={() => {
+                            setDirectInputMode(prev => { const next = new Set(prev); next.delete(row.id); return next; });
                             onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: "", isDetailItemDirectInput: false } : r));
                           }}
-                          style={{
-                            width: "20px",
-                            height: "20px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            color: "rgba(12, 12, 12, 0.4)",
-                            fontSize: "14px",
-                          }}
+                          style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", color: "rgba(12,12,12,0.4)", fontSize: "14px" }}
                           title="목록 선택으로 돌아가기"
                           data-testid={`button-laborItem-back-${globalIndex}`}
-                        >
-                          ×
-                        </button>
+                        >×</button>
                       </div>
                     ) : (
                       <Select
                         value={row.detailItem || undefined}
                         onValueChange={(value) => {
                           if (value === "__직접입력__") {
+                            setDirectInputMode(prev => new Set(prev).add(row.id));
                             onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: "", isDetailItemDirectInput: true } : r));
                           } else {
                             updateRow(row.id, "detailItem", value);
