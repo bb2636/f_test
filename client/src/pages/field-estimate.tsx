@@ -2116,7 +2116,9 @@ export default function FieldEstimate() {
       completedAreaRows.forEach(areaRow => {
         const workType = areaRow.workType;
         const workName = areaRow.workName;
-        const damageAreaValue = Number(areaRow.repairArea) || 0;
+        const rawRepairArea = Number(areaRow.repairArea) || 0;
+        const addNewCeilingMult = getCeilingMultiplier(workType, areaRow.location || '');
+        const damageAreaValue = Math.round(rawRepairArea * addNewCeilingMult * 100) / 100;
         const laborCategory = getLaborCategory(workType, workName);
         
         // 일위대가DB에서 공종+공사명으로 ALL matching 노임항목 조회 (오버라이드 적용된 값 사용)
