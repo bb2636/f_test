@@ -1693,9 +1693,11 @@ export default function FieldEstimate() {
     // 1. 비대상 공사명 행 (도장공사, 가설공사 등): 그대로 유지 (삭제 안 함)
     // 2. 대상 공사명 행 (AUTO_SYNC_MATERIAL_WORK_NAMES): resultRowsMap 사용 (stale 행 자동 제거)
     
-    // 비대상 공사명 자동 행: 그대로 유지
+    const isBatangRow = (workName: string) => (workName || '').startsWith('바탕만들기(') || (workName || '').startsWith('바탕만들기 (');
+
+    // 비대상 공사명 자동 행: 그대로 유지 (바탕만들기 제외 - 자재비DB에 없는 항목)
     const nonTargetAutoRows = existingAutoRows.filter(row => 
-      !AUTO_SYNC_MATERIAL_WORK_NAMES.includes(row.공사명 || '')
+      !AUTO_SYNC_MATERIAL_WORK_NAMES.includes(row.공사명 || '') && !isBatangRow(row.공사명 || '')
     );
     
     // 대상 공사명 중 stale 행 개수 (로깅용)
@@ -1718,11 +1720,12 @@ export default function FieldEstimate() {
     // 이렇게 하면: 복구면적에서 항목 삭제 시 자재비도 함께 삭제됨
     const filteredManualRows = manualRows.filter(row => {
       const workName = (row.공사명 || '').toString().trim();
-      const isAutoSyncTarget = AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName);
-      
-      if (isAutoSyncTarget) {
-        // 복구면적 연동 대상 공사명은 제거 (자동 행이 대체하거나, 복구면적에 없으면 삭제)
+      if (AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName)) {
         console.log('[자재비 수동행 제거 - 자동연동 대상]', row.공종, row.공사명, row.자재항목);
+        return false;
+      }
+      if (isBatangRow(workName)) {
+        console.log('[자재비 수동행 제거 - 바탕만들기]', row.공종, row.공사명, row.자재항목);
         return false;
       }
       return true;
