@@ -1693,7 +1693,7 @@ export default function FieldEstimate() {
     // 1. 비대상 공사명 행 (도장공사, 가설공사 등): 그대로 유지 (삭제 안 함)
     // 2. 대상 공사명 행 (AUTO_SYNC_MATERIAL_WORK_NAMES): resultRowsMap 사용 (stale 행 자동 제거)
     
-    const isBatangRow = (workName: string) => (workName || '').startsWith('바탕만들기(') || (workName || '').startsWith('바탕만들기 (');
+    const isBatangRow = (workName: string) => (workName || '').startsWith('바탕만들기');
 
     // 비대상 공사명 자동 행: 그대로 유지 (바탕만들기 제외 - 자재비DB에 없는 항목)
     const nonTargetAutoRows = existingAutoRows.filter(row => 
@@ -2184,7 +2184,7 @@ export default function FieldEstimate() {
       if (!isLinkedFromRecovery) return true;
       if ((category === '목공사' && workName === '반자틀') || category === '철거공사') return true;
       if (category === '가설공사' && workName !== '건축물현장정리') return true;
-      if ((workName || '').startsWith('바탕만들기(') || (workName || '').startsWith('바탕만들기 (')) return true;
+      if ((workName || '').startsWith('바탕만들기')) return true;
       if (AUTO_MATERIAL_SYNC_WORK_NAMES.includes(workName) || isItemInLinkSettings(category, workName)) {
         console.log('[노무비→자재비 useEffect] 자동연동 대상 제외:', category, workName);
         return true;
