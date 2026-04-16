@@ -684,6 +684,7 @@ export default function FieldEstimate() {
     isHydratedRef.current = false;
     setIsHydratedState(false);
     skipAutoSyncRef.current = true; // 자동 동기화 방지 리셋
+    materialCatalogLoadedRef.current = false;
     
     // 이전 케이스 데이터 초기화
     setRows([]);
@@ -1366,11 +1367,16 @@ export default function FieldEstimate() {
       let calculatedUnit: string;
       let autoUnitType: 'm2' | 'EA';
       
+      const exactCategoryMatch = matchingMaterials.find(
+        item => normalizeForMatch(item.공종 || '') === normalizeForMatch(data.공종 || '')
+      );
+      const dbUnit = exactCategoryMatch ? (exactCategoryMatch.단위 || 'EA') : (matchingMaterials.length > 0 ? (matchingMaterials[0].단위 || 'EA') : 'EA');
+
       if (isPaintingMaterial) {
         calculatedQty = Math.round(data.totalArea * 10) / 10;
-        calculatedUnit = 'EA';
+        calculatedUnit = dbUnit;
         autoUnitType = 'EA';
-        console.log(`[자재비 집계] 도장공사 ${data.공사명}: 총면적 ${data.totalArea}㎡ (실면적 그대로)`);
+        console.log(`[자재비 집계] 도장공사 ${data.공사명}: 총면적 ${data.totalArea}㎡ (실면적 그대로, 단위: ${dbUnit})`);
       } else if (ratio) {
         // EA 단위: 전체 합산 후 마지막에 한 번만 ceil
         calculatedQty = Math.ceil(data.totalArea / ratio.unitSize);
@@ -1421,7 +1427,7 @@ export default function FieldEstimate() {
           resultRowsMap.set(autoKey, {
             ...existingRow,
             autoKey,
-            단위: 'EA',
+            단위: dbUnit,
             단가: preservedPrice,
             기준단가: laborUnitPrice,
             수량m2: calculatedQty,
@@ -1434,7 +1440,7 @@ export default function FieldEstimate() {
             autoUnitType: 'EA',
             isManualPriceEntry: true,
           });
-          console.log(`[자재비 집계] 도장공사 ${data.공사명}: 기존 행 업데이트 (노임단가: ${laborUnitPrice}, 단가: ${preservedPrice})`);
+          console.log(`[자재비 집계] 도장공사 ${data.공사명}: 기존 행 업데이트 (노임단가: ${laborUnitPrice}, 단가: ${preservedPrice}, 단위: ${dbUnit})`);
         } else {
           resultRowsMap.set(autoKey, {
             id: `material-auto-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -1443,7 +1449,7 @@ export default function FieldEstimate() {
             자재항목: data.공사명,
             자재: data.공사명,
             규격: '',
-            단위: 'EA',
+            단위: dbUnit,
             단가: 0,
             기준단가: laborUnitPrice,
             수량m2: calculatedQty,
@@ -1499,7 +1505,7 @@ export default function FieldEstimate() {
           resultRowsMap.set(autoKey, {
             ...existingRow,
             autoKey,
-            단위: 'EA',
+            단위: dbUnit,
             단가: fixedTotal,
             기준단가: laborUnitPrice,
             수량m2: calculatedQty,
@@ -1512,7 +1518,7 @@ export default function FieldEstimate() {
             autoUnitType: 'EA',
             isManualPriceEntry: false,
           });
-          console.log(`[자재비 집계] ${data.공종} ${data.공사명}: 기존 행 업데이트 (일위대가: ${fixedTotal}, 노임단가: ${laborUnitPrice})`);
+          console.log(`[자재비 집계] ${data.공종} ${data.공사명}: 기존 행 업데이트 (일위대가: ${fixedTotal}, 노임단가: ${laborUnitPrice}, 단위: ${dbUnit})`);
         } else {
           resultRowsMap.set(autoKey, {
             id: `material-auto-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -1521,7 +1527,7 @@ export default function FieldEstimate() {
             자재항목: data.공사명,
             자재: data.공사명,
             규격: '',
-            단위: 'EA',
+            단위: dbUnit,
             단가: fixedTotal,
             기준단가: laborUnitPrice,
             수량m2: calculatedQty,
@@ -1540,7 +1546,7 @@ export default function FieldEstimate() {
             autoUnitType: 'EA',
             isManualPriceEntry: false,
           });
-          console.log(`[자재비 집계] ${data.공종} ${data.공사명}: 새 행 생성 (일위대가: ${fixedTotal}, 노임단가: ${laborUnitPrice})`);
+          console.log(`[자재비 집계] ${data.공종} ${data.공사명}: 새 행 생성 (일위대가: ${fixedTotal}, 노임단가: ${laborUnitPrice}, 단위: ${dbUnit})`);
         }
         return;
       }
@@ -2088,6 +2094,41 @@ export default function FieldEstimate() {
     
     syncMaterialFromRecoveryArea();
   }, [recoverySignature, isLossPreventionCase, isReadOnly]);
+
+  const materialCatalogLoadedRef = useRef(false);
+  useEffect(() => {
+    if (!isHydratedRef.current) return;
+    if (materialByWorknameCatalog.length === 0) return;
+    if (materialCatalogLoadedRef.current) return;
+    materialCatalogLoadedRef.current = true;
+
+    const PAINTING_WORK_NAMES = ['수성페인트', '무늬코트', '탄성코트'];
+    const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장'];
+
+    setMaterialRows(prev => {
+      let changed = false;
+      const updated = prev.map(row => {
+        const isPaint = row.autoKey?.includes('__PAINT__');
+        const isFixed = row.autoKey?.includes('__FIXED__');
+        if (!isPaint && !isFixed) return row;
+
+        const workName = row.공사명 || '';
+        const category = row.공종 || '';
+        const match = materialByWorknameCatalog.find(
+          item => normalizeForMatch(item.공종 || '') === normalizeForMatch(category) &&
+                  normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
+        ) || materialByWorknameCatalog.find(
+          item => normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
+        );
+        if (match && match.단위 && match.단위 !== row.단위) {
+          changed = true;
+          return { ...row, 단위: match.단위 };
+        }
+        return row;
+      });
+      return changed ? updated : prev;
+    });
+  }, [isHydratedState, materialByWorknameCatalog]);
   
   // 공종 목록 (노무비 DB에서 가져온 후 케이스 유형별 필터링)
   // 손해방지 케이스: DAMAGE_PREVENTION_WORK_TYPES만 표시
@@ -3152,6 +3193,7 @@ export default function FieldEstimate() {
             ...rest,
             detailWork: fixedDetailWork,
             includeInEstimate: rest.includeInEstimate === false || rest.includeInEstimate === "false" ? false : true,
+            isDetailItemDirectInput: rest.isDetailItemDirectInput || false,
           };
         });
         const remappedLaborRows = loadedLaborRows.map((laborRow: any) => {
