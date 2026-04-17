@@ -1995,28 +1995,8 @@ export default function FieldEstimate() {
         result[s.location][s.category].push(s.workName);
       }
     });
-    if (ilwidaegaCatalog.length > 0) {
-      const catalogWorkNamesByCategory: Record<string, Set<string>> = {};
-      ilwidaegaCatalog.forEach(item => {
-        if (!catalogWorkNamesByCategory[item.공종]) catalogWorkNamesByCategory[item.공종] = new Set();
-        catalogWorkNamesByCategory[item.공종].add(item.공사명);
-      });
-      for (const location of Object.keys(result)) {
-        for (const category of Object.keys(result[location])) {
-          const catalogNames = catalogWorkNamesByCategory[category];
-          if (catalogNames) {
-            catalogNames.forEach(wn => {
-              if ((wn || '').startsWith('바탕만들기(') || (wn || '').startsWith('바탕만들기 (')) return;
-              if (!result[location][category].includes(wn)) {
-                result[location][category].push(wn);
-              }
-            });
-          }
-        }
-      }
-    }
     return result;
-  }, [ilwidaegaLinkSettings, ilwidaegaCatalog]);
+  }, [ilwidaegaLinkSettings]);
   
   const getWorkTypesByLocation = (location: string): string[] => {
     return WORK_TYPES_BY_LOCATION[location] || AREA_CALCULATION_WORK_TYPES;
