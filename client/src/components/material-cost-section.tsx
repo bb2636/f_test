@@ -130,7 +130,9 @@ export function MaterialCostSection({
         }
       }
       // 자재항목 직접입력 감지: 값이 있고, 드롭다운 옵션에 없는 경우
-      if (row.자재항목 && row.자재항목 !== '' && !materialItemInputMode[row.id] && !row.공종?.includes('기타')) {
+      // 도장공사 페인트 행(자재항목=공사명)은 카탈로그에 없어도 직접입력 모드로 전환하지 않음
+      const isPaintRow = row.공종 === '도장공사' && ['수성페인트', '무늬코트', '탄성코트'].includes(row.공사명 || '');
+      if (row.자재항목 && row.자재항목 !== '' && !materialItemInputMode[row.id] && !row.공종?.includes('기타') && !isPaintRow) {
         const materialOptions = getMaterialNamesForWorkTypeAndWorkName(row.공종, row.공사명);
         if (materialOptions.length > 0 && !materialOptions.includes(row.자재항목)) {
           newMaterialModes[row.id] = true;
@@ -407,8 +409,10 @@ export function MaterialCostSection({
               
               // 자재항목 값 (자재항목 또는 자재 사용)
               const materialItem = row.자재항목 || row.자재 || '';
-              // 단가 값 (단가 또는 기준단가 사용)
-              const price = row.단가 || row.기준단가 || 0;
+              // 도장공사 페인트 항목: 단가는 직접입력이므로 기준단가 폴백 금지
+              const isPaintRow = row.공종 === '도장공사' && ['수성페인트', '무늬코트', '탄성코트'].includes(row.공사명 || '');
+              // 단가 값 (단가 또는 기준단가 사용, 페인트 행은 단가만)
+              const price = isPaintRow ? (row.단가 || 0) : (row.단가 || row.기준단가 || 0);
               // 면적 기반 자재 (도배, 마루, 장판)는 올림 처리
               const areaWorkNames = ['도배', '마루', '장판'];
               const isAreaBasedMaterial = areaWorkNames.includes(row.공사명 || '') || row.단위 === 'm²';
