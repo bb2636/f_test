@@ -413,6 +413,54 @@ export function LaborCostSection({
     laborRateTiers,
   ]);
 
+  // FIXED 항목 강제 정규화 (욕실/가구/철거의 SMC, 리빙보드, 도기류, 붙박이장, 상부장 시리즈)
+  // 가드(enableAreaImport, isLinkedFromRecovery) 우회 — 모든 화면/생성경로에서 항상 일위대가DB 값 강제 적용
+  // 합계 = 일위대가DB의 일위대가 컬럼, 적용단가 = 노임단가(E), 수량 = 합계/적용단가
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (rows.length === 0) return;
+    if (!ilwidaegaCatalog || ilwidaegaCatalog.length === 0) return;
+
+    let hasChanges = false;
+    const updatedRows = rows.map((row) => {
+      if (row.detailWork !== "일위대가") return row;
+      if (!isFixedIlwidaegaWorkName(row.workName)) return row;
+
+      const ilwidaegaItem = ilwidaegaCatalog.find(
+        (item) =>
+          item.공종 === row.category &&
+          item.공사명 === row.workName &&
+          item.노임항목 === row.detailItem,
+      );
+      const fixedTotal = Number(ilwidaegaItem?.일위대가) || 0;
+      const E_db = Number(ilwidaegaItem?.노임단가) || 0;
+      if (!ilwidaegaItem || fixedTotal <= 0 || E_db <= 0) return row;
+
+      const targetQuantity = Math.round((fixedTotal / E_db) * 10) / 10;
+      if (
+        row.amount === fixedTotal &&
+        row.pricePerSqm === E_db &&
+        row.standardPrice === E_db &&
+        row.quantity === targetQuantity
+      ) {
+        return row;
+      }
+
+      hasChanges = true;
+      return {
+        ...row,
+        standardPrice: E_db,
+        pricePerSqm: E_db,
+        amount: fixedTotal,
+        quantity: targetQuantity,
+      };
+    });
+
+    if (hasChanges) {
+      onRowsChange(updatedRows);
+    }
+  }, [rows, onRowsChange, isHydrated, ilwidaegaCatalog]);
+
   // 캐스케이딩 옵션 생성 - filteredWorkTypes가 제공되면 우선 사용
   const categoryOptions = useMemo(() => {
     // filteredWorkTypes가 제공되면 그것을 사용
