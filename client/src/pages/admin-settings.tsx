@@ -6025,6 +6025,7 @@ export default function AdminSettings() {
                             <option value="SC제일은행">SC제일은행</option>
                             <option value="카카오뱅크">카카오뱅크</option>
                             <option value="토스뱅크">토스뱅크</option>
+                            <option value="K뱅크">K뱅크</option>
                             <option value="MG새마을금고">MG새마을금고</option>
                             <option value="광주은행">광주은행</option>
                           </select>
