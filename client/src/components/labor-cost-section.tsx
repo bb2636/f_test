@@ -328,22 +328,26 @@ export function LaborCostSection({
         }
       }
       const E_val = Number(row.standardPrice) || 0;
-      const isFixed = row.detailWork === "일위대가" && isFixedIlwidaegaWorkName(row.workName);
+      const isFixedWorkName = row.detailWork === "일위대가" && isFixedIlwidaegaWorkName(row.workName);
 
-      // FIXED 항목 (욕실/가구공사): 합계=일위대가(DB), 적용단가=노임단가(E), 수량=합계/적용단가
+      // FIXED 항목 (욕실/가구/철거의 SMC, 리빙보드, 도기류, 붙박이장, 상부장 시리즈):
+      // 합계=일위대가DB의 일위대가 컬럼, 적용단가=노임단가(E), 수량=합계/적용단가
+      // 카탈로그에서 일위대가 값을 못 찾으면 FIXED 처리 적용하지 않음 (기존 로직 폴백)
       let fixedTotal = 0;
-      if (isFixed) {
+      if (isFixedWorkName) {
         const ilwidaegaItem = ilwidaegaCatalog.find(
           (item) =>
             item.공종 === row.category &&
             item.공사명 === row.workName &&
             item.노임항목 === row.detailItem,
         );
-        fixedTotal = ilwidaegaItem?.일위대가 || row.amount || 0;
+        const lookupValue = Number(ilwidaegaItem?.일위대가) || 0;
+        if (lookupValue > 0) fixedTotal = lookupValue;
       }
+      const isFixed = isFixedWorkName && fixedTotal > 0 && E_val > 0;
 
       const newQuantity = isFixed
-        ? (E_val > 0 && fixedTotal > 0 ? Math.round((fixedTotal / E_val) * 10) / 10 : 1)
+        ? Math.round((fixedTotal / E_val) * 10) / 10
         : (standardWorkQty > 0 && E_val > 0 && newDamageArea > 0
             ? calculateQuantityWithTiers(newDamageArea, standardWorkQty, E_val, laborRateTiers)
             : row.quantity);
@@ -353,11 +357,12 @@ export function LaborCostSection({
         row.detailWork === "일위대가" &&
         row.standardPrice &&
         Number(row.standardPrice) > 0;
+      const needsFixedRecalc = isFixed && (row.amount !== fixedTotal || row.pricePerSqm !== E_val);
       if (
         row.damageArea === newDamageArea &&
         row.quantity === newQuantity &&
         !needsPriceRecalc &&
-        (!isFixed || (row.amount === fixedTotal && row.pricePerSqm === E_val))
+        !needsFixedRecalc
       )
         return row;
 
@@ -1255,18 +1260,20 @@ export function LaborCostSection({
         } else if (updated.detailWork === "일위대가") {
           // FIXED 항목 (욕실/가구공사 SMC, 리빙보드, 도기류, 붙박이장, 상부장 시리즈):
           // 합계=일위대가(DB), 적용단가=노임단가(E), 수량=합계/적용단가
-          if (isFixedIlwidaegaWorkName(updated.workName)) {
-            const ilwidaegaItem = ilwidaegaCatalog.find(
-              (item) =>
-                item.공종 === updated.category &&
-                item.공사명 === updated.workName &&
-                item.노임항목 === updated.detailItem,
-            );
-            const fixedTotal = ilwidaegaItem?.일위대가 || updated.amount || 0;
-            const E = standardPrice;
+          const ilwidaegaItem = isFixedIlwidaegaWorkName(updated.workName)
+            ? ilwidaegaCatalog.find(
+                (item) =>
+                  item.공종 === updated.category &&
+                  item.공사명 === updated.workName &&
+                  item.노임항목 === updated.detailItem,
+              )
+            : null;
+          const fixedTotal = Number(ilwidaegaItem?.일위대가) || 0;
+          const E_fixed = standardPrice;
+          if (ilwidaegaItem && fixedTotal > 0 && E_fixed > 0) {
             updated.amount = fixedTotal;
-            updated.pricePerSqm = E;
-            updated.quantity = E > 0 && fixedTotal > 0 ? Math.round((fixedTotal / E) * 10) / 10 : 1;
+            updated.pricePerSqm = E_fixed;
+            updated.quantity = Math.round((fixedTotal / E_fixed) * 10) / 10;
           } else {
             // 일위대가: 새 공식 적용 (C, D, E → I)
             // C = 복구면적 (damageArea)
