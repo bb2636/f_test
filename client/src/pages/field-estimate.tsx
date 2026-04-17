@@ -2988,11 +2988,18 @@ export default function FieldEstimate() {
           const D = catalogItem.기준작업량 || 0;
           const E = catalogItem.노임단가 || 0;
           const C = totalRepairArea; // 합산된 면적 사용
-          
+          const fixedIlwidaega = Number(catalogItem.일위대가) || 0;
+          const isFixed = isFixedIlwidaegaWorkName(matchedWorkName) && fixedIlwidaega > 0 && E > 0;
+
           let calculatedAmount = 0;
           let calculatedPricePerSqm = 0;
           let calculatedQuantity = 1;
-          if (D > 0 && E > 0 && C > 0) {
+          if (isFixed) {
+            // FIXED: 합계=일위대가(DB), 적용단가=노임단가(E), 수량=합계/E
+            calculatedAmount = fixedIlwidaega;
+            calculatedPricePerSqm = E;
+            calculatedQuantity = Math.round((fixedIlwidaega / E) * 10) / 10;
+          } else if (D > 0 && E > 0 && C > 0) {
             calculatedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
             calculatedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
             calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
