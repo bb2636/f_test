@@ -399,6 +399,16 @@ export default function FieldEstimate() {
   // 철거공사 필요한 공사명 목록 (컴포넌트 레벨 - 삭제 추적 및 reconcile에서 공통 사용)
   const DEMOLITION_WORK_NAMES = ['합판', '석고보드', '도배', '마루', '장판', '상부장', '상부장&하부장', '상부장&키큰장', '키큰장', '상부장&하부장&키큰장', '붙박이장', 'SMC', '리빙보드'];
   
+  // FIXED 일위대가 항목: 면적 무관하게 일위대가DB의 '일위대가' 컬럼을 합계로 사용 (욕실/가구/철거의 SMC~붙박이장)
+  // - 복구면적: 면적 그대로 (천장 할증 미적용)
+  // - 적용단가: 노임단가 (E)
+  // - 합계: 일위대가 (DB 고정값)
+  // - 수량: 합계 / 적용단가
+  const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장', '상부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
+  const isFixedIlwidaegaWorkName = (workName: string): boolean => {
+    return FIXED_ILWIDAEGA_WORK_NAMES.includes(workName);
+  };
+  
   // 정규화된 공사명 → 원본 DEMOLITION_WORK_NAMES 매핑 함수
   const matchDemolitionWorkName = (workName: string): string | null => {
     const normalized = normalizeForMatch(workName);
@@ -611,15 +621,19 @@ export default function FieldEstimate() {
   const createDemolitionLaborRow = (sourceAreaRow: AreaCalculationRow, catalogItem?: IlwidaegaCatalogItem, overrideDamageArea?: number): LaborCostRow => {
     const { demolitionWorkName, detailItem } = getDemolitionMapping(sourceAreaRow.workType, sourceAreaRow.workName);
     
-    // 안전한 피해면적 변환 (문자열/숫자 모두 처리) + 천장 할증 계수 적용
+    // FIXED 항목 여부 (SMC, 리빙보드, 도기류, 붙박이장, 상부장 시리즈)
+    const isFixed = isFixedIlwidaegaWorkName(demolitionWorkName);
+    
+    // 안전한 피해면적 변환 (FIXED는 천장 할증 미적용, 나머지는 적용)
     const rawArea = overrideDamageArea ?? (parseFloat(sourceAreaRow.repairArea) || 0);
-    const ceilingMult = getCeilingMultiplier(sourceAreaRow.workType || '', sourceAreaRow.location || '');
+    const ceilingMult = isFixed ? 1.0 : getCeilingMultiplier(sourceAreaRow.workType || '', sourceAreaRow.location || '');
     const parsedArea = Math.round(rawArea * ceilingMult * 100) / 100;
     const safeDamageArea = Math.round(parsedArea * 10) / 10;
     
-    // 기준작업량(D), 노임단가(E) 가져오기
+    // 기준작업량(D), 노임단가(E), 일위대가(I_fixed) 가져오기
     const standardWorkQty = catalogItem?.기준작업량 || 0;
     const laborPrice = catalogItem?.노임단가 || 0;
+    const fixedTotal = catalogItem?.일위대가 || 0;
     
     const C = safeDamageArea;
     const D = standardWorkQty;
@@ -629,7 +643,12 @@ export default function FieldEstimate() {
     let calculatedAmount = 0;
     let calculatedPricePerSqm = 0;
     
-    if (D > 0 && E > 0 && C > 0) {
+    if (isFixed) {
+      // FIXED: 합계=일위대가(DB), 적용단가=노임단가(E), 수량=합계/적용단가
+      calculatedAmount = fixedTotal;
+      calculatedPricePerSqm = E;
+      calculatedQuantity = E > 0 && fixedTotal > 0 ? Math.round((fixedTotal / E) * 10) / 10 : 1;
+    } else if (D > 0 && E > 0 && C > 0) {
       calculatedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
       calculatedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
       calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
@@ -2324,7 +2343,8 @@ export default function FieldEstimate() {
         const workType = areaRow.workType;
         const workName = areaRow.workName;
         const rawRepairArea = Number(areaRow.repairArea) || 0;
-        const addNewCeilingMult = getCeilingMultiplier(workType, areaRow.location || '');
+        const isFixed = isFixedIlwidaegaWorkName(workName);
+        const addNewCeilingMult = isFixed ? 1.0 : getCeilingMultiplier(workType, areaRow.location || '');
         const damageAreaValue = Math.round(rawRepairArea * addNewCeilingMult * 100) / 100;
         const laborCategory = getLaborCategory(workType, workName);
         
@@ -2334,7 +2354,7 @@ export default function FieldEstimate() {
                  normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
         );
         
-        console.log('[연동] 일위대가 조회:', { workType, workName, laborCategory, matchCount: matchingCatalogItems.length });
+        console.log('[연동] 일위대가 조회:', { workType, workName, laborCategory, matchCount: matchingCatalogItems.length, isFixed });
         
         if (matchingCatalogItems.length > 0) {
           // 일위대가DB에서 매칭된 모든 노임항목으로 행 생성
@@ -2342,12 +2362,18 @@ export default function FieldEstimate() {
             const C = damageAreaValue; // 복구면적
             const D = catalogItem.기준작업량 || 0; // 기준작업량
             const E = catalogItem.노임단가 || 0; // 노임단가(인당)
+            const fixedTotal = catalogItem.일위대가 || 0; // 일위대가 (FIXED 합계)
             
             let calculatedQuantity = 1;
             let calculatedAmount = 0;
             let calculatedPricePerSqm = 0;
             
-            if (D > 0 && E > 0 && C > 0) {
+            if (isFixed) {
+              // FIXED: 합계=일위대가(DB), 적용단가=노임단가(E), 수량=합계/적용단가
+              calculatedAmount = fixedTotal;
+              calculatedPricePerSqm = E;
+              calculatedQuantity = E > 0 && fixedTotal > 0 ? Math.round((fixedTotal / E) * 10) / 10 : 1;
+            } else if (D > 0 && E > 0 && C > 0) {
               calculatedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
               calculatedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
               calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
