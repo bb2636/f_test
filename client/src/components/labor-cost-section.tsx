@@ -417,9 +417,13 @@ export function LaborCostSection({
   // 가드(enableAreaImport, isLinkedFromRecovery) 우회 — 모든 화면/생성경로에서 항상 일위대가DB 값 강제 적용
   // 합계 = 일위대가DB의 일위대가 컬럼, 적용단가 = 노임단가(E), 수량 = 합계/적용단가
   useEffect(() => {
+    console.log('[FIXED 정규화] 진입', { isHydrated, rowsLen: rows.length, catalogLen: ilwidaegaCatalog?.length });
     if (!isHydrated) return;
     if (rows.length === 0) return;
     if (!ilwidaegaCatalog || ilwidaegaCatalog.length === 0) return;
+
+    const fixedRows = rows.filter(r => r.detailWork === '일위대가' && isFixedIlwidaegaWorkName(r.workName));
+    console.log('[FIXED 정규화] FIXED 후보 행 수:', fixedRows.length, fixedRows.map(r => `${r.category}|${r.workName}|${r.detailItem} amount=${r.amount}`));
 
     let hasChanges = false;
     const updatedRows = rows.map((row) => {
