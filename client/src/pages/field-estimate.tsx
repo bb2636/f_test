@@ -404,7 +404,7 @@ export default function FieldEstimate() {
   // - 적용단가: 노임단가 (E)
   // - 합계: 일위대가 (DB 고정값)
   // - 수량: 합계 / 적용단가
-  const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장', '상부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
+  const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장', '상부장', '하부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
   const isFixedIlwidaegaWorkName = (workName: string): boolean => {
     return FIXED_ILWIDAEGA_WORK_NAMES.includes(workName);
   };
@@ -1294,7 +1294,7 @@ export default function FieldEstimate() {
   };
 
   // 자동 연동 대상 공사명 (반자틀 제외)
-  const AUTO_SYNC_MATERIAL_WORK_NAMES = ['합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리', '수성페인트', '무늬코트', '탄성코트', 'SMC', '리빙보드', '도기류', '붙박이장', '상부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
+  const AUTO_SYNC_MATERIAL_WORK_NAMES = ['합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리', '수성페인트', '무늬코트', '탄성코트', 'SMC', '리빙보드', '도기류', '붙박이장', '상부장', '하부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
   
   // 복구면적 산출표에서 자재비로 동기화 (자재비DB 기반 자동 생성)
   // 핵심: 동일 Key(공종+공사명+자재항목)는 1행으로 merge, 전체 합산 후 마지막에 ceil 적용
@@ -1403,7 +1403,7 @@ export default function FieldEstimate() {
 
       // FIXED 일위대가 항목 (욕실/가구 SMC, 리빙보드, 도기류, 붙박이장, 상부장 시리즈)
       // 자재비DB의 단위(EA)/단가/자재항목을 그대로 사용
-      const FIXED_ILWIDAEGA_WORK_NAMES_INLINE = ['SMC', '리빙보드', '도기류', '붙박이장', '상부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
+      const FIXED_ILWIDAEGA_WORK_NAMES_INLINE = ['SMC', '리빙보드', '도기류', '붙박이장', '상부장', '하부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
       const isFixedMaterial = FIXED_ILWIDAEGA_WORK_NAMES_INLINE.includes(data.공사명);
 
       if (isPaintingMaterial) {
@@ -2056,7 +2056,7 @@ export default function FieldEstimate() {
     materialCatalogLoadedRef.current = true;
 
     const PAINTING_WORK_NAMES = ['수성페인트', '무늬코트', '탄성코트'];
-    const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장', '상부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
+    const FIXED_ILWIDAEGA_WORK_NAMES = ['SMC', '리빙보드', '도기류', '붙박이장', '상부장', '하부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
 
     setMaterialRows(prev => {
       let changed = false;
