@@ -2288,6 +2288,7 @@ export default function FieldEstimate() {
     // 연동할 행이 있으면 노무비에 추가 (일위대가DB 기반 모든 노임항목 생성)
     if (completedAreaRows.length > 0 || demolitionOnlyAreaRows.length > 0) {
       const newLaborRows: LaborCostRow[] = [];
+      const staleEmptyDemolitionRefreshes: { oldId: string; newRow: LaborCostRow }[] = [];
       
       completedAreaRows.forEach(areaRow => {
         const workType = areaRow.workType;
@@ -2416,14 +2417,23 @@ export default function FieldEstimate() {
         if (needsDemolitionRow(workType, workName)) {
           const demolitionSourceId = `demolition-${areaRow.id}`;
           const existingDemolition = laborCostRows.find(r => r.sourceAreaRowId === demolitionSourceId);
+          const demolitionCatalogItem = mergedIlwidaegaCatalog.find(
+            item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
+                   normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
+          );
           if (!existingDemolition) {
-            const demolitionCatalogItem = mergedIlwidaegaCatalog.find(
-              item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
-                     normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
-            );
             const demolitionRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
             newLaborRows.push(demolitionRow);
             console.log('[자동연동] 철거공사 행 생성:', workName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)');
+          } else if (
+            demolitionCatalogItem &&
+            (!existingDemolition.standardPrice || existingDemolition.standardPrice === 0) &&
+            (!existingDemolition.amount || existingDemolition.amount === 0)
+          ) {
+            // 빈 행으로 저장된 행을 카탈로그 데이터로 재생성하여 갱신
+            const refreshedRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
+            staleEmptyDemolitionRefreshes.push({ oldId: existingDemolition.id, newRow: { ...refreshedRow, id: existingDemolition.id } });
+            console.log('[자동연동] 철거공사 빈 행 갱신:', workName);
           }
         }
       });
@@ -2443,9 +2453,10 @@ export default function FieldEstimate() {
 
       lastLaborSetSourceRef.current = 'autoSync-addNewRows';
       setLaborCostRows(prev => {
-        const nonEmptyRows = prev.filter(row => 
-          row.sourceAreaRowId || row.place || row.position || row.category || row.workName
-        );
+        const refreshMap = new Map(staleEmptyDemolitionRefreshes.map(r => [r.oldId, r.newRow]));
+        const nonEmptyRows = prev
+          .filter(row => row.sourceAreaRowId || row.place || row.position || row.category || row.workName)
+          .map(row => refreshMap.get(row.id) || row);
         
         return [...nonEmptyRows, ...newLaborRows];
       });
