@@ -3570,8 +3570,10 @@ export default function FieldEstimate() {
     setSelectedRows(newSelected);
   };
 
-  // 걸레받이/몰딩 여부 체크 함수
-  const isLinearWorkName = (workName: string): boolean => {
+  // 가로 입력만 받는 공사 여부 체크 함수 (걸레받이/몰딩 + 가구공사 전체)
+  // 세로는 1m로 고정, 면적 = 가로 * 1
+  const isLinearWorkName = (workName: string, workType?: string): boolean => {
+    if (workType === '가구공사') return true;
     return workName === '걸레받이' || workName === '몰딩';
   };
 
@@ -3587,10 +3589,14 @@ export default function FieldEstimate() {
       if (row.id === rowId) {
         const updated = { ...row, [field]: value };
         
-        // 공사명 변경 시 세로 값 처리
-        if (field === 'workName') {
-          if (isLinearWorkName(value)) {
-            // 걸레받이/몰딩으로 변경되면 세로를 1m로 고정
+        // 공사명/공종 변경 시 세로 값 처리 (가구공사 또는 걸레받이/몰딩)
+        if (field === 'workName' || field === 'workType') {
+          const newWorkType = field === 'workType' ? value : updated.workType;
+          const newWorkName = field === 'workName' ? value : updated.workName;
+          const wasLinear = isLinearWorkName(row.workName, row.workType);
+          const isLinearNow = isLinearWorkName(newWorkName, newWorkType);
+          if (isLinearNow) {
+            // 가로만 입력: 세로를 1m로 고정
             updated.damageHeight = '1.0';
             updated.repairHeight = '1.0';
             // 면적 재계산: 가로(m) * 1(m) = 가로 (m²)
@@ -3600,8 +3606,8 @@ export default function FieldEstimate() {
             const repairAreaM2 = (repairWidth * 1).toFixed(2);
             updated.damageArea = parseFloat(damageAreaM2) > 0 ? damageAreaM2 : '0.00';
             updated.repairArea = parseFloat(repairAreaM2) > 0 ? repairAreaM2 : '0.00';
-          } else if (isLinearWorkName(row.workName) && !isLinearWorkName(value)) {
-            // 걸레받이/몰딩에서 다른 공사명으로 변경 시 세로를 0으로 리셋
+          } else if (wasLinear && !isLinearNow) {
+            // 가로 전용에서 일반 공사로 변경 시 세로를 0으로 리셋
             updated.damageHeight = '0.0';
             updated.repairHeight = '0.0';
             // 면적 재계산 (세로가 0이므로 면적도 0)
@@ -3627,10 +3633,11 @@ export default function FieldEstimate() {
         // 가로/세로 변경 시 면적 자동 계산
         if (field === 'damageWidth' || field === 'damageHeight') {
           const currentWorkName = updated.workName || row.workName;
+          const currentWorkType = updated.workType || row.workType;
           const width = parseFloat(field === 'damageWidth' ? value : row.damageWidth) || 0;
           
-          if (isLinearWorkName(currentWorkName)) {
-            // 걸레받이/몰딩: 세로 1m 고정, 면적 = 가로 * 1 (m²)
+          if (isLinearWorkName(currentWorkName, currentWorkType)) {
+            // 가로만 입력: 세로 1m 고정, 면적 = 가로 * 1 (m²)
             updated.damageHeight = '1.0';
             const areaM2 = (width * 1).toFixed(2);
             updated.damageArea = parseFloat(areaM2) > 0 ? areaM2 : '0.00';
@@ -3644,10 +3651,11 @@ export default function FieldEstimate() {
         
         if (field === 'repairWidth' || field === 'repairHeight') {
           const currentWorkName = updated.workName || row.workName;
+          const currentWorkType = updated.workType || row.workType;
           const width = parseFloat(field === 'repairWidth' ? value : row.repairWidth) || 0;
           
-          if (isLinearWorkName(currentWorkName)) {
-            // 걸레받이/몰딩: 세로 1m 고정, 면적 = 가로 * 1 (m²)
+          if (isLinearWorkName(currentWorkName, currentWorkType)) {
+            // 가로만 입력: 세로 1m 고정, 면적 = 가로 * 1 (m²)
             updated.repairHeight = '1.0';
             const areaM2 = (width * 1).toFixed(2);
             updated.repairArea = parseFloat(areaM2) > 0 ? areaM2 : '0.00';
@@ -5590,18 +5598,18 @@ export default function FieldEstimate() {
                           value={row.damageHeight}
                           onChange={(e) => updateRow(row.id, 'damageHeight', e.target.value)}
                           onFocus={() => {
-                            if ((row.damageHeight === '0' || row.damageHeight === '0.0' || row.damageHeight === '1' || row.damageHeight === '1.0') && !isLinearWorkName(row.workName)) {
+                            if ((row.damageHeight === '0' || row.damageHeight === '0.0' || row.damageHeight === '1' || row.damageHeight === '1.0') && !isLinearWorkName(row.workName, row.workType)) {
                               updateRow(row.id, 'damageHeight', '');
                             }
                           }}
                           onBlur={(e) => {
-                            if (!isLinearWorkName(row.workName)) {
+                            if (!isLinearWorkName(row.workName, row.workType)) {
                               const val = e.target.value.trim();
                               updateRow(row.id, 'damageHeight', formatDecimal(val || '0'));
                             }
                           }}
                           disabled={isReadOnly}
-                          readOnly={isLinearWorkName(row.workName)}
+                          readOnly={isLinearWorkName(row.workName, row.workType)}
                           placeholder="0.0"
                           className="input-focus-blue"
                           style={{
@@ -5612,7 +5620,7 @@ export default function FieldEstimate() {
                             border: "1px solid rgba(12, 12, 12, 0.1)",
                             borderRadius: "8px",
                             textAlign: "center",
-                            background: (isReadOnly || isLinearWorkName(row.workName)) ? "rgba(12, 12, 12, 0.02)" : undefined,
+                            background: (isReadOnly || isLinearWorkName(row.workName, row.workType)) ? "rgba(12, 12, 12, 0.02)" : undefined,
                           }}
                           data-testid={`input-damage-height-${globalIndex}`}
                         />
@@ -5671,18 +5679,18 @@ export default function FieldEstimate() {
                           value={row.repairHeight}
                           onChange={(e) => updateRow(row.id, 'repairHeight', e.target.value)}
                           onFocus={() => {
-                            if ((row.repairHeight === '0' || row.repairHeight === '0.0' || row.repairHeight === '1' || row.repairHeight === '1.0') && !isLinearWorkName(row.workName)) {
+                            if ((row.repairHeight === '0' || row.repairHeight === '0.0' || row.repairHeight === '1' || row.repairHeight === '1.0') && !isLinearWorkName(row.workName, row.workType)) {
                               updateRow(row.id, 'repairHeight', '');
                             }
                           }}
                           onBlur={(e) => {
-                            if (!isLinearWorkName(row.workName)) {
+                            if (!isLinearWorkName(row.workName, row.workType)) {
                               const val = e.target.value.trim();
                               updateRow(row.id, 'repairHeight', formatDecimal(val || '0'));
                             }
                           }}
                           disabled={isReadOnly}
-                          readOnly={isLinearWorkName(row.workName)}
+                          readOnly={isLinearWorkName(row.workName, row.workType)}
                           placeholder="0.0"
                           className="input-focus-blue"
                           style={{
@@ -5693,7 +5701,7 @@ export default function FieldEstimate() {
                             border: "1px solid rgba(12, 12, 12, 0.1)",
                             borderRadius: "8px",
                             textAlign: "center",
-                            background: (isReadOnly || isLinearWorkName(row.workName)) ? "rgba(12, 12, 12, 0.02)" : undefined,
+                            background: (isReadOnly || isLinearWorkName(row.workName, row.workType)) ? "rgba(12, 12, 12, 0.02)" : undefined,
                           }}
                           data-testid={`input-repair-height-${globalIndex}`}
                         />
