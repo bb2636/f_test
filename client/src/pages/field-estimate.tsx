@@ -1328,19 +1328,23 @@ export default function FieldEstimate() {
     
     rows.forEach(row => {
       const workType = row.workType || '';
-      const workName = row.workName || '';
-      if (!workType || !workName) return;
+      const rawWorkName = row.workName || '';
+      if (!workType || !rawWorkName) return;
       
-      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(workType) && !isItemInLinkSettings(workType, workName) && !AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName)) return;
+      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(workType) && !isItemInLinkSettings(workType, rawWorkName) && !AUTO_SYNC_MATERIAL_WORK_NAMES.includes(rawWorkName)) return;
       
       // 반자틀은 자동 연동 제외
-      if (workName === '반자틀') return;
+      if (rawWorkName === '반자틀') return;
       
       // 바탕만들기 행은 자재비 연동 제외
-      if (workName.startsWith('바탕만들기')) return;
+      if (rawWorkName.startsWith('바탕만들기')) return;
       
       // 자동 연동 대상 또는 일위대가 연동 설정에 등록된 항목만 처리
-      if (!AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName) && !isItemInLinkSettings(workType, workName)) return;
+      if (!AUTO_SYNC_MATERIAL_WORK_NAMES.includes(rawWorkName) && !isItemInLinkSettings(workType, rawWorkName)) return;
+      
+      // 가설공사: 자재비DB에는 '건축물현장정리'-보양재만 존재.
+      // 모든 가설공사 workName(건축물보양, 준공청소 등)을 '건축물현장정리'로 통합하여 매칭/집계.
+      const workName = workType === '가설공사' ? '건축물현장정리' : rawWorkName;
       
       const key = `${workType}|${workName}`;
       if (!workMap.has(key)) {
