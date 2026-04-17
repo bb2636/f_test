@@ -9776,6 +9776,7 @@ FLOXN 드림`;
           const sharp = await import("sharp");
           const fs = await import("fs");
           const path = await import("path");
+          const { compressImageForPdfHQ } = await import("./pdf-lib-service");
 
           const mergedPdf = await PDFDocument.load(pdfBuffer);
 
@@ -10288,11 +10289,10 @@ FLOXN 드림`;
                   );
                   continue;
                 }
-                const imageBuffer = await sharp
-                  .default(fileBuffer)
-                  .resize(800, 600, { fit: "inside", withoutEnlargement: true })
-                  .jpeg({ quality: 60, mozjpeg: true })
-                  .toBuffer();
+                // 현장출동보고서와 동일한 단계적 압축 헬퍼 사용
+                // 시작: 1600px / 품질 85% → 사이즈 초과 시 단계 하향
+                const compressedResult = await compressImageForPdfHQ(fileBuffer);
+                const imageBuffer = compressedResult.buffer;
 
                 pendingImages.push({
                   doc,
@@ -10776,6 +10776,7 @@ FLOXN 드림`;
           const sharp = await import("sharp");
           const fs = await import("fs");
           const path = await import("path");
+          const { compressImageForPdfHQ } = await import("./pdf-lib-service");
 
           const mergedPdf = await PDFDocument.load(pdfBuffer);
 
@@ -11266,11 +11267,10 @@ FLOXN 드림`;
                   continue;
                 }
 
-                const imageBuffer = await sharp
-                  .default(fileBuffer)
-                  .resize(800, 600, { fit: "inside", withoutEnlargement: true })
-                  .jpeg({ quality: 60, mozjpeg: true })
-                  .toBuffer();
+                // 현장출동보고서와 동일한 단계적 압축 헬퍼 사용
+                // 시작: 1600px / 품질 85% → 사이즈 초과 시 단계 하향
+                const compressedResult = await compressImageForPdfHQ(fileBuffer);
+                const imageBuffer = compressedResult.buffer;
 
                 pendingImages.push({
                   doc,

@@ -4178,6 +4178,55 @@ interface EvidencePdfResult {
   imageCount: number;
 }
 
+// 고품질(인보이스 등) 단계적 압축 헬퍼 - 시작 1600/85, 사이즈 초과 시 단계 하향
+export async function compressImageForPdfHQ(
+  imageData: Buffer,
+  targetMaxBytes: number = 1500 * 1024, // 기본 1.5MB 목표 (현장출동보고서와 유사한 화질 확보)
+): Promise<{ buffer: Buffer; format: "jpeg" }> {
+  const levels = [
+    { maxDimension: 1600, quality: 85 },
+    { maxDimension: 1600, quality: 75 },
+    { maxDimension: 1400, quality: 70 },
+    { maxDimension: 1200, quality: 60 },
+    { maxDimension: 1000, quality: 50 },
+    { maxDimension: 800, quality: 40 },
+    { maxDimension: 700, quality: 30 },
+  ];
+
+  for (const level of levels) {
+    try {
+      const compressed = await sharp(imageData)
+        .resize(level.maxDimension, level.maxDimension, {
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .jpeg({ quality: level.quality, mozjpeg: true })
+        .toBuffer();
+
+      if (compressed.length <= targetMaxBytes) {
+        return { buffer: compressed, format: "jpeg" };
+      }
+    } catch (err) {
+      continue;
+    }
+  }
+
+  // 최저 레벨로도 안되면 마지막 결과 반환
+  try {
+    const lastLevel = levels[levels.length - 1];
+    const compressed = await sharp(imageData)
+      .resize(lastLevel.maxDimension, lastLevel.maxDimension, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .jpeg({ quality: lastLevel.quality, mozjpeg: true })
+      .toBuffer();
+    return { buffer: compressed, format: "jpeg" };
+  } catch (err) {
+    return { buffer: imageData, format: "jpeg" };
+  }
+}
+
 // 단계적 압축으로 이미지를 PDF에 추가할 버퍼로 변환
 async function compressImageForPdf(
   imageData: Buffer,
