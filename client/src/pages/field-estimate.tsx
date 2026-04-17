@@ -1344,22 +1344,34 @@ export default function FieldEstimate() {
       
       // 가설공사: 자재비DB에는 '건축물현장정리'-보양재만 존재.
       // 모든 가설공사 workName(건축물보양, 준공청소 등)을 '건축물현장정리'로 통합하여 매칭/집계.
-      const workName = workType === '가설공사' ? '건축물현장정리' : rawWorkName;
+      const normalizedWorkName = workType === '가설공사' ? '건축물현장정리' : rawWorkName;
       
-      const key = `${workType}|${workName}`;
-      if (!workMap.has(key)) {
-        workMap.set(key, { 
-          공종: workType, 
-          공사명: workName, 
-          totalArea: 0,
-          sourceAreaRowIds: []
-        });
-      }
+      // 가구공사 조합 항목: 자재비DB에는 단독 항목(상부장, 하부장, 키큰장)만 존재.
+      // 조합을 구성 단독 항목으로 분해하여 각각 자재비 행을 생성.
+      const COMPOUND_FURNITURE_MAP: Record<string, string[]> = {
+        '상부장&하부장': ['상부장', '하부장'],
+        '상부장&키큰장': ['상부장', '키큰장'],
+        '상부장&하부장&키큰장': ['상부장', '하부장', '키큰장'],
+      };
+      const expandedWorkNames = (workType === '가구공사' && COMPOUND_FURNITURE_MAP[normalizedWorkName])
+        ? COMPOUND_FURNITURE_MAP[normalizedWorkName]
+        : [normalizedWorkName];
       
-      const data = workMap.get(key)!;
       const repairArea = parseFloat(row.repairArea) || 0;
-      data.totalArea += repairArea;
-      data.sourceAreaRowIds.push(row.id);
+      expandedWorkNames.forEach(workName => {
+        const key = `${workType}|${workName}`;
+        if (!workMap.has(key)) {
+          workMap.set(key, { 
+            공종: workType, 
+            공사명: workName, 
+            totalArea: 0,
+            sourceAreaRowIds: []
+          });
+        }
+        const data = workMap.get(key)!;
+        data.totalArea += repairArea;
+        data.sourceAreaRowIds.push(row.id);
+      });
     });
     
     // 공사명별 자재 항목 생성/업데이트 (자재비DB 매칭)
