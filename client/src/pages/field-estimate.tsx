@@ -1993,6 +1993,10 @@ export default function FieldEstimate() {
         result[s.location].push(s.category);
       }
     });
+    // 정해진 공종 순서(VICTIM_RECOVERY_ORDER) 적용
+    Object.keys(result).forEach(loc => {
+      result[loc] = sortByCanonicalOrder(result[loc], VICTIM_RECOVERY_ORDER);
+    });
     return result;
   }, [ilwidaegaLinkSettings]);
 

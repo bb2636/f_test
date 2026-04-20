@@ -84,7 +84,11 @@ export function MaterialCostSection({
 
   const materialCategoryOptions = useMemo(() => {
     const categories = new Set(catalog.map(item => item.workType));
-    let sorted = Array.from(categories).sort();
+    const items = Array.from(categories);
+    // 노무비 공종 순서(laborCategories)를 우선 적용, 그 외는 가나다순 뒤에 붙임
+    const inOrder = (laborCategories || []).filter(c => categories.has(c));
+    const extras = items.filter(c => !inOrder.includes(c)).sort();
+    let sorted = [...inOrder, ...extras];
     if (caseNumber) {
       if (isLossPreventionCase) {
         sorted = sorted.filter(c => c === '원인공사');
@@ -93,7 +97,7 @@ export function MaterialCostSection({
       }
     }
     return sorted;
-  }, [catalog, caseNumber, isLossPreventionCase]);
+  }, [catalog, caseNumber, isLossPreventionCase, laborCategories]);
 
   // 공종별로 필터링된 공사명 옵션
   const getWorkNamesForWorkType = (workType: string) => {
