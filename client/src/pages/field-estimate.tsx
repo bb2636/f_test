@@ -397,7 +397,7 @@ export default function FieldEstimate() {
   };
 
   // 철거공사 필요한 공사명 목록 (컴포넌트 레벨 - 삭제 추적 및 reconcile에서 공통 사용)
-  const DEMOLITION_WORK_NAMES = ['합판', '반자틀', '석고보드', '도배', '마루', '장판', '상부장', '상부장&하부장', '상부장&키큰장', '키큰장', '상부장&하부장&키큰장', '붙박이장', 'SMC', '리빙보드'];
+  const DEMOLITION_WORK_NAMES = ['합판', '석고보드', '도배', '마루', '장판', '상부장', '상부장&하부장', '상부장&키큰장', '키큰장', '상부장&하부장&키큰장', '붙박이장', 'SMC', '리빙보드'];
   
   // FIXED 일위대가 항목: 면적 무관하게 일위대가DB의 '일위대가' 컬럼을 합계로 사용 (욕실/가구/철거의 SMC~붙박이장)
   // - 복구면적: 면적 그대로 (천장 할증 미적용)
@@ -3947,7 +3947,7 @@ export default function FieldEstimate() {
   
   // 철거공사 행도 함께 생성해야 하는 공사명 목록
   // 사용자가 이 공사명들을 선택하면 '철거공사' 공종으로 추가 행 생성
-  const DEMOLITION_REQUIRED_WORK_NAMES = ['합판', '반자틀', '석고보드', '도배', '마루', '장판'];
+  const DEMOLITION_REQUIRED_WORK_NAMES = ['합판', '석고보드', '도배', '마루', '장판'];
   
   // 노무비 행 생성 또는 업데이트 헬퍼 (중복 방지 및 정렬 포함)
   const createOrUpdateLaborRow = (
