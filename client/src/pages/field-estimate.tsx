@@ -1546,14 +1546,26 @@ export default function FieldEstimate() {
           
           if (existingRow && existingRow.isOverridden) {
             // 사용자 수정 행: 사용자 입력값 보존, autoQuantity만 업데이트
+            // 단, FIXED 항목(욕실/가구공사)의 수량은 자동 계산값이므로 항상 갱신
+            const isFixedAutoQty = isFixedMaterial && (data.공종 === '욕실공사' || data.공종 === '가구공사');
+            const preservedPriceForOverride = existingRow.단가 || existingRow.기준단가 || 0;
             resultRowsMap.set(autoKey, {
               ...existingRow,
               autoKey,
               autoQuantity: calculatedQty,
               sourceAreaRowIds: data.sourceAreaRowIds,
               isManualPriceEntry: existingRow.isManualPriceEntry ?? isManualEntry,
+              ...(isFixedAutoQty ? {
+                단위: calculatedUnit,
+                수량m2: autoUnitType === 'm2' ? calculatedQty : (data.공종 === '가구공사' ? 0 : data.totalArea),
+                수량EA: autoUnitType === 'EA' ? calculatedQty : 0,
+                수량: calculatedQty,
+                합계: Math.round(preservedPriceForOverride * calculatedQty),
+                금액: Math.round(preservedPriceForOverride * calculatedQty),
+                autoUnitType,
+              } : {}),
             });
-            console.log(`[자재비 집계] ${autoKey}: isOverridden=true, 사용자 값 보존`);
+            console.log(`[자재비 집계] ${autoKey}: isOverridden=true, 사용자 값 보존${isFixedAutoQty ? ' (FIXED 수량 강제 갱신: ' + calculatedQty + ')' : ''}`);
           } else if (existingRow) {
             // 기존 자동 행: 값 업데이트 (ID 유지)
             // 단, 사용자가 이미 입력한 단가는 보존 (0이 아닌 경우)
