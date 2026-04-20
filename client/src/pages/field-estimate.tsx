@@ -1891,18 +1891,28 @@ export default function FieldEstimate() {
   // 협력사는 제출 후 수정 불가 (반려 시 수정 가능)
   const isReadOnly = isPartner && isSubmitted && !isRejected;
   
-  const DAMAGE_PREVENTION_KEYWORDS = ['누수탐지', '원인철거', '원인공사', '원인(기타)'];
+  const DAMAGE_PREVENTION_KEYWORDS = ['누수탐지', '원인공사', '원인철거', '원인(기타)'];
+  const VICTIM_RECOVERY_ORDER = ['가설공사', '목공사', '수장공사', '도장공사', '전기공사', '타일공사', '가구공사', '욕실공사', '철거공사', '폐기물', '기타'];
+
+  // 공종 정렬: 정해진 순서를 우선하고, 그 외는 뒤에 가나다순
+  const sortByCanonicalOrder = (items: string[], canonical: string[]): string[] => {
+    const inOrder = canonical.filter(c => items.includes(c));
+    const extras = items.filter(c => !canonical.includes(c)).sort();
+    return [...inOrder, ...extras];
+  };
 
   const DAMAGE_PREVENTION_WORK_TYPES = useMemo(() => {
     if (laborCategories.length === 0) return DAMAGE_PREVENTION_KEYWORDS;
     const fromDB = laborCategories.filter(cat => DAMAGE_PREVENTION_KEYWORDS.includes(cat));
-    return fromDB.length > 0 ? fromDB : DAMAGE_PREVENTION_KEYWORDS;
+    if (fromDB.length === 0) return DAMAGE_PREVENTION_KEYWORDS;
+    return sortByCanonicalOrder(fromDB, DAMAGE_PREVENTION_KEYWORDS);
   }, [laborCategories]);
 
   const VICTIM_RECOVERY_WORK_TYPES = useMemo(() => {
-    if (laborCategories.length === 0) return ['철거공사', '가설공사', '목공사', '수장공사', '도장공사', '전기공사', '타일공사', '가구공사', '욕실공사', '폐기물', '기타'];
+    if (laborCategories.length === 0) return VICTIM_RECOVERY_ORDER;
     const fromDB = laborCategories.filter(cat => !DAMAGE_PREVENTION_KEYWORDS.includes(cat));
-    return fromDB.length > 0 ? fromDB : ['철거공사', '가설공사', '목공사', '수장공사', '도장공사', '전기공사', '타일공사', '가구공사', '욕실공사', '폐기물', '기타'];
+    if (fromDB.length === 0) return VICTIM_RECOVERY_ORDER;
+    return sortByCanonicalOrder(fromDB, VICTIM_RECOVERY_ORDER);
   }, [laborCategories]);
   
   // 복구면적 산출표와 연동되는 공종 목록 (피해복구에서 도장/목공/수장만 연동)
