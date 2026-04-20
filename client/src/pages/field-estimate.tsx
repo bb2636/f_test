@@ -2134,11 +2134,12 @@ export default function FieldEstimate() {
       ? DAMAGE_PREVENTION_WORK_TYPES 
       : VICTIM_RECOVERY_WORK_TYPES;
     
-    // 노무비 카탈로그에서 공종 목록 가져오기 (허용된 공종만 필터링)
+    // 노무비 카탈로그에서 공종 목록 가져오기 (허용된 공종만 필터링 + 정해진 순서 적용)
     if (laborCategories.length > 0) {
       const filtered = laborCategories.filter(cat => allowedWorkTypes.includes(cat));
-      // 필터링 결과가 있으면 사용, 없으면 기본값 사용
-      return filtered.length > 0 ? filtered : allowedWorkTypes;
+      if (filtered.length === 0) return allowedWorkTypes;
+      const canonical = isLossPreventionCase ? DAMAGE_PREVENTION_KEYWORDS : VICTIM_RECOVERY_ORDER;
+      return sortByCanonicalOrder(filtered, canonical);
     }
     
     // 카탈로그가 없으면 케이스 유형에 따른 기본값 사용
