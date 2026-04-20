@@ -2332,6 +2332,36 @@ export default function FieldEstimate() {
       return true;
     });
 
+    // 이미 연동된 철거공사 행 마이그레이션: workName 매핑이 변경된 경우(예: '석고보드' → '석고') 갱신
+    const alreadySyncedDemolitionRefreshes: { oldId: string; newRow: LaborCostRow }[] = [];
+    rows.forEach(areaRow => {
+      if (!areaRow.workType || !areaRow.workName) return;
+      if (!needsDemolitionRow(areaRow.workType, areaRow.workName)) return;
+      const demolitionSourceId = `demolition-${areaRow.id}`;
+      const existing = laborCostRows.find(r => r.sourceAreaRowId === demolitionSourceId);
+      if (!existing) return;
+      const mappedName = getDemolitionMapping(areaRow.workType, areaRow.workName).demolitionWorkName;
+      const catalogItem = mergedIlwidaegaCatalog.find(
+        item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
+               normalizeForMatch(item.공사명 || '') === normalizeForMatch(mappedName)
+      );
+      if (!catalogItem) return;
+      const isEmpty = (!existing.standardPrice || existing.standardPrice === 0) &&
+                      (!existing.amount || existing.amount === 0);
+      const nameMismatch = normalizeForMatch(existing.workName || '') !== normalizeForMatch(mappedName);
+      if (isEmpty || nameMismatch) {
+        const rawArea = Number(areaRow.repairArea) || 0;
+        const refreshed = createDemolitionLaborRow(areaRow, catalogItem, rawArea);
+        alreadySyncedDemolitionRefreshes.push({ oldId: existing.id, newRow: { ...refreshed, id: existing.id } });
+        console.log('[자동연동] 이미연동된 철거공사 행 마이그레이션:', existing.workName, '→', mappedName);
+      }
+    });
+    if (alreadySyncedDemolitionRefreshes.length > 0) {
+      const refreshMap = new Map(alreadySyncedDemolitionRefreshes.map(r => [r.oldId, r.newRow]));
+      lastLaborSetSourceRef.current = 'autoSync-migrate';
+      setLaborCostRows(prev => prev.map(row => refreshMap.get(row.id) || row));
+    }
+
     // 연동할 행이 있으면 노무비에 추가 (일위대가DB 기반 모든 노임항목 생성)
     if (completedAreaRows.length > 0 || demolitionOnlyAreaRows.length > 0) {
       const newLaborRows: LaborCostRow[] = [];
