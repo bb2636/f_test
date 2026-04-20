@@ -2422,6 +2422,51 @@ export default function FieldEstimate() {
       setLaborCostRows(prev => prev.map(row => refreshMap.get(row.id) || row));
     }
 
+    // FIXED 항목(가구공사/욕실공사) 누락 보통인부 행 보충
+    // 이미 연동된 area row인데, 내장공만 있고 보통인부가 없는 경우 0.5인 보통인부 행 추가
+    // (이전 버전에서 sync된 행들이 보통인부 누락 상태이므로 backfill)
+    {
+      const helperReferenceForBackfill = mergedIlwidaegaCatalog.find(
+        item => normalizeForMatch(item.노임항목 || '') === normalizeForMatch('보통인부') && (item.노임단가 || 0) > 0
+      );
+      const helperUnitPriceBackfill = helperReferenceForBackfill?.노임단가 || 0;
+      if (helperUnitPriceBackfill > 0) {
+        const missingHelperRows: LaborCostRow[] = [];
+        rows.forEach(areaRow => {
+          if (!areaRow.workType || !areaRow.workName) return;
+          if (areaRow.workType !== '가구공사' && areaRow.workType !== '욕실공사') return;
+          if (!isFixedIlwidaegaWorkName(areaRow.workName)) return;
+          // 동일 sourceAreaRowId & 동일 workName 인 직접 연동 행만 (철거공사/바탕만들기 제외)
+          const siblings = laborCostRows.filter(r =>
+            r.sourceAreaRowId === areaRow.id &&
+            r.isLinkedFromRecovery &&
+            normalizeForMatch(r.workName || '') === normalizeForMatch(areaRow.workName)
+          );
+          if (siblings.length === 0) return;
+          const hasInternalCarpenter = siblings.some(r => normalizeForMatch(r.detailItem || '') === normalizeForMatch('내장공'));
+          const hasHelper = siblings.some(r => normalizeForMatch(r.detailItem || '') === normalizeForMatch('보통인부'));
+          if (!hasInternalCarpenter || hasHelper) return;
+          const template = siblings.find(r => normalizeForMatch(r.detailItem || '') === normalizeForMatch('내장공'))!;
+          const helperFixedTotal = Math.round(helperUnitPriceBackfill * 0.5);
+          missingHelperRows.push({
+            ...template,
+            id: `labor-linked-${Date.now()}-${Math.random()}-helper`,
+            detailItem: '보통인부',
+            standardPrice: helperUnitPriceBackfill,
+            pricePerSqm: helperUnitPriceBackfill,
+            quantity: 0.5,
+            amount: helperFixedTotal,
+          });
+          console.log('[자동연동] 누락 보통인부 행 보충:', areaRow.workType, areaRow.workName);
+        });
+        if (missingHelperRows.length > 0) {
+          lastLaborSetSourceRef.current = 'autoSync-helperBackfill';
+          setLaborCostRows(prev => [...prev, ...missingHelperRows]);
+          return; // 다음 effect 사이클에서 후속 처리(reconcile 등) 진행
+        }
+      }
+    }
+
     // 연동할 행이 있으면 노무비에 추가 (일위대가DB 기반 모든 노임항목 생성)
     if (completedAreaRows.length > 0 || demolitionOnlyAreaRows.length > 0) {
       const newLaborRows: LaborCostRow[] = [];
