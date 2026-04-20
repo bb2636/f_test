@@ -1359,7 +1359,9 @@ export default function FieldEstimate() {
         : [normalizedWorkName];
       
       const repairArea = parseFloat(row.repairArea) || 0;
-      const locationKey = (row.location || '').trim();
+      // 장소 구분 키: 복구면적산출표의 category(장소: 화장실1, 화장실2 등)를 사용
+      // location 필드는 위치(천장/벽면/바닥)이므로 사용하지 않음
+      const locationKey = (row.category || '').trim();
       expandedWorkNames.forEach(workName => {
         const key = `${workType}|${workName}`;
         if (!workMap.has(key)) {
