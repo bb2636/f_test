@@ -3439,9 +3439,15 @@ export default function FieldEstimate() {
     let startIndex = 0;
     
     categoryMap.forEach((categoryRows, category) => {
-      // 위치 기준 정렬 (천장 → 벽면 → 바닥)
+      // 1차: 위치 기준 정렬 (천장 → 벽면 → 바닥), 2차: 공종db 순서
+      const getWorkTypeOrder = (wt: string): number => {
+        const idx = VICTIM_RECOVERY_ORDER.indexOf(wt || '');
+        return idx === -1 ? 999 : idx;
+      };
       const sortedRows = [...categoryRows].sort((a, b) => {
-        return getLocationOrder(a.location) - getLocationOrder(b.location);
+        const locDiff = getLocationOrder(a.location) - getLocationOrder(b.location);
+        if (locDiff !== 0) return locDiff;
+        return getWorkTypeOrder(a.workType) - getWorkTypeOrder(b.workType);
       });
       
       groups.push({ 
