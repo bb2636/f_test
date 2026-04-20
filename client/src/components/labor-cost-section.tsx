@@ -1490,8 +1490,30 @@ export function LaborCostSection({
     });
 
     // 연동 행 공종별 정렬 (공사명 순)
+    // 도장공사는 지정된 순서로 정렬: 수성페인트 → 바탕만들기(수성페인트) → 무늬코트 → 바탕만들기(무늬코트) → 탄성코트 → 바탕만들기(탄성코트)
+    const PAINT_WORK_ORDER = [
+      "수성페인트",
+      "바탕만들기(수성페인트)",
+      "무늬코트",
+      "바탕만들기(무늬코트)",
+      "탄성코트",
+      "바탕만들기(탄성코트)",
+    ];
+    const getPaintOrder = (workName: string): number => {
+      const idx = PAINT_WORK_ORDER.indexOf(workName || "");
+      return idx === -1 ? PAINT_WORK_ORDER.length : idx;
+    };
     categoryRowsMap.forEach((rows, cat) => {
-      rows.sort((a, b) => (a.workName || "").localeCompare(b.workName || ""));
+      if (cat === "도장공사") {
+        rows.sort((a, b) => {
+          const orderDiff =
+            getPaintOrder(a.workName || "") - getPaintOrder(b.workName || "");
+          if (orderDiff !== 0) return orderDiff;
+          return (a.workName || "").localeCompare(b.workName || "");
+        });
+      } else {
+        rows.sort((a, b) => (a.workName || "").localeCompare(b.workName || ""));
+      }
     });
 
     // 같은 공종의 독립 행을 해당 공종 그룹에 추가
