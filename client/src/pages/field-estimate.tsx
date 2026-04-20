@@ -2422,7 +2422,8 @@ export default function FieldEstimate() {
         });
 
         // 철거공사 자동 생성 (needsDemolitionRow 대상 항목)
-        if (needsDemolitionRow(workType, workName)) {
+        // 복구면적이 0인 경우 0원 행이 생성되므로 건너뜀 (FIXED 항목은 demolitionOnlyAreaRows에서 별도 처리)
+        if (needsDemolitionRow(workType, workName) && rawRepairArea > 0) {
           const demolitionSourceId = `demolition-${areaRow.id}`;
           const existingDemolition = laborCostRows.find(r => r.sourceAreaRowId === demolitionSourceId);
           const demolitionCatalogItem = mergedIlwidaegaCatalog.find(
