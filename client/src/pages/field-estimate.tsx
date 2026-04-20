@@ -398,9 +398,12 @@ export default function FieldEstimate() {
 
   // 철거공사 필요한 공사명 목록 (컴포넌트 레벨 - 삭제 추적 및 reconcile에서 공통 사용)
   // 철거공사 자동 연동 대상 (복구면적산출표의 공사명이 이 목록에 있으면 철거공사 행 자동 생성)
-  // 허용: 합판, 석고보드, 도배, 마루, 장판, 상부장, 상부장&하부장, 상부장&키큰장, 키큰장, 상부장&하부장&키큰장, 붙박이장, SMC, 리빙보드
+  // 허용: 합판, 석고(=석고보드), 도배, 마루, 장판, 상부장, 상부장&하부장, 상부장&키큰장, 상부장&하부장&키큰장, 붙박이장, SMC, 리빙보드
   // 제외: 하부장 단독, 도기류, 반자틀, 몰딩, 걸레받이 등
-  const DEMOLITION_WORK_NAMES = ['합판', '석고보드', '도배', '마루', '장판', '상부장', '상부장&하부장', '상부장&키큰장', '키큰장', '상부장&하부장&키큰장', '붙박이장', 'SMC', '리빙보드'];
+  // '석고보드'는 '석고'와 동일 항목으로 alias 처리 (DEMOLITION_WORKNAME_ALIASES 참조)
+  const DEMOLITION_WORK_NAMES = ['합판', '석고', '석고보드', '도배', '마루', '장판', '상부장', '상부장&하부장', '상부장&키큰장', '상부장&하부장&키큰장', '붙박이장', 'SMC', '리빙보드'];
+  // UI/정렬용 표준 순서 (사용자 지정)
+  const DEMOLITION_WORK_NAMES_CANONICAL = ['합판', '석고', '도배', '마루', '장판', '상부장', '상부장&하부장', '상부장&키큰장', '상부장&하부장&키큰장', '붙박이장', 'SMC', '리빙보드'];
   
   // FIXED 일위대가 항목: 면적 무관하게 일위대가DB의 '일위대가' 컬럼을 합계로 사용 (욕실/가구/철거의 SMC~붙박이장)
   // - 복구면적: 면적 그대로 (천장 할증 미적용)
@@ -2296,11 +2299,25 @@ export default function FieldEstimate() {
       }).filter(Boolean)
     );
     
-    const existingLinkedWorkNames = new Set(
-      laborCostRows
-        .filter(row => row.isLinkedFromRecovery && row.workName)
-        .map(row => normalizeForMatch(row.workName || ''))
-    );
+    // 철거공사 alias 역매핑 (예: '석고' → ['석고','석고보드'])
+    const reverseDemolitionAliases: Record<string, string[]> = {};
+    Object.entries(DEMOLITION_WORKNAME_ALIASES).forEach(([from, to]) => {
+      if (!reverseDemolitionAliases[to]) reverseDemolitionAliases[to] = [to];
+      reverseDemolitionAliases[to].push(from);
+    });
+    const existingLinkedWorkNames = new Set<string>();
+    laborCostRows
+      .filter(row => row.isLinkedFromRecovery && row.workName)
+      .forEach(row => {
+        const wn = row.workName || '';
+        existingLinkedWorkNames.add(normalizeForMatch(wn));
+        // alias가 있는 경우 양방향 추가 (예: 노무비 '석고' → 영역 '석고보드'도 매칭)
+        const aliases = reverseDemolitionAliases[wn] || [];
+        aliases.forEach(a => existingLinkedWorkNames.add(normalizeForMatch(a)));
+        // forward alias (예: 노무비 '석고보드' → '석고'도 매칭)
+        const fwd = DEMOLITION_WORKNAME_ALIASES[wn];
+        if (fwd) existingLinkedWorkNames.add(normalizeForMatch(fwd));
+      });
 
     // 완성된 복구면적 산출표 행 찾기 (공종, 공사명 필수 입력)
     const completedAreaRows = rows.filter(row => {

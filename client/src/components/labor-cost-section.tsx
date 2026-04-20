@@ -1507,6 +1507,22 @@ export function LaborCostSection({
       "상부장&하부장&키큰장",
       "붙박이장",
     ];
+    // 철거공사 표준 순서 (사용자 지정)
+    const DEMOLITION_WORK_ORDER = [
+      "합판",
+      "석고",
+      "석고보드",
+      "도배",
+      "마루",
+      "장판",
+      "상부장",
+      "상부장&하부장",
+      "상부장&키큰장",
+      "상부장&하부장&키큰장",
+      "붙박이장",
+      "SMC",
+      "리빙보드",
+    ];
     const getCustomOrder = (list: string[], workName: string): number => {
       const idx = list.indexOf(workName || "");
       return idx === -1 ? list.length : idx;
@@ -1525,6 +1541,14 @@ export function LaborCostSection({
           const orderDiff =
             getCustomOrder(FURNITURE_WORK_ORDER, a.workName || "") -
             getCustomOrder(FURNITURE_WORK_ORDER, b.workName || "");
+          if (orderDiff !== 0) return orderDiff;
+          return (a.workName || "").localeCompare(b.workName || "");
+        });
+      } else if (cat === "철거공사" || cat === "피해철거공사") {
+        rows.sort((a, b) => {
+          const orderDiff =
+            getCustomOrder(DEMOLITION_WORK_ORDER, a.workName || "") -
+            getCustomOrder(DEMOLITION_WORK_ORDER, b.workName || "");
           if (orderDiff !== 0) return orderDiff;
           return (a.workName || "").localeCompare(b.workName || "");
         });
