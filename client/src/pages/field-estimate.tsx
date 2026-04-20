@@ -2180,7 +2180,14 @@ export default function FieldEstimate() {
     // 2. 노무비에서 수동 추가한 행은 자재비에 연동하지 않음
     // 3. 목공사-반자틀, 철거공사는 자재비 연동 제외
     // 4. 자동 연동 대상 공사명(합판, 석고보드, 도배 등)은 syncMaterialFromRecoveryArea에서 처리하므로 제외
-    const AUTO_MATERIAL_SYNC_WORK_NAMES = ['합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리'];
+    // syncMaterialFromRecoveryArea가 처리하는 모든 공사명 (이중 생성 방지)
+    // 가구공사/욕실공사 FIXED 항목 포함 — 노무비→자재비 useEffect는 이들을 제외
+    const AUTO_MATERIAL_SYNC_WORK_NAMES = [
+      '합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리',
+      '수성페인트', '무늬코트', '탄성코트',
+      'SMC', '리빙보드', '도기류', '붙박이장',
+      '상부장', '하부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장',
+    ];
     const shouldExcludeFromMaterialSync = (category: string, workName: string, isLinkedFromRecovery?: boolean): boolean => {
       if (!isLinkedFromRecovery) return true;
       if ((category === '목공사' && workName === '반자틀') || category === '철거공사') return true;
@@ -2333,8 +2340,13 @@ export default function FieldEstimate() {
         row.workType && row.workType !== '' &&
         row.workName && row.workName !== '선택' && row.workName !== '';
       
-      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType || '') && !isItemInLinkSettings(row.workType || '', row.workName || '')) return false;
-      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName || '') && !isItemInLinkSettings(row.workType || '', row.workName || '')) return false;
+      // FIXED 일위대가 항목(욕실공사 SMC/리빙보드/도기류/붙박이장, 가구공사 상부장 시리즈)은
+      // AREA_DISPLAY_ONLY 공종이라도 노무비 행을 자동 생성 (위치별 합산은 mergeDemolitionRows에서 처리)
+      const isFixedItem = isFixedIlwidaegaWorkName(row.workName || '');
+      if (!isFixedItem) {
+        if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType || '') && !isItemInLinkSettings(row.workType || '', row.workName || '')) return false;
+        if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName || '') && !isItemInLinkSettings(row.workType || '', row.workName || '')) return false;
+      }
       
       const notYetSynced = !existingSourceAreaIds.has(row.id) &&
         !existingLinkedWorkNames.has(normalizeForMatch(row.workName || ''));
@@ -2636,7 +2648,10 @@ export default function FieldEstimate() {
           }
           return true;
         } else {
-          if ((AREA_DISPLAY_ONLY_WORK_TYPES.includes(linkedAreaRow.workType || '') || 
+          // FIXED 일위대가 항목은 AREA_DISPLAY_ONLY 공종이라도 노무비 행을 유지
+          const isFixedItem = isFixedIlwidaegaWorkName(linkedAreaRow.workName || '');
+          if (!isFixedItem &&
+              (AREA_DISPLAY_ONLY_WORK_TYPES.includes(linkedAreaRow.workType || '') || 
               AREA_DISPLAY_ONLY_WORK_NAMES.includes(linkedAreaRow.workName || '')) &&
               !isItemInLinkSettings(linkedAreaRow.workType || '', linkedAreaRow.workName || '')) {
             console.log('[Reconcile] 연동 제외 대상 → 기존 행 삭제:', linkedAreaRow.workType, linkedAreaRow.workName);
