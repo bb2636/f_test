@@ -2867,6 +2867,38 @@ export default function FieldEstimate() {
           const laborCategory = getLaborCategory(linkedAreaRow.workType, linkedAreaRow.workName);
           const catalogLookupWorkName = isBatangRow2 ? (laborRow.workName || linkedAreaRow.workName) : linkedAreaRow.workName;
           
+          // FIXED 일위대가 항목(가구공사/욕실공사 SMC/리빙보드/도기류/붙박이장/상부장 시리즈):
+          // 위치당 고정 인분 (내장공 1.0, 보통인부 0.5)으로 유지하고 면적 기반 재계산은 건너뜀.
+          // 위치별 인분 합산은 mergeDemolitionRows에서 처리.
+          const isFixedLaborItem = isFixedIlwidaegaWorkName(linkedAreaRow.workName || '') &&
+            (linkedAreaRow.workType === '가구공사' || linkedAreaRow.workType === '욕실공사');
+          if (isFixedLaborItem) {
+            const isHelper = normalizeForMatch(laborRow.detailItem || '') === normalizeForMatch('보통인부');
+            const fixedQuantity = isHelper ? 0.5 : 1.0;
+            const E = laborRow.standardPrice || 0;
+            const fixedAmount = Math.round(E * fixedQuantity);
+            const needsFixedUpdate =
+              laborRow.place !== linkedAreaRow.category ||
+              laborRow.position !== linkedAreaRow.location ||
+              laborRow.damageArea !== damageAreaValue ||
+              laborRow.quantity !== fixedQuantity ||
+              laborRow.amount !== fixedAmount ||
+              laborRow.pricePerSqm !== E;
+            if (needsFixedUpdate) {
+              return {
+                ...laborRow,
+                place: linkedAreaRow.category,
+                position: linkedAreaRow.location,
+                category: laborCategory,
+                damageArea: damageAreaValue,
+                quantity: fixedQuantity,
+                amount: fixedAmount,
+                pricePerSqm: E,
+              };
+            }
+            return laborRow;
+          }
+          
           // standardWorkQuantity가 0이면 카탈로그 동기화 강제 (D/E 조회 필요)
           // pricePerSqm이 0이고 standardPrice가 있으면 재계산 필요 (새로 추가된 행)
           const needsPriceRecalc = laborRow.pricePerSqm === 0 && laborRow.standardPrice && Number(laborRow.standardPrice) > 0 && damageAreaValue > 0;
