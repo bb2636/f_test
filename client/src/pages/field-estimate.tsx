@@ -2444,9 +2444,38 @@ export default function FieldEstimate() {
         
         console.log('[연동] 일위대가 조회:', { workType, workName, laborCategory, matchCount: matchingCatalogItems.length, isFixed });
         
-        if (matchingCatalogItems.length > 0) {
+        // 가구공사 FIXED 항목에 욕실공사와 동일한 노임 구조(내장공 + 보통인부 0.5인) 적용
+        // matchingCatalogItems에 보통인부가 없으면, 다른 카탈로그에서 보통인부 노임단가를 가져와 합성 항목 추가
+        let augmentedCatalogItems = matchingCatalogItems;
+        if (isFixed && workType === '가구공사' && matchingCatalogItems.length > 0) {
+          const hasHelper = matchingCatalogItems.some(
+            item => normalizeForMatch(item.노임항목 || '') === normalizeForMatch('보통인부')
+          );
+          if (!hasHelper) {
+            // 다른 카탈로그(예: 욕실공사 SMC)에서 보통인부 노임단가 참조
+            const helperReference = mergedIlwidaegaCatalog.find(
+              item => normalizeForMatch(item.노임항목 || '') === normalizeForMatch('보통인부') && (item.노임단가 || 0) > 0
+            );
+            const mainItem = matchingCatalogItems[0];
+            const helperUnitPrice = helperReference?.노임단가 || 0;
+            // 보통인부 합성 항목: 0.5인 기준 일위대가 = 노임단가 × 0.5
+            const helperFixedTotal = Math.round(helperUnitPrice * 0.5);
+            augmentedCatalogItems = [
+              ...matchingCatalogItems,
+              {
+                ...mainItem,
+                노임항목: '보통인부',
+                노임단가: helperUnitPrice,
+                일위대가: helperFixedTotal,
+              },
+            ];
+            console.log('[연동] 가구공사 FIXED 보통인부 합성:', { workName, helperUnitPrice, helperFixedTotal });
+          }
+        }
+
+        if (augmentedCatalogItems.length > 0) {
           // 일위대가DB에서 매칭된 모든 노임항목으로 행 생성
-          matchingCatalogItems.forEach((catalogItem, idx) => {
+          augmentedCatalogItems.forEach((catalogItem, idx) => {
             const C = damageAreaValue; // 복구면적
             const D = catalogItem.기준작업량 || 0; // 기준작업량
             const E = catalogItem.노임단가 || 0; // 노임단가(인당)
