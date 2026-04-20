@@ -2554,13 +2554,14 @@ export function LaborCostSection({
                       const isFixedRow =
                         row.detailWork === "일위대가" &&
                         isFixedIlwidaegaWorkName(row.workName);
+                      const mergedQty = (row as MergedLaborCostRow).mergedQuantity;
                       const displayQuantity = isFixedRow
-                        ? row.quantity || 0
+                        ? (mergedQty ?? row.quantity ?? 0)
                         : isLinkedRow
                           ? (D > 0 && C > 0 && E > 0)
                             ? calculateQuantityWithTiers(C, D, E, laborRateTiers)
                             : 0
-                          : row.quantity || 0;
+                          : (mergedQty ?? row.quantity ?? 0);
 
                       return (
                         <Input
