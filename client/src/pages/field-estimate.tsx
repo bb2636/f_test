@@ -1324,6 +1324,7 @@ export default function FieldEstimate() {
       공사명: string; 
       totalArea: number; 
       sourceAreaRowIds: string[];
+      uniqueLocations: Set<string>;
     }>();
     
     rows.forEach(row => {
@@ -1358,6 +1359,7 @@ export default function FieldEstimate() {
         : [normalizedWorkName];
       
       const repairArea = parseFloat(row.repairArea) || 0;
+      const locationKey = (row.location || '').trim();
       expandedWorkNames.forEach(workName => {
         const key = `${workType}|${workName}`;
         if (!workMap.has(key)) {
@@ -1365,12 +1367,14 @@ export default function FieldEstimate() {
             공종: workType, 
             공사명: workName, 
             totalArea: 0,
-            sourceAreaRowIds: []
+            sourceAreaRowIds: [],
+            uniqueLocations: new Set<string>()
           });
         }
         const data = workMap.get(key)!;
         data.totalArea += repairArea;
         data.sourceAreaRowIds.push(row.id);
+        if (locationKey) data.uniqueLocations.add(locationKey);
       });
     });
     
@@ -1419,11 +1423,13 @@ export default function FieldEstimate() {
           autoUnitType = 'EA';
           console.log(`[자재비 집계] 가구공사 FIXED ${data.공사명}: 총길이 ${data.totalArea}m ÷ 0.3m = ${data.totalArea / 0.3} → ceil → ${calculatedQty} ${calculatedUnit}`);
         } else {
-          // 욕실공사 FIXED: 면적 그대로, 단위는 자재비DB(EA)
-          calculatedQty = Math.round(data.totalArea * 10) / 10;
+          // 욕실공사 FIXED (SMC, 리빙보드, 도기류): 위치별 1개씩 카운트
+          // 화장실1, 화장실2 → 2개. 같은 위치 내 여러 행은 1개.
+          const locationCount = data.uniqueLocations.size;
+          calculatedQty = locationCount > 0 ? locationCount : (data.totalArea > 0 ? 1 : 0);
           calculatedUnit = dbUnit;
           autoUnitType = 'EA';
-          console.log(`[자재비 집계] FIXED ${data.공종} ${data.공사명}: 총면적 ${data.totalArea} (단위: ${dbUnit})`);
+          console.log(`[자재비 집계] FIXED ${data.공종} ${data.공사명}: 위치 수 ${locationCount}개 (위치: ${Array.from(data.uniqueLocations).join(', ')}) → 수량 ${calculatedQty} ${dbUnit}`);
         }
       } else if (ratio) {
         // EA 단위: 전체 합산 후 마지막에 한 번만 ceil
