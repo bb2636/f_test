@@ -1412,11 +1412,19 @@ export default function FieldEstimate() {
         autoUnitType = 'EA';
         console.log(`[자재비 집계] 도장공사 ${data.공사명}: 총면적 ${data.totalArea}㎡ (실면적 그대로, 단위: ${dbUnit})`);
       } else if (isFixedMaterial) {
-        // FIXED: 면적 그대로, 단위는 자재비DB(EA)
-        calculatedQty = Math.round(data.totalArea * 10) / 10;
-        calculatedUnit = dbUnit;
-        autoUnitType = 'EA';
-        console.log(`[자재비 집계] FIXED ${data.공종} ${data.공사명}: 총면적 ${data.totalArea} (단위: ${dbUnit})`);
+        // 가구공사 FIXED: 단위 '1자' = 30cm. 수량 = ceil(복구면적(m) ÷ 0.3m)
+        if (data.공종 === '가구공사') {
+          calculatedQty = data.totalArea > 0 ? Math.ceil(data.totalArea / 0.3) : 0;
+          calculatedUnit = dbUnit || '자';
+          autoUnitType = 'EA';
+          console.log(`[자재비 집계] 가구공사 FIXED ${data.공사명}: 총길이 ${data.totalArea}m ÷ 0.3m = ${data.totalArea / 0.3} → ceil → ${calculatedQty} ${calculatedUnit}`);
+        } else {
+          // 욕실공사 FIXED: 면적 그대로, 단위는 자재비DB(EA)
+          calculatedQty = Math.round(data.totalArea * 10) / 10;
+          calculatedUnit = dbUnit;
+          autoUnitType = 'EA';
+          console.log(`[자재비 집계] FIXED ${data.공종} ${data.공사명}: 총면적 ${data.totalArea} (단위: ${dbUnit})`);
+        }
       } else if (ratio) {
         // EA 단위: 전체 합산 후 마지막에 한 번만 ceil
         calculatedQty = Math.ceil(data.totalArea / ratio.unitSize);
