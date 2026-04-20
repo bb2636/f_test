@@ -2422,48 +2422,24 @@ export default function FieldEstimate() {
       setLaborCostRows(prev => prev.map(row => refreshMap.get(row.id) || row));
     }
 
-    // FIXED 항목(가구공사/욕실공사) 누락 보통인부 행 보충
-    // 이미 연동된 area row인데, 내장공만 있고 보통인부가 없는 경우 0.5인 보통인부 행 추가
-    // (이전 버전에서 sync된 행들이 보통인부 누락 상태이므로 backfill)
+    // 가구공사/욕실공사 FIXED 항목에 자동 연동된 보통인부 행 정리 (제거)
+    // 사용자 요구: 내장공만 위치별로 합산되도록 하고, 보통인부 자동 추가는 하지 않음
     {
-      const helperReferenceForBackfill = mergedIlwidaegaCatalog.find(
-        item => normalizeForMatch(item.노임항목 || '') === normalizeForMatch('보통인부') && (item.노임단가 || 0) > 0
-      );
-      const helperUnitPriceBackfill = helperReferenceForBackfill?.노임단가 || 0;
-      if (helperUnitPriceBackfill > 0) {
-        const missingHelperRows: LaborCostRow[] = [];
-        rows.forEach(areaRow => {
-          if (!areaRow.workType || !areaRow.workName) return;
-          if (areaRow.workType !== '가구공사' && areaRow.workType !== '욕실공사') return;
-          if (!isFixedIlwidaegaWorkName(areaRow.workName)) return;
-          // 동일 sourceAreaRowId & 동일 workName 인 직접 연동 행만 (철거공사/바탕만들기 제외)
-          const siblings = laborCostRows.filter(r =>
-            r.sourceAreaRowId === areaRow.id &&
-            r.isLinkedFromRecovery &&
-            normalizeForMatch(r.workName || '') === normalizeForMatch(areaRow.workName)
-          );
-          if (siblings.length === 0) return;
-          const hasInternalCarpenter = siblings.some(r => normalizeForMatch(r.detailItem || '') === normalizeForMatch('내장공'));
-          const hasHelper = siblings.some(r => normalizeForMatch(r.detailItem || '') === normalizeForMatch('보통인부'));
-          if (!hasInternalCarpenter || hasHelper) return;
-          const template = siblings.find(r => normalizeForMatch(r.detailItem || '') === normalizeForMatch('내장공'))!;
-          const helperFixedTotal = Math.round(helperUnitPriceBackfill * 0.5);
-          missingHelperRows.push({
-            ...template,
-            id: `labor-linked-${Date.now()}-${Math.random()}-helper`,
-            detailItem: '보통인부',
-            standardPrice: helperUnitPriceBackfill,
-            pricePerSqm: helperUnitPriceBackfill,
-            quantity: 0.5,
-            amount: helperFixedTotal,
-          });
-          console.log('[자동연동] 누락 보통인부 행 보충:', areaRow.workType, areaRow.workName);
-        });
-        if (missingHelperRows.length > 0) {
-          lastLaborSetSourceRef.current = 'autoSync-helperBackfill';
-          setLaborCostRows(prev => [...prev, ...missingHelperRows]);
-          return; // 다음 effect 사이클에서 후속 처리(reconcile 등) 진행
-        }
+      const helperRowsToRemove = laborCostRows.filter(row => {
+        if (!row.isLinkedFromRecovery) return false;
+        if (normalizeForMatch(row.detailItem || '') !== normalizeForMatch('보통인부')) return false;
+        if (row.category !== '가구공사' && row.category !== '욕실공사') return false;
+        if (!isFixedIlwidaegaWorkName(row.workName || '')) return false;
+        // 철거공사/바탕만들기 행은 제외 (다른 sourceAreaRowId 접두사를 가짐)
+        if (!row.sourceAreaRowId) return false;
+        if (row.sourceAreaRowId.startsWith('demolition-') || row.sourceAreaRowId.includes('::batang')) return false;
+        return true;
+      });
+      if (helperRowsToRemove.length > 0) {
+        const removeIds = new Set(helperRowsToRemove.map(r => r.id));
+        lastLaborSetSourceRef.current = 'autoSync-removeFixedHelper';
+        setLaborCostRows(prev => prev.filter(r => !removeIds.has(r.id)));
+        return;
       }
     }
 
@@ -2489,34 +2465,14 @@ export default function FieldEstimate() {
         
         console.log('[연동] 일위대가 조회:', { workType, workName, laborCategory, matchCount: matchingCatalogItems.length, isFixed });
         
-        // 가구공사/욕실공사 FIXED 항목: 한 공사명에 내장공 + 보통인부(0.5인) 두 행이 모두 생성되도록 보장
-        // 매칭된 카탈로그에 보통인부가 없으면, 다른 카탈로그에서 보통인부 노임단가를 가져와 합성 항목 추가
-        // (이미 보통인부 항목이 있으면 합성을 건너뜀 → 기존 카탈로그 값 그대로 사용)
+        // 가구공사/욕실공사 FIXED 항목: 보통인부 자동 합성 비활성화
+        // 사용자 요구로 내장공만 위치별로 합산되도록 함. 카탈로그에 보통인부가 있더라도
+        // 자동 연동 대상에서 제외하여 면적 기반 비정상 금액 산정을 방지.
         let augmentedCatalogItems = matchingCatalogItems;
-        if (isFixed && (workType === '가구공사' || workType === '욕실공사') && matchingCatalogItems.length > 0) {
-          const hasHelper = matchingCatalogItems.some(
-            item => normalizeForMatch(item.노임항목 || '') === normalizeForMatch('보통인부')
+        if (isFixed && (workType === '가구공사' || workType === '욕실공사')) {
+          augmentedCatalogItems = matchingCatalogItems.filter(
+            item => normalizeForMatch(item.노임항목 || '') !== normalizeForMatch('보통인부')
           );
-          if (!hasHelper) {
-            // 다른 카탈로그에서 보통인부 노임단가 참조 (예: 욕실공사 SMC의 보통인부)
-            const helperReference = mergedIlwidaegaCatalog.find(
-              item => normalizeForMatch(item.노임항목 || '') === normalizeForMatch('보통인부') && (item.노임단가 || 0) > 0
-            );
-            const mainItem = matchingCatalogItems[0];
-            const helperUnitPrice = helperReference?.노임단가 || 0;
-            // 보통인부 합성 항목: 0.5인 기준 일위대가 = 노임단가 × 0.5
-            const helperFixedTotal = Math.round(helperUnitPrice * 0.5);
-            augmentedCatalogItems = [
-              ...matchingCatalogItems,
-              {
-                ...mainItem,
-                노임항목: '보통인부',
-                노임단가: helperUnitPrice,
-                일위대가: helperFixedTotal,
-              },
-            ];
-            console.log('[연동] FIXED 보통인부 합성:', { workType, workName, helperUnitPrice, helperFixedTotal });
-          }
         }
 
         if (augmentedCatalogItems.length > 0) {
