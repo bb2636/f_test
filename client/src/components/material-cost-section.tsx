@@ -445,7 +445,7 @@ export function MaterialCostSection({
                     borderBottom: groupBorderBottom,
                     background: isLinkedRow ? "rgba(59, 130, 246, 0.03)" : undefined,
                   }}
-                  title={isLinkedRow ? "복구면적에서 자동 생성된 행 (수정 불가)" : undefined}
+                  title={isLinkedRow ? "복구면적에서 자동 생성된 행 (수량/단가 수정 가능)" : undefined}
                 >
                   {/* 체크박스 */}
                   <td style={{ padding: "0 12px", textAlign: "center", borderBottom: groupBorderBottom, borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
