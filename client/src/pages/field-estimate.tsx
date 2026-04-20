@@ -398,9 +398,9 @@ export default function FieldEstimate() {
 
   // 철거공사 필요한 공사명 목록 (컴포넌트 레벨 - 삭제 추적 및 reconcile에서 공통 사용)
   // 철거공사 자동 연동 대상 (복구면적산출표의 공사명이 이 목록에 있으면 철거공사 행 자동 생성)
-  // 허용: 합판, 도배, 마루, 장판, 상부장, 상부장&하부장, 상부장&키큰장, 키큰장, 상부장&하부장&키큰장, 붙박이장, SMC, 리빙보드
-  // 제외: 석고보드, 하부장 단독, 도기류, 반자틀, 몰딩, 걸레받이 등
-  const DEMOLITION_WORK_NAMES = ['합판', '도배', '마루', '장판', '상부장', '상부장&하부장', '상부장&키큰장', '키큰장', '상부장&하부장&키큰장', '붙박이장', 'SMC', '리빙보드'];
+  // 허용: 합판, 석고보드, 도배, 마루, 장판, 상부장, 상부장&하부장, 상부장&키큰장, 키큰장, 상부장&하부장&키큰장, 붙박이장, SMC, 리빙보드
+  // 제외: 하부장 단독, 도기류, 반자틀, 몰딩, 걸레받이 등
+  const DEMOLITION_WORK_NAMES = ['합판', '석고보드', '도배', '마루', '장판', '상부장', '상부장&하부장', '상부장&키큰장', '키큰장', '상부장&하부장&키큰장', '붙박이장', 'SMC', '리빙보드'];
   
   // FIXED 일위대가 항목: 면적 무관하게 일위대가DB의 '일위대가' 컬럼을 합계로 사용 (욕실/가구/철거의 SMC~붙박이장)
   // - 복구면적: 면적 그대로 (천장 할증 미적용)
@@ -612,12 +612,13 @@ export default function FieldEstimate() {
   };
   
   // 철거공사 공사명 매핑 (복구면적 공사명 → 일위대가DB 철거공사 공사명)
-  // 일위대가DB의 철거공사 공사명과 동일하게 유지
+  // 일위대가DB의 철거공사 공사명과 다르게 등록된 항목은 여기서 변환
+  const DEMOLITION_WORKNAME_ALIASES: Record<string, string> = {
+    '석고보드': '석고', // 복구면적은 '석고보드'로 입력하지만 일위대가DB 철거공사에는 '석고'로 등록됨
+  };
   const getDemolitionMapping = (workType: string, workName: string): { demolitionWorkName: string; detailItem: string } => {
-    // 기본적으로 공사명 그대로 사용 (일위대가DB 철거공사에 같은 이름 있을 것으로 예상)
-    // 목공사: 반자틀, 합판, 석고보드 → 철거공사 반자틀, 합판, 석고보드
-    // 수장공사: 도배, 마루, 장판 → 철거공사 도배, 마루, 장판
-    return { demolitionWorkName: workName, detailItem: '보통인부' };
+    const mapped = DEMOLITION_WORKNAME_ALIASES[workName] || workName;
+    return { demolitionWorkName: mapped, detailItem: '보통인부' };
   };
   
   // 철거공사 행 생성 함수 (일위대가DB 기반)
@@ -2449,9 +2450,10 @@ export default function FieldEstimate() {
         if (needsDemolitionRow(workType, workName) && rawRepairArea > 0) {
           const demolitionSourceId = `demolition-${areaRow.id}`;
           const existingDemolition = laborCostRows.find(r => r.sourceAreaRowId === demolitionSourceId);
+          const mappedDemolitionName = getDemolitionMapping(workType, workName).demolitionWorkName;
           const demolitionCatalogItem = mergedIlwidaegaCatalog.find(
             item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
-                   normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
+                   normalizeForMatch(item.공사명 || '') === normalizeForMatch(mappedDemolitionName)
           );
           if (!existingDemolition) {
             const demolitionRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
@@ -2474,9 +2476,10 @@ export default function FieldEstimate() {
       demolitionOnlyAreaRows.forEach(areaRow => {
         const workName = areaRow.workName;
         const rawRepairArea = Number(areaRow.repairArea) || 0;
+        const mappedDemolitionName = getDemolitionMapping(areaRow.workType, workName).demolitionWorkName;
         const demolitionCatalogItem = mergedIlwidaegaCatalog.find(
           item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
-                 normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
+                 normalizeForMatch(item.공사명 || '') === normalizeForMatch(mappedDemolitionName)
         );
         const demolitionRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
         newLaborRows.push(demolitionRow);
