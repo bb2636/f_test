@@ -1499,15 +1499,32 @@ export function LaborCostSection({
       "탄성코트",
       "바탕만들기(탄성코트)",
     ];
-    const getPaintOrder = (workName: string): number => {
-      const idx = PAINT_WORK_ORDER.indexOf(workName || "");
-      return idx === -1 ? PAINT_WORK_ORDER.length : idx;
+    const FURNITURE_WORK_ORDER = [
+      "상부장",
+      "상부장&하부장",
+      "키큰장",
+      "상부장&키큰장",
+      "상부장&하부장&키큰장",
+      "붙박이장",
+    ];
+    const getCustomOrder = (list: string[], workName: string): number => {
+      const idx = list.indexOf(workName || "");
+      return idx === -1 ? list.length : idx;
     };
     categoryRowsMap.forEach((rows, cat) => {
       if (cat === "도장공사") {
         rows.sort((a, b) => {
           const orderDiff =
-            getPaintOrder(a.workName || "") - getPaintOrder(b.workName || "");
+            getCustomOrder(PAINT_WORK_ORDER, a.workName || "") -
+            getCustomOrder(PAINT_WORK_ORDER, b.workName || "");
+          if (orderDiff !== 0) return orderDiff;
+          return (a.workName || "").localeCompare(b.workName || "");
+        });
+      } else if (cat === "가구공사") {
+        rows.sort((a, b) => {
+          const orderDiff =
+            getCustomOrder(FURNITURE_WORK_ORDER, a.workName || "") -
+            getCustomOrder(FURNITURE_WORK_ORDER, b.workName || "");
           if (orderDiff !== 0) return orderDiff;
           return (a.workName || "").localeCompare(b.workName || "");
         });
