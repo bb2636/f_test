@@ -2444,15 +2444,16 @@ export default function FieldEstimate() {
         
         console.log('[연동] 일위대가 조회:', { workType, workName, laborCategory, matchCount: matchingCatalogItems.length, isFixed });
         
-        // 가구공사 FIXED 항목에 욕실공사와 동일한 노임 구조(내장공 + 보통인부 0.5인) 적용
-        // matchingCatalogItems에 보통인부가 없으면, 다른 카탈로그에서 보통인부 노임단가를 가져와 합성 항목 추가
+        // 가구공사/욕실공사 FIXED 항목: 한 공사명에 내장공 + 보통인부(0.5인) 두 행이 모두 생성되도록 보장
+        // 매칭된 카탈로그에 보통인부가 없으면, 다른 카탈로그에서 보통인부 노임단가를 가져와 합성 항목 추가
+        // (이미 보통인부 항목이 있으면 합성을 건너뜀 → 기존 카탈로그 값 그대로 사용)
         let augmentedCatalogItems = matchingCatalogItems;
-        if (isFixed && workType === '가구공사' && matchingCatalogItems.length > 0) {
+        if (isFixed && (workType === '가구공사' || workType === '욕실공사') && matchingCatalogItems.length > 0) {
           const hasHelper = matchingCatalogItems.some(
             item => normalizeForMatch(item.노임항목 || '') === normalizeForMatch('보통인부')
           );
           if (!hasHelper) {
-            // 다른 카탈로그(예: 욕실공사 SMC)에서 보통인부 노임단가 참조
+            // 다른 카탈로그에서 보통인부 노임단가 참조 (예: 욕실공사 SMC의 보통인부)
             const helperReference = mergedIlwidaegaCatalog.find(
               item => normalizeForMatch(item.노임항목 || '') === normalizeForMatch('보통인부') && (item.노임단가 || 0) > 0
             );
@@ -2469,7 +2470,7 @@ export default function FieldEstimate() {
                 일위대가: helperFixedTotal,
               },
             ];
-            console.log('[연동] 가구공사 FIXED 보통인부 합성:', { workName, helperUnitPrice, helperFixedTotal });
+            console.log('[연동] FIXED 보통인부 합성:', { workType, workName, helperUnitPrice, helperFixedTotal });
           }
         }
 
