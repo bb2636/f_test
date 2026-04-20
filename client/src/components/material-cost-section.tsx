@@ -321,8 +321,15 @@ export function MaterialCostSection({
       if (!groups[key]) groups[key] = [];
       groups[key].push(row);
     });
-    return groups;
-  }, [rows]);
+    // 공종 순서: laborCategories(공종db 순서) 우선 적용
+    const keys = Object.keys(groups);
+    const inOrder = (laborCategories || []).filter(c => keys.includes(c));
+    const extras = keys.filter(c => !inOrder.includes(c));
+    const orderedKeys = [...inOrder, ...extras];
+    const orderedGroups: { [key: string]: MaterialRow[] } = {};
+    orderedKeys.forEach(k => { orderedGroups[k] = groups[k]; });
+    return orderedGroups;
+  }, [rows, laborCategories]);
 
   // 전역 인덱스 계산용
   let globalIndex = 0;

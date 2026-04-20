@@ -1569,9 +1569,16 @@ export function LaborCostSection({
       }
     });
 
-    // 최종 정렬된 행 목록 생성 (연동 공종 우선, 독립만 있는 공종 후순위)
+    // 공종 표시 순서: filteredWorkTypes(공종db 순서)를 우선 적용
+    const allCats = [...linkedCategories, ...independentOnlyCategories];
+    const canonicalOrder = filteredWorkTypes && filteredWorkTypes.length > 0 ? filteredWorkTypes : [];
+    const inOrder = canonicalOrder.filter((c) => allCats.includes(c));
+    const extras = allCats.filter((c) => !inOrder.includes(c));
+    const orderedCats = [...inOrder, ...extras];
+
+    // 최종 정렬된 행 목록 생성
     const sortedRows: MergedLaborCostRow[] = [];
-    [...linkedCategories, ...independentOnlyCategories].forEach((cat) => {
+    orderedCats.forEach((cat) => {
       const rows = categoryRowsMap.get(cat) || [];
       sortedRows.push(...rows);
     });
