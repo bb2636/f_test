@@ -627,7 +627,7 @@ export default function FieldEstimate() {
     // 안전한 피해면적 변환 (FIXED는 천장 할증 미적용, 나머지는 적용)
     const rawArea = overrideDamageArea ?? (parseFloat(sourceAreaRow.repairArea) || 0);
     const ceilingMult = isFixed ? 1.0 : getCeilingMultiplier(sourceAreaRow.workType || '', sourceAreaRow.location || '');
-    const parsedArea = Math.round(rawArea * ceilingMult * 100) / 100;
+    const parsedArea = Math.round(rawArea * ceilingMult * 10) / 10;
     const safeDamageArea = Math.round(parsedArea * 10) / 10;
     
     // 기준작업량(D), 노임단가(E), 일위대가(I_fixed) 가져오기
@@ -1050,7 +1050,7 @@ export default function FieldEstimate() {
       const workNameData = workNameMap.get(workName)!;
       const rawArea = parseFloat(row.repairArea) || 0;
       const ceilingMult = getCeilingMultiplier(workType, row.location || '');
-      workNameData.totalArea += Math.round(rawArea * ceilingMult * 100) / 100;
+      workNameData.totalArea += Math.round(rawArea * ceilingMult * 10) / 10;
       workNameData.areaRows.push(row);
     });
 
@@ -1097,7 +1097,7 @@ export default function FieldEstimate() {
 
         const rawRepairArea = Number(row.repairArea) || 0;
         const demoCeilingMult = getCeilingMultiplier(row.workType || '', row.location || '');
-        const repairArea = Math.round(rawRepairArea * demoCeilingMult * 100) / 100;
+        const repairArea = Math.round(rawRepairArea * demoCeilingMult * 10) / 10;
         let qty = 1, amt = 0, ppsqm = 0;
         if (item.D > 0 && item.E > 0 && repairArea > 0) {
           amt = calculateIWithTiers(repairArea, item.D, item.E, laborRateTiers);
@@ -2304,7 +2304,7 @@ export default function FieldEstimate() {
         const rawRepairArea = Number(areaRow.repairArea) || 0;
         const isFixed = isFixedIlwidaegaWorkName(workName);
         const addNewCeilingMult = isFixed ? 1.0 : getCeilingMultiplier(workType, areaRow.location || '');
-        const damageAreaValue = Math.round(rawRepairArea * addNewCeilingMult * 100) / 100;
+        const damageAreaValue = Math.round(rawRepairArea * addNewCeilingMult * 10) / 10;
         const laborCategory = getLaborCategory(workType, workName);
         
         // 일위대가DB에서 공종+공사명으로 ALL matching 노임항목 조회 (오버라이드 적용된 값 사용)
@@ -2591,7 +2591,7 @@ export default function FieldEstimate() {
         // 복구면적 값 (숫자로 변환) + 천장 할증 계수 적용 (항상 원본 면적 행의 workType 사용)
         const rawDamageArea = Number(linkedAreaRow.repairArea) || 0;
         const autoSyncCeilingMult = getCeilingMultiplier(linkedAreaRow.workType || '', linkedAreaRow.location || '');
-        const damageAreaValue = Math.round(rawDamageArea * autoSyncCeilingMult * 100) / 100;
+        const damageAreaValue = Math.round(rawDamageArea * autoSyncCeilingMult * 10) / 10;
         
         if (isDemolitionRow) {
           // 피해철거공사 행 업데이트 (장소, 위치, 피해면적 + 적용단가/수량/합계 재계산)
@@ -2776,7 +2776,7 @@ export default function FieldEstimate() {
         if (matchedWorkName) {
           const rawRepairArea = Number(row.repairArea) || 0;
           const demoCeilingMult = getCeilingMultiplier(row.workType || '', row.location || '');
-          const repairArea = Math.round(rawRepairArea * demoCeilingMult * 100) / 100;
+          const repairArea = Math.round(rawRepairArea * demoCeilingMult * 10) / 10;
           
           if (demolitionEntryMap.has(matchedWorkName)) {
             // 기존 entry에 면적 합산
@@ -4155,7 +4155,7 @@ export default function FieldEstimate() {
     
     // 천장 할증 계수 적용 (노무비용) — 자재비는 실면적 기준으로 별도
     const syncCeilingMult = getCeilingMultiplier(workType, location || '');
-    const adjustedRepairArea = repairArea ? Math.round(repairArea * syncCeilingMult * 100) / 100 : 0;
+    const adjustedRepairArea = repairArea ? Math.round(repairArea * syncCeilingMult * 10) / 10 : 0;
 
     // 기본값: 전달받은 repairArea 사용 (자재비는 실면적)
     let totalMaterialArea = repairArea || 0;
