@@ -429,7 +429,9 @@ export function MaterialCostSection({
               const isLastRowInGroup = rowIndex === groupRows.length - 1;
               // 수량 표시 텍스트
               const quantityDisplay = isLinkedRow 
-                ? `(${row.수량m2 || 0}바닥+벽체+천장)` 
+                ? ((row.수량m2 || 0) > 0 
+                    ? `(${row.수량m2 || 0}바닥+벽체+천장)` 
+                    : `${row.수량EA || 0}`)
                 : (quantity > 0 ? quantity.toString() : '');
               
               // 공종 그룹 구분 테두리 스타일
