@@ -1377,7 +1377,34 @@ export function LaborCostSection({
     mergedAmount?: number; // 합산된 금액
   }
 
-  // 철거공사 동일 항목 병합 함수
+  // FIXED 일위대가 항목 (위치별 수량 합산 — 면적 무관, 일위대가 단가 고정)
+  const FIXED_LABOR_WORK_NAMES = [
+    "SMC",
+    "리빙보드",
+    "도기류",
+    "붙박이장",
+    "상부장",
+    "하부장",
+    "상부장&하부장",
+    "키큰장",
+    "상부장&키큰장",
+    "상부장&하부장&키큰장",
+  ];
+  const isFixedLaborWorkName = (wn?: string): boolean =>
+    FIXED_LABOR_WORK_NAMES.includes(wn || "");
+
+  // 병합 대상 판정: 철거공사 + (가구공사/욕실공사의 FIXED 항목)
+  const isMergeableLaborRow = (row: LaborCostRow): boolean => {
+    if (row.category === "철거공사" || row.category === "피해철거공사") return true;
+    if (
+      (row.category === "가구공사" || row.category === "욕실공사") &&
+      isFixedLaborWorkName(row.workName || "")
+    )
+      return true;
+    return false;
+  };
+
+  // 철거공사/욕실/가구 FIXED 동일 항목 병합 함수
   const mergeDemolitionRows = (
     inputRows: LaborCostRow[],
   ): MergedLaborCostRow[] => {
@@ -1385,10 +1412,10 @@ export function LaborCostSection({
     const demolitionMap = new Map<string, MergedLaborCostRow>();
 
     inputRows.forEach((row) => {
-      // 철거공사 카테고리만 병합 대상
-      if (row.category === "철거공사" || row.category === "피해철거공사") {
-        // 병합 키: 공사명 + 세부항목 + 단위 + 단가
-        const mergeKey = `${row.workName}|${row.detailItem}|${row.unit}|${row.standardPrice}`;
+      if (isMergeableLaborRow(row)) {
+        // 병합 키: 공종 + 공사명 + 세부항목 + 단위 + 단가
+        const mergeKey = `${row.category}|${row.workName}|${row.detailItem}|${row.unit}|${row.standardPrice}`;
+        const isFixedItem = isFixedLaborWorkName(row.workName || "");
 
         if (demolitionMap.has(mergeKey)) {
           // 기존 병합 행에 합산
@@ -1399,29 +1426,39 @@ export function LaborCostSection({
           existing.damageArea =
             (existing.damageArea || 0) + (row.damageArea || 0);
 
-          // 합산된 면적으로 금액, 적용단가, 수량 재계산 (일반 노무비와 동일한 I = F + H 공식)
-          const C = existing.damageArea;
-          const D = existing.standardWorkQuantity || 0;
-          const E = existing.standardPrice || 0;
-          if (D > 0 && E > 0 && C > 0) {
-            existing.mergedAmount = calculateIWithTiers(
-              C,
-              D,
-              E,
-              laborRateTiers,
-            );
-            existing.pricePerSqm = calculateAppliedUnitPriceWithTiers(
-              C,
-              D,
-              E,
-              laborRateTiers,
-            );
-            existing.mergedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
+          if (isFixedItem) {
+            // FIXED 항목 (욕실/가구/철거의 SMC, 상부장 시리즈 등):
+            // 위치마다 동일한 일위대가가 적용되므로 수량/금액을 단순 합산
+            // 예: 상부장 1곳 → 내장공 1인, 2곳 → 내장공 2인
+            const prevQty = existing.mergedQuantity ?? existing.quantity ?? 0;
+            const prevAmt = existing.mergedAmount ?? existing.amount ?? 0;
+            existing.mergedQuantity = Math.round((prevQty + (row.quantity || 0)) * 10) / 10;
+            existing.mergedAmount = prevAmt + (row.amount || 0);
           } else {
-            // 일위대가 공식 적용 불가 시: 기존 방식
-            existing.mergedQuantity =
-              (existing.mergedQuantity || existing.quantity) + row.quantity;
-            existing.mergedAmount = Math.round(C * (existing.pricePerSqm || 0));
+            // 합산된 면적으로 금액, 적용단가, 수량 재계산 (일반 노무비와 동일한 I = F + H 공식)
+            const C = existing.damageArea;
+            const D = existing.standardWorkQuantity || 0;
+            const E = existing.standardPrice || 0;
+            if (D > 0 && E > 0 && C > 0) {
+              existing.mergedAmount = calculateIWithTiers(
+                C,
+                D,
+                E,
+                laborRateTiers,
+              );
+              existing.pricePerSqm = calculateAppliedUnitPriceWithTiers(
+                C,
+                D,
+                E,
+                laborRateTiers,
+              );
+              existing.mergedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
+            } else {
+              // 일위대가 공식 적용 불가 시: 기존 방식
+              existing.mergedQuantity =
+                (existing.mergedQuantity || existing.quantity) + row.quantity;
+              existing.mergedAmount = Math.round(C * (existing.pricePerSqm || 0));
+            }
           }
         } else {
           // 새 병합 행 생성
@@ -1435,7 +1472,7 @@ export function LaborCostSection({
           result.push(mergedRow);
         }
       } else {
-        // 철거공사가 아닌 행은 그대로 추가
+        // 병합 대상이 아닌 행은 그대로 추가
         result.push({ ...row });
       }
     });
