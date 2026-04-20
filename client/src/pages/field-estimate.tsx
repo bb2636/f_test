@@ -1556,11 +1556,15 @@ export default function FieldEstimate() {
           if (existingRow && existingRow.isOverridden) {
             // 사용자 수정 행: 사용자 입력값 보존, autoQuantity만 업데이트
             // 단, FIXED 항목(욕실/가구공사)의 수량은 자동 계산값이므로 항상 갱신
+            // 자재항목/자재/규격은 카탈로그를 진실의 원천으로 강제 갱신 (autoKey와 일치 보장)
             const isFixedAutoQty = isFixedMaterial && (data.공종 === '욕실공사' || data.공종 === '가구공사');
             const preservedPriceForOverride = existingRow.단가 || existingRow.기준단가 || 0;
             resultRowsMap.set(autoKey, {
               ...existingRow,
               autoKey,
+              자재항목: material.자재항목,
+              자재: material.자재항목,
+              규격: material.규격 || existingRow.규격 || '',
               autoQuantity: calculatedQty,
               sourceAreaRowIds: data.sourceAreaRowIds,
               isManualPriceEntry: existingRow.isManualPriceEntry ?? isManualEntry,
@@ -1578,6 +1582,7 @@ export default function FieldEstimate() {
           } else if (existingRow) {
             // 기존 자동 행: 값 업데이트 (ID 유지)
             // 단, 사용자가 이미 입력한 단가는 보존 (0이 아닌 경우)
+            // 자재항목/자재/규격은 카탈로그를 진실의 원천으로 강제 갱신 (autoKey와 일치 보장)
             const existingPrice = existingRow.단가 || existingRow.기준단가 || 0;
             const preservedPrice = existingPrice > 0 ? existingPrice : unitPrice;
             // 사용자가 단가를 입력한 경우 isManualPriceEntry 유지 (isOverridden도 설정)
@@ -1585,6 +1590,9 @@ export default function FieldEstimate() {
             resultRowsMap.set(autoKey, {
               ...existingRow,
               autoKey,
+              자재항목: material.자재항목,
+              자재: material.자재항목,
+              규격: material.규격 || existingRow.규격 || '',
               단위: calculatedUnit,
               단가: preservedPrice,
               기준단가: preservedPrice,
