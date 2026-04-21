@@ -2831,7 +2831,20 @@ export default function FieldEstimate() {
           if (isFixedLaborItem) {
             const isHelper = normalizeForMatch(laborRow.detailItem || '') === normalizeForMatch('보통인부');
             const fixedQuantity = isHelper ? 0.5 : 1.0;
-            const E = laborRow.standardPrice || 0;
+            // standardPrice가 0이면 카탈로그에서 보충 (catalog가 늦게 로드된 경우 대비)
+            let E = laborRow.standardPrice || 0;
+            let D = laborRow.standardWorkQuantity || 0;
+            if (E === 0 && laborCategory && laborRow.workName) {
+              const catalogItem = mergedIlwidaegaCatalog.find(item =>
+                normalizeForMatch(item.공종) === normalizeForMatch(laborCategory) &&
+                normalizeForMatch(item.공사명) === normalizeForMatch(laborRow.workName) &&
+                (!laborRow.detailItem || normalizeForMatch(item.노임항목) === normalizeForMatch(laborRow.detailItem))
+              );
+              if (catalogItem) {
+                E = catalogItem.노임단가 || 0;
+                D = catalogItem.기준작업량 || D;
+              }
+            }
             const fixedAmount = Math.round(E * fixedQuantity);
             const needsFixedUpdate =
               laborRow.place !== linkedAreaRow.category ||
@@ -2839,7 +2852,9 @@ export default function FieldEstimate() {
               laborRow.damageArea !== damageAreaValue ||
               laborRow.quantity !== fixedQuantity ||
               laborRow.amount !== fixedAmount ||
-              laborRow.pricePerSqm !== E;
+              laborRow.pricePerSqm !== E ||
+              laborRow.standardPrice !== E ||
+              laborRow.standardWorkQuantity !== D;
             if (needsFixedUpdate) {
               return {
                 ...laborRow,
@@ -2850,6 +2865,8 @@ export default function FieldEstimate() {
                 quantity: fixedQuantity,
                 amount: fixedAmount,
                 pricePerSqm: E,
+                standardPrice: E,
+                standardWorkQuantity: D,
               };
             }
             return laborRow;

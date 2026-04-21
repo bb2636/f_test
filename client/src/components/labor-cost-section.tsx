@@ -1411,6 +1411,16 @@ export function LaborCostSection({
     const result: MergedLaborCostRow[] = [];
     const demolitionMap = new Map<string, MergedLaborCostRow>();
 
+    // [DEBUG] FIXED 항목 입력 행 수 확인
+    const fixedInputs = inputRows.filter(r => isMergeableLaborRow(r) && isFixedLaborWorkName(r.workName || ''));
+    if (fixedInputs.length > 0) {
+      console.log('[mergeDemolitionRows] FIXED 입력 행:', fixedInputs.map(r => ({
+        category: r.category, workName: r.workName, detailItem: r.detailItem,
+        unit: r.unit, standardPrice: r.standardPrice, quantity: r.quantity,
+        sourceAreaRowId: r.sourceAreaRowId,
+      })));
+    }
+
     inputRows.forEach((row) => {
       if (isMergeableLaborRow(row)) {
         // 병합 키: 공종 + 공사명 + 세부항목 + 단위 + 단가
