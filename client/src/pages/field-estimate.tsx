@@ -2440,21 +2440,42 @@ export default function FieldEstimate() {
       setLaborCostRows(prev => prev.map(row => refreshMap.get(row.id) || row));
     }
 
-    // 가구공사/욕실공사 FIXED 항목에 자동 연동된 보통인부 행 정리 (제거)
-    // 보통인부는 철거공사 자동 연동에서 이미 생성되므로 가구/욕실에서 중복 생성하지 않음
+    // 가구공사/욕실공사 FIXED 항목 정리:
+    // 1) 보통인부 행 제거 (철거공사 자동 연동에서 별도 생성)
+    // 2) 동일 공종|공사명|노임항목 중복 행 dedup (자재비집계 방식 — 위치별 행이 아닌 1행만 유지)
     {
-      const helperRowsToRemove = laborCostRows.filter(row => {
-        if (!row.isLinkedFromRecovery) return false;
-        if (normalizeForMatch(row.detailItem || '') !== normalizeForMatch('보통인부')) return false;
-        if (row.category !== '가구공사' && row.category !== '욕실공사') return false;
-        if (!isFixedIlwidaegaWorkName(row.workName || '')) return false;
-        if (!row.sourceAreaRowId) return false;
-        // 철거공사/바탕만들기 행은 제외
-        if (row.sourceAreaRowId.startsWith('demolition-') || row.sourceAreaRowId.includes('::batang')) return false;
-        return true;
+      const removeIds = new Set<string>();
+      // 1) 보통인부 정리
+      laborCostRows.forEach(row => {
+        if (!row.isLinkedFromRecovery) return;
+        if (normalizeForMatch(row.detailItem || '') !== normalizeForMatch('보통인부')) return;
+        if (row.category !== '가구공사' && row.category !== '욕실공사') return;
+        if (!isFixedIlwidaegaWorkName(row.workName || '')) return;
+        if (!row.sourceAreaRowId) return;
+        if (row.sourceAreaRowId.startsWith('demolition-') || row.sourceAreaRowId.includes('::batang')) return;
+        removeIds.add(row.id);
       });
-      if (helperRowsToRemove.length > 0) {
-        const removeIds = new Set(helperRowsToRemove.map(r => r.id));
+      // 2) FIXED 가구/욕실 중복 dedup: category|workName|detailItem 키 그룹당 1행만 유지
+      const fixedDedupGroups = new Map<string, string[]>();
+      laborCostRows.forEach(row => {
+        if (!row.isLinkedFromRecovery) return;
+        if (row.category !== '가구공사' && row.category !== '욕실공사') return;
+        if (!isFixedIlwidaegaWorkName(row.workName || '')) return;
+        if (!row.sourceAreaRowId) return;
+        if (row.sourceAreaRowId.startsWith('demolition-') || row.sourceAreaRowId.includes('::batang')) return;
+        if (removeIds.has(row.id)) return;
+        const key = `${normalizeForMatch(row.category)}|${normalizeForMatch(row.workName || '')}|${normalizeForMatch(row.detailItem || '')}`;
+        if (!fixedDedupGroups.has(key)) fixedDedupGroups.set(key, []);
+        fixedDedupGroups.get(key)!.push(row.id);
+      });
+      fixedDedupGroups.forEach(ids => {
+        if (ids.length > 1) {
+          // 첫 행 유지, 나머지 제거
+          ids.slice(1).forEach(id => removeIds.add(id));
+          console.log('[자동연동] FIXED 중복 행 dedup: 유지=', ids[0].slice(0, 12), '제거=', ids.length - 1, '개');
+        }
+      });
+      if (removeIds.size > 0) {
         lastLaborSetSourceRef.current = 'autoSync-removeFixedHelper';
         setLaborCostRows(prev => prev.filter(r => !removeIds.has(r.id)));
         return;
@@ -2466,7 +2487,82 @@ export default function FieldEstimate() {
       const newLaborRows: LaborCostRow[] = [];
       const staleEmptyDemolitionRefreshes: { oldId: string; newRow: LaborCostRow }[] = [];
       
+      // 가구공사/욕실공사 FIXED 항목: 위치별로 행을 만들지 않고 공종|공사명 단위로 1행만 생성 (자재비집계 방식)
+      // 같은 공사명을 가진 위치 수만큼 수량을 곱해 합산 (내장공 1.0 × 위치수)
+      const fixedAggregateGroups = new Map<string, AreaCalculationRow[]>();
+      const nonFixedAreaRows: AreaCalculationRow[] = [];
       completedAreaRows.forEach(areaRow => {
+        const isFixed = isFixedIlwidaegaWorkName(areaRow.workName) &&
+          (areaRow.workType === '가구공사' || areaRow.workType === '욕실공사');
+        if (isFixed) {
+          const key = `${normalizeForMatch(areaRow.workType)}|${normalizeForMatch(areaRow.workName)}`;
+          if (!fixedAggregateGroups.has(key)) fixedAggregateGroups.set(key, []);
+          fixedAggregateGroups.get(key)!.push(areaRow);
+        } else {
+          nonFixedAreaRows.push(areaRow);
+        }
+      });
+      
+      // FIXED 그룹 처리: 그룹당 노임항목별 1행 생성, 수량 = 위치수 × 1.0(내장공)
+      fixedAggregateGroups.forEach((groupAreaRows) => {
+        const firstRow = groupAreaRows[0];
+        const workType = firstRow.workType;
+        const workName = firstRow.workName;
+        const laborCategory = getLaborCategory(workType, workName);
+        const locationCount = groupAreaRows.length;
+        const totalDamageArea = Math.round(
+          groupAreaRows.reduce((s, r) => s + (Number(r.repairArea) || 0), 0) * 10
+        ) / 10;
+        const uniquePlaces = Array.from(new Set(groupAreaRows.map(r => r.category).filter(Boolean)));
+        const uniquePositions = Array.from(new Set(groupAreaRows.map(r => r.location).filter(Boolean)));
+        const combinedPlace = uniquePlaces.join('/');
+        const combinedPosition = uniquePositions.join('/');
+        
+        const matchingCatalogItems = mergedIlwidaegaCatalog.filter(
+          item => normalizeForMatch(item.공종 || '') === normalizeForMatch(laborCategory) &&
+                 normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
+        );
+        // 보통인부 제외 (철거공사 자동 연동에서 별도 생성)
+        const filteredItems = matchingCatalogItems.filter(
+          item => normalizeForMatch(item.노임항목 || '') !== normalizeForMatch('보통인부')
+        );
+        
+        filteredItems.forEach((catalogItem, idx) => {
+          const E = catalogItem.노임단가 || 0;
+          const D = catalogItem.기준작업량 || 0;
+          // 위치당 1.0인 × 위치 수
+          const calculatedQuantity = Math.round(locationCount * 1.0 * 10) / 10;
+          const calculatedAmount = Math.round(E * calculatedQuantity);
+          
+          newLaborRows.push({
+            id: `labor-linked-${Date.now()}-${Math.random()}-${idx}`,
+            sourceAreaRowId: firstRow.id,
+            isLinkedFromRecovery: true,
+            place: combinedPlace,
+            position: combinedPosition,
+            category: laborCategory,
+            workName: workName,
+            detailWork: '일위대가',
+            detailItem: catalogItem.노임항목,
+            priceStandard: '',
+            unit: '㎡',
+            standardPrice: E,
+            standardWorkQuantity: D,
+            quantity: calculatedQuantity,
+            applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
+            salesMarkupRate: 0,
+            pricePerSqm: E,
+            damageArea: totalDamageArea,
+            deduction: 0,
+            includeInEstimate: true,
+            request: '',
+            amount: calculatedAmount,
+          });
+        });
+        console.log('[자동연동] FIXED 집계 행 생성:', workType, workName, `위치=${locationCount}곳, 수량=${locationCount}.0인`);
+      });
+      
+      nonFixedAreaRows.forEach(areaRow => {
         const workType = areaRow.workType;
         const workName = areaRow.workName;
         const rawRepairArea = Number(areaRow.repairArea) || 0;
@@ -2847,7 +2943,19 @@ export default function FieldEstimate() {
             (linkedAreaRow.workType === '가구공사' || linkedAreaRow.workType === '욕실공사');
           if (isFixedLaborItem) {
             const isHelper = normalizeForMatch(laborRow.detailItem || '') === normalizeForMatch('보통인부');
-            const fixedQuantity = isHelper ? 0.5 : 1.0;
+            // 위치별 집계: 같은 공종+공사명을 가진 모든 영역행을 카운트 (자재비집계 방식)
+            const matchingAreaRows = rows.filter(r =>
+              normalizeForMatch(r.workType || '') === normalizeForMatch(linkedAreaRow.workType || '') &&
+              normalizeForMatch(r.workName || '') === normalizeForMatch(linkedAreaRow.workName || '')
+            );
+            const aggregateLocationCount = Math.max(1, matchingAreaRows.length);
+            const fixedQuantity = Math.round((isHelper ? 0.5 : 1.0) * aggregateLocationCount * 10) / 10;
+            // 면적/장소/위치도 집계값으로 갱신
+            const aggregateDamageArea = Math.round(
+              matchingAreaRows.reduce((s, r) => s + (Number(r.repairArea) || 0), 0) * 10
+            ) / 10;
+            const aggregatePlaces = Array.from(new Set(matchingAreaRows.map(r => r.category).filter(Boolean))).join('/') || linkedAreaRow.category;
+            const aggregatePositions = Array.from(new Set(matchingAreaRows.map(r => r.location).filter(Boolean))).join('/') || linkedAreaRow.location;
             // standardPrice가 0이면 카탈로그에서 보충 (catalog가 늦게 로드된 경우 대비)
             let E = laborRow.standardPrice || 0;
             let D = laborRow.standardWorkQuantity || 0;
@@ -2864,9 +2972,9 @@ export default function FieldEstimate() {
             }
             const fixedAmount = Math.round(E * fixedQuantity);
             const needsFixedUpdate =
-              laborRow.place !== linkedAreaRow.category ||
-              laborRow.position !== linkedAreaRow.location ||
-              laborRow.damageArea !== damageAreaValue ||
+              laborRow.place !== aggregatePlaces ||
+              laborRow.position !== aggregatePositions ||
+              laborRow.damageArea !== aggregateDamageArea ||
               laborRow.quantity !== fixedQuantity ||
               laborRow.amount !== fixedAmount ||
               laborRow.pricePerSqm !== E ||
@@ -2875,10 +2983,10 @@ export default function FieldEstimate() {
             if (needsFixedUpdate) {
               return {
                 ...laborRow,
-                place: linkedAreaRow.category,
-                position: linkedAreaRow.location,
+                place: aggregatePlaces,
+                position: aggregatePositions,
                 category: laborCategory,
-                damageArea: damageAreaValue,
+                damageArea: aggregateDamageArea,
                 quantity: fixedQuantity,
                 amount: fixedAmount,
                 pricePerSqm: E,
