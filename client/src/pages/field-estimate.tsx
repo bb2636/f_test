@@ -2486,6 +2486,26 @@ export default function FieldEstimate() {
       setLaborCostRows(prev => prev.map(row => refreshMap.get(row.id) || row));
     }
 
+    // 가구공사/욕실공사 FIXED 항목의 보통인부 행 정리 (철거공사 자동연동에서만 생성)
+    {
+      const removeIds = new Set<string>();
+      laborCostRows.forEach(row => {
+        if (!row.isLinkedFromRecovery) return;
+        if (normalizeForMatch(row.detailItem || '') !== normalizeForMatch('보통인부')) return;
+        if (row.category !== '가구공사' && row.category !== '욕실공사') return;
+        if (!isFixedIlwidaegaWorkName(row.workName || '')) return;
+        if (!row.sourceAreaRowId) return;
+        if (row.sourceAreaRowId.startsWith('demolition-') || row.sourceAreaRowId.includes('::batang')) return;
+        removeIds.add(row.id);
+      });
+      if (removeIds.size > 0) {
+        console.log('[자동연동] 가구/욕실 보통인부 행 제거:', removeIds.size, '개');
+        lastLaborSetSourceRef.current = 'autoSync-removeFurnitureBathHelper';
+        setLaborCostRows(prev => prev.filter(r => !removeIds.has(r.id)));
+        return;
+      }
+    }
+
     // 연동할 행이 있으면 노무비에 추가 (일위대가DB 기반 모든 노임항목 생성)
     if (completedAreaRows.length > 0 || demolitionOnlyAreaRows.length > 0) {
       const newLaborRows: LaborCostRow[] = [];
