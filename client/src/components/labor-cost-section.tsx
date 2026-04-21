@@ -2554,8 +2554,15 @@ export function LaborCostSection({
                       const isFixedRow =
                         row.detailWork === "일위대가" &&
                         isFixedIlwidaegaWorkName(row.workName);
+                      // 가구공사/욕실공사 FIXED 항목은 항상 위치별 합산 수량(row.quantity) 사용
+                      // — 합계/적용단가 기반 재계산을 우회 (자재비집계 방식과 동일)
+                      const isFurnitureBathFixed =
+                        (row.category === "가구공사" || row.category === "욕실공사") &&
+                        isFixedIlwidaegaWorkName(row.workName);
                       const mergedQty = (row as MergedLaborCostRow).mergedQuantity;
-                      const displayQuantity = isFixedRow
+                      const displayQuantity = isFurnitureBathFixed
+                        ? (mergedQty ?? row.quantity ?? 0)
+                        : isFixedRow
                         ? (mergedQty ?? row.quantity ?? 0)
                         : isLinkedRow
                           ? (D > 0 && C > 0 && E > 0)
