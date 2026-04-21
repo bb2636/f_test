@@ -2549,7 +2549,10 @@ export default function FieldEstimate() {
                  normalizeForMatch(item.공사명 || '') === normalizeForMatch(workName)
         );
         
-        console.log('[연동] 일위대가 조회:', { workType, workName, laborCategory, matchCount: matchingCatalogItems.length, isFixed });
+        console.log('[연동] 일위대가 조회:', { workType, workName, laborCategory, matchCount: matchingCatalogItems.length, isFixed, areaRowId: areaRow.id?.slice(-8) });
+        if ((workType === '가구공사' || workType === '욕실공사') && isFixedIlwidaegaWorkName(workName)) {
+          console.log('[진단3-FB] forEach 진입:', workName, '/loc=', areaRow.location, '/areaId=', areaRow.id?.slice(-8), '/catalogMatchCount=', matchingCatalogItems.length, '/items=', matchingCatalogItems.map(i => i.노임항목));
+        }
         
         // 가구/욕실 FIXED는 보통인부를 제외 (철거공사 자동연동에서 별도 생성).
         // 내장공만 위치별로 행 생성 → 표시단(mergeDemolitionRows)에서 위치별 합산.
