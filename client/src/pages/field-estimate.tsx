@@ -2463,6 +2463,7 @@ export default function FieldEstimate() {
       console.log('[진단2-C] existingFixedFurnitureBathSourceIds:', Array.from(existingFixedFurnitureBathSourceIds).map(id => (id as string).slice(-8)));
     }
 
+    console.log('[진단D-1] demolitionOnlyAreaRows 계산 직전');
     // AREA_DISPLAY_ONLY로 제외된 항목 중 철거공사가 필요한 항목 (가구공사/욕실공사 FIXED 항목)
     const demolitionOnlyAreaRows = rows.filter(row => {
       const hasRequiredFields = 
@@ -2508,6 +2509,7 @@ export default function FieldEstimate() {
       setLaborCostRows(prev => prev.map(row => refreshMap.get(row.id) || row));
     }
 
+    console.log('[진단D-2] 보통인부 cleanup 직전');
     // 가구공사/욕실공사 FIXED 항목의 보통인부 행 정리 (철거공사 자동연동에서만 생성)
     {
       const removeIds = new Set<string>();
