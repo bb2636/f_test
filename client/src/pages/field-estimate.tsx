@@ -690,7 +690,9 @@ export default function FieldEstimate() {
       place: sourceAreaRow.category || '', // 장소
       position: sourceAreaRow.location || '', // 위치
       category: '철거공사', // 공종 - 일위대가DB 기준
-      workName: demolitionWorkName, // 공사명 - 일위대가DB 기준 (반자틀, 석고, 도배 등)
+      // 표시명은 영역행 원본 공사명을 우선 사용 (예: 영역에 '석고보드'면 표시도 '석고보드'),
+      // 영역에 공사명이 없을 때만 alias 매핑된 DB 공사명('석고') 사용
+      workName: sourceAreaRow.workName || demolitionWorkName,
       detailWork: '일위대가', // 세부공사
       detailItem: catalogItem?.노임항목 || detailItem, // 노임항목 (보통인부)
       priceStandard: '',
@@ -2506,12 +2508,12 @@ export default function FieldEstimate() {
       if (!catalogItem) return;
       const isEmpty = (!existing.standardPrice || existing.standardPrice === 0) &&
                       (!existing.amount || existing.amount === 0);
-      const nameMismatch = normalizeForMatch(existing.workName || '') !== normalizeForMatch(mappedName);
-      if (isEmpty || nameMismatch) {
+      // 표시명은 영역행 원본을 따르므로 nameMismatch 마이그레이션은 더 이상 필요 없음
+      if (isEmpty) {
         const rawArea = Number(areaRow.repairArea) || 0;
         const refreshed = createDemolitionLaborRow(areaRow, catalogItem, rawArea);
         alreadySyncedDemolitionRefreshes.push({ oldId: existing.id, newRow: { ...refreshed, id: existing.id } });
-        console.log('[자동연동] 이미연동된 철거공사 행 마이그레이션:', existing.workName, '→', mappedName);
+        console.log('[자동연동] 이미연동된 철거공사 빈행 채우기:', existing.workName);
       }
     });
     if (alreadySyncedDemolitionRefreshes.length > 0) {
@@ -2696,16 +2698,13 @@ export default function FieldEstimate() {
             newLaborRows.push(demolitionRow);
             console.log('[자동연동] 철거공사 행 생성:', workName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)');
           } else if (demolitionCatalogItem) {
-            // 카탈로그 매칭이 가능한 경우 갱신 조건:
-            // 1) 빈 행 (standardPrice=0, amount=0) → 데이터 채움
-            // 2) workName이 매핑된 이름과 다름 (예: '석고보드' → '석고' 마이그레이션) → 이름 갱신
+            // 카탈로그 매칭이 가능한 경우 빈 행만 채움 (표시명은 영역행 원본 유지하므로 nameMismatch 불필요)
             const isEmpty = (!existingDemolition.standardPrice || existingDemolition.standardPrice === 0) &&
                             (!existingDemolition.amount || existingDemolition.amount === 0);
-            const nameMismatch = normalizeForMatch(existingDemolition.workName || '') !== normalizeForMatch(mappedDemolitionName);
-            if (isEmpty || nameMismatch) {
+            if (isEmpty) {
               const refreshedRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
               staleEmptyDemolitionRefreshes.push({ oldId: existingDemolition.id, newRow: { ...refreshedRow, id: existingDemolition.id } });
-              console.log('[자동연동] 철거공사 행 갱신:', workName, '→', mappedDemolitionName, isEmpty ? '(빈행)' : '(이름불일치)');
+              console.log('[자동연동] 철거공사 행 갱신(빈행 채우기):', workName);
             }
           }
         }
