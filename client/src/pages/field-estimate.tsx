@@ -2371,18 +2371,6 @@ export default function FieldEstimate() {
         if (fwd) existingLinkedWorkNames.add(normalizeForMatch(fwd));
       });
 
-    // [DEBUG] FIXED area/labor 행 진단
-    {
-      const fixedAreaRows = rows.filter(r => isFixedIlwidaegaWorkName(r.workName || '') && (r.workType === '가구공사' || r.workType === '욕실공사'));
-      const fixedLaborRows = laborCostRows.filter(r => (r.category === '가구공사' || r.category === '욕실공사') && isFixedIlwidaegaWorkName(r.workName || ''));
-      if (fixedAreaRows.length > 0 || fixedLaborRows.length > 0) {
-        console.log('[FIXED진단] 영역행:', fixedAreaRows.map(r => `${r.category}/${r.location}/${r.workType}/${r.workName} (id=${r.id.slice(0,8)}, area=${r.repairArea})`));
-        console.log('[FIXED진단] 노무비행:', fixedLaborRows.map(r => `${r.place}/${r.position}/${r.category}/${r.workName}/${r.detailItem} (src=${(r.sourceAreaRowId||'').slice(0,8)}, qty=${r.quantity})`));
-        console.log('[FIXED진단] existingSourceAreaIds(내):',
-          fixedAreaRows.map(r => `${r.workName}/${r.location}: ${existingSourceAreaIds.has(r.id) ? '✓이미연동' : '✗미연동'}`));
-      }
-    }
-
     // 완성된 복구면적 산출표 행 찾기 (공종, 공사명 필수 입력)
     const completedAreaRows = rows.filter(row => {
       const hasRequiredFields = 
