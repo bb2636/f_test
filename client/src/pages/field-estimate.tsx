@@ -1193,8 +1193,19 @@ export default function FieldEstimate() {
         const uniqueLocations = Array.from(new Set(workNameData.areaRows.map(r => r.location).filter(Boolean)));
         const combinedPosition = uniqueLocations.join('/') || '';
         
+        // 가구공사/욕실공사 FIXED 항목: 위치당 내장공 1.0인, 보통인부 0.5인 고정 합산
+        const isFixedFurnitureBath = isFixedIlwidaegaWorkName(workName) &&
+          (workType === '가구공사' || workType === '욕실공사');
+        const fixedLocationCount = isFixedFurnitureBath ? workNameData.areaRows.length : 0;
+        
         if (matchingCatalogItems.length > 0) {
-          matchingCatalogItems.forEach((catalogItem, idx) => {
+          // FIXED 가구/욕실: 보통인부는 철거공사 자동연동에서 생성되므로 제외
+          const filteredCatalogItems = isFixedFurnitureBath
+            ? matchingCatalogItems.filter(item =>
+                normalizeForMatch(item.노임항목 || '') !== normalizeForMatch('보통인부'))
+            : matchingCatalogItems;
+          
+          filteredCatalogItems.forEach((catalogItem, idx) => {
             const detailItem = catalogItem.노임항목 || '';
             
             const standardWorkQty = catalogItem.기준작업량 || 0;
@@ -1205,7 +1216,14 @@ export default function FieldEstimate() {
             let appliedUnitPrice = 0;
             let totalAmount = 0;
             let calculatedQuantity = 1;
-            if (D > 0 && E > 0 && C > 0) {
+            if (isFixedFurnitureBath) {
+              // FIXED: 위치당 1.0인(내장공) 또는 0.5인(보통인부) × 위치 수
+              const isHelper = normalizeForMatch(detailItem) === normalizeForMatch('보통인부');
+              const perLocation = isHelper ? 0.5 : 1.0;
+              calculatedQuantity = Math.round(perLocation * fixedLocationCount * 10) / 10;
+              appliedUnitPrice = E;
+              totalAmount = Math.round(E * calculatedQuantity);
+            } else if (D > 0 && E > 0 && C > 0) {
               totalAmount = calculateIWithTiers(C, D, E, laborRateTiers);
               appliedUnitPrice = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
               calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
