@@ -2560,6 +2560,16 @@ export function LaborCostSection({
                         (row.category === "가구공사" || row.category === "욕실공사") &&
                         isFixedIlwidaegaWorkName(row.workName);
                       const mergedQty = (row as MergedLaborCostRow).mergedQuantity;
+                      const mergedIds = (row as MergedLaborCostRow).mergedSourceIds;
+                      if ((row.category === "가구공사" || row.category === "욕실공사") && row.detailItem) {
+                        console.log('[수량진단2]',
+                          row.category, row.workName, row.detailItem,
+                          '| isFBFixed=', isFurnitureBathFixed,
+                          '| mergedQty=', mergedQty,
+                          '| rowQty=', row.quantity,
+                          '| mergedIds=', mergedIds?.length || 0,
+                          '| sourceAreaRowId=', row.sourceAreaRowId?.slice(-8));
+                      }
                       const displayQuantity = isFurnitureBathFixed
                         ? (mergedQty ?? row.quantity ?? 0)
                         : isFixedRow
