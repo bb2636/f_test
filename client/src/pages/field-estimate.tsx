@@ -1199,14 +1199,17 @@ export default function FieldEstimate() {
         
         if (matchingCatalogItems.length > 0) {
           if (isFixedFurnitureBath) {
-            // FIXED: workNameData.areaRows의 위치마다 노임항목별 1행 생성
+            // FIXED: 보통인부는 철거공사 자동연동에서 별도 생성 → 여기서 제외
+            const fixedItemsNoHelper = matchingCatalogItems.filter(
+              item => normalizeForMatch(item.노임항목 || '') !== normalizeForMatch('보통인부')
+            );
+            // workNameData.areaRows의 위치마다 노임항목별 1행 생성
             workNameData.areaRows.forEach((areaRow) => {
               const perAreaSourceId = isBatangCompanion ? `${areaRow.id}::batang` : areaRow.id;
               const singleArea = Math.round((Number(areaRow.repairArea) || 0) * 10) / 10;
-              matchingCatalogItems.forEach((catalogItem, idx) => {
+              fixedItemsNoHelper.forEach((catalogItem, idx) => {
                 const detailItem = catalogItem.노임항목 || '';
-                const isHelper = normalizeForMatch(detailItem) === normalizeForMatch('보통인부');
-                const perLocation = isHelper ? 0.5 : 1.0;
+                const perLocation = 1.0;
                 const E = catalogItem.노임단가 || 0;
                 const D = catalogItem.기준작업량 || 0;
                 const totalAmount = Math.round(E * perLocation);
@@ -2506,9 +2509,13 @@ export default function FieldEstimate() {
         
         console.log('[연동] 일위대가 조회:', { workType, workName, laborCategory, matchCount: matchingCatalogItems.length, isFixed });
         
-        // 가구/욕실 FIXED는 카탈로그 모든 노임항목(내장공, 보통인부 등)을 위치별로 생성.
-        // 표시단(mergeDemolitionRows)에서 같은 노임항목·위치별 행을 합산하여 보여줌.
-        const augmentedCatalogItems = matchingCatalogItems;
+        // 가구/욕실 FIXED는 보통인부를 제외 (철거공사 자동연동에서 별도 생성).
+        // 내장공만 위치별로 행 생성 → 표시단(mergeDemolitionRows)에서 위치별 합산.
+        const augmentedCatalogItems = (isFixed && (workType === '가구공사' || workType === '욕실공사'))
+          ? matchingCatalogItems.filter(
+              item => normalizeForMatch(item.노임항목 || '') !== normalizeForMatch('보통인부')
+            )
+          : matchingCatalogItems;
 
         if (augmentedCatalogItems.length > 0) {
           // 일위대가DB에서 매칭된 모든 노임항목으로 행 생성
