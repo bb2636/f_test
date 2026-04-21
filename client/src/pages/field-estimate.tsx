@@ -2511,23 +2511,19 @@ export default function FieldEstimate() {
 
     console.log('[진단D-2] 보통인부 cleanup 직전');
     // 가구공사/욕실공사 FIXED 항목의 보통인부 행 정리 (철거공사 자동연동에서만 생성)
-    {
-      const removeIds = new Set<string>();
-      laborCostRows.forEach(row => {
-        if (!row.isLinkedFromRecovery) return;
-        if (normalizeForMatch(row.detailItem || '') !== normalizeForMatch('보통인부')) return;
-        if (row.category !== '가구공사' && row.category !== '욕실공사') return;
-        if (!isFixedIlwidaegaWorkName(row.workName || '')) return;
-        if (!row.sourceAreaRowId) return;
-        if (row.sourceAreaRowId.startsWith('demolition-') || row.sourceAreaRowId.includes('::batang')) return;
-        removeIds.add(row.id);
-      });
-      if (removeIds.size > 0) {
-        console.log('[자동연동] 가구/욕실 보통인부 행 제거:', removeIds.size, '개');
-        lastLaborSetSourceRef.current = 'autoSync-removeFurnitureBathHelper';
-        setLaborCostRows(prev => prev.filter(r => !removeIds.has(r.id)));
-        return;
-      }
+    // return 하지 않고 forEach까지 진행 — 같은 사이클에서 보통인부 제거 + 새 행 추가를 함께 처리
+    const furnitureBathHelperRemoveIds = new Set<string>();
+    laborCostRows.forEach(row => {
+      if (!row.isLinkedFromRecovery) return;
+      if (normalizeForMatch(row.detailItem || '') !== normalizeForMatch('보통인부')) return;
+      if (row.category !== '가구공사' && row.category !== '욕실공사') return;
+      if (!isFixedIlwidaegaWorkName(row.workName || '')) return;
+      if (!row.sourceAreaRowId) return;
+      if (row.sourceAreaRowId.startsWith('demolition-') || row.sourceAreaRowId.includes('::batang')) return;
+      furnitureBathHelperRemoveIds.add(row.id);
+    });
+    if (furnitureBathHelperRemoveIds.size > 0) {
+      console.log('[자동연동] 가구/욕실 보통인부 행 제거:', furnitureBathHelperRemoveIds.size, '개 (cleanup만, forEach 계속 진행)');
     }
 
     console.log('[진단4] if-블록 도달 여부 체크. completedAreaRows=', completedAreaRows.length, 'demolitionOnlyAreaRows=', demolitionOnlyAreaRows.length, 'alreadySyncedRefreshes=', alreadySyncedDemolitionRefreshes.length);
@@ -2723,10 +2719,15 @@ export default function FieldEstimate() {
         const refreshMap = new Map(staleEmptyDemolitionRefreshes.map(r => [r.oldId, r.newRow]));
         const nonEmptyRows = prev
           .filter(row => row.sourceAreaRowId || row.place || row.position || row.category || row.workName)
+          .filter(row => !furnitureBathHelperRemoveIds.has(row.id))
           .map(row => refreshMap.get(row.id) || row);
         
         return [...nonEmptyRows, ...newLaborRows];
       });
+    } else if (furnitureBathHelperRemoveIds.size > 0) {
+      // 새로 추가할 행은 없지만 보통인부 정리만 필요한 경우
+      lastLaborSetSourceRef.current = 'autoSync-removeFurnitureBathHelper';
+      setLaborCostRows(prev => prev.filter(r => !furnitureBathHelperRemoveIds.has(r.id)));
     }
 
     lastLaborSetSourceRef.current = 'autoSync-reconcile';
