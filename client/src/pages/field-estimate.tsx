@@ -2454,13 +2454,13 @@ export default function FieldEstimate() {
       return hasRequiredFields && notYetSynced;
     });
 
-    // [진단] completedAreaRows에 가구/욕실 FIXED 행이 포함됐는지
+    // [진단2]
     {
-      const fbCompleted = completedAreaRows.filter(r =>
-        (r.workType === '가구공사' || r.workType === '욕실공사') &&
-        isFixedIlwidaegaWorkName(r.workName || ''));
-      console.log('[진단] completedAreaRows 中 가구/욕실 FIXED', fbCompleted.length, '개:',
-        fbCompleted.map(r => `${r.workName}/${r.category}/${r.location}/id=${r.id?.slice(-8)}`));
+      const fbAll = rows.filter(r => (r.workType === '가구공사' || r.workType === '욕실공사') && isFixedIlwidaegaWorkName(r.workName || ''));
+      console.log('[진단2-A] 가구/욕실 FIXED 영역행:', fbAll.map(r => `${r.workName}/${r.location}/id=${r.id?.slice(-8)}/inExist=${existingSourceAreaIds.has(r.id)}/inFB=${existingFixedFurnitureBathSourceIds.has(r.id)}`));
+      const fbCompleted = completedAreaRows.filter(r => (r.workType === '가구공사' || r.workType === '욕실공사') && isFixedIlwidaegaWorkName(r.workName || ''));
+      console.log('[진단2-B] completedAreaRows 中 가구/욕실 FIXED', fbCompleted.length, '개:', fbCompleted.map(r => `${r.workName}/${r.location}/id=${r.id?.slice(-8)}`));
+      console.log('[진단2-C] existingFixedFurnitureBathSourceIds:', Array.from(existingFixedFurnitureBathSourceIds).map(id => (id as string).slice(-8)));
     }
 
     // AREA_DISPLAY_ONLY로 제외된 항목 중 철거공사가 필요한 항목 (가구공사/욕실공사 FIXED 항목)
