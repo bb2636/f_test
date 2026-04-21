@@ -2422,8 +2422,26 @@ export default function FieldEstimate() {
       setLaborCostRows(prev => prev.map(row => refreshMap.get(row.id) || row));
     }
 
-    // (이전에 보통인부 helper 행을 제거하던 cleanup pass 제거됨)
-    // 사용자 요구 변경: 내장공 1.0인/위치, 보통인부 0.5인/위치 둘 다 위치별로 합산
+    // 가구공사/욕실공사 FIXED 항목에 자동 연동된 보통인부 행 정리 (제거)
+    // 보통인부는 철거공사 자동 연동에서 이미 생성되므로 가구/욕실에서 중복 생성하지 않음
+    {
+      const helperRowsToRemove = laborCostRows.filter(row => {
+        if (!row.isLinkedFromRecovery) return false;
+        if (normalizeForMatch(row.detailItem || '') !== normalizeForMatch('보통인부')) return false;
+        if (row.category !== '가구공사' && row.category !== '욕실공사') return false;
+        if (!isFixedIlwidaegaWorkName(row.workName || '')) return false;
+        if (!row.sourceAreaRowId) return false;
+        // 철거공사/바탕만들기 행은 제외
+        if (row.sourceAreaRowId.startsWith('demolition-') || row.sourceAreaRowId.includes('::batang')) return false;
+        return true;
+      });
+      if (helperRowsToRemove.length > 0) {
+        const removeIds = new Set(helperRowsToRemove.map(r => r.id));
+        lastLaborSetSourceRef.current = 'autoSync-removeFixedHelper';
+        setLaborCostRows(prev => prev.filter(r => !removeIds.has(r.id)));
+        return;
+      }
+    }
 
     // 연동할 행이 있으면 노무비에 추가 (일위대가DB 기반 모든 노임항목 생성)
     if (completedAreaRows.length > 0 || demolitionOnlyAreaRows.length > 0) {
@@ -2447,9 +2465,14 @@ export default function FieldEstimate() {
         
         console.log('[연동] 일위대가 조회:', { workType, workName, laborCategory, matchCount: matchingCatalogItems.length, isFixed });
         
-        // 가구공사/욕실공사 FIXED 항목: 카탈로그의 모든 노임항목(내장공/보통인부 등)을 그대로 사용.
-        // 위치당 고정 인분(내장공 1.0, 보통인부 0.5)은 update pass의 isFixedLaborItem 분기에서 강제됨.
-        const augmentedCatalogItems = matchingCatalogItems;
+        // 가구공사/욕실공사 FIXED 항목: 보통인부는 철거공사 자동 연동에서 이미 생성되므로 제외.
+        // 내장공만 위치당 1.0인 고정으로 합산 (update pass의 isFixedLaborItem 분기에서 강제).
+        let augmentedCatalogItems = matchingCatalogItems;
+        if (isFixed && (workType === '가구공사' || workType === '욕실공사')) {
+          augmentedCatalogItems = matchingCatalogItems.filter(
+            item => normalizeForMatch(item.노임항목 || '') !== normalizeForMatch('보통인부')
+          );
+        }
 
         if (augmentedCatalogItems.length > 0) {
           // 일위대가DB에서 매칭된 모든 노임항목으로 행 생성
