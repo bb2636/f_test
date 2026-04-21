@@ -2385,9 +2385,18 @@ export default function FieldEstimate() {
         if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName || '') && !isItemInLinkSettings(row.workType || '', row.workName || '')) return false;
       }
       
-      // FIXED 항목은 위치별로 각 area 행마다 별도 labor 행을 생성해야 함 (mergeDemolitionRows가 위치 합산 처리)
-      // 따라서 workName 기반 중복 차단(existingLinkedWorkNames)을 우회 — 오직 sourceAreaRowId 기반으로만 체크
-      const notYetSynced = isFixedItem
+      // FIXED 가구/욕실: 자재비집계 방식으로 공종|공사명 그룹당 1행만 유지
+      // → 같은 workName의 labor 행이 이미 있으면 이 area 행은 sync된 것으로 간주
+      const isFixedFurnitureBath = isFixedItem &&
+        (row.workType === '가구공사' || row.workType === '욕실공사');
+      const groupAlreadyHasLaborRow = isFixedFurnitureBath && laborCostRows.some(lr =>
+        lr.isLinkedFromRecovery &&
+        (lr.category === '가구공사' || lr.category === '욕실공사') &&
+        normalizeForMatch(lr.workName || '') === normalizeForMatch(row.workName || '')
+      );
+      const notYetSynced = isFixedFurnitureBath
+        ? (!existingSourceAreaIds.has(row.id) && !groupAlreadyHasLaborRow)
+        : isFixedItem
         ? !existingSourceAreaIds.has(row.id)
         : (!existingSourceAreaIds.has(row.id) &&
            !existingLinkedWorkNames.has(normalizeForMatch(row.workName || '')));
