@@ -1411,14 +1411,18 @@ export function LaborCostSection({
     const result: MergedLaborCostRow[] = [];
     const demolitionMap = new Map<string, MergedLaborCostRow>();
 
-    // [DEBUG] FIXED 항목 입력 행 수 확인
+    // [DEBUG] FIXED 항목 입력 행: 병합 키별 그룹 출력
     const fixedInputs = inputRows.filter(r => isMergeableLaborRow(r) && isFixedLaborWorkName(r.workName || ''));
     if (fixedInputs.length > 0) {
-      console.log('[mergeDemolitionRows] FIXED 입력 행:', fixedInputs.map(r => ({
-        category: r.category, workName: r.workName, detailItem: r.detailItem,
-        unit: r.unit, standardPrice: r.standardPrice, quantity: r.quantity,
-        sourceAreaRowId: r.sourceAreaRowId,
-      })));
+      const keyGroups: Record<string, any[]> = {};
+      fixedInputs.forEach(r => {
+        const k = `${r.category}|${r.workName}|${r.detailItem}|${r.unit}|${r.standardPrice}`;
+        if (!keyGroups[k]) keyGroups[k] = [];
+        keyGroups[k].push({ qty: r.quantity, area: r.damageArea, src: r.sourceAreaRowId });
+      });
+      console.log('[mergeDemolitionRows] FIXED 병합키별 행 수:',
+        Object.entries(keyGroups).map(([k, v]) => `${k} → ${v.length}개 (qty합=${v.reduce((s,x)=>s+(x.qty||0),0)})`).join('\n')
+      );
     }
 
     inputRows.forEach((row) => {
