@@ -2486,6 +2486,21 @@ export default function FieldEstimate() {
       setLaborCostRows(prev => prev.map(row => refreshMap.get(row.id) || row));
     }
 
+    // [진단] 가구/욕실 FIXED 영역행과 매핑 상태
+    {
+      const fbAreaRows = rows.filter(r =>
+        (r.workType === '가구공사' || r.workType === '욕실공사') &&
+        isFixedIlwidaegaWorkName(r.workName || ''));
+      console.log('[진단] 가구/욕실 FIXED 영역행 총', fbAreaRows.length, '개:',
+        fbAreaRows.map(r => `${r.workType}/${r.workName}/${r.category}/${r.location}/id=${r.id?.slice(-8)}/sync=${existingSourceAreaIds.has(r.id)}`));
+      const fbLaborRows = laborCostRows.filter(r =>
+        (r.category === '가구공사' || r.category === '욕실공사') &&
+        isFixedIlwidaegaWorkName(r.workName || '') &&
+        r.detailItem && normalizeForMatch(r.detailItem) !== normalizeForMatch('보통인부'));
+      console.log('[진단] 가구/욕실 FIXED 노무비행 총', fbLaborRows.length, '개:',
+        fbLaborRows.map(r => `${r.workName}/${r.detailItem}/qty=${r.quantity}/srcId=${r.sourceAreaRowId?.slice(-8)}`));
+    }
+
     // 가구공사/욕실공사 FIXED 항목의 보통인부 행 정리 (철거공사 자동연동에서만 생성)
     {
       const removeIds = new Set<string>();
