@@ -236,6 +236,8 @@ export default function FieldEstimate() {
   // 수동 동기화(복구면적 가져오기) 실행 중 가드 — 다른 useEffect가 간섭하지 않도록 보호
   const syncGuardRef = useRef<boolean>(false);
   const lastLaborSetSourceRef = useRef<string>('init');
+  const lastLaborSyncedAreaHashRef = useRef<string>('');
+  const lastMaterialSyncedAreaHashRef = useRef<string>('');
   
   useEffect(() => {
     const linkedCount = laborCostRows.filter(r => r.isLinkedFromRecovery).length;
@@ -2187,6 +2189,18 @@ export default function FieldEstimate() {
     if (!isHydratedRef.current) return;
     if (isLossPreventionCase || isReadOnly) return;
     syncMaterialFromRecoveryArea();
+  }, [selectedCategory]);
+
+  // 노무비 탭 진입 시 복구면적 자동 동기화
+  useEffect(() => {
+    if (selectedCategory !== "노무비") return;
+    if (!isHydratedRef.current) return;
+    if (isReadOnly) return;
+    if (rows.length === 0) return;
+    // 카탈로그가 아직 로드되지 않았으면 건너뛰기 (다음 변화 시 재실행)
+    if (mergedIlwidaegaCatalog.length === 0) return;
+    console.log("[자동연동] 노무비 탭 진입 → syncLaborFromRecoveryArea 호출");
+    syncLaborFromRecoveryArea();
   }, [selectedCategory]);
 
   const materialCatalogLoadedRef = useRef(false);
