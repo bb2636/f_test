@@ -2528,13 +2528,17 @@ export default function FieldEstimate() {
       }
     }
 
+    console.log('[진단4] if-블록 도달 여부 체크. completedAreaRows=', completedAreaRows.length, 'demolitionOnlyAreaRows=', demolitionOnlyAreaRows.length, 'alreadySyncedRefreshes=', alreadySyncedDemolitionRefreshes.length);
+
     // 연동할 행이 있으면 노무비에 추가 (일위대가DB 기반 모든 노임항목 생성)
     if (completedAreaRows.length > 0 || demolitionOnlyAreaRows.length > 0) {
+      console.log('[진단4-B] if-블록 진입 OK. completedAreaRows IDs:', completedAreaRows.map(r => `${r.workName}/${r.id?.slice(-8)}`));
       const newLaborRows: LaborCostRow[] = [];
       const staleEmptyDemolitionRefreshes: { oldId: string; newRow: LaborCostRow }[] = [];
       
       // 가구/욕실 FIXED 포함 모든 영역행을 위치별로 처리 — 표시단(mergeDemolitionRows)에서 합산
       completedAreaRows.forEach(areaRow => {
+        console.log('[진단4-C] forEach iter:', areaRow.workName, '/', areaRow.location, '/', areaRow.id?.slice(-8));
         const workType = areaRow.workType;
         const workName = areaRow.workName;
         const rawRepairArea = Number(areaRow.repairArea) || 0;
