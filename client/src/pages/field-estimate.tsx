@@ -2397,6 +2397,18 @@ export default function FieldEstimate() {
         return sourceId;
       }).filter(Boolean)
     );
+
+    // 가구/욕실 FIXED 본체(내장공) 행 전용 sync set — 철거공사/바탕만들기 동반행은 제외
+    const existingFixedFurnitureBathSourceIds = new Set(
+      laborCostRows
+        .filter(row =>
+          (row.category === '가구공사' || row.category === '욕실공사') &&
+          isFixedIlwidaegaWorkName(row.workName || '') &&
+          row.sourceAreaRowId &&
+          !row.sourceAreaRowId.startsWith('demolition-') &&
+          !row.sourceAreaRowId.includes('::batang'))
+        .map(r => r.sourceAreaRowId!)
+    );
     
     // 철거공사 alias 역매핑 (예: '석고' → ['석고','석고보드'])
     const reverseDemolitionAliases: Record<string, string[]> = {};
@@ -2433,13 +2445,23 @@ export default function FieldEstimate() {
       }
       
       // FIXED 가구/욕실: 위치별로 행 생성 (같은 source area row id 단위로 1행)
+      // 철거공사 동반행이 이미 있어도 본체 노무비행이 없으면 만들어야 하므로 별도 set 사용
       const notYetSynced = isFixedItem
-        ? !existingSourceAreaIds.has(row.id)
+        ? !existingFixedFurnitureBathSourceIds.has(row.id)
         : (!existingSourceAreaIds.has(row.id) &&
            !existingLinkedWorkNames.has(normalizeForMatch(row.workName || '')));
       
       return hasRequiredFields && notYetSynced;
     });
+
+    // [진단] completedAreaRows에 가구/욕실 FIXED 행이 포함됐는지
+    {
+      const fbCompleted = completedAreaRows.filter(r =>
+        (r.workType === '가구공사' || r.workType === '욕실공사') &&
+        isFixedIlwidaegaWorkName(r.workName || ''));
+      console.log('[진단] completedAreaRows 中 가구/욕실 FIXED', fbCompleted.length, '개:',
+        fbCompleted.map(r => `${r.workName}/${r.category}/${r.location}/id=${r.id?.slice(-8)}`));
+    }
 
     // AREA_DISPLAY_ONLY로 제외된 항목 중 철거공사가 필요한 항목 (가구공사/욕실공사 FIXED 항목)
     const demolitionOnlyAreaRows = rows.filter(row => {
@@ -2484,21 +2506,6 @@ export default function FieldEstimate() {
       const refreshMap = new Map(alreadySyncedDemolitionRefreshes.map(r => [r.oldId, r.newRow]));
       lastLaborSetSourceRef.current = 'autoSync-migrate';
       setLaborCostRows(prev => prev.map(row => refreshMap.get(row.id) || row));
-    }
-
-    // [진단] 가구/욕실 FIXED 영역행과 매핑 상태
-    {
-      const fbAreaRows = rows.filter(r =>
-        (r.workType === '가구공사' || r.workType === '욕실공사') &&
-        isFixedIlwidaegaWorkName(r.workName || ''));
-      console.log('[진단] 가구/욕실 FIXED 영역행 총', fbAreaRows.length, '개:',
-        fbAreaRows.map(r => `${r.workType}/${r.workName}/${r.category}/${r.location}/id=${r.id?.slice(-8)}/sync=${existingSourceAreaIds.has(r.id)}`));
-      const fbLaborRows = laborCostRows.filter(r =>
-        (r.category === '가구공사' || r.category === '욕실공사') &&
-        isFixedIlwidaegaWorkName(r.workName || '') &&
-        r.detailItem && normalizeForMatch(r.detailItem) !== normalizeForMatch('보통인부'));
-      console.log('[진단] 가구/욕실 FIXED 노무비행 총', fbLaborRows.length, '개:',
-        fbLaborRows.map(r => `${r.workName}/${r.detailItem}/qty=${r.quantity}/srcId=${r.sourceAreaRowId?.slice(-8)}`));
     }
 
     // 가구공사/욕실공사 FIXED 항목의 보통인부 행 정리 (철거공사 자동연동에서만 생성)
