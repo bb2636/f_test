@@ -2714,6 +2714,8 @@ export default function FieldEstimate() {
         console.log('[자동연동] FIXED 항목 철거공사 행 생성:', workName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)');
       });
 
+      console.log('[진단5] newLaborRows push 결과', newLaborRows.length, '개:',
+        newLaborRows.map(r => `${r.category}/${r.workName}/${r.detailItem}/srcId=${r.sourceAreaRowId?.slice(-8)}/qty=${r.quantity}/std=${r.standardPrice}`));
       lastLaborSetSourceRef.current = 'autoSync-addNewRows';
       setLaborCostRows(prev => {
         const refreshMap = new Map(staleEmptyDemolitionRefreshes.map(r => [r.oldId, r.newRow]));
@@ -2721,8 +2723,10 @@ export default function FieldEstimate() {
           .filter(row => row.sourceAreaRowId || row.place || row.position || row.category || row.workName)
           .filter(row => !furnitureBathHelperRemoveIds.has(row.id))
           .map(row => refreshMap.get(row.id) || row);
-        
-        return [...nonEmptyRows, ...newLaborRows];
+        const result = [...nonEmptyRows, ...newLaborRows];
+        const fbResult = result.filter(r => (r.category === '가구공사' || r.category === '욕실공사') && r.workName && r.detailItem !== '보통인부' && (r.workName === 'SMC' || r.workName === '상부장'));
+        console.log('[진단5-B] setLaborCostRows 직후 SMC/상부장 본체 행:', fbResult.map(r => `${r.workName}/${r.detailItem}/srcId=${r.sourceAreaRowId?.slice(-8)}/qty=${r.quantity}`));
+        return result;
       });
     } else if (furnitureBathHelperRemoveIds.size > 0) {
       // 새로 추가할 행은 없지만 보통인부 정리만 필요한 경우
