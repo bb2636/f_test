@@ -614,19 +614,19 @@ export default function FieldReport() {
   });
 
   // Parse and memoize labor cost and material cost data
-  // 저장된 값을 그대로 사용 (총합계 일치를 위해 재계산하지 않음)
+  // 견적서 작성 탭과 완전히 동일한 데이터 소스(/api/estimates/:caseId/latest) 사용 — 행/합계 모두 일치
   const parsedLaborCosts = useMemo(() => {
-    return safeParseLaborCosts(reportData?.estimate?.estimate?.laborCostData);
-  }, [reportData?.estimate?.estimate?.laborCostData]);
-
-  // 견적서탭과 동일한 합계 산출용 노무비 데이터 (표시는 parsedLaborCosts 그대로 유지)
-  const laborCostsForTotal = useMemo(() => {
     const fromLatest = latestEstimateForReport?.estimate?.laborCostData;
     if (Array.isArray(fromLatest) && fromLatest.length > 0) {
       return safeParseLaborCosts(fromLatest);
     }
-    return parsedLaborCosts;
-  }, [latestEstimateForReport?.estimate?.laborCostData, parsedLaborCosts]);
+    return safeParseLaborCosts(reportData?.estimate?.estimate?.laborCostData);
+  }, [
+    latestEstimateForReport?.estimate?.laborCostData,
+    reportData?.estimate?.estimate?.laborCostData,
+  ]);
+
+  const laborCostsForTotal = parsedLaborCosts;
 
   const recoveryAreaByWorkName = useMemo(() => {
     const estimateRows = reportData?.estimate?.rows || [];
