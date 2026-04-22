@@ -11,6 +11,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatCaseNumber } from "@/lib/utils";
+import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount } from "@/lib/labor-merge";
+import { useLaborRateTiers } from "@/hooks/use-labor-rate-tiers";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -660,20 +662,24 @@ export default function FieldReport() {
   }, [reportData?.estimate?.estimate?.materialCostData]);
 
   // 견적 합계 계산
+  const { data: laborRateTiersData } = useLaborRateTiers();
+  const laborRateTiers = laborRateTiersData ?? [];
   const calculateTotals = useMemo(() => {
     // 노무비 총합 - 경비 여부에 따라 분리
     // includeInEstimate === true → 경비가 아닌 항목 (관리비/이윤에 포함)
     // includeInEstimate === false → 경비 항목 (관리비/이윤에서 제외)
-    const laborTotalNonExpense = parsedLaborCosts.reduce((sum, row) => {
+    // 노무비 탭/견적서와 동일하게 위치별 병합 후 합산.
+    const mergedLaborForTotal = mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers);
+    const laborTotalNonExpense = mergedLaborForTotal.reduce((sum, row) => {
       if (row.includeInEstimate) {
-        return sum + (row.amount || 0);
+        return sum + getMergedRowAmount(row, laborRateTiers);
       }
       return sum;
     }, 0);
 
-    const laborTotalExpense = parsedLaborCosts.reduce((sum, row) => {
+    const laborTotalExpense = mergedLaborForTotal.reduce((sum, row) => {
       if (!row.includeInEstimate) {
-        return sum + (row.amount || 0);
+        return sum + getMergedRowAmount(row, laborRateTiers);
       }
       return sum;
     }, 0);
