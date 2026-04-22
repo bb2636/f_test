@@ -613,17 +613,29 @@ export default function FieldReport() {
     enabled: !!selectedCaseId,
   });
 
+  // 견적 합계 계산
+  const { data: laborRateTiersData } = useLaborRateTiers();
+  const laborRateTiers = laborRateTiersData ?? [];
+
   // Parse and memoize labor cost and material cost data
-  // 견적서 작성 탭과 완전히 동일한 데이터 소스(/api/estimates/:caseId/latest) 사용 — 행/합계 모두 일치
+  // 견적서 작성 탭과 완전히 동일한 데이터 소스(/api/estimates/:caseId/latest) + 동일한 머지 표시 — 행/합계 모두 일치
   const parsedLaborCosts = useMemo(() => {
     const fromLatest = latestEstimateForReport?.estimate?.laborCostData;
-    if (Array.isArray(fromLatest) && fromLatest.length > 0) {
-      return safeParseLaborCosts(fromLatest);
-    }
-    return safeParseLaborCosts(reportData?.estimate?.estimate?.laborCostData);
+    const rawRows = Array.isArray(fromLatest) && fromLatest.length > 0
+      ? safeParseLaborCosts(fromLatest)
+      : safeParseLaborCosts(reportData?.estimate?.estimate?.laborCostData);
+
+    // 견적서 작성 탭과 동일하게 머지된 결과로 표시 (위치별 분산 행을 합산해 1행으로)
+    const merged = mergeLaborRowsForTotal(rawRows as any, laborRateTiers);
+    return merged.map((row: any) => ({
+      ...row,
+      quantity: row.mergedQuantity ?? row.quantity,
+      amount: row.mergedAmount ?? row.amount,
+    })) as typeof rawRows;
   }, [
     latestEstimateForReport?.estimate?.laborCostData,
     reportData?.estimate?.estimate?.laborCostData,
+    laborRateTiers,
   ]);
 
   const laborCostsForTotal = parsedLaborCosts;
@@ -676,9 +688,6 @@ export default function FieldReport() {
     };
   }, [reportData?.estimate?.estimate?.materialCostData]);
 
-  // 견적 합계 계산
-  const { data: laborRateTiersData } = useLaborRateTiers();
-  const laborRateTiers = laborRateTiersData ?? [];
   const calculateTotals = useMemo(() => {
     // 노무비 총합 - 경비 여부에 따라 분리
     // includeInEstimate === true → 경비가 아닌 항목 (관리비/이윤에 포함)
