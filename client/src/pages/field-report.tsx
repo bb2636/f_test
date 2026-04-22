@@ -5585,11 +5585,7 @@ export default function FieldReport() {
                                       textAlign: "right",
                                     }}
                                   >
-                                    {(
-                                      row.단가 ||
-                                      row.기준단가 ||
-                                      0
-                                    ).toLocaleString()}
+                                    {(row.단가 || 0).toLocaleString()}
                                   </td>
                                   <td
                                     style={{
