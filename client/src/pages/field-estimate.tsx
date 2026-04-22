@@ -2790,9 +2790,13 @@ export default function FieldEstimate() {
         if (isDemolitionRow) {
           const { demolitionWorkName } = getDemolitionMapping(linkedAreaRow.workType, linkedAreaRow.workName);
           const needsDemolition = needsDemolitionRow(linkedAreaRow.workType, linkedAreaRow.workName);
+          const areaWorkName = linkedAreaRow.workName || '';
           
-          if (normalizeForMatch(laborRow.workName || '') !== normalizeForMatch(demolitionWorkName || '')) {
-            console.log('[Reconcile] 철거공사 공사명 변경 → 기존 행 삭제:', laborRow.workName, '→', demolitionWorkName);
+          // 표시명은 영역행 원본('석고보드') 또는 alias 매핑('석고') 모두 허용
+          const matchesArea = normalizeForMatch(laborRow.workName || '') === normalizeForMatch(areaWorkName);
+          const matchesAlias = normalizeForMatch(laborRow.workName || '') === normalizeForMatch(demolitionWorkName || '');
+          if (!matchesArea && !matchesAlias) {
+            console.log('[Reconcile] 철거공사 공사명 변경 → 기존 행 삭제:', laborRow.workName, '→', areaWorkName, '/', demolitionWorkName);
             return false;
           }
           
