@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LaborCostSection, type LaborCatalogItem, type LaborCostRow } from "@/components/labor-cost-section";
+import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount } from "@/lib/labor-merge";
 import { MaterialCostSection, type MaterialCatalogItem, type MaterialRow } from "@/components/material-cost-section";
 
 interface AreaCalculationRow {
@@ -4044,27 +4045,22 @@ export default function FieldEstimate() {
     // 노무비 총합 - 경비 여부에 따라 분리
     // includeInEstimate === true → 경비가 아닌 항목 (관리비/이윤에 포함)
     // includeInEstimate === false → 경비 항목 (관리비/이윤에서 제외)
-    const getRowAmount = (row: LaborCostRow) => {
-      const isIlw = row.detailWork === "일위대가";
-      const C = row.damageArea || 0;
-      const D = row.standardWorkQuantity || 0;
-      const E = row.standardPrice || 0;
-      if (isIlw && C > 0 && D > 0 && E > 0) {
-        return calculateIWithTiers(C, D, E, laborRateTiers);
-      }
-      return row.amount || 0;
-    };
+    // 노무비 탭 footer와 동일하게 위치별 병합 후 합산.
+    // calculateIWithTiers 비선형성으로 인해 행 단위 합산과 병합 후 합산이 다르므로
+    // 화면에 보이는 값(병합 후)과 견적서/인보이스 합계가 일치하도록 통일.
+    const mergedLaborForTotal = mergeLaborRowsForTotal(laborCostRows, laborRateTiers);
+    const getRowAmount = (row: LaborCostRow) => getMergedRowAmount(row as any, laborRateTiers);
 
-    const laborTotalNonExpense = laborCostRows.reduce((sum, row) => {
+    const laborTotalNonExpense = mergedLaborForTotal.reduce((sum, row) => {
       if (row.includeInEstimate) {
-        return sum + getRowAmount(row);
+        return sum + getMergedRowAmount(row, laborRateTiers);
       }
       return sum;
     }, 0);
 
-    const laborTotalExpense = laborCostRows.reduce((sum, row) => {
+    const laborTotalExpense = mergedLaborForTotal.reduce((sum, row) => {
       if (!row.includeInEstimate) {
-        return sum + getRowAmount(row);
+        return sum + getMergedRowAmount(row, laborRateTiers);
       }
       return sum;
     }, 0);
