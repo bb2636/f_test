@@ -11,7 +11,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { formatCaseNumber } from "@/lib/utils";
-import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount } from "@/lib/labor-merge";
 import { useLaborRateTiers } from "@/hooks/use-labor-rate-tiers";
 import {
   AlertDialog,
@@ -668,18 +667,17 @@ export default function FieldReport() {
     // 노무비 총합 - 경비 여부에 따라 분리
     // includeInEstimate === true → 경비가 아닌 항목 (관리비/이윤에 포함)
     // includeInEstimate === false → 경비 항목 (관리비/이윤에서 제외)
-    // 노무비 탭/견적서와 동일하게 위치별 병합 후 합산.
-    const mergedLaborForTotal = mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers);
-    const laborTotalNonExpense = mergedLaborForTotal.reduce((sum, row) => {
+    // 노무비 탭에 저장된 값을 그대로 단순 합산 (조회 전용 — 별도 머지/재계산 없음)
+    const laborTotalNonExpense = parsedLaborCosts.reduce((sum, row) => {
       if (row.includeInEstimate) {
-        return sum + getMergedRowAmount(row, laborRateTiers);
+        return sum + (row.amount || 0);
       }
       return sum;
     }, 0);
 
-    const laborTotalExpense = mergedLaborForTotal.reduce((sum, row) => {
+    const laborTotalExpense = parsedLaborCosts.reduce((sum, row) => {
       if (!row.includeInEstimate) {
-        return sum + getMergedRowAmount(row, laborRateTiers);
+        return sum + (row.amount || 0);
       }
       return sum;
     }, 0);
@@ -5129,8 +5127,7 @@ export default function FieldReport() {
                               {(() => {
                                 const categoryGroups: { category: string; rows: (LaborCostRow & { isLinkedFromRecovery?: boolean })[]; workNameSubGroups: { workName: string; rows: (LaborCostRow & { isLinkedFromRecovery?: boolean })[] }[] }[] = [];
 
-                                const mergedForDisplay = mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers);
-                                const extendedRows = mergedForDisplay.map((row: any) => ({
+                                const extendedRows = parsedLaborCosts.map((row: any) => ({
                                   ...row,
                                   isLinkedFromRecovery: row.isLinkedFromRecovery || false,
                                 }));
@@ -5296,13 +5293,10 @@ export default function FieldReport() {
                                               textAlign: "center",
                                             }}
                                           >
-                                            {(() => {
-                                              const displayAmt = getMergedRowAmount(row as any, laborRateTiers);
-                                              const displayQty = (row as any).mergedQuantity != null
-                                                ? (row as any).mergedQuantity
-                                                : (row.standardPrice > 0 ? displayAmt / row.standardPrice : 0);
-                                              return Number(displayQty).toFixed(1);
-                                            })()}
+                                            {(row.standardPrice > 0
+                                              ? (row.amount || 0) / row.standardPrice
+                                              : 0
+                                            ).toFixed(1)}
                                           </td>
                                           <td
                                             style={{
@@ -5311,7 +5305,7 @@ export default function FieldReport() {
                                               fontWeight: 600,
                                             }}
                                           >
-                                            {getMergedRowAmount(row as any, laborRateTiers).toLocaleString()}
+                                            {(row.amount || 0).toLocaleString()}
                                           </td>
                                           <td
                                             style={{
@@ -5369,9 +5363,9 @@ export default function FieldReport() {
                                     background: "rgba(0, 143, 237, 0.05)",
                                   }}
                                 >
-                                  {mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers)
+                                  {parsedLaborCosts
                                     .reduce(
-                                      (sum, row) => sum + getMergedRowAmount(row as any, laborRateTiers),
+                                      (sum, row) => sum + (row.amount || 0),
                                       0,
                                     )
                                     .toLocaleString()}
