@@ -607,11 +607,26 @@ export default function FieldReport() {
     }
   }, [reportData?.case.additionalNotes]);
 
+  // 견적서 작성 탭과 동일한 데이터 소스(/api/estimates/:caseId/latest) — 합계 일치를 위해 사용
+  const { data: latestEstimateForReport } = useQuery<{ estimate: any; rows: any[] }>({
+    queryKey: ["/api/estimates", selectedCaseId, "latest"],
+    enabled: !!selectedCaseId,
+  });
+
   // Parse and memoize labor cost and material cost data
   // 저장된 값을 그대로 사용 (총합계 일치를 위해 재계산하지 않음)
   const parsedLaborCosts = useMemo(() => {
     return safeParseLaborCosts(reportData?.estimate?.estimate?.laborCostData);
   }, [reportData?.estimate?.estimate?.laborCostData]);
+
+  // 견적서탭과 동일한 합계 산출용 노무비 데이터 (표시는 parsedLaborCosts 그대로 유지)
+  const laborCostsForTotal = useMemo(() => {
+    const fromLatest = latestEstimateForReport?.estimate?.laborCostData;
+    if (Array.isArray(fromLatest) && fromLatest.length > 0) {
+      return safeParseLaborCosts(fromLatest);
+    }
+    return parsedLaborCosts;
+  }, [latestEstimateForReport?.estimate?.laborCostData, parsedLaborCosts]);
 
   const recoveryAreaByWorkName = useMemo(() => {
     const estimateRows = reportData?.estimate?.rows || [];
@@ -668,8 +683,8 @@ export default function FieldReport() {
     // 노무비 총합 - 경비 여부에 따라 분리
     // includeInEstimate === true → 경비가 아닌 항목 (관리비/이윤에 포함)
     // includeInEstimate === false → 경비 항목 (관리비/이윤에서 제외)
-    // 노무비 탭 footer와 동일한 머지 합산 사용 (행 표시는 raw, 합계는 머지)
-    const mergedLaborForTotal = mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers);
+    // 견적서 작성 탭과 동일한 데이터 소스 + 동일 머지 합산 사용
+    const mergedLaborForTotal = mergeLaborRowsForTotal(laborCostsForTotal as any, laborRateTiers);
     const laborTotalNonExpense = mergedLaborForTotal.reduce((sum, row) => {
       if (row.includeInEstimate) {
         return sum + getMergedRowAmount(row, laborRateTiers);
@@ -730,7 +745,7 @@ export default function FieldReport() {
       total,
       vatIncluded,
     };
-  }, [parsedLaborCosts, parsedMaterialCosts, vatIncluded]);
+  }, [laborCostsForTotal, parsedMaterialCosts, vatIncluded, laborRateTiers]);
 
   // 데이터 로드 시 체크박스 초기화 (모두 체크된 상태로)
   useEffect(() => {
@@ -5363,7 +5378,7 @@ export default function FieldReport() {
                                   }}
                                 >
                                   {Math.round(
-                                    mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers)
+                                    mergeLaborRowsForTotal(laborCostsForTotal as any, laborRateTiers)
                                       .reduce(
                                         (sum, row) => sum + getMergedRowAmount(row as any, laborRateTiers),
                                         0,
