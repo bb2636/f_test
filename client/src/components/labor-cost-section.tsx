@@ -2730,8 +2730,13 @@ export function LaborCostSection({
               }}
               data-testid="text-labor-total-in-table"
             >
-              {rows
+              {mergeDemolitionRows(rows)
                 .reduce((sum, row) => {
+                  // 병합행은 mergedAmount(병합단으로 재계산된 합계)를 우선 사용해
+                  // 화면 표시값과 footer 총합계를 일치시킴
+                  if (row.mergedAmount != null) {
+                    return sum + (row.mergedAmount || 0);
+                  }
                   const isIlw = row.detailWork === "일위대가";
                   const Cv = row.damageArea || 0;
                   const Dv = row.standardWorkQuantity || 0;
