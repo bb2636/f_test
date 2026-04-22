@@ -272,8 +272,9 @@ export default function FieldEstimate() {
     let hasDuplicates = false;
     
     for (const row of linkedRows) {
-      const needsSourceRowKey = row.category === '철거공사' && row.sourceAreaRowId;
-      const key = needsSourceRowKey
+      // 위치별 행 보존: 모든 연동 행은 sourceAreaRowId까지 키에 포함
+      // (욕실/가구 FIXED 본체 행 + 철거공사 동반행 등 위치별 다수 행 보존)
+      const key = row.sourceAreaRowId
         ? `${row.sourceAreaRowId}|${row.category}|${row.workName}|${row.detailItem}`
         : `${row.category}|${row.workName}|${row.detailItem}`;
       keyCount[key] = (keyCount[key] || 0) + 1;
@@ -2718,6 +2719,13 @@ export default function FieldEstimate() {
       demolitionOnlyAreaRows.forEach(areaRow => {
         const workName = areaRow.workName;
         const rawRepairArea = Number(areaRow.repairArea) || 0;
+        const demolitionSourceId = `demolition-${areaRow.id}`;
+        // 같은 사이클에서 completedAreaRows.forEach가 이미 같은 영역행에 대해
+        // 철거공사 행을 push했을 수 있으므로 newLaborRows 내 중복 가드
+        if (newLaborRows.find(r => r.sourceAreaRowId === demolitionSourceId)) {
+          console.log('[자동연동] FIXED 철거공사 행 중복 스킵(같은 사이클):', workName, areaRow.id?.slice(-8));
+          return;
+        }
         const mappedDemolitionName = getDemolitionMapping(areaRow.workType, workName).demolitionWorkName;
         const demolitionCatalogItem = mergedIlwidaegaCatalog.find(
           item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
@@ -2725,7 +2733,7 @@ export default function FieldEstimate() {
         );
         const demolitionRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
         newLaborRows.push(demolitionRow);
-        console.log('[자동연동] FIXED 항목 철거공사 행 생성:', workName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)');
+        console.log('[자동연동] FIXED 항목 철거공사 행 생성:', workName, areaRow.location, areaRow.id?.slice(-8), demolitionCatalogItem ? '(DB매칭)' : '(빈행)');
       });
 
       console.log('[진단5] newLaborRows push 결과', newLaborRows.length, '개:',
