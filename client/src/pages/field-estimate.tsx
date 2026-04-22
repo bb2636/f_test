@@ -2955,7 +2955,6 @@ export default function FieldEstimate() {
             (linkedAreaRow.workType === '가구공사' || linkedAreaRow.workType === '욕실공사');
           if (isFixedLaborItem) {
             const isHelper = normalizeForMatch(laborRow.detailItem || '') === normalizeForMatch('보통인부');
-            const fixedQuantity = isHelper ? 0.5 : 1.0;
             const singleDamageArea = Math.round((Number(linkedAreaRow.repairArea) || 0) * 10) / 10;
             // standardPrice가 0이면 카탈로그에서 보충
             let E = laborRow.standardPrice || 0;
@@ -2971,6 +2970,13 @@ export default function FieldEstimate() {
                 D = catalogItem.기준작업량 || D;
               }
             }
+            // 가구공사 FIXED: 단위 '1자' = 30cm. 수량 = ceil(가로(m) ÷ 0.3m)
+            //   가구공사 영역행은 isLinearWorkName=true → repairArea = repairWidth × 1 (m).
+            //   따라서 singleDamageArea가 곧 가로 길이(m).
+            // 욕실공사 FIXED: 위치당 인분 단위(내장공 1.0 / 보통인부 0.5) — 기존 유지.
+            const fixedQuantity = linkedAreaRow.workType === '가구공사'
+              ? (singleDamageArea > 0 ? Math.ceil(singleDamageArea / 0.3) : 0)
+              : (isHelper ? 0.5 : 1.0);
             const fixedAmount = Math.round(E * fixedQuantity);
             const needsFixedUpdate =
               laborRow.place !== linkedAreaRow.category ||
