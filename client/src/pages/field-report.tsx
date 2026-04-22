@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/popover";
 import { formatCaseNumber } from "@/lib/utils";
 import { useLaborRateTiers } from "@/hooks/use-labor-rate-tiers";
+import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount } from "@/lib/labor-merge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -667,17 +668,18 @@ export default function FieldReport() {
     // 노무비 총합 - 경비 여부에 따라 분리
     // includeInEstimate === true → 경비가 아닌 항목 (관리비/이윤에 포함)
     // includeInEstimate === false → 경비 항목 (관리비/이윤에서 제외)
-    // 노무비 탭에 저장된 값을 그대로 단순 합산 (조회 전용 — 별도 머지/재계산 없음)
-    const laborTotalNonExpense = parsedLaborCosts.reduce((sum, row) => {
+    // 노무비 탭 footer와 동일한 머지 합산 사용 (행 표시는 raw, 합계는 머지)
+    const mergedLaborForTotal = mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers);
+    const laborTotalNonExpense = mergedLaborForTotal.reduce((sum, row) => {
       if (row.includeInEstimate) {
-        return sum + (row.amount || 0);
+        return sum + getMergedRowAmount(row, laborRateTiers);
       }
       return sum;
     }, 0);
 
-    const laborTotalExpense = parsedLaborCosts.reduce((sum, row) => {
+    const laborTotalExpense = mergedLaborForTotal.reduce((sum, row) => {
       if (!row.includeInEstimate) {
-        return sum + (row.amount || 0);
+        return sum + getMergedRowAmount(row, laborRateTiers);
       }
       return sum;
     }, 0);
@@ -5302,7 +5304,7 @@ export default function FieldReport() {
                                               fontWeight: 600,
                                             }}
                                           >
-                                            {(row.amount || 0).toLocaleString()}
+                                            {Math.round(row.amount || 0).toLocaleString()}
                                           </td>
                                           <td
                                             style={{
@@ -5360,12 +5362,13 @@ export default function FieldReport() {
                                     background: "rgba(0, 143, 237, 0.05)",
                                   }}
                                 >
-                                  {parsedLaborCosts
-                                    .reduce(
-                                      (sum, row) => sum + (row.amount || 0),
-                                      0,
-                                    )
-                                    .toLocaleString()}
+                                  {Math.round(
+                                    mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers)
+                                      .reduce(
+                                        (sum, row) => sum + getMergedRowAmount(row as any, laborRateTiers),
+                                        0,
+                                      )
+                                  ).toLocaleString()}
                                 </td>
                                 <td colSpan={2}></td>
                               </tr>
