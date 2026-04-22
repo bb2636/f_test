@@ -5129,7 +5129,8 @@ export default function FieldReport() {
                               {(() => {
                                 const categoryGroups: { category: string; rows: (LaborCostRow & { isLinkedFromRecovery?: boolean })[]; workNameSubGroups: { workName: string; rows: (LaborCostRow & { isLinkedFromRecovery?: boolean })[] }[] }[] = [];
 
-                                const extendedRows = parsedLaborCosts.map((row: any) => ({
+                                const mergedForDisplay = mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers);
+                                const extendedRows = mergedForDisplay.map((row: any) => ({
                                   ...row,
                                   isLinkedFromRecovery: row.isLinkedFromRecovery || false,
                                 }));
@@ -5295,10 +5296,13 @@ export default function FieldReport() {
                                               textAlign: "center",
                                             }}
                                           >
-                                            {(row.standardPrice > 0
-                                              ? (row.amount || 0) / row.standardPrice
-                                              : 0
-                                            ).toFixed(1)}
+                                            {(() => {
+                                              const displayAmt = getMergedRowAmount(row as any, laborRateTiers);
+                                              const displayQty = (row as any).mergedQuantity != null
+                                                ? (row as any).mergedQuantity
+                                                : (row.standardPrice > 0 ? displayAmt / row.standardPrice : 0);
+                                              return Number(displayQty).toFixed(1);
+                                            })()}
                                           </td>
                                           <td
                                             style={{
@@ -5307,7 +5311,7 @@ export default function FieldReport() {
                                               fontWeight: 600,
                                             }}
                                           >
-                                            {(row.amount || 0).toLocaleString()}
+                                            {getMergedRowAmount(row as any, laborRateTiers).toLocaleString()}
                                           </td>
                                           <td
                                             style={{
@@ -5365,9 +5369,9 @@ export default function FieldReport() {
                                     background: "rgba(0, 143, 237, 0.05)",
                                   }}
                                 >
-                                  {parsedLaborCosts
+                                  {mergeLaborRowsForTotal(parsedLaborCosts as any, laborRateTiers)
                                     .reduce(
-                                      (sum, row) => sum + (row.amount || 0),
+                                      (sum, row) => sum + getMergedRowAmount(row as any, laborRateTiers),
                                       0,
                                     )
                                     .toLocaleString()}
