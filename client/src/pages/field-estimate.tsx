@@ -2198,9 +2198,13 @@ export default function FieldEstimate() {
     if (rows.length === 0) return;
     // 카탈로그가 아직 로드되지 않았으면 건너뛰기 (다음 변화 시 재실행)
     if (mergedIlwidaegaCatalog.length === 0) return;
-    console.log("[자동연동] 노무비 탭 진입 → syncLaborFromRecoveryArea 호출");
+    console.log("[자동연동] 노무비 탭 진입 → syncLaborFromRecoveryArea 호출", {
+      isReadOnly,
+      catalogLen: mergedIlwidaegaCatalog.length,
+      rowsLen: rows.length,
+    });
     syncLaborFromRecoveryArea();
-  }, [selectedCategory]);
+  }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length]);
 
   const materialCatalogLoadedRef = useRef(false);
   useEffect(() => {
