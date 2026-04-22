@@ -1411,28 +1411,33 @@ export function LaborCostSection({
     const result: MergedLaborCostRow[] = [];
     const demolitionMap = new Map<string, MergedLaborCostRow>();
 
+    // [진단-MERGE-START] 호출 단위 헤더
+    const _diagSummary: string[] = [];
+    const _mergeableRows = inputRows.filter((r) => isMergeableLaborRow(r));
+    // eslint-disable-next-line no-console
+    console.log(
+      `[진단-MERGE-START] 전체 ${inputRows.length}행 중 병합대상 ${_mergeableRows.length}행`,
+    );
+
     inputRows.forEach((row) => {
       if (isMergeableLaborRow(row)) {
         // 병합 키: 공종 + 공사명 + 세부항목 + 단위 + 단가
         const mergeKey = `${row.category}|${row.workName}|${row.detailItem}|${row.unit}|${row.standardPrice}`;
         const isFixedItem = isFixedLaborWorkName(row.workName || "");
-        // [진단-MERGE] 병합 대상 행 추적
+        // [진단-MERGE] 한 줄 텍스트 — 콘솔 펼치기 없이 즉시 비교 가능
+        const _line =
+          `[진단-MERGE] cat=${JSON.stringify(row.category)} ` +
+          `wn=${JSON.stringify(row.workName)} ` +
+          `di=${JSON.stringify(row.detailItem)} ` +
+          `u=${JSON.stringify(row.unit)} ` +
+          `E=${row.standardPrice} D=${row.standardWorkQuantity} C=${row.damageArea} ` +
+          `qty=${row.quantity} amt=${row.amount} ` +
+          `src=${(row as any).sourceAreaRowId ?? "-"} ` +
+          `id=${row.id} ` +
+          `merge=${demolitionMap.has(mergeKey) ? "→" + demolitionMap.get(mergeKey)!.id : "NEW"}`;
+        _diagSummary.push(_line);
         // eslint-disable-next-line no-console
-        console.log("[진단-MERGE]", {
-          id: row.id,
-          category: JSON.stringify(row.category),
-          workName: JSON.stringify(row.workName),
-          detailItem: JSON.stringify(row.detailItem),
-          unit: JSON.stringify(row.unit),
-          standardPrice: row.standardPrice,
-          standardWorkQuantity: row.standardWorkQuantity,
-          damageArea: row.damageArea,
-          quantity: row.quantity,
-          amount: row.amount,
-          sourceAreaRowId: (row as any).sourceAreaRowId,
-          mergeKey,
-          willMergeInto: demolitionMap.has(mergeKey) ? demolitionMap.get(mergeKey)!.id : "(NEW)",
-        });
+        console.log(_line);
 
         if (demolitionMap.has(mergeKey)) {
           // 기존 병합 행에 합산
