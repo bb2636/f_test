@@ -58,21 +58,11 @@ export function mergeDemolitionRows(
           (existing.damageArea || 0) + (row.damageArea || 0);
 
         if (isFixedItem) {
-          // 가구공사: 합산 가로(m) ÷ 0.3 → 올림. 기타(욕실 등): 단순 합산.
-          if (existing.category === "가구공사") {
-            const C = existing.damageArea || 0;
-            const E = existing.standardPrice || 0;
-            const qty = C > 0 ? Math.ceil(C / 0.3) : 0;
-            existing.mergedQuantity = qty;
-            existing.mergedAmount = Math.round(E * qty);
-            existing.pricePerSqm = E;
-          } else {
-            const prevQty = existing.mergedQuantity ?? existing.quantity ?? 0;
-            const prevAmt = existing.mergedAmount ?? existing.amount ?? 0;
-            existing.mergedQuantity =
-              Math.round((prevQty + (row.quantity || 0)) * 10) / 10;
-            existing.mergedAmount = prevAmt + (row.amount || 0);
-          }
+          const prevQty = existing.mergedQuantity ?? existing.quantity ?? 0;
+          const prevAmt = existing.mergedAmount ?? existing.amount ?? 0;
+          existing.mergedQuantity =
+            Math.round((prevQty + (row.quantity || 0)) * 10) / 10;
+          existing.mergedAmount = prevAmt + (row.amount || 0);
         } else {
           const C = existing.damageArea;
           const D = existing.standardWorkQuantity || 0;

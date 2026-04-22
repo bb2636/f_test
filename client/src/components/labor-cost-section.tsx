@@ -1450,22 +1450,12 @@ export function LaborCostSection({
 
           if (isFixedItem) {
             // FIXED 항목 (욕실/가구/철거의 SMC, 상부장 시리즈 등):
-            // - 가구공사: 합산된 가로(=damageArea, m) ÷ 0.3 → 올림 (1자=30cm 단위).
-            //   개별 행 ceil 합 ≠ 합 후 ceil이라, 합산 후 한 번만 ceil이 정답.
-            // - 그 외(욕실공사 등): 수량/금액 단순 합산 유지.
-            if (existing.category === "가구공사") {
-              const C = existing.damageArea || 0;
-              const E = existing.standardPrice || 0;
-              const qty = C > 0 ? Math.ceil(C / 0.3) : 0;
-              existing.mergedQuantity = qty;
-              existing.mergedAmount = Math.round(E * qty);
-              existing.pricePerSqm = E;
-            } else {
-              const prevQty = existing.mergedQuantity ?? existing.quantity ?? 0;
-              const prevAmt = existing.mergedAmount ?? existing.amount ?? 0;
-              existing.mergedQuantity = Math.round((prevQty + (row.quantity || 0)) * 10) / 10;
-              existing.mergedAmount = prevAmt + (row.amount || 0);
-            }
+            // 위치마다 동일한 일위대가가 적용되므로 수량/금액을 단순 합산
+            // 예: 상부장 1곳 → 내장공 1인, 2곳 → 내장공 2인
+            const prevQty = existing.mergedQuantity ?? existing.quantity ?? 0;
+            const prevAmt = existing.mergedAmount ?? existing.amount ?? 0;
+            existing.mergedQuantity = Math.round((prevQty + (row.quantity || 0)) * 10) / 10;
+            existing.mergedAmount = prevAmt + (row.amount || 0);
           } else {
             // 합산된 면적으로 금액, 적용단가, 수량 재계산 (일반 노무비와 동일한 I = F + H 공식)
             const C = existing.damageArea;
