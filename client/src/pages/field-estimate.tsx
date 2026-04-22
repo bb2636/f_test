@@ -36,7 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LaborCostSection, type LaborCatalogItem, type LaborCostRow } from "@/components/labor-cost-section";
-import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount, isFixedLaborWorkName } from "@/lib/labor-merge";
+import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount, isFixedLaborWorkName, isMergeableLaborRow } from "@/lib/labor-merge";
 import { MaterialCostSection, type MaterialCatalogItem, type MaterialRow } from "@/components/material-cost-section";
 
 interface AreaCalculationRow {
@@ -5068,13 +5068,12 @@ export default function FieldEstimate() {
         const C = rest.damageArea || 0;
         const D = rest.standardWorkQuantity || 0;
         const E = rest.standardPrice || 0;
-        // 가구공사/욕실공사의 FIXED 항목(SMC, 리빙보드, 도기류, 붙박이장, 상부장, 하부장, 키큰장 등)은
-        // 위치별 1인분 합산 규칙이므로 일위대가 보정으로 quantity/amount를 부풀리지 않음.
-        // 이렇게 해야 노무비 탭/견적서/현장출동보고서 어디서 머지하든 동일한 합계가 나옴.
-        const isMergeFixed =
-          (rest.category === "가구공사" || rest.category === "욕실공사") &&
-          isFixedLaborWorkName(rest.workName || "");
-        if (isIlw && C > 0 && D > 0 && E > 0 && !isMergeFixed) {
+        // 머지 대상 항목(철거공사 전체 + 가구공사/욕실공사의 FIXED 항목)은
+        // 위치별 raw 수량을 그대로 저장해야 어떤 화면에서 머지하든 같은 합계가 나옴.
+        // 일위대가 보정(calculateIWithTiers)을 적용하면 위치당 quantity가 위치 면적만큼 부풀려지고,
+        // 다시 머지될 때 위치 수만큼 곱해져 합계가 폭증함. 따라서 보정 대상에서 제외한다.
+        const isMergeable = isMergeableLaborRow(rest as any);
+        if (isIlw && C > 0 && D > 0 && E > 0 && !isMergeable) {
           const correctedAmount = calculateIWithTiers(C, D, E, laborRateTiers);
           const correctedPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
           const correctedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
