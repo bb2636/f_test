@@ -1416,6 +1416,23 @@ export function LaborCostSection({
         // 병합 키: 공종 + 공사명 + 세부항목 + 단위 + 단가
         const mergeKey = `${row.category}|${row.workName}|${row.detailItem}|${row.unit}|${row.standardPrice}`;
         const isFixedItem = isFixedLaborWorkName(row.workName || "");
+        // [진단-MERGE] 병합 대상 행 추적
+        // eslint-disable-next-line no-console
+        console.log("[진단-MERGE]", {
+          id: row.id,
+          category: JSON.stringify(row.category),
+          workName: JSON.stringify(row.workName),
+          detailItem: JSON.stringify(row.detailItem),
+          unit: JSON.stringify(row.unit),
+          standardPrice: row.standardPrice,
+          standardWorkQuantity: row.standardWorkQuantity,
+          damageArea: row.damageArea,
+          quantity: row.quantity,
+          amount: row.amount,
+          sourceAreaRowId: (row as any).sourceAreaRowId,
+          mergeKey,
+          willMergeInto: demolitionMap.has(mergeKey) ? demolitionMap.get(mergeKey)!.id : "(NEW)",
+        });
 
         if (demolitionMap.has(mergeKey)) {
           // 기존 병합 행에 합산
