@@ -5293,10 +5293,7 @@ export default function FieldReport() {
                                               textAlign: "center",
                                             }}
                                           >
-                                            {(row.standardPrice > 0
-                                              ? (row.amount || 0) / row.standardPrice
-                                              : 0
-                                            ).toFixed(1)}
+                                            {Number(row.quantity || 0).toFixed(1)}
                                           </td>
                                           <td
                                             style={{
