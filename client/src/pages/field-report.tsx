@@ -671,10 +671,11 @@ export default function FieldReport() {
   }, [reportData?.estimate?.rows]);
 
   // materialCostData에서 자재비 배열과 VAT 옵션 추출
-  // 저장된 금액을 그대로 사용 (총합계 일치를 위해 재계산하지 않음)
+  // 견적서 작성 탭과 동일한 데이터 소스(/api/estimates/:caseId/latest) 우선 사용
   const { materialRows: parsedMaterialCosts, vatIncluded } = useMemo(() => {
-    const materialData = reportData?.estimate?.estimate
-      ?.materialCostData as any;
+    const fromLatest = latestEstimateForReport?.estimate?.materialCostData as any;
+    const fromReport = reportData?.estimate?.estimate?.materialCostData as any;
+    const materialData = fromLatest ?? fromReport;
     // 새 형식 (객체: {rows, vatIncluded}) 또는 기존 형식 (배열)
     if (materialData && !Array.isArray(materialData) && materialData.rows) {
       return {
@@ -686,7 +687,10 @@ export default function FieldReport() {
       materialRows: safeParseMaterialCosts(materialData),
       vatIncluded: true,
     };
-  }, [reportData?.estimate?.estimate?.materialCostData]);
+  }, [
+    latestEstimateForReport?.estimate?.materialCostData,
+    reportData?.estimate?.estimate?.materialCostData,
+  ]);
 
   const calculateTotals = useMemo(() => {
     // 노무비 총합 - 경비 여부에 따라 분리
