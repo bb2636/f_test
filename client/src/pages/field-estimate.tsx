@@ -138,6 +138,12 @@ export default function FieldEstimate() {
   // 초기 로드 직후 자동 동기화 방지 (새 행 자동 생성 방지)
   const skipAutoSyncRef = useRef(true);
 
+  // 싱크 결과 자동 저장: 화면(sync 결과)과 DB가 항상 일치하도록 자동 저장
+  // - isAutoSavingRef: 자동 저장 중인지 표시 → onSuccess에서 toast 스킵
+  // - autoSaveDebounceRef: 짧은 시간 내 여러 sync 호출을 1회 저장으로 합침
+  const isAutoSavingRef = useRef(false);
+  const autoSaveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // 노임단가 적용비율 데이터 (DB에서 가져옴)
   const { data: laborRateTiersData } = useLaborRateTiers();
   const laborRateTiers = laborRateTiersData || DEFAULT_LABOR_RATE_TIERS_FALLBACK;
@@ -2184,6 +2190,8 @@ export default function FieldEstimate() {
     });
     
     syncMaterialFromRecoveryArea();
+    // 싱크 결과를 DB에 자동 저장 → PDF/저장본이 항상 화면과 일치하도록 보정
+    triggerAutoSaveAfterSync("material:recoverySignature");
   }, [recoverySignature, isLossPreventionCase, isReadOnly]);
 
   useEffect(() => {
@@ -2191,6 +2199,8 @@ export default function FieldEstimate() {
     if (!isHydratedRef.current) return;
     if (isLossPreventionCase) return;
     syncMaterialFromRecoveryArea();
+    // 자재비 탭 진입 시 싱크 결과를 DB에 자동 저장
+    triggerAutoSaveAfterSync("material:tabEnter");
   }, [selectedCategory]);
 
   // 노무비 탭 진입 시 복구면적 자동 동기화 (협력업체도 동일한 화면값을 보도록 readOnly 가드 제거)
@@ -2206,6 +2216,8 @@ export default function FieldEstimate() {
       rowsLen: rows.length,
     });
     syncLaborFromRecoveryArea();
+    // 노무비 싱크 결과를 DB에 자동 저장 → 보고서/PDF가 항상 화면과 일치
+    triggerAutoSaveAfterSync("labor:tabEnter");
   }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length]);
 
   const materialCatalogLoadedRef = useRef(false);
@@ -5126,10 +5138,18 @@ export default function FieldEstimate() {
       });
     },
     onSuccess: () => {
-      toast({
-        title: "저장 완료",
-        description: "견적이 성공적으로 저장되었습니다.",
-      });
+      const wasAutoSave = isAutoSavingRef.current;
+      isAutoSavingRef.current = false;
+
+      if (wasAutoSave) {
+        // 자동 저장: 사용자에게 토스트 노출하지 않음 (조용히 동기화)
+        console.log("[AUTO-SAVE] 싱크 결과 자동 저장 완료 (toast 생략)");
+      } else {
+        toast({
+          title: "저장 완료",
+          description: "견적이 성공적으로 저장되었습니다.",
+        });
+      }
       // 견적 목록 및 최신 견적 갱신
       queryClient.invalidateQueries({ queryKey: ["/api/estimates", selectedCaseId] });
       queryClient.invalidateQueries({ queryKey: ["/api/estimates", selectedCaseId, "latest"] });
@@ -5139,6 +5159,13 @@ export default function FieldEstimate() {
       queryClient.invalidateQueries({ queryKey: ["/api/field-surveys", selectedCaseId, "report"] });
     },
     onError: (error: any) => {
+      const wasAutoSave = isAutoSavingRef.current;
+      isAutoSavingRef.current = false;
+      if (wasAutoSave) {
+        // 자동 저장 실패는 사용자에게 노출하지 않고 콘솔에만 기록
+        console.error("[AUTO-SAVE] 자동 저장 실패:", error);
+        return;
+      }
       toast({
         title: "저장 실패",
         description: error.message || "견적 저장 중 오류가 발생했습니다.",
@@ -5146,6 +5173,28 @@ export default function FieldEstimate() {
       });
     },
   });
+
+  // 싱크 결과 자동 저장 트리거
+  // - sync useEffect 끝에서 호출 → 짧은 디바운스(1.5초) 후 saveMutation 실행
+  // - readOnly / 케이스 미선택 / 미수화 / 저장 진행 중인 경우 스킵
+  // - 사용자가 직접 누르는 "저장"과는 분리 (toast 미표시)
+  const triggerAutoSaveAfterSync = (reason: string) => {
+    if (isReadOnly) return;
+    if (!selectedCaseId) return;
+    if (!isHydratedRef.current) return;
+    if (saveMutation.isPending) return;
+
+    if (autoSaveDebounceRef.current) {
+      clearTimeout(autoSaveDebounceRef.current);
+    }
+    autoSaveDebounceRef.current = setTimeout(() => {
+      autoSaveDebounceRef.current = null;
+      if (saveMutation.isPending) return;
+      console.log(`[AUTO-SAVE] 싱크 결과 자동 저장 시작 (사유: ${reason})`);
+      isAutoSavingRef.current = true;
+      saveMutation.mutate();
+    }, 1500);
+  };
 
   // 저장
   const handleSave = () => {
