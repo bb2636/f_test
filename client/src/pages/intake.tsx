@@ -568,14 +568,16 @@ export default function Intake({
       );
     }
     const { province, city } = extractRegionFromAddress(formData.insuredAddress);
+    // 사고 주소에서 시·도 또는 시·군·구가 추출되면 해당 지역 협력사만 표시
+    // (매칭되는 협력사가 없으면 빈 목록을 보여 줌 — 전체 협력사 fallback 비활성화)
     if (province || city) {
-      const regionFiltered = partnersWithStats.filter((p) => {
+      return partnersWithStats.filter((p) => {
         if (!p.region) return false;
         const regions = p.region.split(", ");
         return regions.some((r) => matchRegion(r, province, city));
       });
-      if (regionFiltered.length > 0) return regionFiltered;
     }
+    // 주소가 비어 있어 지역을 알 수 없을 때만 전체 협력사 표시
     return partnersWithStats;
   }, [partnerSearchQuery, partnersWithStats, formData.insuredAddress]);
 
