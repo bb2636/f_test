@@ -1302,27 +1302,44 @@ async function renderFieldReportPage(
   y = drawSectionHeader("특이사항 및 요청사항 (VOC)", y);
 
   // VOC는 vocContent 필드 사용 (specialNotes는 폴백)
-  const vocText = caseData.vocContent || caseData.specialNotes || "-";
+  const vocText = normalizeText(caseData.vocContent || caseData.specialNotes || "-");
+  const vocFontSize = 9;
+  const vocLineHeight = vocFontSize * 1.4;
+  const vocPaddingX = 8;
+  const vocPaddingTop = 12;
+  const vocPaddingBottom = 8;
+  const vocLines = wrapText(
+    vocText,
+    fonts.regular,
+    vocFontSize,
+    CONTENT_WIDTH - vocPaddingX * 2,
+  );
+  const vocContentHeight = vocLines.length * vocLineHeight;
+  // 기존 50px(약 1줄) 박스 최소 높이는 유지하되, 내용이 길어지면 박스도 확장
+  const vocBoxHeight = Math.max(
+    50,
+    vocContentHeight + vocPaddingTop + vocPaddingBottom - vocFontSize,
+  );
 
   page.drawRectangle({
     x: MARGIN,
-    y: y - 45,
+    y: y - vocBoxHeight + 5,
     width: CONTENT_WIDTH,
-    height: 50,
+    height: vocBoxHeight,
     borderColor: rgb(0.7, 0.7, 0.7),
     borderWidth: 0.5,
   });
 
   drawText(page, {
-    x: MARGIN + 8,
-    y: y - 12,
+    x: MARGIN + vocPaddingX,
+    y: y - vocPaddingTop,
     text: vocText,
     font: fonts.regular,
-    size: 9,
-    maxWidth: CONTENT_WIDTH - 16,
+    size: vocFontSize,
+    maxWidth: CONTENT_WIDTH - vocPaddingX * 2,
   });
 
-  y -= 60;
+  y -= vocBoxHeight + 10;
 
   const caseNumber = caseData.caseNumber || "";
   const suffixMatch = caseNumber.match(/-(\d+)$/);
