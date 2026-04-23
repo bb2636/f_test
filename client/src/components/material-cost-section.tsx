@@ -874,9 +874,11 @@ export function MaterialCostSection({
                   <td style={{ padding: "0 8px", background: isLinkedRow ? "rgba(59, 130, 246, 0.05)" : "#EFF6FF", borderBottom: groupBorderBottom, borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
                     {isLinkedRow ? (
                       (() => {
+                        // 페인트 행은 단위가 EA로 저장돼도 수량은 m² 면적으로 관리됨
+                        const isPaintRow = row.공종 === '도장공사' && ['수성페인트', '무늬코트', '탄성코트'].includes(row.공사명 || '');
                         // EA 기반 자재 (합판, 석고보드, 몰딩, 걸레받이)는 수량EA 사용
                         const eaWorkNames = ['합판', '석고보드', '석고', '몰딩', '걸레받이'];
-                        const isEABased = eaWorkNames.includes(row.공사명 || '') || row.단위 === 'EA';
+                        const isEABased = !isPaintRow && (eaWorkNames.includes(row.공사명 || '') || row.단위 === 'EA');
                         // 면적 기반 자재 (도배, 마루, 장판)는 올림 처리
                         const areaWorkNames = ['도배', '마루', '장판'];
                         const isAreaBased = areaWorkNames.includes(row.공사명 || '') || row.단위 === 'm²';
