@@ -29,8 +29,8 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
               <td style="padding: 10px 15px; border: 1px solid #ccc;">${insuredName}</td>
             </tr>
             <tr>
-              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">취소사유</td>
-              <td style="padding: 10px 15px; border: 1px solid #ccc;">${cancelReason || "-"}</td>
+              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold; vertical-align: top;">취소사유</td>
+              <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">${cancelReason || "-"}</td>
             </tr>
             <tr>
               <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">발송일</td>

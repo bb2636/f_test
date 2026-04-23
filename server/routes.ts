@@ -14352,30 +14352,38 @@ https://www.floxn.co.kr/
       yPos -= rowHeight;
 
       // Row 3: 취소사유 (full width)
+      // 줄바꿈(\n, \r\n)을 먼저 분리한 뒤, 각 줄 안에서 셀 너비 기준으로 추가 줄바꿈
       const reasonText = normalizeText(cancelReason || "-");
       const reasonCellWidth = tableWidth - col1Width - 10; // 셀 내부 패딩 고려
       const reasonFontSize = 10;
       const reasonLines: string[] = [];
 
-      // 폰트 너비 기준으로 줄바꿈 계산
-      let currentLine = "";
-      for (const char of reasonText) {
-        const testLine = currentLine + char;
-        const testWidth = customFont.widthOfTextAtSize(
-          testLine,
-          reasonFontSize,
-        );
-        if (testWidth > reasonCellWidth) {
-          if (currentLine) {
-            reasonLines.push(currentLine);
-          }
-          currentLine = char;
-        } else {
-          currentLine = testLine;
+      const rawSegments = reasonText.split(/\r?\n/);
+      for (const segment of rawSegments) {
+        if (segment.length === 0) {
+          // 빈 줄(연속 엔터)도 한 줄로 보존
+          reasonLines.push("");
+          continue;
         }
-      }
-      if (currentLine) {
-        reasonLines.push(currentLine);
+        let currentLine = "";
+        for (const char of segment) {
+          const testLine = currentLine + char;
+          const testWidth = customFont.widthOfTextAtSize(
+            testLine,
+            reasonFontSize,
+          );
+          if (testWidth > reasonCellWidth) {
+            if (currentLine) {
+              reasonLines.push(currentLine);
+            }
+            currentLine = char;
+          } else {
+            currentLine = testLine;
+          }
+        }
+        if (currentLine) {
+          reasonLines.push(currentLine);
+        }
       }
       if (reasonLines.length === 0) {
         reasonLines.push("-");
