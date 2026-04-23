@@ -5666,6 +5666,11 @@ export class DbStorage implements IStorage {
     vatIncluded: boolean = true,
   ): Promise<{ estimate: Estimate; rows: EstimateRow[] }> {
     return await db.transaction(async (tx) => {
+      // 0. 동일 caseId에 대한 동시 INSERT 직렬화 (자동 저장 + 수동 저장 race condition 방지)
+      // SELECT FOR UPDATE는 기존 row만 잠그므로 새 version INSERT 충돌(unique violation)을 막지 못함.
+      // advisory lock으로 caseId 단위로 트랜잭션을 직렬화한다.
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${caseId}))`);
+
       // 1. 현재 최대 버전 조회 (row-level locking으로 동시성 제어)
       const existingEstimates = await tx
         .select({ version: estimates.version })
