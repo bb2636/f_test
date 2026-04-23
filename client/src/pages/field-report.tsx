@@ -798,7 +798,7 @@ export default function FieldReport() {
     if (lastSyncedAmountRef.current === computedTotal) return;
     lastSyncedAmountRef.current = computedTotal;
     syncEstimateAmountMutation.mutate({ caseId: cid, totalAmount: computedTotal });
-  }, [calculateTotals.total, reportData?.case?.id, reportData?.case?.estimateAmount, isReadOnly]);
+  }, [calculateTotals.total, reportData?.case?.id, reportData?.case?.estimateAmount, isPartnerReadOnly]);
 
   // 데이터 로드 시 체크박스 초기화 (모두 체크된 상태로)
   useEffect(() => {
