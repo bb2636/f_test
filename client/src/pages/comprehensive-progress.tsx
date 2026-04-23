@@ -367,6 +367,55 @@ export default function ComprehensiveProgress() {
     queryKey: ["/api/cases"],
   });
 
+  // 견적금액(estimateAmount) 갱신 시 승인금액(approvedAmount)도 자동 동기화
+  // - 승인 상태인 케이스에 대해서만 동작
+  // - approvedAmount가 estimateAmount와 다르면 PATCH /api/cases/:id 로 갱신
+  // - 동일 케이스/금액 조합은 ref로 캐시하여 중복 호출 방지
+  const syncApprovedAmountMutation = useMutation({
+    mutationFn: async ({ caseId, amount }: { caseId: string; amount: string }) => {
+      return await apiRequest("PATCH", `/api/cases/${caseId}`, {
+        approvedAmount: amount,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+    },
+    onError: (err) => {
+      console.warn("[APPROVED-SYNC] approvedAmount 동기화 실패:", err);
+    },
+  });
+
+  const syncedApprovedAmountRef = useRef<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    if (!cases || cases.length === 0) return;
+    for (const c of cases) {
+      if (!c?.id) continue;
+      const isApproved =
+        (c as any).reviewDecision === "승인" ||
+        POST_APPROVAL_STATUSES.includes(c.status as any);
+      if (!isApproved) continue;
+
+      const estimate = parseInt((c as any).estimateAmount || "0") || 0;
+      if (estimate <= 0) continue;
+
+      const approved = parseInt((c as any).approvedAmount || "0") || 0;
+      if (estimate === approved) {
+        syncedApprovedAmountRef.current.set(c.id, String(estimate));
+        continue;
+      }
+
+      const lastSynced = syncedApprovedAmountRef.current.get(c.id);
+      if (lastSynced === String(estimate)) continue;
+
+      syncedApprovedAmountRef.current.set(c.id, String(estimate));
+      syncApprovedAmountMutation.mutate({
+        caseId: c.id,
+        amount: String(estimate),
+      });
+    }
+  }, [cases]);
+
   const { data: favorites = [] } = useQuery<UserFavorite[]>({
     queryKey: ["/api/favorites"],
     enabled: !!user,
