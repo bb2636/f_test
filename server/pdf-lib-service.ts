@@ -1302,18 +1302,37 @@ async function renderFieldReportPage(
   y = drawSectionHeader("특이사항 및 요청사항 (VOC)", y);
 
   // VOC는 vocContent 필드 사용 (specialNotes는 폴백)
-  const vocText = normalizeText(caseData.vocContent || caseData.specialNotes || "-");
+  // 사용자가 입력한 줄바꿈(\n)을 보존하기 위해, normalizeText를 한 번에 적용하지 않고
+  // 줄 단위로 분리해 각 줄에만 적용한다 (normalizeText가 특수문자 인접 \n을 제거하는 문제 회피).
+  const rawVocText = caseData.vocContent || caseData.specialNotes || "-";
+  const vocSegments = rawVocText.split(/\r?\n/).map((seg: string) => normalizeText(seg));
   const vocFontSize = 9;
   const vocLineHeight = vocFontSize * 1.4;
   const vocPaddingX = 8;
   const vocPaddingTop = 12;
   const vocPaddingBottom = 8;
-  const vocLines = wrapText(
-    vocText,
-    fonts.regular,
-    vocFontSize,
-    CONTENT_WIDTH - vocPaddingX * 2,
-  );
+
+  // 각 줄별로 너비 기반 줄바꿈 후 합치기 (빈 줄은 빈 줄대로 보존)
+  const vocLines: string[] = [];
+  for (const seg of vocSegments) {
+    if (seg === "") {
+      vocLines.push("");
+      continue;
+    }
+    const wrapped = wrapText(
+      seg,
+      fonts.regular,
+      vocFontSize,
+      CONTENT_WIDTH - vocPaddingX * 2,
+    );
+    if (wrapped.length === 0) {
+      vocLines.push("");
+    } else {
+      for (const ln of wrapped) vocLines.push(ln);
+    }
+  }
+  if (vocLines.length === 0) vocLines.push("-");
+
   const vocContentHeight = vocLines.length * vocLineHeight;
   // 기존 50px(약 1줄) 박스 최소 높이는 유지하되, 내용이 길어지면 박스도 확장
   const vocBoxHeight = Math.max(
@@ -1330,14 +1349,23 @@ async function renderFieldReportPage(
     borderWidth: 0.5,
   });
 
-  drawText(page, {
-    x: MARGIN + vocPaddingX,
-    y: y - vocPaddingTop,
-    text: vocText,
-    font: fonts.regular,
-    size: vocFontSize,
-    maxWidth: CONTENT_WIDTH - vocPaddingX * 2,
-  });
+  // drawText는 내부에서 normalizeText를 다시 적용하면서 \n을 다시 잃을 수 있으므로
+  // 줄 단위로 직접 그린다.
+  let vocTextY = y - vocPaddingTop;
+  for (const line of vocLines) {
+    if (line) {
+      drawTextCharByChar(
+        page,
+        line,
+        MARGIN + vocPaddingX,
+        vocTextY,
+        fonts.regular,
+        vocFontSize,
+        { r: 0, g: 0, b: 0 },
+      );
+    }
+    vocTextY -= vocLineHeight;
+  }
 
   y -= vocBoxHeight + 10;
 
