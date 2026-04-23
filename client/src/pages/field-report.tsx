@@ -760,6 +760,46 @@ export default function FieldReport() {
     };
   }, [laborCostsForTotal, parsedMaterialCosts, vatIncluded, laborRateTiers]);
 
+  // 현장출동보고서 합계를 케이스의 견적금액(estimateAmount)에 자동 동기화
+  // 청구하기/진행건 상세보기는 case.estimateAmount를 표시하므로,
+  // 화면 합계가 변경되면 즉시 반영시켜 두 화면 간 불일치를 방지한다.
+  const syncEstimateAmountMutation = useMutation({
+    mutationFn: async ({ caseId, totalAmount }: { caseId: string; totalAmount: number }) => {
+      const res = await apiRequest("PATCH", `/api/cases/${caseId}`, {
+        estimateAmount: totalAmount.toString(),
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      if (selectedCaseId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/cases/${selectedCaseId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/field-report/${selectedCaseId}`] });
+      }
+    },
+    onError: (err) => {
+      console.warn("[ESTIMATE-SYNC] case.estimateAmount 동기화 실패:", err);
+    },
+  });
+
+  const lastSyncedAmountRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isReadOnly) return;
+    const cid = reportData?.case?.id;
+    if (!cid) return;
+    const computedTotal = calculateTotals.total;
+    if (!Number.isFinite(computedTotal) || computedTotal <= 0) return;
+    const storedTotal = parseInt(reportData.case.estimateAmount || "0") || 0;
+    if (computedTotal === storedTotal) {
+      lastSyncedAmountRef.current = computedTotal;
+      return;
+    }
+    if (lastSyncedAmountRef.current === computedTotal) return;
+    lastSyncedAmountRef.current = computedTotal;
+    syncEstimateAmountMutation.mutate({ caseId: cid, totalAmount: computedTotal });
+  }, [calculateTotals.total, reportData?.case?.id, reportData?.case?.estimateAmount, isReadOnly]);
+
   // 데이터 로드 시 체크박스 초기화 (모두 체크된 상태로)
   useEffect(() => {
     if (reportData?.estimate?.rows) {
