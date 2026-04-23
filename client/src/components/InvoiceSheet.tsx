@@ -371,10 +371,12 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
         
         if (hasOnlyFieldDispatchPrevention) {
           setInvoiceDamagePreventionAmount("0");
+        } else if (categorizedAmounts.damagePreventionAmount > 0) {
+          // 견적서/현장출동보고서에 저장된 최신 견적금액을 우선 표시
+          // (이전에 청구서로 저장된 invoice 필드가 있더라도 최신 견적금액으로 갱신)
+          setInvoiceDamagePreventionAmount(categorizedAmounts.damagePreventionAmount.toString());
         } else if (caseData.invoiceDamagePreventionAmount) {
           setInvoiceDamagePreventionAmount(caseData.invoiceDamagePreventionAmount);
-        } else if (categorizedAmounts.damagePreventionAmount > 0) {
-          setInvoiceDamagePreventionAmount(categorizedAmounts.damagePreventionAmount.toString());
         } else {
           const prefix = getCaseNumberPrefix(caseData.caseNumber);
           if (prefix && categorizedAmounts.hasDirectRecoveryPrevention) {
@@ -397,10 +399,11 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
         
         if (hasOnlyFieldDispatchProperty) {
           setInvoicePropertyRepairAmount("0");
+        } else if (categorizedAmounts.propertyRepairAmount > 0) {
+          // 견적서/현장출동보고서에 저장된 최신 견적금액을 우선 표시
+          setInvoicePropertyRepairAmount(categorizedAmounts.propertyRepairAmount.toString());
         } else if (caseData.invoicePropertyRepairAmount) {
           setInvoicePropertyRepairAmount(caseData.invoicePropertyRepairAmount);
-        } else if (categorizedAmounts.propertyRepairAmount > 0) {
-          setInvoicePropertyRepairAmount(categorizedAmounts.propertyRepairAmount.toString());
         } else {
           const prefix = getCaseNumberPrefix(caseData.caseNumber);
           if (prefix && categorizedAmounts.hasDirectRecoveryProperty) {
