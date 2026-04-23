@@ -91,7 +91,11 @@ const SALT_ROUNDS = 10;
 const usersWithoutAttachments = USERS_SAFE_COLUMNS;
 
 const USERS_CACHE_TTL = 5 * 60 * 1000;
+<<<<<<< HEAD
 const USERS_STALE_TTL = 30 * 1000;
+=======
+const CACHE_FETCH_TIMEOUT = 15_000;
+>>>>>>> a561dfd1 (Improve login reliability and speed with database query optimizations)
 let usersCache: User[] | null = null;
 let usersCacheTime = 0;
 let usersCacheFetching: Promise<User[]> | null = null;
@@ -99,6 +103,18 @@ let usersCacheFetching: Promise<User[]> | null = null;
 export function invalidateUsersCache() {
   usersCache = null;
   usersCacheTime = 0;
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`[${label}] DB query timed out after ${ms}ms`));
+    }, ms);
+    promise.then(
+      (val) => { clearTimeout(timer); resolve(val); },
+      (err) => { clearTimeout(timer); reject(err); },
+    );
+  });
 }
 
 async function getCachedUsers(): Promise<User[]> {
@@ -113,14 +129,22 @@ async function getCachedUsers(): Promise<User[]> {
   usersCacheFetching = (async () => {
     try {
       const result = await withTimeout(
+<<<<<<< HEAD
         db.select(usersWithoutAttachments).from(users).where(eq(users.status, "active")),
         DB_QUERY_TIMEOUT,
         "getCachedUsers",
       ) as User[];
+=======
+        db.select().from(users).where(eq(users.status, "active")),
+        CACHE_FETCH_TIMEOUT,
+        "getCachedUsers",
+      );
+>>>>>>> a561dfd1 (Improve login reliability and speed with database query optimizations)
       usersCache = result;
       usersCacheTime = Date.now();
       return result;
     } catch (err) {
+<<<<<<< HEAD
       console.error("[CACHE] getCachedUsers failed:", (err as Error).message);
       if (staleCache) {
         console.log("[CACHE] Returning stale users cache");
@@ -128,6 +152,15 @@ async function getCachedUsers(): Promise<User[]> {
         return staleCache;
       }
       return [];
+=======
+      console.error("[CACHE] getCachedUsers failed:", err);
+      if (usersCache) {
+        console.log("[CACHE] Returning stale users cache");
+        usersCacheTime = Date.now() - USERS_CACHE_TTL + 30_000;
+        return usersCache;
+      }
+      throw err;
+>>>>>>> a561dfd1 (Improve login reliability and speed with database query optimizations)
     } finally {
       usersCacheFetching = null;
     }
@@ -154,6 +187,7 @@ async function getCachedCasesRaw(): Promise<{ cases: any[]; progress: any[] }> {
       const [allCases, allProgress] = await Promise.all([
         withTimeout(
           db.select().from(cases).orderBy(asc(cases.createdAt)),
+<<<<<<< HEAD
           DB_QUERY_TIMEOUT,
           "getCachedCasesRaw:cases",
         ),
@@ -161,11 +195,21 @@ async function getCachedCasesRaw(): Promise<{ cases: any[]; progress: any[] }> {
           db.select().from(progressUpdates),
           DB_QUERY_TIMEOUT,
           "getCachedCasesRaw:progress",
+=======
+          CACHE_FETCH_TIMEOUT,
+          "getCachedCases",
+        ),
+        withTimeout(
+          db.select().from(progressUpdates),
+          CACHE_FETCH_TIMEOUT,
+          "getCachedProgress",
+>>>>>>> a561dfd1 (Improve login reliability and speed with database query optimizations)
         ),
       ]);
       casesRawCache = { cases: allCases, progress: allProgress, ts: Date.now() };
       return { cases: allCases, progress: allProgress };
     } catch (err) {
+<<<<<<< HEAD
       console.error("[CACHE] getCachedCasesRaw failed:", (err as Error).message);
       if (staleCache) {
         console.log("[CACHE] Returning stale cases cache");
@@ -173,6 +217,15 @@ async function getCachedCasesRaw(): Promise<{ cases: any[]; progress: any[] }> {
         return { cases: staleCache.cases, progress: staleCache.progress };
       }
       return { cases: [], progress: [] };
+=======
+      console.error("[CACHE] getCachedCasesRaw failed:", err);
+      if (casesRawCache) {
+        console.log("[CACHE] Returning stale cases cache");
+        casesRawCache.ts = Date.now() - CASES_CACHE_TTL + 10_000;
+        return { cases: casesRawCache.cases, progress: casesRawCache.progress };
+      }
+      throw err;
+>>>>>>> a561dfd1 (Improve login reliability and speed with database query optimizations)
     } finally {
       casesRawFetching = null;
     }
@@ -4027,6 +4080,7 @@ export class DbStorage implements IStorage {
     username: string,
     password: string,
   ): Promise<User | null> {
+<<<<<<< HEAD
     const startTime = Date.now();
     let user: User | undefined;
     let source = "cache";
@@ -4047,6 +4101,22 @@ export class DbStorage implements IStorage {
       } catch (err2) {
         console.error("[VERIFY PASSWORD] Direct query also failed:", (err2 as Error).message);
         console.log("[VERIFY PASSWORD] All lookups failed", { username, elapsed: Date.now() - startTime });
+=======
+    let user: User | undefined;
+    try {
+      user = await this.getUserByUsername(username);
+    } catch (err) {
+      console.error("[VERIFY PASSWORD] getUserByUsername failed, trying direct query:", err);
+      try {
+        const result = await withTimeout(
+          db.select().from(users).where(eq(users.username, username)),
+          10_000,
+          "verifyPassword-directQuery",
+        );
+        user = result[0];
+      } catch (err2) {
+        console.error("[VERIFY PASSWORD] Direct query also failed:", err2);
+>>>>>>> a561dfd1 (Improve login reliability and speed with database query optimizations)
         return null;
       }
     }
