@@ -2720,7 +2720,7 @@ async function renderRecoveryAreaPage(
   caseData: any,
   estimateRowsData: any[],
 ): Promise<void> {
-  const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
+  let page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
   let y = A4_HEIGHT - MARGIN;
 
   // Title (no Excel icon)
@@ -2830,47 +2830,9 @@ async function renderRecoveryAreaPage(
     note: 60,
   };
 
-  // 구분, 공사내용, 공사분류 병합 셀 그리기 (2행 병합)
-  const mergedCells = [
-    { text: "구분", width: colWidths.gubun, x: MARGIN },
-    { text: "공사내용", width: colWidths.content, x: MARGIN + colWidths.gubun },
-    {
-      text: "공사분류",
-      width: colWidths.category,
-      x: MARGIN + colWidths.gubun + colWidths.content,
-    },
-  ];
-
-  for (const cell of mergedCells) {
-    // 배경색
-    page.drawRectangle({
-      x: cell.x,
-      y: y - totalHeaderHeight,
-      width: cell.width,
-      height: totalHeaderHeight,
-      color: rgb(0.94, 0.94, 0.94),
-    });
-    // 테두리
-    page.drawRectangle({
-      x: cell.x,
-      y: y - totalHeaderHeight,
-      width: cell.width,
-      height: totalHeaderHeight,
-      borderColor: rgb(0.3, 0.3, 0.3),
-      borderWidth: 0.5,
-    });
-    // 텍스트 (세로 중앙 정렬)
-    const textWidth = fonts.bold.widthOfTextAtSize(cell.text, 8);
-    drawText(page, {
-      x: cell.x + (cell.width - textWidth) / 2,
-      y: y - totalHeaderHeight / 2 - 3,
-      text: cell.text,
-      font: fonts.bold,
-      size: 8,
-    });
-  }
-
-  // 비고 병합 셀 그리기 (2행 병합)
+  // 헤더 그리기 헬퍼: 새 페이지에서도 같은 헤더를 다시 그릴 수 있도록 추출
+  const damageX =
+    MARGIN + colWidths.gubun + colWidths.content + colWidths.category;
   const noteX =
     MARGIN +
     colWidths.gubun +
@@ -2878,105 +2840,147 @@ async function renderRecoveryAreaPage(
     colWidths.category +
     colWidths.damage +
     colWidths.recovery;
-  page.drawRectangle({
-    x: noteX,
-    y: y - totalHeaderHeight,
-    width: colWidths.note,
-    height: totalHeaderHeight,
-    color: rgb(0.94, 0.94, 0.94),
-  });
-  page.drawRectangle({
-    x: noteX,
-    y: y - totalHeaderHeight,
-    width: colWidths.note,
-    height: totalHeaderHeight,
-    borderColor: rgb(0.3, 0.3, 0.3),
-    borderWidth: 0.5,
-  });
-  const noteTextWidth = fonts.bold.widthOfTextAtSize("비고", 8);
-  drawText(page, {
-    x: noteX + (colWidths.note - noteTextWidth) / 2,
-    y: y - totalHeaderHeight / 2 - 3,
-    text: "비고",
-    font: fonts.bold,
-    size: 8,
-  });
 
-  // 피해면적/복구면적 상단 헤더 (1행)
-  const damageX =
-    MARGIN + colWidths.gubun + colWidths.content + colWidths.category;
-  const areaHeaders = [
-    { text: "피해면적", width: colWidths.damage, x: damageX },
-    {
-      text: "복구면적",
-      width: colWidths.recovery,
-      x: damageX + colWidths.damage,
-    },
-  ];
+  const drawAreaTableHeaders = (p: PDFPage, startY: number): number => {
+    // 구분, 공사내용, 공사분류 병합 셀 (2행 병합)
+    const mergedCells = [
+      { text: "구분", width: colWidths.gubun, x: MARGIN },
+      {
+        text: "공사내용",
+        width: colWidths.content,
+        x: MARGIN + colWidths.gubun,
+      },
+      {
+        text: "공사분류",
+        width: colWidths.category,
+        x: MARGIN + colWidths.gubun + colWidths.content,
+      },
+    ];
+    for (const cell of mergedCells) {
+      p.drawRectangle({
+        x: cell.x,
+        y: startY - totalHeaderHeight,
+        width: cell.width,
+        height: totalHeaderHeight,
+        color: rgb(0.94, 0.94, 0.94),
+      });
+      p.drawRectangle({
+        x: cell.x,
+        y: startY - totalHeaderHeight,
+        width: cell.width,
+        height: totalHeaderHeight,
+        borderColor: rgb(0.3, 0.3, 0.3),
+        borderWidth: 0.5,
+      });
+      const textWidth = fonts.bold.widthOfTextAtSize(cell.text, 8);
+      drawText(p, {
+        x: cell.x + (cell.width - textWidth) / 2,
+        y: startY - totalHeaderHeight / 2 - 3,
+        text: cell.text,
+        font: fonts.bold,
+        size: 8,
+      });
+    }
 
-  for (const cell of areaHeaders) {
-    page.drawRectangle({
-      x: cell.x,
-      y: y - headerRowHeight,
-      width: cell.width,
-      height: headerRowHeight,
+    // 비고 병합 셀 (2행 병합)
+    p.drawRectangle({
+      x: noteX,
+      y: startY - totalHeaderHeight,
+      width: colWidths.note,
+      height: totalHeaderHeight,
       color: rgb(0.94, 0.94, 0.94),
     });
-    page.drawRectangle({
-      x: cell.x,
-      y: y - headerRowHeight,
-      width: cell.width,
-      height: headerRowHeight,
+    p.drawRectangle({
+      x: noteX,
+      y: startY - totalHeaderHeight,
+      width: colWidths.note,
+      height: totalHeaderHeight,
       borderColor: rgb(0.3, 0.3, 0.3),
       borderWidth: 0.5,
     });
-    const textWidth = fonts.bold.widthOfTextAtSize(cell.text, 8);
-    drawText(page, {
-      x: cell.x + (cell.width - textWidth) / 2,
-      y: y - headerRowHeight / 2 - 3,
-      text: cell.text,
+    const noteTextWidth = fonts.bold.widthOfTextAtSize("비고", 8);
+    drawText(p, {
+      x: noteX + (colWidths.note - noteTextWidth) / 2,
+      y: startY - totalHeaderHeight / 2 - 3,
+      text: "비고",
       font: fonts.bold,
       size: 8,
     });
-  }
 
-  // 피해면적/복구면적 하단 서브헤더 (2행)
-  const subHeaders = [
-    { text: "면적", width: 43, x: damageX },
-    { text: "가로", width: 43, x: damageX + 43 },
-    { text: "세로", width: 44, x: damageX + 86 },
-    { text: "면적", width: 43, x: damageX + colWidths.damage },
-    { text: "가로", width: 43, x: damageX + colWidths.damage + 43 },
-    { text: "세로", width: 44, x: damageX + colWidths.damage + 86 },
-  ];
+    // 피해면적/복구면적 상단 헤더 (1행)
+    const areaHeaders = [
+      { text: "피해면적", width: colWidths.damage, x: damageX },
+      {
+        text: "복구면적",
+        width: colWidths.recovery,
+        x: damageX + colWidths.damage,
+      },
+    ];
+    for (const cell of areaHeaders) {
+      p.drawRectangle({
+        x: cell.x,
+        y: startY - headerRowHeight,
+        width: cell.width,
+        height: headerRowHeight,
+        color: rgb(0.94, 0.94, 0.94),
+      });
+      p.drawRectangle({
+        x: cell.x,
+        y: startY - headerRowHeight,
+        width: cell.width,
+        height: headerRowHeight,
+        borderColor: rgb(0.3, 0.3, 0.3),
+        borderWidth: 0.5,
+      });
+      const textWidth = fonts.bold.widthOfTextAtSize(cell.text, 8);
+      drawText(p, {
+        x: cell.x + (cell.width - textWidth) / 2,
+        y: startY - headerRowHeight / 2 - 3,
+        text: cell.text,
+        font: fonts.bold,
+        size: 8,
+      });
+    }
 
-  for (const cell of subHeaders) {
-    page.drawRectangle({
-      x: cell.x,
-      y: y - totalHeaderHeight,
-      width: cell.width,
-      height: headerRowHeight,
-      color: rgb(0.94, 0.94, 0.94),
-    });
-    page.drawRectangle({
-      x: cell.x,
-      y: y - totalHeaderHeight,
-      width: cell.width,
-      height: headerRowHeight,
-      borderColor: rgb(0.3, 0.3, 0.3),
-      borderWidth: 0.5,
-    });
-    const textWidth = fonts.bold.widthOfTextAtSize(cell.text, 8);
-    drawText(page, {
-      x: cell.x + (cell.width - textWidth) / 2,
-      y: y - totalHeaderHeight + headerRowHeight / 2 - 3,
-      text: cell.text,
-      font: fonts.bold,
-      size: 8,
-    });
-  }
+    // 피해면적/복구면적 하단 서브헤더 (2행)
+    const subHeaders = [
+      { text: "면적", width: 43, x: damageX },
+      { text: "가로", width: 43, x: damageX + 43 },
+      { text: "세로", width: 44, x: damageX + 86 },
+      { text: "면적", width: 43, x: damageX + colWidths.damage },
+      { text: "가로", width: 43, x: damageX + colWidths.damage + 43 },
+      { text: "세로", width: 44, x: damageX + colWidths.damage + 86 },
+    ];
+    for (const cell of subHeaders) {
+      p.drawRectangle({
+        x: cell.x,
+        y: startY - totalHeaderHeight,
+        width: cell.width,
+        height: headerRowHeight,
+        color: rgb(0.94, 0.94, 0.94),
+      });
+      p.drawRectangle({
+        x: cell.x,
+        y: startY - totalHeaderHeight,
+        width: cell.width,
+        height: headerRowHeight,
+        borderColor: rgb(0.3, 0.3, 0.3),
+        borderWidth: 0.5,
+      });
+      const textWidth = fonts.bold.widthOfTextAtSize(cell.text, 8);
+      drawText(p, {
+        x: cell.x + (cell.width - textWidth) / 2,
+        y: startY - totalHeaderHeight + headerRowHeight / 2 - 3,
+        text: cell.text,
+        font: fonts.bold,
+        size: 8,
+      });
+    }
 
-  y -= totalHeaderHeight;
+    return startY - totalHeaderHeight;
+  };
+
+  y = drawAreaTableHeaders(page, y);
 
   // Group rows by category (location)
   const groupedRows: Record<string, any[]> = {};
@@ -2994,95 +2998,112 @@ async function renderRecoveryAreaPage(
   const categories = Object.keys(groupedRows);
   const dataRowHeight = 22;
   const categoryColWidth = 55;
+  // 작성일(footer) 영역을 가리지 않도록 안전 여백 확보 (footerY = MARGIN + 20)
+  const pageBreakThreshold = MARGIN + 40;
 
   if (categories.length > 0) {
     for (const category of categories) {
       const rows = groupedRows[category];
-      const groupHeight = rows.length * dataRowHeight;
-      const groupStartY = y;
-
-      // Draw merged category cell (spans all rows in this group)
-      page.drawRectangle({
-        x: MARGIN,
-        y: groupStartY - groupHeight,
-        width: categoryColWidth,
-        height: groupHeight,
-        color: rgb(1, 1, 1),
-      });
-      page.drawRectangle({
-        x: MARGIN,
-        y: groupStartY - groupHeight,
-        width: categoryColWidth,
-        height: groupHeight,
-        borderColor: rgb(0.3, 0.3, 0.3),
-        borderWidth: 0.5,
-      });
-
-      // Draw category text centered vertically in merged cell
       const normalizedCategory = normalizeText(category);
       const categoryTextWidth = measureTextWidthAdjusted(
         normalizedCategory,
         fonts.regular,
         8,
       );
-      // i��자별로 렌더링하여 특수문자 간격 조정
-      drawTextCharByChar(
-        page,
-        normalizedCategory,
-        MARGIN + (categoryColWidth - categoryTextWidth) / 2,
-        groupStartY - groupHeight / 2 - 3,
-        fonts.regular,
-        8,
-        { r: 0, g: 0, b: 0 },
-      );
 
-      // Draw individual rows (excluding category column)
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        const damageW = row.damageWidth
-          ? Number(row.damageWidth).toFixed(1)
-          : "0.0";
-        const damageH = row.damageHeight
-          ? Number(row.damageHeight).toFixed(1)
-          : "0.0";
-        const damageAreaM2 = row.damageArea
-          ? Number(row.damageArea).toFixed(1)
-          : "0.0";
+      let i = 0;
+      while (i < rows.length) {
+        // 현재 페이지 잔여 공간으로 그릴 수 있는 행 수 계산
+        let availableHeight = y - pageBreakThreshold;
+        let rowsThatFit = Math.floor(availableHeight / dataRowHeight);
 
-        const repairW = row.repairWidth
-          ? Number(row.repairWidth).toFixed(1)
-          : "0.0";
-        const repairH = row.repairHeight
-          ? Number(row.repairHeight).toFixed(1)
-          : "0.0";
-        const repairAreaM2 = row.repairArea
-          ? Number(row.repairArea).toFixed(1)
-          : "0.0";
+        // 한 행도 못 그리면 새 페이지로 넘어감
+        if (rowsThatFit < 1) {
+          page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
+          y = A4_HEIGHT - MARGIN;
+          y = drawAreaTableHeaders(page, y);
+          availableHeight = y - pageBreakThreshold;
+          rowsThatFit = Math.max(1, Math.floor(availableHeight / dataRowHeight));
+        }
 
-        // Row without category column (starts after category column)
-        const dataRow: TableCell[] = [
-          { text: row.location || "-", width: 70, align: "center" },
-          { text: row.workName || "-", width: 70, align: "center" },
-          { text: damageAreaM2, width: 43, align: "center" },
-          { text: damageW, width: 43, align: "center" },
-          { text: damageH, width: 44, align: "center" },
-          { text: repairAreaM2, width: 43, align: "center" },
-          { text: repairW, width: 43, align: "center" },
-          { text: repairH, width: 44, align: "center" },
-          { text: row.note || "-", width: 60, align: "center" },
-        ];
+        const rowsToDraw = Math.min(rowsThatFit, rows.length - i);
+        const groupHeight = rowsToDraw * dataRowHeight;
+        const groupStartY = y;
 
-        drawTable(page, {
-          x: MARGIN + categoryColWidth,
-          y: groupStartY - i * dataRowHeight,
-          rows: [dataRow],
-          fonts,
-          fontSize: 8,
-          rowHeight: dataRowHeight,
+        // 이번 페이지에 그릴 행 수만큼만 병합 셀 그리기
+        page.drawRectangle({
+          x: MARGIN,
+          y: groupStartY - groupHeight,
+          width: categoryColWidth,
+          height: groupHeight,
+          color: rgb(1, 1, 1),
         });
-      }
+        page.drawRectangle({
+          x: MARGIN,
+          y: groupStartY - groupHeight,
+          width: categoryColWidth,
+          height: groupHeight,
+          borderColor: rgb(0.3, 0.3, 0.3),
+          borderWidth: 0.5,
+        });
+        drawTextCharByChar(
+          page,
+          normalizedCategory,
+          MARGIN + (categoryColWidth - categoryTextWidth) / 2,
+          groupStartY - groupHeight / 2 - 3,
+          fonts.regular,
+          8,
+          { r: 0, g: 0, b: 0 },
+        );
 
-      y = groupStartY - groupHeight;
+        // 행 그리기
+        for (let j = 0; j < rowsToDraw; j++) {
+          const row = rows[i + j];
+          const damageW = row.damageWidth
+            ? Number(row.damageWidth).toFixed(1)
+            : "0.0";
+          const damageH = row.damageHeight
+            ? Number(row.damageHeight).toFixed(1)
+            : "0.0";
+          const damageAreaM2 = row.damageArea
+            ? Number(row.damageArea).toFixed(1)
+            : "0.0";
+
+          const repairW = row.repairWidth
+            ? Number(row.repairWidth).toFixed(1)
+            : "0.0";
+          const repairH = row.repairHeight
+            ? Number(row.repairHeight).toFixed(1)
+            : "0.0";
+          const repairAreaM2 = row.repairArea
+            ? Number(row.repairArea).toFixed(1)
+            : "0.0";
+
+          const dataRow: TableCell[] = [
+            { text: row.location || "-", width: 70, align: "center" },
+            { text: row.workName || "-", width: 70, align: "center" },
+            { text: damageAreaM2, width: 43, align: "center" },
+            { text: damageW, width: 43, align: "center" },
+            { text: damageH, width: 44, align: "center" },
+            { text: repairAreaM2, width: 43, align: "center" },
+            { text: repairW, width: 43, align: "center" },
+            { text: repairH, width: 44, align: "center" },
+            { text: row.note || "-", width: 60, align: "center" },
+          ];
+
+          drawTable(page, {
+            x: MARGIN + categoryColWidth,
+            y: groupStartY - j * dataRowHeight,
+            rows: [dataRow],
+            fonts,
+            fontSize: 8,
+            rowHeight: dataRowHeight,
+          });
+        }
+
+        y = groupStartY - groupHeight;
+        i += rowsToDraw;
+      }
     }
   } else {
     const emptyRow: TableCell[] = [
