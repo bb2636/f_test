@@ -785,7 +785,7 @@ export default function FieldReport() {
   const lastSyncedAmountRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (isReadOnly) return;
+    if (isPartnerReadOnly) return;
     const cid = reportData?.case?.id;
     if (!cid) return;
     const computedTotal = calculateTotals.total;
