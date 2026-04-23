@@ -104,30 +104,65 @@ const extractRegionFromAddress = (address: string): { province: string; city: st
   return { province: "", city: "" };
 };
 
+// 협력사 지역의 시/도 명칭을 단축형으로 정규화
+// 예: "서울특별시" → "서울", "세종특별자치시" → "세종",
+//     "전북특별자치도" → "전북", "전라북도" → "전북"
+const normalizeProvinceName = (raw: string): string => {
+  if (!raw) return "";
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+
+  // 1) 이미 단축형이면 그대로
+  if (PROVINCE_SHORTS.includes(trimmed) || SPECIAL_CITIES.includes(trimmed)) {
+    return trimmed;
+  }
+  // 2) PROVINCE_MAP에 직접 매칭(예: "전라북도", "전북특별자치도", "제주특별자치도" 등)
+  if (PROVINCE_MAP[trimmed]) return PROVINCE_MAP[trimmed];
+  // 3) 광역시/특별시/특별자치시 접미사 처리
+  for (const sc of SPECIAL_CITIES) {
+    if (
+      trimmed === `${sc}특별시` ||
+      trimmed === `${sc}광역시` ||
+      trimmed === `${sc}특별자치시`
+    ) {
+      return sc;
+    }
+  }
+  // 4) 흔한 접미사 제거 후 재시도
+  const stripped = trimmed.replace(
+    /(특별자치도|특별자치시|특별시|광역시|도)$/g,
+    "",
+  );
+  if (stripped && stripped !== trimmed) {
+    if (PROVINCE_SHORTS.includes(stripped) || SPECIAL_CITIES.includes(stripped)) {
+      return stripped;
+    }
+    if (PROVINCE_MAP[stripped]) return PROVINCE_MAP[stripped];
+  }
+  return trimmed;
+};
+
 const parsePartnerRegion = (partnerRegion: string): { province: string; district: string } => {
   const trimmed = partnerRegion.trim();
   if (trimmed.includes("/")) {
     const slashIdx = trimmed.indexOf("/");
-    let prov = trimmed.substring(0, slashIdx).trim();
-    prov = prov.replace(/도$/, "").replace(/시$/, "");
-    if (PROVINCE_MAP[prov]) prov = PROVINCE_MAP[prov];
-    else {
-      for (const [full, short] of Object.entries(PROVINCE_MAP)) {
-        if (prov === short || prov === full) { prov = short; break; }
-      }
-    }
+    const provRaw = trimmed.substring(0, slashIdx).trim();
+    const prov = normalizeProvinceName(provRaw);
     const dist = trimmed.substring(slashIdx + 1).trim();
     return { province: prov, district: dist };
   }
   const parts = trimmed.split(/\s+/);
   if (parts.length >= 2) {
-    let prov = parts[0];
-    if (PROVINCE_MAP[prov]) prov = PROVINCE_MAP[prov];
+    const prov = normalizeProvinceName(parts[0]);
     return { province: prov, district: parts.slice(1).join(" ") };
   }
   const singleVal = parts[0] || "";
-  if (PROVINCE_SHORTS.includes(singleVal) || SPECIAL_CITIES.includes(singleVal)) {
-    return { province: singleVal, district: "" };
+  const normalized = normalizeProvinceName(singleVal);
+  if (
+    normalized &&
+    (PROVINCE_SHORTS.includes(normalized) || SPECIAL_CITIES.includes(normalized))
+  ) {
+    return { province: normalized, district: "" };
   }
   return { province: "", district: singleVal };
 };
