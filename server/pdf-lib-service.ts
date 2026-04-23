@@ -16,6 +16,12 @@ import { eq, and, inArray, ilike, sql } from "drizzle-orm";
 import { USERS_SAFE_COLUMNS } from "./user-columns";
 import { ObjectStorageService } from "./replit_integrations/object_storage/objectStorage";
 import { loadPretendardFontPair } from "./font-loader";
+import {
+  mergeDemolitionRows,
+  getMergedRowAmount,
+  type MergedLaborCostRow,
+} from "@shared/labor-merge";
+import { DEFAULT_LABOR_RATE_TIERS_FALLBACK } from "@shared/labor-rate-tiers-utils";
 
 const objectStorage = new ObjectStorageService();
 
@@ -3282,6 +3288,22 @@ async function renderEstimatePage(
     } catch {}
   }
 
+  // 노무비 머지 처리 (화면 견적서와 동일하게 같은 공종/공사명/노임항목/단가 행을 통합)
+  // 라운딩 시점을 화면과 일치시켜 합계 차이를 제거한다.
+  let laborRateTiers: any[] = DEFAULT_LABOR_RATE_TIERS_FALLBACK;
+  try {
+    const { storage } = await import("./storage");
+    const dbTiers = await storage.getLaborRateTiers();
+    if (dbTiers && dbTiers.length > 0) {
+      laborRateTiers = dbTiers;
+    }
+  } catch (err) {
+    console.warn("[pdf-lib] laborRateTiers 조회 실패, fallback 사용:", err);
+  }
+  if (laborCostItems.length > 0) {
+    laborCostItems = mergeDemolitionRows(laborCostItems, laborRateTiers as any);
+  }
+
   // Golden Master 노무비 컬럼: 공종 | 공사명 | 노임항목 | 복구면적 | 적용단가 | 수량(인) | 합계 | 경비 | 비고
   const laborHeader: TableCell[] = [
     { text: "공종", width: 55, isHeader: true, align: "center" },
@@ -3315,11 +3337,15 @@ async function renderEstimatePage(
       const unitPrice = isIlwidaega
         ? (Number(row.pricePerSqm) || 0)
         : (Number(row.standardPrice) || Number(row.pricePerSqm) || Number(row.unitPrice) || 0);
-      const amount = Number(row.amount) || 0;
+      // 머지된 행은 mergedAmount/mergedQuantity 우선 사용 (화면 견적서와 합계 일치 보장)
+      const amount = Number(row.mergedAmount ?? row.amount) || 0;
       const rawStandardPrice = Number(row.standardPrice) || 0;
-      const quantity = isIlwidaega
-        ? (rawStandardPrice > 0 ? amount / rawStandardPrice : 0)
-        : (unitPrice > 0 ? amount / unitPrice : 0);
+      const mergedQty = row.mergedQuantity;
+      const quantity = mergedQty != null
+        ? Number(mergedQty)
+        : (isIlwidaega
+          ? (rawStandardPrice > 0 ? amount / rawStandardPrice : 0)
+          : (unitPrice > 0 ? amount / unitPrice : 0));
       // includeInEstimate=false → 경비 항목 (화면에 표시)
       const expense = !row.includeInEstimate ? amount : 0;
       laborTotal += amount;
