@@ -4,6 +4,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 import { compressPdfForEmail } from './pdf-compression';
+import { compressJpegBufferForPdf } from './image-compress';
 import { ObjectStorageService } from './replit_integrations/object_storage';
 import { loadPretendardRegular } from './font-loader';
 
@@ -405,7 +406,8 @@ async function createEvidencePdfForTab(
       }
     } else {
       try {
-        const embeddedImage = await currentPdf.embedJpg(img.buffer);
+        const compressedBuffer = await compressJpegBufferForPdf(img.buffer);
+        const embeddedImage = await currentPdf.embedJpg(compressedBuffer);
         const imgDims = embeddedImage.scale(1);
         
         const scaleX = imageAreaWidth / imgDims.width;
@@ -555,7 +557,8 @@ async function createEvidencePdfForTab(
         
         if (!img.error && img.buffer.length > 0) {
           try {
-            const embeddedImage = await currentPdf.embedJpg(img.buffer);
+            const compressedBuffer = await compressJpegBufferForPdf(img.buffer);
+            const embeddedImage = await currentPdf.embedJpg(compressedBuffer);
             const imgDims = embeddedImage.scale(1);
             const scaleX = imageAreaWidth / imgDims.width;
             const scaleY = imageAreaHeight / imgDims.height;

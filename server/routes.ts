@@ -63,6 +63,7 @@ import {
   logAttachmentSummary,
 } from "./evidence-pdf-service";
 import { compressPdf, isPdfFile, compressPdfForEmail } from "./pdf-compression";
+import { compressJpegBufferForPdf } from "./image-compress";
 import {
   renderInvoiceV1Template,
   renderInvoiceV2Template,
@@ -10119,7 +10120,8 @@ FLOXN 드림`;
                   );
 
                   try {
-                    const embeddedImage = await mergedPdf.embedJpg(img.buffer);
+                    const compressedBuffer = await compressJpegBufferForPdf(img.buffer);
+                    const embeddedImage = await mergedPdf.embedJpg(compressedBuffer);
                     const dims = embeddedImage.scale(1);
                     let scale = Math.min(
                       imgWidth / dims.width,
@@ -10164,8 +10166,11 @@ FLOXN 드림`;
                 const yPos = MARGIN;
 
                 try {
-                  const embeddedImage = await mergedPdf.embedJpg(
+                  const compressedBuffer = await compressJpegBufferForPdf(
                     currentImg.buffer,
+                  );
+                  const embeddedImage = await mergedPdf.embedJpg(
+                    compressedBuffer,
                   );
                   const dims = embeddedImage.scale(1);
                   let scale = Math.min(
@@ -11142,8 +11147,11 @@ FLOXN 드림`;
                 const yPos = MARGIN;
 
                 try {
-                  const embeddedImage = await mergedPdf.embedJpg(
+                  const compressedBuffer = await compressJpegBufferForPdf(
                     currentImg.buffer,
+                  );
+                  const embeddedImage = await mergedPdf.embedJpg(
+                    compressedBuffer,
                   );
                   const dims = embeddedImage.scale(1);
                   let scale = Math.min(
@@ -11570,7 +11578,8 @@ FLOXN 드림`;
 
             let embeddedImage;
             if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
-              embeddedImage = await mainPdf.embedJpg(imageBytes);
+              const compressedBuffer = await compressJpegBufferForPdf(imageBytes);
+              embeddedImage = await mainPdf.embedJpg(compressedBuffer);
             } else if (mimeType === "image/png") {
               embeddedImage = await mainPdf.embedPng(imageBytes);
             } else {
