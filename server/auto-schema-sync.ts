@@ -29,6 +29,7 @@ async function ensureColumns(label: string, dbUrl: string | undefined) {
         updated_at TIMESTAMP DEFAULT NOW() NOT NULL,
         UNIQUE(location, category, work_name)
       )`,
+      `ALTER TABLE cases ADD COLUMN IF NOT EXISTS created_at_timestamp text`,
     ];
 
     let applied = 0;
