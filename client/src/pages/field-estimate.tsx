@@ -39,6 +39,12 @@ import { LaborCostSection, type LaborCatalogItem, type LaborCostRow } from "@/co
 import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount, isFixedLaborWorkName, isMergeableLaborRow } from "@/lib/labor-merge";
 import { MaterialCostSection, type MaterialCatalogItem, type MaterialRow } from "@/components/material-cost-section";
 
+// 복구면적 → 노무비/자재비 자동 동기화 적용 시작일 (KST, YYYY-MM-DD)
+// 이 날짜(포함) 이후 생성된 신규 접수건에서만 자동 동기화가 동작한다.
+// 그 이전에 생성된 모든 기존 접수건은 자동 동기화가 트리거되지 않는다.
+// (사용자가 노무비/자재비 탭의 "복구면적 가져오기" 수동 버튼을 직접 누르는 경우는 별개)
+const AUTO_SYNC_CUTOFF_KST_DATE = "2026-04-25";
+
 interface AreaCalculationRow {
   id: string;
   category: string; // 장소: 주방, 화장실, 방안, 거실상
@@ -2155,6 +2161,20 @@ export default function FieldEstimate() {
     [rows]
   );
 
+  // 복구면적 → 노무비/자재비 자동 동기화 적용 대상 케이스인지 판정
+  // - cutoff 날짜(KST) 이후 생성된 신규 접수건만 자동 동기화 대상
+  // - 그 이전에 생성된 모든 기존 접수건은 자동 동기화가 트리거되지 않도록 false
+  // - 케이스 데이터 미로드 / createdAt 누락 / 파싱 불가 → 안전하게 false
+  // - cases.createdAt은 "YYYY-MM-DD" 형식 문자열(getKSTDate 결과). 일부 레거시 데이터가 ISO datetime 형식일 수 있어 앞 10자리로 비교
+  // - "복구면적 가져오기" 수동 버튼은 이 가드를 적용하지 않음(사용자 의도적 액션)
+  const isAutoSyncEligibleCase = useMemo(() => {
+    const createdAtRaw = (estimateCase as any)?.createdAt;
+    if (!createdAtRaw || typeof createdAtRaw !== "string") return false;
+    const datePart = createdAtRaw.slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return false;
+    return datePart >= AUTO_SYNC_CUTOFF_KST_DATE;
+  }, [(estimateCase as any)?.createdAt]);
+
   // 복구면적 변경 → 자재비 자동 동기화 useEffect
   useEffect(() => {
     // Hydration 완료 전에는 동기화 건너뛰기
@@ -2175,6 +2195,15 @@ export default function FieldEstimate() {
       console.log("[SYNC SKIP] Loss prevention case");
       return;
     }
+
+    // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
+    if (!isAutoSyncEligibleCase) {
+      console.log("[SYNC SKIP] Legacy case (created before auto-sync cutoff)", {
+        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        caseCreatedAt: (estimateCase as any)?.createdAt,
+      });
+      return;
+    }
     
     // 협력업체(readOnly)도 동일 화면값을 보도록 가드 제거 (저장은 별도 차단)
     
@@ -2192,16 +2221,24 @@ export default function FieldEstimate() {
     syncMaterialFromRecoveryArea();
     // 싱크 결과를 DB에 자동 저장 → PDF/저장본이 항상 화면과 일치하도록 보정
     triggerAutoSaveAfterSync("material:recoverySignature");
-  }, [recoverySignature, isLossPreventionCase, isReadOnly]);
+  }, [recoverySignature, isLossPreventionCase, isReadOnly, isAutoSyncEligibleCase]);
 
   useEffect(() => {
     if (selectedCategory !== "자재비") return;
     if (!isHydratedRef.current) return;
     if (isLossPreventionCase) return;
+    // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
+    if (!isAutoSyncEligibleCase) {
+      console.log("[자동연동 SKIP] 자재비 탭 진입: 기존 케이스(cutoff 이전 생성)", {
+        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        caseCreatedAt: (estimateCase as any)?.createdAt,
+      });
+      return;
+    }
     syncMaterialFromRecoveryArea();
     // 자재비 탭 진입 시 싱크 결과를 DB에 자동 저장
     triggerAutoSaveAfterSync("material:tabEnter");
-  }, [selectedCategory]);
+  }, [selectedCategory, isAutoSyncEligibleCase]);
 
   // 노무비 탭 진입 시 복구면적 자동 동기화 (협력업체도 동일한 화면값을 보도록 readOnly 가드 제거)
   useEffect(() => {
@@ -2210,6 +2247,14 @@ export default function FieldEstimate() {
     if (rows.length === 0) return;
     // 카탈로그가 아직 로드되지 않았으면 건너뛰기 (다음 변화 시 재실행)
     if (mergedIlwidaegaCatalog.length === 0) return;
+    // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
+    if (!isAutoSyncEligibleCase) {
+      console.log("[자동연동 SKIP] 노무비 탭 진입: 기존 케이스(cutoff 이전 생성)", {
+        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        caseCreatedAt: (estimateCase as any)?.createdAt,
+      });
+      return;
+    }
     console.log("[자동연동] 노무비 탭 진입 → syncLaborFromRecoveryArea 호출", {
       isReadOnly,
       catalogLen: mergedIlwidaegaCatalog.length,
@@ -2218,7 +2263,7 @@ export default function FieldEstimate() {
     syncLaborFromRecoveryArea();
     // 노무비 싱크 결과를 DB에 자동 저장 → 보고서/PDF가 항상 화면과 일치
     triggerAutoSaveAfterSync("labor:tabEnter");
-  }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length]);
+  }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length, isAutoSyncEligibleCase]);
 
   const materialCatalogLoadedRef = useRef(false);
   useEffect(() => {
@@ -2415,6 +2460,15 @@ export default function FieldEstimate() {
     }
 
     if (!mergedIlwidaegaCatalog || mergedIlwidaegaCatalog.length === 0) {
+      return;
+    }
+
+    // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
+    if (!isAutoSyncEligibleCase) {
+      console.log('[자동동기화 SKIP] rows→노무비 자동 연동: 기존 케이스(cutoff 이전 생성)', {
+        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        caseCreatedAt: (estimateCase as any)?.createdAt,
+      });
       return;
     }
 
@@ -3071,7 +3125,7 @@ export default function FieldEstimate() {
         return laborRow;
       });
     });
-  }, [rows, mergedIlwidaegaCatalog, laborRateTiers]); // rows(복구면적 산출표), 일위대가 카탈로그, 노임단가 비율 변경 시 실행
+  }, [rows, mergedIlwidaegaCatalog, laborRateTiers, isAutoSyncEligibleCase]); // rows(복구면적 산출표), 일위대가 카탈로그, 노임단가 비율 변경 시 실행 + cutoff 적용 대상 변화 감지
 
   // ========== 철거공사 Reconcile useEffect ==========
   // 복구면적 산출표(rows)의 공사명을 기반으로 철거공사 노무비를 자동 생성/삭제
@@ -3101,6 +3155,16 @@ export default function FieldEstimate() {
     
     if (syncGuardRef.current) {
       console.log('[철거공사 Reconcile] syncGuard 활성 — 건너뛰기');
+      demolitionPendingRef.current = false;
+      return;
+    }
+
+    // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
+    if (!isAutoSyncEligibleCase) {
+      console.log('[철거공사 Reconcile SKIP] 기존 케이스(cutoff 이전 생성)', {
+        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        caseCreatedAt: (estimateCase as any)?.createdAt,
+      });
       demolitionPendingRef.current = false;
       return;
     }
@@ -3407,7 +3471,7 @@ export default function FieldEstimate() {
         return [...updatedRows, ...newDemolitionRows];
       });
     });
-  }, [rows, laborCostRows, mergedIlwidaegaCatalog, deletedLinkedLaborKeys, exclusionsLoaded, laborRateTiers]); // laborCostRows, 노임단가 비율, exclusionsLoaded 포함
+  }, [rows, laborCostRows, mergedIlwidaegaCatalog, deletedLinkedLaborKeys, exclusionsLoaded, laborRateTiers, isAutoSyncEligibleCase]); // laborCostRows, 노임단가 비율, exclusionsLoaded 포함 + cutoff 적용 대상 변화 감지
 
   // 최신 견적 가져오기
   const { data: latestEstimate, isLoading: isLoadingEstimate } = useQuery<{ estimate: any; rows: any[] }>({
