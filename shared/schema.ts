@@ -341,6 +341,9 @@ export const cases = pgTable("cases", {
   assignedTo: varchar("assigned_to").references(() => users.id),
   createdBy: varchar("created_by").notNull().references(() => users.id),
   createdAt: text("created_at").notNull(),
+  // 시각 정밀도가 필요한 자동 동기화 cutoff용 (ISO 8601 KST, 예: "2026-04-24T13:00:00+09:00")
+  // 기존 케이스는 NULL이며, 신규 케이스 생성 시점에만 채워짐. cutoff 비교는 NULL이면 legacy 처리.
+  createdAtTimestamp: text("created_at_timestamp"),
   updatedAt: text("updated_at").notNull(),
 });
 

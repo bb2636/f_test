@@ -39,11 +39,14 @@ import { LaborCostSection, type LaborCatalogItem, type LaborCostRow } from "@/co
 import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount, isFixedLaborWorkName, isMergeableLaborRow } from "@/lib/labor-merge";
 import { MaterialCostSection, type MaterialCatalogItem, type MaterialRow } from "@/components/material-cost-section";
 
-// 복구면적 → 노무비/자재비 자동 동기화 적용 시작일 (KST, YYYY-MM-DD)
-// 이 날짜(포함) 이후 생성된 신규 접수건에서만 자동 동기화가 동작한다.
+// 복구면적 → 노무비/자재비 자동 동기화 적용 시작 시각 (KST, ISO 8601)
+// 이 시각(포함) 이후 생성된 신규 접수건에서만 자동 동기화가 동작한다.
 // 그 이전에 생성된 모든 기존 접수건은 자동 동기화가 트리거되지 않는다.
+// 비교는 케이스의 createdAtTimestamp(시각 포함) 필드와 문자열 사전 순서 비교로 수행한다.
+// (모든 시각 문자열이 동일한 +09:00 오프셋을 사용하므로 사전 비교 = 시간 비교가 성립)
+// 기존 케이스는 createdAtTimestamp가 NULL이므로 자동으로 legacy 처리된다.
 // (사용자가 노무비/자재비 탭의 "복구면적 가져오기" 수동 버튼을 직접 누르는 경우는 별개)
-const AUTO_SYNC_CUTOFF_KST_DATE = "2026-04-25";
+const AUTO_SYNC_CUTOFF_KST = "2026-04-24T13:00:00+09:00";
 
 interface AreaCalculationRow {
   id: string;
@@ -2162,18 +2165,20 @@ export default function FieldEstimate() {
   );
 
   // 복구면적 → 노무비/자재비 자동 동기화 적용 대상 케이스인지 판정
-  // - cutoff 날짜(KST) 이후 생성된 신규 접수건만 자동 동기화 대상
+  // - cutoff 시각(KST) 이후 생성된 신규 접수건만 자동 동기화 대상
   // - 그 이전에 생성된 모든 기존 접수건은 자동 동기화가 트리거되지 않도록 false
-  // - 케이스 데이터 미로드 / createdAt 누락 / 파싱 불가 → 안전하게 false
-  // - cases.createdAt은 "YYYY-MM-DD" 형식 문자열(getKSTDate 결과). 일부 레거시 데이터가 ISO datetime 형식일 수 있어 앞 10자리로 비교
+  // - 케이스 데이터 미로드 / createdAtTimestamp 누락(기존 케이스) → 안전하게 false → legacy 처리
+  // - cases.createdAtTimestamp는 "YYYY-MM-DDTHH:mm:ss+09:00" ISO 8601 문자열 (getKSTTimestamp 결과)
+  //   동일 +09:00 오프셋이므로 사전 비교 = 시간 비교
   // - "복구면적 가져오기" 수동 버튼은 이 가드를 적용하지 않음(사용자 의도적 액션)
   const isAutoSyncEligibleCase = useMemo(() => {
-    const createdAtRaw = (estimateCase as any)?.createdAt;
-    if (!createdAtRaw || typeof createdAtRaw !== "string") return false;
-    const datePart = createdAtRaw.slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return false;
-    return datePart >= AUTO_SYNC_CUTOFF_KST_DATE;
-  }, [(estimateCase as any)?.createdAt]);
+    const createdAtTs = (estimateCase as any)?.createdAtTimestamp;
+    if (!createdAtTs || typeof createdAtTs !== "string") return false;
+    // 엄격한 포맷 검증: "YYYY-MM-DDTHH:mm:ss+09:00" (KST). 다른 시간대 오프셋이나 잘못된 포맷이면 false.
+    // 동일 +09:00 오프셋끼리만 사전 비교가 시간 비교로 성립하기 때문.
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$/.test(createdAtTs)) return false;
+    return createdAtTs >= AUTO_SYNC_CUTOFF_KST;
+  }, [(estimateCase as any)?.createdAtTimestamp]);
 
   // 복구면적 변경 → 자재비 자동 동기화 useEffect
   useEffect(() => {
@@ -2199,7 +2204,7 @@ export default function FieldEstimate() {
     // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
     if (!isAutoSyncEligibleCase) {
       console.log("[SYNC SKIP] Legacy case (created before auto-sync cutoff)", {
-        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        cutoff: AUTO_SYNC_CUTOFF_KST,
         caseCreatedAt: (estimateCase as any)?.createdAt,
       });
       return;
@@ -2230,7 +2235,7 @@ export default function FieldEstimate() {
     // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
     if (!isAutoSyncEligibleCase) {
       console.log("[자동연동 SKIP] 자재비 탭 진입: 기존 케이스(cutoff 이전 생성)", {
-        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        cutoff: AUTO_SYNC_CUTOFF_KST,
         caseCreatedAt: (estimateCase as any)?.createdAt,
       });
       return;
@@ -2250,7 +2255,7 @@ export default function FieldEstimate() {
     // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
     if (!isAutoSyncEligibleCase) {
       console.log("[자동연동 SKIP] 노무비 탭 진입: 기존 케이스(cutoff 이전 생성)", {
-        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        cutoff: AUTO_SYNC_CUTOFF_KST,
         caseCreatedAt: (estimateCase as any)?.createdAt,
       });
       return;
@@ -2466,7 +2471,7 @@ export default function FieldEstimate() {
     // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
     if (!isAutoSyncEligibleCase) {
       console.log('[자동동기화 SKIP] rows→노무비 자동 연동: 기존 케이스(cutoff 이전 생성)', {
-        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        cutoff: AUTO_SYNC_CUTOFF_KST,
         caseCreatedAt: (estimateCase as any)?.createdAt,
       });
       return;
@@ -3162,7 +3167,7 @@ export default function FieldEstimate() {
     // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
     if (!isAutoSyncEligibleCase) {
       console.log('[철거공사 Reconcile SKIP] 기존 케이스(cutoff 이전 생성)', {
-        cutoff: AUTO_SYNC_CUTOFF_KST_DATE,
+        cutoff: AUTO_SYNC_CUTOFF_KST,
         caseCreatedAt: (estimateCase as any)?.createdAt,
       });
       demolitionPendingRef.current = false;

@@ -1755,6 +1755,7 @@ export class MemStorage implements IStorage {
         managerId: caseData.managerId || null,
         createdBy: caseData.createdBy,
         createdAt: currentDate,
+        createdAtTimestamp: getKSTTimestamp(),
         updatedAt: currentDate,
       })
       .returning();
@@ -4422,6 +4423,7 @@ export class DbStorage implements IStorage {
       managerId: caseData.managerId || null,
       createdBy: caseData.createdBy,
       createdAt: currentDate,
+      createdAtTimestamp: getKSTTimestamp(),
       updatedAt: getKSTTimestamp(),
     };
 
@@ -5690,6 +5692,22 @@ export class DbStorage implements IStorage {
         vatIncluded, // VAT 포함/별도 옵션 저장
       };
 
+      // [createdAt 보존] version > 1 일 때는 v1의 createdAt을 가져와 그대로 사용한다.
+      // 견적은 저장할 때마다 새 version 행이 INSERT 되므로, 기본값(defaultNow)으로 두면
+      // 모든 행의 createdAt이 그 행의 INSERT 시각이 되어 "최초 생성 시각"을 추적할 수 없게 된다.
+      // 정책: createdAt = 최초 v1의 생성 시각 (불변), updatedAt = 이번 저장 시각 (DB defaultNow)
+      let originalCreatedAt: Date | null = null;
+      if (nextVersion > 1) {
+        const firstVersionRows = await tx
+          .select({ createdAt: estimates.createdAt })
+          .from(estimates)
+          .where(and(eq(estimates.caseId, caseId), eq(estimates.version, 1)))
+          .limit(1);
+        if (firstVersionRows.length > 0) {
+          originalCreatedAt = firstVersionRows[0].createdAt;
+        }
+      }
+
       const [newEstimate] = await tx
         .insert(estimates)
         .values({
@@ -5699,6 +5717,8 @@ export class DbStorage implements IStorage {
           createdBy: userId,
           laborCostData: Array.isArray(laborCostData) ? laborCostData : null,
           materialCostData: enrichedMaterialCostData,
+          // version > 1 이면 v1의 createdAt 그대로 사용. v1이거나 조회 실패 시 DB defaultNow 사용.
+          ...(originalCreatedAt ? { createdAt: originalCreatedAt } : {}),
         })
         .returning();
 
