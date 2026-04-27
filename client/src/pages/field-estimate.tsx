@@ -3328,14 +3328,53 @@ export default function FieldEstimate() {
     });
     
     // 4. 누락된 항목 찾기 (수동 생성 행 보호: 같은 sourceRowId+matchedWorkName+detailItem은 스킵)
+    //    + 기존 자동 생성 행의 면적/가격 갱신 대상(stale) 감지
+    type StaleDemolitionUpdate = {
+      rowId: string;
+      D: number; E: number; C: number;
+      amount: number; ppsqm: number; quantity: number;
+    };
     const missingEntries: RequiredDemolitionKey[] = [];
+    const staleEntries: StaleDemolitionUpdate[] = [];
     requiredDemolitionKeys.forEach(entry => {
       // 수동 생성 행이 이미 있으면 스킵 (보호)
       if (manualDemolitionKeys.has(entry.key)) {
         return;
       }
-      // 자동 생성 행도 이미 있으면 스킵
-      if (existingDemolitionMap.has(entry.key)) {
+      // 자동 생성 행이 이미 있으면 면적/가격 변경 여부 확인 (수동 변경분은 보존)
+      const existing = existingDemolitionMap.get(entry.key);
+      if (existing) {
+        if (!existing.isLinkedFromRecovery) return; // 수동 행 보호
+        const currentRow = laborCostRows.find(r => r.id === existing.id);
+        if (!currentRow) return;
+
+        const D = entry.catalogItem.기준작업량 || 0;
+        const E = entry.catalogItem.노임단가 || 0;
+        const C = entry.totalRepairArea;
+        const fixedIlwidaega = Number(entry.catalogItem.일위대가) || 0;
+        const isFixed = isFixedIlwidaegaWorkName(entry.matchedWorkName) && fixedIlwidaega > 0 && E > 0;
+
+        let amt = 0, ppsqm = 0, qty = 1;
+        if (isFixed) {
+          amt = fixedIlwidaega;
+          ppsqm = E;
+          qty = Math.round((fixedIlwidaega / E) * 10) / 10;
+        } else if (D > 0 && E > 0 && C > 0) {
+          amt = calculateIWithTiers(C, D, E, laborRateTiers);
+          ppsqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+          qty = calculateQuantityWithTiers(C, D, E, laborRateTiers);
+        }
+
+        const areaDiff = Math.abs((currentRow.damageArea || 0) - C) > 0.01;
+        const amtDiff = Math.abs((currentRow.amount || 0) - amt) > 0.5;
+        const ppsqmDiff = Math.abs((currentRow.pricePerSqm || 0) - ppsqm) > 0.5;
+        const qtyDiff = Math.abs((currentRow.quantity || 0) - qty) > 0.01;
+        const stdPriceDiff = (currentRow.standardPrice || 0) !== E;
+        const stdQtyDiff = (currentRow.standardWorkQuantity || 0) !== D;
+
+        if (areaDiff || amtDiff || ppsqmDiff || qtyDiff || stdPriceDiff || stdQtyDiff) {
+          staleEntries.push({ rowId: existing.id, D, E, C, amount: amt, ppsqm, quantity: qty });
+        }
         return;
       }
       // 수동 삭제된 철거공사 행은 재생성하지 않음 (sourceRowId 기반 체크)
@@ -3388,11 +3427,12 @@ export default function FieldEstimate() {
       }
     });
     
-    // 무한 루프 방지: 현재 상태 스냅샷 키 생성
+    // 무한 루프 방지: 현재 상태 스냅샷 키 생성 (stale 정보 포함하여 가격/면적 변경도 감지)
     const stateKey = [
       requiredDemolitionKeys.map(e => e.key).sort().join(','),
       missingEntries.map(e => e.key).sort().join(','),
-      orphanedIds.sort().join(',')
+      orphanedIds.sort().join(','),
+      staleEntries.map(s => `${s.rowId}:${s.amount}:${s.C}:${s.E}:${s.D}`).sort().join(',')
     ].join('|');
     
     // 변경이 없거나 이미 처리된 상태면 조기 종료
@@ -3402,7 +3442,7 @@ export default function FieldEstimate() {
     }
     
     // 실제 변경이 없으면 ref만 업데이트하고 종료
-    if (missingEntries.length === 0 && orphanedIds.length === 0) {
+    if (missingEntries.length === 0 && orphanedIds.length === 0 && staleEntries.length === 0) {
       demolitionReconcileRef.current = stateKey;
       demolitionPendingRef.current = false;
       return;
@@ -3438,6 +3478,25 @@ export default function FieldEstimate() {
               return false;
             }
             return true;
+          });
+        }
+        
+        // 6.5 자동 생성 행의 면적/가격 갱신 (수동 변경분은 manualDemolitionKeys로 이미 제외됨)
+        if (staleEntries.length > 0) {
+          const staleMap = new Map(staleEntries.map(s => [s.rowId, s]));
+          updatedRows = updatedRows.map(row => {
+            const s = staleMap.get(row.id);
+            if (!s) return row;
+            console.log('[철거공사 Reconcile] 갱신:', row.workName, row.detailItem, '면적', row.damageArea, '→', s.C, '합계', row.amount, '→', s.amount);
+            return {
+              ...row,
+              damageArea: s.C,
+              standardPrice: s.E,
+              standardWorkQuantity: s.D,
+              quantity: s.quantity,
+              pricePerSqm: s.ppsqm,
+              amount: s.amount,
+            };
           });
         }
         
