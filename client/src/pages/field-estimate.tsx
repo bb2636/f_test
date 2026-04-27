@@ -469,10 +469,14 @@ export default function FieldEstimate() {
   const makeLinkedLaborDeletionKey = (sourceAreaRowId: string, category: string, workName: string, detailItem: string): string => {
     // 모든 노무비에서 sourceRowId 제외 (복구면적 행 ID가 저장마다 변경되므로)
     // 형식: "category|workName|detailItem"
-    // 철거공사의 경우 workName을 표준화
-    const normalizedWorkName = category === '철거공사' 
-      ? (matchDemolitionWorkName(workName) || workName || '')
-      : (workName || '');
+    // 철거공사의 경우 workName을 표준화 + alias canonical 적용 ('석고보드'→'석고')
+    // → '석고' 행 삭제와 '석고보드' 행 삭제가 동일한 key로 매핑되어 일관성 보장
+    let normalizedWorkName = workName || '';
+    if (category === '철거공사') {
+      const matched = matchDemolitionWorkName(workName);
+      const base = matched || workName || '';
+      normalizedWorkName = DEMOLITION_WORKNAME_ALIASES[base] || base;
+    }
     
     // sourceRowId 제외, category|workName|detailItem 형식만 사용
     return `${category || ''}|${normalizedWorkName}|${detailItem || ''}`;
@@ -1116,9 +1120,16 @@ export default function FieldEstimate() {
     });
     
     // 철거공사 행: 기존 보존 + 삭제된 항목 복구
+    // 키 정규화에 alias canonical 적용 ('석고보드'→'석고') — 표시는 영역 입력 그대로 유지하되
+    // 중복/매칭 판정만 canonical로 일관 처리
+    const canonicalizeDemo = (wn: string): string => {
+      const matched = matchDemolitionWorkName(wn);
+      const base = matched || wn || '';
+      return DEMOLITION_WORKNAME_ALIASES[base] || base;
+    };
     const existingDemolitionRows = existingLinkedRows.filter(row => row.category === '철거공사');
     const demolitionKeySet = new Set(existingDemolitionRows.map(row =>
-      `${normalizeForMatch(row.workName || '')}|${normalizeForMatch(row.detailItem || '')}`
+      `${normalizeForMatch(canonicalizeDemo(row.workName || ''))}|${normalizeForMatch(row.detailItem || '')}`
     ));
     const demolitionLinkedRows: LaborCostRow[] = [...existingDemolitionRows];
 
@@ -1128,10 +1139,12 @@ export default function FieldEstimate() {
       if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName) && !isItemInLinkSettings(row.workType, row.workName)) return;
       const matchedName = matchDemolitionWorkName(row.workName);
       if (!matchedName) return;
+      // 카탈로그 lookup용 canonical 공사명 ('석고보드'→'석고')
+      const canonicalName = DEMOLITION_WORKNAME_ALIASES[matchedName] || matchedName;
 
       const catalogItems = mergedIlwidaegaCatalog.filter(
         item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
-               normalizeForMatch(item.공사명 || '') === normalizeForMatch(matchedName)
+               normalizeForMatch(item.공사명 || '') === normalizeForMatch(canonicalName)
       );
 
       const itemsToProcess = catalogItems.length > 0
@@ -1139,7 +1152,8 @@ export default function FieldEstimate() {
         : [{ detailItem: '보통인부', D: 0, E: 0 }];
 
       itemsToProcess.forEach((item, idx) => {
-        const demoKey = `${normalizeForMatch(matchedName)}|${normalizeForMatch(item.detailItem)}`;
+        // 중복 판정은 canonical 키로 ('석고'와 '석고보드'를 같은 항목으로 취급)
+        const demoKey = `${normalizeForMatch(canonicalName)}|${normalizeForMatch(item.detailItem)}`;
         if (demolitionKeySet.has(demoKey)) return;
         demolitionKeySet.add(demoKey);
 
@@ -1160,6 +1174,7 @@ export default function FieldEstimate() {
           place: row.category || '',
           position: row.location || '',
           category: '철거공사',
+          // 표시는 영역행 원본 (예: '석고보드')
           workName: matchedName,
           detailWork: '일위대가',
           detailItem: item.detailItem,
@@ -3184,8 +3199,11 @@ export default function FieldEstimate() {
     
     // 1. 복구면적 산출표에서 철거공사가 필요한 모든 행 추출 (일반 노무비와 동일하게 공사명별 합산)
     // 같은 공사명은 복구면적을 합산하여 1개 entry만 생성
+    // alias canonical 적용: '석고보드' / '석고' 입력 모두 canonical='석고'로 합산되며,
+    // 화면 표시명(displayWorkName)은 영역행 원본을 우선 사용 ('석고보드' 그대로 표기)
     type RequiredDemolitionEntry = { 
-      matchedWorkName: string; // 표준화된 공사명 (DEMOLITION_WORK_NAMES에서 가져옴)
+      matchedWorkName: string; // canonical 공사명 (키/카탈로그 lookup용, 예: '석고')
+      displayWorkName: string; // 표시용 공사명 (영역행 원본, 예: '석고보드')
       totalRepairArea: number; // 합산된 복구면적
       sourceRowIds: string[]; // 관련 복구면적 행 ID들
     };
@@ -3197,21 +3215,24 @@ export default function FieldEstimate() {
         if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(row.workType) && !isItemInLinkSettings(row.workType, row.workName)) return;
         if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(row.workName) && !isItemInLinkSettings(row.workType, row.workName)) return;
         
-        const matchedWorkName = matchDemolitionWorkName(row.workName);
-        if (matchedWorkName) {
+        const matchedRaw = matchDemolitionWorkName(row.workName);
+        if (matchedRaw) {
+          // canonical: '석고보드' → '석고' (DB 매칭/키 일관성용)
+          const canonical = DEMOLITION_WORKNAME_ALIASES[matchedRaw] || matchedRaw;
           const rawRepairArea = Number(row.repairArea) || 0;
           const demoCeilingMult = getCeilingMultiplier(row.workType || '', row.location || '');
           const repairArea = Math.round(rawRepairArea * demoCeilingMult * 10) / 10;
           
-          if (demolitionEntryMap.has(matchedWorkName)) {
+          if (demolitionEntryMap.has(canonical)) {
             // 기존 entry에 면적 합산
-            const existing = demolitionEntryMap.get(matchedWorkName)!;
+            const existing = demolitionEntryMap.get(canonical)!;
             existing.totalRepairArea += repairArea;
             existing.sourceRowIds.push(row.id);
           } else {
-            // 새 entry 생성
-            demolitionEntryMap.set(matchedWorkName, {
-              matchedWorkName,
+            // 새 entry 생성 (display는 영역행 원본 표기 사용 → 사용자가 입력한 '석고보드' 보존)
+            demolitionEntryMap.set(canonical, {
+              matchedWorkName: canonical,
+              displayWorkName: matchedRaw,
               totalRepairArea: repairArea,
               sourceRowIds: [row.id],
             });
@@ -3236,8 +3257,10 @@ export default function FieldEstimate() {
     
     laborCostRows.forEach(row => {
       if (row.category === '철거공사') {
-        // workName을 표준화 (기존 저장된 값도 DEMOLITION_WORK_NAMES 기준으로 매칭)
-        const matchedWorkName = matchDemolitionWorkName(row.workName || '') || row.workName || '';
+        // workName을 표준화 + alias canonical 적용 ('석고보드' → '석고')
+        // → 기존 저장된 '석고' 행과 새로 표시될 '석고보드' 행이 동일한 key로 매칭됨
+        const matchedRaw = matchDemolitionWorkName(row.workName || '') || row.workName || '';
+        const matchedWorkName = DEMOLITION_WORKNAME_ALIASES[matchedRaw] || matchedRaw;
         const key = `${matchedWorkName}|${row.detailItem || ''}`;
         
         existingDemolitionMap.set(key, {
@@ -3256,8 +3279,9 @@ export default function FieldEstimate() {
     
     // 3. 각 철거공사 entry에 대해 필요한 노임항목 조회 (공사명별 합산된 면적 사용)
     type RequiredDemolitionKey = {
-      key: string; // matchedWorkName|detailItem (일반 노무비와 동일)
-      matchedWorkName: string;
+      key: string; // matchedWorkName(canonical)|detailItem (일반 노무비와 동일)
+      matchedWorkName: string; // canonical (예: '석고')
+      displayWorkName: string; // 화면 표시용 (예: '석고보드')
       detailItem: string;
       totalRepairArea: number; // 합산된 복구면적
       sourceRowIds: string[]; // 관련 복구면적 행 ID들
@@ -3266,7 +3290,8 @@ export default function FieldEstimate() {
     const requiredDemolitionKeys: RequiredDemolitionKey[] = [];
     
     requiredDemolitionEntries.forEach(entry => {
-      // 일위대가DB에서 표준화된 공사명으로 조회 (오버라이드 적용된 값 사용)
+      // 일위대가DB에서 canonical 공사명으로 조회 (오버라이드 적용된 값 사용)
+      // entry.matchedWorkName은 이미 canonical ('석고') 이므로 DB 매칭 성공
       const items = mergedIlwidaegaCatalog.filter(
         item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') && 
                normalizeForMatch(item.공사명 || '') === normalizeForMatch(entry.matchedWorkName)
@@ -3279,6 +3304,7 @@ export default function FieldEstimate() {
           requiredDemolitionKeys.push({
             key,
             matchedWorkName: entry.matchedWorkName,
+            displayWorkName: entry.displayWorkName,
             detailItem,
             totalRepairArea: entry.totalRepairArea,
             sourceRowIds: entry.sourceRowIds,
@@ -3292,6 +3318,7 @@ export default function FieldEstimate() {
         requiredDemolitionKeys.push({
           key,
           matchedWorkName: entry.matchedWorkName,
+          displayWorkName: entry.displayWorkName,
           detailItem,
           totalRepairArea: entry.totalRepairArea,
           sourceRowIds: entry.sourceRowIds,
@@ -3350,8 +3377,10 @@ export default function FieldEstimate() {
     
     laborCostRows.forEach(row => {
       if (row.isLinkedFromRecovery && row.category === '철거공사') {
-        // 동일한 표준화 로직 사용 (matchedWorkName|detailItem 기준)
-        const matchedWorkName = matchDemolitionWorkName(row.workName || '') || row.workName || '';
+        // 동일한 표준화 + alias canonical 로직 사용 (matchedWorkName|detailItem 기준)
+        // → '석고' 행이 '석고보드' 입력에 의해 orphan 오판되는 버그 방지
+        const matchedRaw = matchDemolitionWorkName(row.workName || '') || row.workName || '';
+        const matchedWorkName = DEMOLITION_WORKNAME_ALIASES[matchedRaw] || matchedRaw;
         const key = `${matchedWorkName}|${row.detailItem || ''}`;
         if (!requiredKeySet.has(key)) {
           orphanedIds.push(row.id);
@@ -3416,7 +3445,7 @@ export default function FieldEstimate() {
         const newDemolitionRows: LaborCostRow[] = [];
         
         missingEntries.forEach(entry => {
-          const { matchedWorkName, detailItem, totalRepairArea, sourceRowIds, catalogItem } = entry;
+          const { matchedWorkName, displayWorkName, detailItem, totalRepairArea, sourceRowIds, catalogItem } = entry;
           
           const D = catalogItem.기준작업량 || 0;
           const E = catalogItem.노임단가 || 0;
@@ -3438,6 +3467,7 @@ export default function FieldEstimate() {
             calculatedQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
           }
           
+          // uniqueId는 canonical 키로 (중복 방지 일관성)
           const uniqueId = `demolition-${matchedWorkName}-${detailItem.replace(/\s+/g, '')}`;
           
           if (updatedRows.some(r => r.id === uniqueId) || newDemolitionRows.some(r => r.id === uniqueId)) {
@@ -3452,7 +3482,8 @@ export default function FieldEstimate() {
             place: '',
             position: '',
             category: '철거공사',
-            workName: matchedWorkName,
+            // 화면 표시는 영역행 원본 (예: '석고보드') — 사용자가 입력한 표기 유지
+            workName: displayWorkName || matchedWorkName,
             detailWork: '일위대가',
             detailItem: detailItem,
             priceStandard: '',
