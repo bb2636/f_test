@@ -96,6 +96,7 @@ const pgStore = new PgStore({
 
 const originalSet = pgStore.set.bind(pgStore);
 const originalDestroy = pgStore.destroy.bind(pgStore);
+const originalTouch = pgStore.touch.bind(pgStore);
 
 pgStore.get = function (
   sid: string,
@@ -156,11 +157,28 @@ pgStore.set = function (
 };
 
 pgStore.touch = function (
-  _sid: string,
-  _sess: session.SessionData,
+  sid: string,
+  sess: session.SessionData,
   callback?: (err?: any) => void,
 ) {
-  if (callback) callback();
+  // 실제 DB의 expire 컬럼/세션 데이터를 갱신해야 rolling 세션이 동작함
+  try {
+    originalTouch(sid, sess, ((err: any) => {
+      if (err) {
+        console.error("[SESSION] PG touch error:", err);
+        // touch 실패 시 캐시 정합성 보호: 다음 get 때 DB에서 다시 읽도록 캐시 삭제
+        SESSION_CACHE.delete(sid);
+      } else {
+        // 성공 시에만 캐시에도 갱신된 세션(만료시각 포함) 반영
+        SESSION_CACHE.set(sid, { data: sess, ts: Date.now() });
+      }
+      if (callback) callback(err);
+    }) as () => void);
+  } catch (err: any) {
+    console.error("[SESSION] PG touch threw:", err);
+    SESSION_CACHE.delete(sid);
+    if (callback) callback(err);
+  }
 };
 
 pgStore.destroy = function (sid: string, callback?: (err?: any) => void) {
