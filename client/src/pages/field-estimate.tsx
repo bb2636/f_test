@@ -1586,26 +1586,35 @@ export default function FieldEstimate() {
         );
         const laborUnitPrice = ilwidaegaItem?.노임단가 || 0;
 
+        // 자재비DB 카탈로그에서 페인트 메인 자재항목(자재항목 == 공사명) 단가 조회
+        // 예: 도장공사/수성페인트/수성페인트의 단가 (1,290원 또는 "직접입력")
+        const paintMainCatalog = matchingMaterials.find(
+          item => normalizeForMatch(item.공종 || '') === normalizeForMatch(data.공종 || '')
+                  && normalizeForMatch(item.자재항목 || '') === normalizeForMatch(data.공사명 || '')
+        );
+        const catalogPriceRaw = paintMainCatalog?.금액;
+        const catalogIsManualEntry = typeof catalogPriceRaw === 'string'
+          && (catalogPriceRaw.includes('입력') || catalogPriceRaw === '입력' || catalogPriceRaw === '직접입력');
+        const catalogUnitPrice = typeof catalogPriceRaw === 'number' ? catalogPriceRaw : 0;
+        const isManualPriceEntryFlag = catalogIsManualEntry || catalogUnitPrice <= 0;
+
         const existingRow = existingAutoRowsMap.get(autoKey);
-        const userPrice = existingRow?.단가 || 0;
-        const totalAmount = Math.round(userPrice * calculatedQty);
-        const autoQuantity = laborUnitPrice > 0 && totalAmount > 0
-          ? Math.round((totalAmount / laborUnitPrice) * 10) / 10
-          : calculatedQty;
 
         if (existingRow && existingRow.isOverridden) {
+          // 사용자 직접 수정 행: 단가/수량은 보존, 면적/메타만 갱신
           resultRowsMap.set(autoKey, {
             ...existingRow,
             autoKey,
             수량m2: calculatedQty,
             autoQuantity: calculatedQty,
             sourceAreaRowIds: data.sourceAreaRowIds,
-            isManualPriceEntry: true,
+            isManualPriceEntry: isManualPriceEntryFlag,
           });
           console.log(`[자재비 집계] 도장공사 ${data.공사명}: isOverridden, 사용자 값 보존`);
         } else if (existingRow) {
-          const preservedPrice = existingRow.단가 || 0;
-          const amt = Math.round(preservedPrice * calculatedQty);
+          // 자동 생성 행 (사용자 미수정): 카탈로그 단가가 숫자면 갱신, 아니면 기존값 유지
+          const newPrice = catalogUnitPrice > 0 ? catalogUnitPrice : (existingRow.단가 || 0);
+          const amt = Math.round(newPrice * calculatedQty);
           const qty = laborUnitPrice > 0 && amt > 0
             ? Math.round((amt / laborUnitPrice) * 10) / 10
             : calculatedQty;
@@ -1613,7 +1622,7 @@ export default function FieldEstimate() {
             ...existingRow,
             autoKey,
             단위: dbUnit,
-            단가: preservedPrice,
+            단가: newPrice,
             기준단가: laborUnitPrice,
             수량m2: calculatedQty,
             수량EA: qty,
@@ -1623,10 +1632,16 @@ export default function FieldEstimate() {
             sourceAreaRowIds: data.sourceAreaRowIds,
             autoQuantity: calculatedQty,
             autoUnitType: 'EA',
-            isManualPriceEntry: true,
+            isManualPriceEntry: isManualPriceEntryFlag,
           });
-          console.log(`[자재비 집계] 도장공사 ${data.공사명}: 기존 행 업데이트 (노임단가: ${laborUnitPrice}, 단가: ${preservedPrice}, 단위: ${dbUnit})`);
+          console.log(`[자재비 집계] 도장공사 ${data.공사명}: 기존 행 업데이트 (노임단가: ${laborUnitPrice}, 단가: ${newPrice}, 카탈로그단가: ${catalogPriceRaw}, 단위: ${dbUnit})`);
         } else {
+          // 새 행 생성: 카탈로그 단가가 숫자면 그것 사용, "직접입력"이면 0
+          const newPrice = catalogUnitPrice > 0 ? catalogUnitPrice : 0;
+          const amt = Math.round(newPrice * calculatedQty);
+          const qty = laborUnitPrice > 0 && amt > 0
+            ? Math.round((amt / laborUnitPrice) * 10) / 10
+            : calculatedQty;
           resultRowsMap.set(autoKey, {
             id: `material-auto-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             공종: data.공종,
@@ -1635,13 +1650,13 @@ export default function FieldEstimate() {
             자재: data.공사명,
             규격: '',
             단위: dbUnit,
-            단가: 0,
+            단가: newPrice,
             기준단가: laborUnitPrice,
             수량m2: calculatedQty,
-            수량EA: calculatedQty,
-            수량: calculatedQty,
-            합계: 0,
-            금액: 0,
+            수량EA: qty,
+            수량: qty,
+            합계: amt,
+            금액: amt,
             includeInEstimate: true,
             비고: '',
             sourceAreaRowIds: data.sourceAreaRowIds,
@@ -1651,9 +1666,9 @@ export default function FieldEstimate() {
             isOverridden: false,
             autoQuantity: calculatedQty,
             autoUnitType: 'EA',
-            isManualPriceEntry: true,
+            isManualPriceEntry: isManualPriceEntryFlag,
           });
-          console.log(`[자재비 집계] 도장공사 ${data.공사명}: 새 행 생성 (노임단가: ${laborUnitPrice}, 직접입력)`);
+          console.log(`[자재비 집계] 도장공사 ${data.공사명}: 새 행 생성 (노임단가: ${laborUnitPrice}, 단가: ${newPrice}, 카탈로그단가: ${catalogPriceRaw})`);
         }
         return;
       }
