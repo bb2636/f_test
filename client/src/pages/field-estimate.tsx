@@ -6474,6 +6474,27 @@ export default function FieldEstimate() {
                 {saveMutation.isPending ? "저장 중..." : "저장"}
               </button>
             </div>
+
+            {/* 대물피해 샘플 적용 확인 다이얼로그 */}
+            <AlertDialog
+              open={pendingSampleKey !== null}
+              onOpenChange={(open) => { if (!open) setPendingSampleKey(null); }}
+            >
+              <AlertDialogContent data-testid="dialog-sample-confirm">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel data-testid="button-sample-cancel">취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleSampleConfirm} data-testid="button-sample-confirm">
+                    확인
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         )}
 
@@ -7597,27 +7618,6 @@ export default function FieldEstimate() {
                 {isReadOnly ? "수정 불가" : saveMutation.isPending ? "저장 중..." : "저장"}
               </button>
             </div>
-
-            {/* 대물피해 샘플 적용 확인 다이얼로그 */}
-            <AlertDialog
-              open={pendingSampleKey !== null}
-              onOpenChange={(open) => { if (!open) setPendingSampleKey(null); }}
-            >
-              <AlertDialogContent data-testid="dialog-sample-confirm">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel data-testid="button-sample-cancel">취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleSampleConfirm} data-testid="button-sample-confirm">
-                    확인
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </div>
         )}
 
