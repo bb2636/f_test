@@ -48,17 +48,6 @@ import { MaterialCostSection, type MaterialCatalogItem, type MaterialRow } from 
 // (사용자가 노무비/자재비 탭의 "복구면적 가져오기" 수동 버튼을 직접 누르는 경우는 별개)
 const AUTO_SYNC_CUTOFF_KST = "2026-04-24T13:00:00+09:00";
 
-// 도장공사 페인트 자재비 카탈로그 단가 자동 반영 cutoff (KST 기준)
-// 이 시점 이후 생성된 케이스에만 자재비DB의 단가가 자재비 탭으로 자동 반영됨.
-// 이전에 생성된 기존 케이스는 카탈로그 단가 변경에 영향받지 않음 (저장된 데이터 보존).
-const PAINT_CATALOG_PRICE_CUTOFF_KST = "2026-04-28T10:30:00+09:00";
-
-// cutoff 시간 이전에 생성되었지만 예외적으로 카탈로그 단가 자동 반영을 허용할 케이스 화이트리스트
-// (사용자 요청에 의해 개별 케이스만 즉시 연동되도록 추가)
-const PAINT_CATALOG_PRICE_CASE_ALLOWLIST: ReadonlySet<string> = new Set([
-  "260428001-1",
-]);
-
 interface AreaCalculationRow {
   id: string;
   category: string; // 장소: 주방, 화장실, 방안, 거실상
@@ -1599,14 +1588,11 @@ export default function FieldEstimate() {
 
         // 자재비DB 카탈로그에서 페인트 메인 자재항목(자재항목 == 공사명) 단가 조회
         // 예: 도장공사/수성페인트/수성페인트의 단가 (1,290원 또는 "직접입력")
-        // 단, isPaintCatalogPriceEligible=false (cutoff 이전 케이스) 인 경우
-        // 카탈로그 단가를 무시하고 기존 동작(직접입력)을 그대로 유지하여 저장된 데이터 보존.
-        const paintMainCatalog = isPaintCatalogPriceEligible
-          ? matchingMaterials.find(
-              item => normalizeForMatch(item.공종 || '') === normalizeForMatch(data.공종 || '')
-                      && normalizeForMatch(item.자재항목 || '') === normalizeForMatch(data.공사명 || '')
-            )
-          : undefined;
+        // 모든 케이스에 자재비DB 카탈로그 단가가 자동 반영됨 (사용자가 수동 오버라이드한 행은 보존).
+        const paintMainCatalog = matchingMaterials.find(
+          item => normalizeForMatch(item.공종 || '') === normalizeForMatch(data.공종 || '')
+                  && normalizeForMatch(item.자재항목 || '') === normalizeForMatch(data.공사명 || '')
+        );
         const catalogPriceRaw = paintMainCatalog?.금액;
         const catalogIsManualEntry = typeof catalogPriceRaw === 'string'
           && (catalogPriceRaw.includes('입력') || catalogPriceRaw === '입력' || catalogPriceRaw === '직접입력');
@@ -2224,21 +2210,6 @@ export default function FieldEstimate() {
     if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$/.test(createdAtTs)) return false;
     return createdAtTs >= AUTO_SYNC_CUTOFF_KST;
   }, [(estimateCase as any)?.createdAtTimestamp]);
-
-  // 도장공사 페인트 카탈로그 단가 자동 반영 대상 여부
-  // PAINT_CATALOG_PRICE_CUTOFF_KST 이후 생성된 케이스만 카탈로그 단가가 자동으로 단가에 반영됨.
-  // 이전 케이스는 카탈로그 단가 변경 시에도 기존 단가/직접입력 동작 그대로 유지 (DB·견적서 보존).
-  // 단, PAINT_CATALOG_PRICE_CASE_ALLOWLIST에 포함된 케이스 번호는 cutoff 이전이라도 자동 반영됨.
-  const isPaintCatalogPriceEligible = useMemo(() => {
-    const caseNumber = (estimateCase as any)?.caseNumber;
-    if (typeof caseNumber === "string" && PAINT_CATALOG_PRICE_CASE_ALLOWLIST.has(caseNumber)) {
-      return true;
-    }
-    const createdAtTs = (estimateCase as any)?.createdAtTimestamp;
-    if (!createdAtTs || typeof createdAtTs !== "string") return false;
-    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$/.test(createdAtTs)) return false;
-    return createdAtTs >= PAINT_CATALOG_PRICE_CUTOFF_KST;
-  }, [(estimateCase as any)?.createdAtTimestamp, (estimateCase as any)?.caseNumber]);
 
   // 복구면적 변경 → 자재비 자동 동기화 useEffect
   useEffect(() => {
