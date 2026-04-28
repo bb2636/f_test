@@ -5664,36 +5664,8 @@ export default function FieldEstimate() {
         {/* 복구면적 산출표 컨텐츠 */}
         {selectedCategory === "복구면적 산출표" && (
           <div>
-            {/* 대물피해 샘플 버튼: 피해복구(대물) 케이스에서만 표시 */}
-            {!isLossPreventionCase && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {PROPERTY_DAMAGE_SAMPLE_TEMPLATES.map(template => (
-                  <button
-                    key={template.key}
-                    type="button"
-                    onClick={() => setPendingSampleKey(template.key)}
-                    disabled={isReadOnly}
-                    className="px-3 py-2 rounded-md hover-elevate active-elevate-2"
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      background: isReadOnly ? "#f5f5f5" : "white",
-                      color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#008FED",
-                      border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #008FED",
-                      cursor: isReadOnly ? "not-allowed" : "pointer",
-                      opacity: isReadOnly ? 0.6 : 1,
-                    }}
-                    data-testid={`button-sample-${template.key}`}
-                  >
-                    {template.label}
-                  </button>
-                ))}
-              </div>
-            )}
-
             {/* 복구면적 산출표 헤더 */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between mb-4">
               <h2
                 style={{
                   fontFamily: "Pretendard",
@@ -5705,7 +5677,35 @@ export default function FieldEstimate() {
               >
                 복구면적 산출표
               </h2>
-              <div className="flex gap-2">
+              <div className="flex flex-col items-end gap-2">
+                {/* 대물피해 샘플 버튼: 피해복구(대물) 케이스에서만, 장소추가 바로 위에 표시 */}
+                {!isLossPreventionCase && (
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {PROPERTY_DAMAGE_SAMPLE_TEMPLATES.map(template => (
+                      <button
+                        key={template.key}
+                        type="button"
+                        onClick={() => setPendingSampleKey(template.key)}
+                        disabled={isReadOnly}
+                        className="px-3 py-2 rounded-md hover-elevate active-elevate-2"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          background: isReadOnly ? "#f5f5f5" : "white",
+                          color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#008FED",
+                          border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #008FED",
+                          cursor: isReadOnly ? "not-allowed" : "pointer",
+                          opacity: isReadOnly ? 0.6 : 1,
+                        }}
+                        data-testid={`button-sample-${template.key}`}
+                      >
+                        {template.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={addLocation}
@@ -5744,6 +5744,7 @@ export default function FieldEstimate() {
                 >
                   삭제
                 </button>
+                </div>
               </div>
             </div>
 
