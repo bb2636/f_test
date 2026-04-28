@@ -53,6 +53,12 @@ const AUTO_SYNC_CUTOFF_KST = "2026-04-24T13:00:00+09:00";
 // 이전에 생성된 기존 케이스는 카탈로그 단가 변경에 영향받지 않음 (저장된 데이터 보존).
 const PAINT_CATALOG_PRICE_CUTOFF_KST = "2026-04-28T10:30:00+09:00";
 
+// cutoff 시간 이전에 생성되었지만 예외적으로 카탈로그 단가 자동 반영을 허용할 케이스 화이트리스트
+// (사용자 요청에 의해 개별 케이스만 즉시 연동되도록 추가)
+const PAINT_CATALOG_PRICE_CASE_ALLOWLIST: ReadonlySet<string> = new Set([
+  "260428001-1",
+]);
+
 interface AreaCalculationRow {
   id: string;
   category: string; // 장소: 주방, 화장실, 방안, 거실상
@@ -2222,12 +2228,17 @@ export default function FieldEstimate() {
   // 도장공사 페인트 카탈로그 단가 자동 반영 대상 여부
   // PAINT_CATALOG_PRICE_CUTOFF_KST 이후 생성된 케이스만 카탈로그 단가가 자동으로 단가에 반영됨.
   // 이전 케이스는 카탈로그 단가 변경 시에도 기존 단가/직접입력 동작 그대로 유지 (DB·견적서 보존).
+  // 단, PAINT_CATALOG_PRICE_CASE_ALLOWLIST에 포함된 케이스 번호는 cutoff 이전이라도 자동 반영됨.
   const isPaintCatalogPriceEligible = useMemo(() => {
+    const caseNumber = (estimateCase as any)?.caseNumber;
+    if (typeof caseNumber === "string" && PAINT_CATALOG_PRICE_CASE_ALLOWLIST.has(caseNumber)) {
+      return true;
+    }
     const createdAtTs = (estimateCase as any)?.createdAtTimestamp;
     if (!createdAtTs || typeof createdAtTs !== "string") return false;
     if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$/.test(createdAtTs)) return false;
     return createdAtTs >= PAINT_CATALOG_PRICE_CUTOFF_KST;
-  }, [(estimateCase as any)?.createdAtTimestamp]);
+  }, [(estimateCase as any)?.createdAtTimestamp, (estimateCase as any)?.caseNumber]);
 
   // 복구면적 변경 → 자재비 자동 동기화 useEffect
   useEffect(() => {
