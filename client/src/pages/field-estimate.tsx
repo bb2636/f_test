@@ -63,6 +63,67 @@ interface AreaCalculationRow {
   note: string; // 비고
 }
 
+// 대물피해 케이스 복구면적 산출표 샘플 템플릿
+// 각 샘플은 장소/위치/공종/공사명만 미리 채우고 면적값은 사용자가 직접 입력
+type SampleRowSeed = Pick<AreaCalculationRow, "category" | "location" | "workType" | "workName">;
+interface SampleTemplate {
+  key: string;
+  label: string;
+  rows: SampleRowSeed[];
+}
+const PROPERTY_DAMAGE_SAMPLE_TEMPLATES: SampleTemplate[] = [
+  {
+    key: "bathroom",
+    label: "화장실(대물)",
+    rows: [
+      { category: "화장실1", location: "천장", workType: "욕실공사", workName: "SMC" },
+      { category: "화장실1", location: "바닥", workType: "가설공사", workName: "건축물현장정리" },
+      { category: "거실/복도", location: "바닥", workType: "가설공사", workName: "건축물현장정리" },
+    ],
+  },
+  {
+    key: "balcony",
+    label: "발코니(대물)",
+    rows: [
+      { category: "거실", location: "바닥", workType: "가설공사", workName: "건축물현장정리" },
+      { category: "발코니", location: "천장", workType: "도장공사", workName: "" },
+      { category: "발코니", location: "벽면", workType: "도장공사", workName: "" },
+      { category: "발코니", location: "바닥", workType: "가설공사", workName: "건축물현장정리" },
+    ],
+  },
+  {
+    key: "bedroom",
+    label: "침실(대물)",
+    rows: [
+      { category: "주방(복도)", location: "바닥", workType: "가설공사", workName: "건축물현장정리" },
+      { category: "침실1", location: "천장", workType: "목공사", workName: "반자틀" },
+      { category: "침실1", location: "천장", workType: "목공사", workName: "석고보드" },
+      { category: "침실1", location: "벽면", workType: "수장공사", workName: "도배" },
+      { category: "침실1", location: "바닥", workType: "가설공사", workName: "건축물현장정리" },
+    ],
+  },
+  {
+    key: "kitchen_living",
+    label: "주방 및 거실(대물)",
+    rows: [
+      { category: "거실", location: "천장", workType: "목공사", workName: "반자틀" },
+      { category: "거실", location: "천장", workType: "수장공사", workName: "도배" },
+      { category: "거실", location: "벽면", workType: "수장공사", workName: "도배" },
+      { category: "거실", location: "바닥", workType: "가설공사", workName: "건축물현장정리" },
+      { category: "거실(복도)", location: "천장", workType: "목공사", workName: "반자틀" },
+      { category: "거실(복도)", location: "천장", workType: "목공사", workName: "석고보드" },
+      { category: "거실(복도)", location: "천장", workType: "수장공사", workName: "도배" },
+      { category: "거실(복도)", location: "벽면", workType: "수장공사", workName: "도배" },
+      { category: "거실(복도)", location: "바닥", workType: "가설공사", workName: "건축물현장정리" },
+      { category: "주방", location: "천장", workType: "목공사", workName: "반자틀" },
+      { category: "주방", location: "천장", workType: "목공사", workName: "석고보드" },
+      { category: "주방", location: "천장", workType: "수장공사", workName: "도배" },
+      { category: "주방", location: "벽면", workType: "수장공사", workName: "도배" },
+      { category: "주방", location: "바닥", workType: "가설공사", workName: "건축물현장정리" },
+    ],
+  },
+];
+
 // Import LaborCatalogItem and LaborCostRow from labor-cost-section.tsx (removed duplicates)
 
 interface Material {
@@ -3956,6 +4017,35 @@ export default function FieldEstimate() {
     setRows(prev => [...prev, createBlankRow()]);
   };
 
+  // 대물피해 샘플 템플릿 적용 - 확인 다이얼로그용 pending state
+  const [pendingSampleKey, setPendingSampleKey] = useState<string | null>(null);
+
+  const applySampleTemplate = (key: string) => {
+    const template = PROPERTY_DAMAGE_SAMPLE_TEMPLATES.find(t => t.key === key);
+    if (!template) return;
+    const baseTs = Date.now();
+    const newRows: AreaCalculationRow[] = template.rows.map((seed, idx) => ({
+      ...createBlankRow(),
+      id: `row-${baseTs}-${idx}-${Math.random().toString(36).slice(2, 8)}`,
+      category: seed.category,
+      location: seed.location,
+      workType: seed.workType,
+      workName: seed.workName,
+    }));
+    // 복구면적 산출표 탭으로 이동 후 행 전체 교체
+    setSelectedCategory("복구면적 산출표");
+    setRows(newRows);
+    setSelectedRows(new Set());
+    console.log("[샘플 적용] 대물피해 샘플 템플릿 적용:", template.label, `${newRows.length}행`);
+  };
+
+  const handleSampleConfirm = () => {
+    if (pendingSampleKey) {
+      applySampleTemplate(pendingSampleKey);
+    }
+    setPendingSampleKey(null);
+  };
+
   // 특정 장소 그룹 내에 행 추가 (같은 장소 값으로)
   const addRowInCategory = (categoryValue: string, afterRowId: string) => {
     if (isReadOnly) return;
@@ -5574,6 +5664,34 @@ export default function FieldEstimate() {
         {/* 복구면적 산출표 컨텐츠 */}
         {selectedCategory === "복구면적 산출표" && (
           <div>
+            {/* 대물피해 샘플 버튼: 피해복구(대물) 케이스에서만 표시 */}
+            {!isLossPreventionCase && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {PROPERTY_DAMAGE_SAMPLE_TEMPLATES.map(template => (
+                  <button
+                    key={template.key}
+                    type="button"
+                    onClick={() => setPendingSampleKey(template.key)}
+                    disabled={isReadOnly}
+                    className="px-3 py-2 rounded-md hover-elevate active-elevate-2"
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "13px",
+                      fontWeight: 500,
+                      background: isReadOnly ? "#f5f5f5" : "white",
+                      color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#008FED",
+                      border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #008FED",
+                      cursor: isReadOnly ? "not-allowed" : "pointer",
+                      opacity: isReadOnly ? 0.6 : 1,
+                    }}
+                    data-testid={`button-sample-${template.key}`}
+                  >
+                    {template.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* 복구면적 산출표 헤더 */}
             <div className="flex items-center justify-between mb-4">
               <h2
@@ -7478,6 +7596,27 @@ export default function FieldEstimate() {
                 {isReadOnly ? "수정 불가" : saveMutation.isPending ? "저장 중..." : "저장"}
               </button>
             </div>
+
+            {/* 대물피해 샘플 적용 확인 다이얼로그 */}
+            <AlertDialog
+              open={pendingSampleKey !== null}
+              onOpenChange={(open) => { if (!open) setPendingSampleKey(null); }}
+            >
+              <AlertDialogContent data-testid="dialog-sample-confirm">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel data-testid="button-sample-cancel">취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleSampleConfirm} data-testid="button-sample-confirm">
+                    확인
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         )}
 
