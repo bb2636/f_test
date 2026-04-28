@@ -124,6 +124,77 @@ const PROPERTY_DAMAGE_SAMPLE_TEMPLATES: SampleTemplate[] = [
   },
 ];
 
+// ===== 손해방지(원인세대) 케이스용 노무비/자재비 샘플 템플릿 =====
+interface LossSampleLaborSeed {
+  category: string;   // 공종 (누수탐지/원인공사/원인철거)
+  workName: string;   // 공사명
+  detailItem: string; // 노임항목
+}
+interface LossSampleMaterialSeed {
+  workType: string;   // 공종
+  workName: string;   // 공사명
+  materialName: string; // 자재항목
+}
+interface LossPreventionSampleTemplate {
+  key: string;
+  label: string;
+  laborRows: LossSampleLaborSeed[];
+  materialRows: LossSampleMaterialSeed[];
+}
+const LOSS_PREVENTION_SAMPLE_TEMPLATES: LossPreventionSampleTemplate[] = [
+  {
+    key: "lp_bathroom",
+    label: "화장실(손방)",
+    laborRows: [
+      { category: "누수탐지", workName: "누수탐지", detailItem: "누수탐지1회" },
+      { category: "원인공사", workName: "방수", detailItem: "방수공" },
+      { category: "원인공사", workName: "방수", detailItem: "보통인부" },
+      { category: "원인철거", workName: "철거", detailItem: "보통인부" },
+    ],
+    materialRows: [
+      { workType: "원인공사", workName: "방수", materialName: "도막방수재 고요스 18L" },
+      { workType: "원인공사", workName: "방수", materialName: "방수프라이머 18L" },
+      { workType: "원인공사", workName: "방수", materialName: "액체모르타르방수재 가사리(20L)" },
+      { workType: "원인공사", workName: "방수", materialName: "레미탈" },
+    ],
+  },
+  {
+    key: "lp_caulking",
+    label: "코킹(손방)",
+    laborRows: [
+      { category: "누수탐지", workName: "누수탐지", detailItem: "육안탐지" },
+      { category: "원인공사", workName: "코킹", detailItem: "코킹공" },
+      { category: "원인철거", workName: "철거", detailItem: "보통인부" },
+    ],
+    materialRows: [
+      { workType: "원인공사", workName: "코킹", materialName: "실란트" },
+    ],
+  },
+  {
+    key: "lp_pipe",
+    label: "배관(손방)",
+    laborRows: [
+      { category: "누수탐지", workName: "누수탐지", detailItem: "누수탐지1회" },
+      { category: "원인공사", workName: "배관", detailItem: "배관공" },
+      { category: "원인철거", workName: "철거", detailItem: "보통인부" },
+    ],
+    materialRows: [
+      { workType: "원인공사", workName: "배관", materialName: "" },
+    ],
+  },
+  {
+    key: "lp_floor_drain",
+    label: "유가방수(손방)",
+    laborRows: [
+      { category: "누수탐지", workName: "누수탐지", detailItem: "누수탐지1회" },
+      { category: "원인공사", workName: "방수", detailItem: "방수공" },
+    ],
+    materialRows: [
+      { workType: "원인공사", workName: "방수", materialName: "" },
+    ],
+  },
+];
+
 // Import LaborCatalogItem and LaborCostRow from labor-cost-section.tsx (removed duplicates)
 
 interface Material {
@@ -2341,6 +2412,8 @@ export default function FieldEstimate() {
   useEffect(() => {
     if (selectedCategory !== "노무비") return;
     if (!isHydratedRef.current) return;
+    // 손해방지(원인세대) 케이스는 복구면적 산출표를 사용하지 않으므로 자동 동기화 차단
+    if (isLossPreventionCase) return;
     if (rows.length === 0) return;
     // 카탈로그가 아직 로드되지 않았으면 건너뛰기 (다음 변화 시 재실행)
     if (mergedIlwidaegaCatalog.length === 0) return;
@@ -4044,6 +4117,91 @@ export default function FieldEstimate() {
       applySampleTemplate(pendingSampleKey);
     }
     setPendingSampleKey(null);
+  };
+
+  // 손해방지(원인세대) 샘플 적용 - 노무비/자재비 동시 교체
+  const [pendingLossSampleKey, setPendingLossSampleKey] = useState<string | null>(null);
+
+  const applyLossPreventionSampleTemplate = (key: string) => {
+    const template = LOSS_PREVENTION_SAMPLE_TEMPLATES.find(t => t.key === key);
+    if (!template) return;
+    const baseTs = Date.now();
+    const newLaborRows: LaborCostRow[] = template.laborRows.map((seed, idx) => {
+      // 1) 일위대가 카탈로그 매칭 (공종+공사명+노임항목)
+      const ilwiItem = mergedIlwidaegaCatalog.find(
+        item =>
+          item.공종 === seed.category &&
+          item.공사명 === seed.workName &&
+          item.노임항목 === seed.detailItem,
+      );
+      // 2) 노무비 카탈로그 폴백 매칭 (공종+공사명+세부항목)
+      const laborItem = !ilwiItem
+        ? laborCatalog.find(
+            item =>
+              item.공종 === seed.category &&
+              item.공사명 === seed.workName &&
+              item.세부항목 === seed.detailItem,
+          )
+        : null;
+
+      const matchedDetailWork: '노무비' | '일위대가' = ilwiItem ? '일위대가' : '노무비';
+      const matchedStandardPrice = ilwiItem
+        ? Number(ilwiItem.노임단가) || 0
+        : Number(laborItem?.단가_인) || 0;
+      const matchedUnit = ilwiItem ? '인' : (laborItem?.단위 || '인');
+
+      const blank = createBlankLaborRow({
+        category: seed.category,
+        workName: seed.workName,
+        detailItem: seed.detailItem,
+        unit: matchedUnit,
+        standardPrice: matchedStandardPrice,
+      });
+      return {
+        ...blank,
+        id: `labor-${baseTs}-${idx}-${Math.random().toString(36).slice(2, 8)}`,
+        detailWork: matchedDetailWork,
+      };
+    });
+
+    const newMaterialRows: MaterialRow[] = template.materialRows.map((seed, idx) => {
+      const blank = createBlankMaterialRow(seed.workType, seed.workName);
+      // 자재비 카탈로그 매칭 (workType+workName+materialName)
+      const matItem = seed.materialName
+        ? transformedMaterialCatalog.find(
+            item =>
+              item.workType === seed.workType &&
+              item.workName === seed.workName &&
+              item.materialName === seed.materialName,
+          )
+        : null;
+      const priceVal = matItem?.standardPrice;
+      const numericPrice = typeof priceVal === 'number' ? priceVal : Number(priceVal) || 0;
+      const isManual = typeof priceVal === 'string' && (priceVal === '입력' || priceVal === '직접입력');
+      return {
+        ...blank,
+        id: `material-${baseTs}-${idx}-${Math.random().toString(36).slice(2, 8)}`,
+        자재항목: seed.materialName,
+        자재: seed.materialName,
+        규격: matItem?.specification || '',
+        단위: matItem?.unit || '',
+        단가: numericPrice,
+        기준단가: numericPrice,
+        isManualPriceEntry: isManual,
+      };
+    });
+    setLaborCostRows(newLaborRows);
+    setSelectedLaborRows(new Set());
+    setMaterialRows(newMaterialRows);
+    setSelectedMaterialRows(new Set());
+    console.log("[손방 샘플 적용]", template.label, `노무비 ${newLaborRows.length}행 / 자재비 ${newMaterialRows.length}행`);
+  };
+
+  const handleLossSampleConfirm = () => {
+    if (pendingLossSampleKey) {
+      applyLossPreventionSampleTemplate(pendingLossSampleKey);
+    }
+    setPendingLossSampleKey(null);
   };
 
   // 특정 장소 그룹 내에 행 추가 (같은 장소 값으로)
@@ -7658,6 +7816,34 @@ export default function FieldEstimate() {
                     {getCurrentDate()}
                   </span>
                 </div>
+                <div className="flex flex-col items-end gap-2">
+                  {/* 손방 케이스용 샘플 버튼: 노무비/자재비 동시 교체 */}
+                  {isLossPreventionCase && (
+                    <div className="flex flex-wrap justify-end gap-2">
+                      {LOSS_PREVENTION_SAMPLE_TEMPLATES.map(template => (
+                        <button
+                          key={template.key}
+                          type="button"
+                          onClick={() => setPendingLossSampleKey(template.key)}
+                          disabled={isReadOnly}
+                          className="px-3 py-2 rounded-md hover-elevate active-elevate-2"
+                          style={{
+                            fontFamily: "Pretendard",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            background: isReadOnly ? "#f5f5f5" : "white",
+                            color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#008FED",
+                            border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #008FED",
+                            cursor: isReadOnly ? "not-allowed" : "pointer",
+                            opacity: isReadOnly ? 0.6 : 1,
+                          }}
+                          data-testid={`button-loss-sample-labor-${template.key}`}
+                        >
+                          {template.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 <div style={{ display: "flex", gap: "6px" }}>
                   {/* 손해방지 케이스는 복구면적 산출표가 없으므로 숨김 */}
                   {!isLossPreventionCase && (
@@ -7705,8 +7891,30 @@ export default function FieldEstimate() {
                     삭제
                   </Button>
                 </div>
+                </div>
               </div>
-              
+
+              {/* 손방 샘플 적용 확인 다이얼로그 (노무비 탭) */}
+              <AlertDialog
+                open={pendingLossSampleKey !== null}
+                onOpenChange={(open) => { if (!open) setPendingLossSampleKey(null); }}
+              >
+                <AlertDialogContent data-testid="dialog-loss-sample-confirm">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel data-testid="button-loss-sample-cancel">취소</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLossSampleConfirm} data-testid="button-loss-sample-confirm">
+                      확인
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               {/* 노무비 테이블 컴포넌트 - 새로운 프롬프트 기반 UI */}
               <LaborCostSection
                 rows={laborCostRows}
@@ -8120,46 +8328,96 @@ export default function FieldEstimate() {
               >
                 자재비
               </span>
-              <div style={{ display: "flex", gap: "8px" }}>
-                {/* 손해방지 케이스는 복구면적 산출표가 없으므로 숨김 */}
-                {!isLossPreventionCase && (
+              <div className="flex flex-col items-end gap-2">
+                {/* 손방 케이스용 샘플 버튼: 노무비/자재비 동시 교체 */}
+                {isLossPreventionCase && (
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {LOSS_PREVENTION_SAMPLE_TEMPLATES.map(template => (
+                      <button
+                        key={template.key}
+                        type="button"
+                        onClick={() => setPendingLossSampleKey(template.key)}
+                        disabled={isReadOnly}
+                        className="px-3 py-2 rounded-md hover-elevate active-elevate-2"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          background: isReadOnly ? "#f5f5f5" : "white",
+                          color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#008FED",
+                          border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #008FED",
+                          cursor: isReadOnly ? "not-allowed" : "pointer",
+                          opacity: isReadOnly ? 0.6 : 1,
+                        }}
+                        data-testid={`button-loss-sample-material-${template.key}`}
+                      >
+                        {template.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {/* 손해방지 케이스는 복구면적 산출표가 없으므로 숨김 */}
+                  {!isLossPreventionCase && (
+                    <Button
+                      onClick={syncMaterialFromRecoveryArea}
+                      variant="outline"
+                      size="sm"
+                      disabled={rows.length === 0 || isReadOnly}
+                      style={{
+                        borderColor: rows.length === 0 ? "#d1d5db" : "#10B981",
+                        color: rows.length === 0 ? "#9ca3af" : "#10B981",
+                      }}
+                      data-testid="button-sync-material-from-recovery"
+                    >
+                      <Copy className="w-4 h-4 mr-1" />
+                      복구면적 가져오기
+                    </Button>
+                  )}
                   <Button
-                    onClick={syncMaterialFromRecoveryArea}
+                    onClick={addMaterialRow}
                     variant="outline"
                     size="sm"
-                    disabled={rows.length === 0 || isReadOnly}
-                    style={{
-                      borderColor: rows.length === 0 ? "#d1d5db" : "#10B981",
-                      color: rows.length === 0 ? "#9ca3af" : "#10B981",
-                    }}
-                    data-testid="button-sync-material-from-recovery"
+                    disabled={isReadOnly}
+                    data-testid="button-add-material-row"
                   >
-                    <Copy className="w-4 h-4 mr-1" />
-                    복구면적 가져오기
+                    <Plus className="w-4 h-4 mr-1" />
+                    행 추가
                   </Button>
-                )}
-                <Button
-                  onClick={addMaterialRow}
-                  variant="outline"
-                  size="sm"
-                  disabled={isReadOnly}
-                  data-testid="button-add-material-row"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  행 추가
-                </Button>
-                <Button
-                  onClick={deleteSelectedMaterialRows}
-                  variant="outline"
-                  size="sm"
-                  disabled={selectedMaterialRows.size === 0 || isReadOnly || (isPartner && materialRows.some(r => selectedMaterialRows.has(r.id) && (r.isLinkedFromRecovery || r.isAutoGenerated)))}
-                  data-testid="button-delete-material-rows"
-                >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  선택 삭제
-                </Button>
+                  <Button
+                    onClick={deleteSelectedMaterialRows}
+                    variant="outline"
+                    size="sm"
+                    disabled={selectedMaterialRows.size === 0 || isReadOnly || (isPartner && materialRows.some(r => selectedMaterialRows.has(r.id) && (r.isLinkedFromRecovery || r.isAutoGenerated)))}
+                    data-testid="button-delete-material-rows"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    선택 삭제
+                  </Button>
+                </div>
               </div>
             </div>
+
+            {/* 손방 샘플 적용 확인 다이얼로그 (자재비 탭) */}
+            <AlertDialog
+              open={pendingLossSampleKey !== null}
+              onOpenChange={(open) => { if (!open) setPendingLossSampleKey(null); }}
+            >
+              <AlertDialogContent data-testid="dialog-loss-sample-confirm-material">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel data-testid="button-loss-sample-cancel-material">취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleLossSampleConfirm} data-testid="button-loss-sample-confirm-material">
+                    확인
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             <MaterialCostSection
               rows={materialRows}
