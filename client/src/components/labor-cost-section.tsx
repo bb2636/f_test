@@ -1441,8 +1441,13 @@ export function LaborCostSection({
         const isFixedItem = isFixedLaborWorkName(row.workName || "");
         // [진단-MERGE] 한 줄 텍스트 — 콘솔 펼치기 없이 즉시 비교 가능
         const _srcId = (row as any).sourceAreaRowId ?? null;
-        const _srcArea = _srcId
-          ? (areaCalculationRows || []).find((ar: any) => ar.id === _srcId)
+        const _srcIdNormalized = _srcId
+          ? String(_srcId).replace(/^demolition-/, "").split(",")[0]
+          : null;
+        const _srcArea = _srcIdNormalized
+          ? (areaCalculationRows || []).find(
+              (ar: any) => ar.id === _srcIdNormalized,
+            )
           : null;
         const _srcDesc = _srcArea
           ? `srcArea[wn=${(_srcArea as any).workName} repair=${(_srcArea as any).repairArea} damage=${(_srcArea as any).damageArea}]`
