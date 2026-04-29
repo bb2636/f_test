@@ -210,6 +210,7 @@ function safeParseLaborCosts(
       standardPrice: Number(row.standardPrice) || 0,
       quantity: Number(row.quantity) || 0,
       amount: Number(row.amount) || 0,
+      pricePerSqm: Number(row.pricePerSqm) || 0,
       includeInEstimate: row.includeInEstimate === false || row.includeInEstimate === "false" ? false : true,
     }));
 }
@@ -5355,7 +5356,13 @@ export default function FieldReport() {
                                               textAlign: "right",
                                             }}
                                           >
-                                            {(row.standardPrice || 0).toLocaleString()}
+                                            {(() => {
+                                              const isIlwidaega = row.detailWork === "일위대가";
+                                              const displayPrice = isIlwidaega
+                                                ? Math.round(row.pricePerSqm || row.standardPrice || 0)
+                                                : (row.pricePerSqm || row.standardPrice || 0);
+                                              return displayPrice.toLocaleString();
+                                            })()}
                                           </td>
                                           <td
                                             style={{
