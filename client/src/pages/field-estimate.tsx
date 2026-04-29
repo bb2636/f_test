@@ -152,6 +152,11 @@ export default function FieldEstimate() {
   // - autoSaveDebounceRef: 짧은 시간 내 여러 sync 호출을 1회 저장으로 합침
   const isAutoSavingRef = useRef(false);
   const autoSaveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // [고정] 저장된 견적이 한 번이라도 있는 케이스는 자동 동기화를 영구 차단한다.
+  // → 저장 시점의 노무비/자재비 데이터를 그대로 보존(카탈로그 단가, 복구면적, 노임단가 구간 변경 시
+  //   화면 표시값이 자동으로 바뀌는 문제 방지). "복구면적 가져오기" 등 수동 버튼은 별개로 동작.
+  // hydration 단계에서 laborCostData / materialCostData가 채워져 있으면 true로 set 됨.
+  const isFrozenRef = useRef(false);
 
   // 노임단가 적용비율 데이터 (DB에서 가져옴)
   const { data: laborRateTiersData } = useLaborRateTiers();
@@ -3860,12 +3865,18 @@ export default function FieldEstimate() {
       setIsHydratedState(true);
       // 자동 동기화 활성화 - 데이터 로드 완료 후 새 행 생성 허용
       skipAutoSyncRef.current = false;
+      // [고정] 저장된 견적 데이터가 존재하면 자동 동기화를 영구 차단한다.
+      // 이 분기는 laborCostData가 있을 때만 도달하므로 항상 true로 set한다.
+      isFrozenRef.current = true;
+      console.log('[FROZEN ON] 저장된 견적이 존재 → 모든 자동 동기화 차단(저장 시점 데이터 고정)');
     } else {
       // 견적 데이터가 아예 없으면 빈 행만 생성
       addRow();
       isHydratedRef.current = true;
       setIsHydratedState(true);
       skipAutoSyncRef.current = false;
+      // 견적이 한 번도 저장된 적 없는 신규 케이스는 자동 동기화 허용
+      isFrozenRef.current = false;
     }
   }, [latestEstimate, masterDataList, selectedCaseId]);
 
