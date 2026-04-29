@@ -2832,7 +2832,13 @@ export default function FieldEstimate() {
           if (!existingDemolition) {
             const demolitionRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
             newLaborRows.push(demolitionRow);
-            console.log('[자동연동] 철거공사 행 생성:', workName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)');
+            console.log('[자동연동] 철거공사 행 생성:', workName, '→ mapped:', mappedDemolitionName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)', '| 카탈로그 size:', mergedIlwidaegaCatalog.length);
+            if (!demolitionCatalogItem) {
+              const demolitionItems = mergedIlwidaegaCatalog
+                .filter(it => normalizeForMatch(it.공종 || '') === normalizeForMatch('철거공사'))
+                .map(it => `${it.공사명}/${it.노임항목}`);
+              console.log('[자동연동] 매칭실패 진단 — 카탈로그의 철거공사 항목들:', demolitionItems);
+            }
           } else if (demolitionCatalogItem) {
             // 카탈로그 매칭이 가능한 경우 빈 행만 채움 (표시명은 영역행 원본 유지하므로 nameMismatch 불필요)
             const isEmpty = (!existingDemolition.standardPrice || existingDemolition.standardPrice === 0) &&
