@@ -1440,6 +1440,14 @@ export function LaborCostSection({
         const mergeKey = `${row.category}|${row.workName}|${row.detailItem}|${row.unit}|${row.standardPrice}`;
         const isFixedItem = isFixedLaborWorkName(row.workName || "");
         // [진단-MERGE] 한 줄 텍스트 — 콘솔 펼치기 없이 즉시 비교 가능
+        const _srcId = (row as any).sourceAreaRowId ?? null;
+        const _srcArea = _srcId
+          ? (areaCalculationRows || []).find((ar: any) => ar.id === _srcId)
+          : null;
+        const _srcDesc = _srcArea
+          ? `srcArea[wn=${(_srcArea as any).workName} repair=${(_srcArea as any).repairArea} damage=${(_srcArea as any).damageArea}]`
+          : (_srcId ? `srcArea[NOT_FOUND]` : `srcArea[noSrcId]`);
+        const _lockField = (row as any).lockedAtSave ? "L" : "-";
         const _line =
           `[진단-MERGE] cat=${JSON.stringify(row.category)} ` +
           `wn=${JSON.stringify(row.workName)} ` +
@@ -1447,7 +1455,8 @@ export function LaborCostSection({
           `u=${JSON.stringify(row.unit)} ` +
           `E=${row.standardPrice} D=${row.standardWorkQuantity} C=${row.damageArea} ` +
           `qty=${row.quantity} amt=${row.amount} ` +
-          `src=${(row as any).sourceAreaRowId ?? "-"} ` +
+          `lock=${_lockField} ` +
+          `src=${_srcId ?? "-"} ${_srcDesc} ` +
           `id=${row.id} ` +
           `merge=${demolitionMap.has(mergeKey) ? "→" + demolitionMap.get(mergeKey)!.id : "NEW"}`;
         _diagSummary.push(_line);
