@@ -112,6 +112,11 @@ export interface LaborCostRow {
   request: string; // 요청 - editable input
   amount: number; // 금액 - calculated
   isDetailItemDirectInput?: boolean; // 노임항목 직접입력 모드
+  // [고정] 사용자가 저장 버튼을 눌러 DB에 확정된 행임을 표시.
+  // true인 행은 자동 동기화(syncLaborFromRecoveryArea / rows→노무비 useEffect / 철거공사 Reconcile)가
+  // 카탈로그/면적/노임단가 구간 변경으로 표준값을 덮어쓰지 못한다.
+  // 새 행 추가는 그대로 동작(이 플래그 없음 → 자유롭게 sync 가능 → 다음 저장 시 true로 박힘).
+  lockedAtSave?: boolean;
 }
 
 interface LaborCostSectionProps {
@@ -304,6 +309,8 @@ export function LaborCostSection({
     // 연동된 행 중 복구면적/수량이 업데이트 필요한 행 찾기
     let hasChanges = false;
     const updatedRows = rows.map((row) => {
+      // [LOCK] 저장 시점에 확정된 행은 면적/수량/단가 자동 보정 대상에서 제외 (스냅샷 보존)
+      if (row.lockedAtSave) return row;
       // 연동된 행만 대상
       if (!row.isLinkedFromRecovery) return row;
 
@@ -423,6 +430,8 @@ export function LaborCostSection({
 
     let hasChanges = false;
     const updatedRows = rows.map((row) => {
+      // [LOCK] 저장 시점에 확정된 행은 FIXED 정규화로 덮어쓰지 않음 (스냅샷 보존)
+      if (row.lockedAtSave) return row;
       if (row.detailWork !== "일위대가") return row;
       if (!isFixedIlwidaegaWorkName(row.workName)) return row;
 

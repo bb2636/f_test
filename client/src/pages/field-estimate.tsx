@@ -152,11 +152,6 @@ export default function FieldEstimate() {
   // - autoSaveDebounceRef: 짧은 시간 내 여러 sync 호출을 1회 저장으로 합침
   const isAutoSavingRef = useRef(false);
   const autoSaveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // [고정] 저장된 견적이 한 번이라도 있는 케이스는 자동 동기화를 영구 차단한다.
-  // → 저장 시점의 노무비/자재비 데이터를 그대로 보존(카탈로그 단가, 복구면적, 노임단가 구간 변경 시
-  //   화면 표시값이 자동으로 바뀌는 문제 방지). "복구면적 가져오기" 등 수동 버튼은 별개로 동작.
-  // hydration 단계에서 laborCostData / materialCostData가 채워져 있으면 true로 set 됨.
-  const isFrozenRef = useRef(false);
 
   // 노임단가 적용비율 데이터 (DB에서 가져옴)
   const { data: laborRateTiersData } = useLaborRateTiers();
@@ -1260,18 +1255,28 @@ export default function FieldEstimate() {
                 const existingRow = existingLinkedMap.get(linkedKey);
                 
                 if (existingRow) {
-                  newLaborRows.push({
-                    ...existingRow,
-                    sourceAreaRowId: perAreaSourceId,
-                    place: areaRow.category || '',
-                    position: areaRow.location || '',
-                    damageArea: singleArea,
-                    standardPrice: E,
-                    standardWorkQuantity: D,
-                    quantity: perLocation,
-                    pricePerSqm: E,
-                    amount: totalAmount,
-                  });
+                  if (existingRow.lockedAtSave) {
+                    // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음. 메타필드(소스/장소/위치)만 갱신.
+                    newLaborRows.push({
+                      ...existingRow,
+                      sourceAreaRowId: perAreaSourceId,
+                      place: areaRow.category || existingRow.place,
+                      position: areaRow.location || existingRow.position,
+                    });
+                  } else {
+                    newLaborRows.push({
+                      ...existingRow,
+                      sourceAreaRowId: perAreaSourceId,
+                      place: areaRow.category || '',
+                      position: areaRow.location || '',
+                      damageArea: singleArea,
+                      standardPrice: E,
+                      standardWorkQuantity: D,
+                      quantity: perLocation,
+                      pricePerSqm: E,
+                      amount: totalAmount,
+                    });
+                  }
                   existingLinkedMap.delete(linkedKey);
                 } else {
                   newLaborRows.push({
@@ -1322,18 +1327,28 @@ export default function FieldEstimate() {
               const existingRow = existingLinkedMap.get(linkedKey);
               
               if (existingRow) {
-                newLaborRows.push({
-                  ...existingRow,
-                  sourceAreaRowId: sourceAreaRowId,
-                  place: combinedPlace,
-                  position: combinedPosition,
-                  damageArea: totalArea,
-                  standardPrice: E,
-                  standardWorkQuantity: standardWorkQty,
-                  quantity: calculatedQuantity,
-                  pricePerSqm: appliedUnitPrice,
-                  amount: totalAmount,
-                });
+                if (existingRow.lockedAtSave) {
+                  // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음. 메타필드(소스/장소/위치)만 갱신.
+                  newLaborRows.push({
+                    ...existingRow,
+                    sourceAreaRowId: sourceAreaRowId,
+                    place: combinedPlace || existingRow.place,
+                    position: combinedPosition || existingRow.position,
+                  });
+                } else {
+                  newLaborRows.push({
+                    ...existingRow,
+                    sourceAreaRowId: sourceAreaRowId,
+                    place: combinedPlace,
+                    position: combinedPosition,
+                    damageArea: totalArea,
+                    standardPrice: E,
+                    standardWorkQuantity: standardWorkQty,
+                    quantity: calculatedQuantity,
+                    pricePerSqm: appliedUnitPrice,
+                    amount: totalAmount,
+                  });
+                }
                 existingLinkedMap.delete(linkedKey);
               } else {
                 newLaborRows.push({
@@ -2867,6 +2882,8 @@ export default function FieldEstimate() {
     lastLaborSetSourceRef.current = 'autoSync-reconcile';
     setLaborCostRows(prev => {
       const filteredRows = prev.filter(laborRow => {
+        // [LOCK] 저장 시점에 확정된 행은 어떤 이유로도 자동 삭제하지 않음 (스냅샷 보존)
+        if (laborRow.lockedAtSave) return true;
         if (!laborRow.isLinkedFromRecovery || !laborRow.sourceAreaRowId) return true;
         
         const isDemolitionRow = laborRow.sourceAreaRowId.startsWith('demolition-');
@@ -2953,6 +2970,8 @@ export default function FieldEstimate() {
       
       // 2. 나머지 행 업데이트 (장소, 위치, 피해면적 동기화)
       return filteredRows.map(laborRow => {
+        // [LOCK] 저장 시점에 확정된 행은 어떤 update 분기(철거/FIXED/일반)에서도 표준값 덮어쓰지 않음
+        if (laborRow.lockedAtSave) return laborRow;
         if (!laborRow.sourceAreaRowId) return laborRow;
         
         // 피해철거공사 행인지 확인 (demolition- 접두사)
@@ -3061,6 +3080,10 @@ export default function FieldEstimate() {
           const isFixedLaborItem = isFixedIlwidaegaWorkName(linkedAreaRow.workName || '') &&
             (linkedAreaRow.workType === '가구공사' || linkedAreaRow.workType === '욕실공사');
           if (isFixedLaborItem) {
+            // [LOCK] 저장 시점에 확정된 FIXED 행은 자동 동기화로 덮어쓰지 않음.
+            if (laborRow.lockedAtSave) {
+              return laborRow;
+            }
             const isHelper = normalizeForMatch(laborRow.detailItem || '') === normalizeForMatch('보통인부');
             const fixedQuantity = isHelper ? 0.5 : 1.0;
             const singleDamageArea = Math.round((Number(linkedAreaRow.repairArea) || 0) * 10) / 10;
@@ -3105,6 +3128,10 @@ export default function FieldEstimate() {
             return laborRow;
           }
           
+          // [LOCK] 저장 시점에 확정된 행은 자동 동기화로 덮어쓰지 않음.
+          if (laborRow.lockedAtSave) {
+            return laborRow;
+          }
           // standardWorkQuantity가 0이면 카탈로그 동기화 강제 (D/E 조회 필요)
           // pricePerSqm이 0이고 standardPrice가 있으면 재계산 필요 (새로 추가된 행)
           const needsPriceRecalc = laborRow.pricePerSqm === 0 && laborRow.standardPrice && Number(laborRow.standardPrice) > 0 && damageAreaValue > 0;
@@ -3368,6 +3395,8 @@ export default function FieldEstimate() {
         if (!existing.isLinkedFromRecovery) return; // 수동 행 보호
         const currentRow = laborCostRows.find(r => r.id === existing.id);
         if (!currentRow) return;
+        // [LOCK] 저장 시점에 확정된 행은 stale 갱신 대상에서 제외 (표준값 보존)
+        if (currentRow.lockedAtSave) return;
 
         const D = entry.catalogItem.기준작업량 || 0;
         const E = entry.catalogItem.노임단가 || 0;
@@ -3865,18 +3894,12 @@ export default function FieldEstimate() {
       setIsHydratedState(true);
       // 자동 동기화 활성화 - 데이터 로드 완료 후 새 행 생성 허용
       skipAutoSyncRef.current = false;
-      // [고정] 저장된 견적 데이터가 존재하면 자동 동기화를 영구 차단한다.
-      // 이 분기는 laborCostData가 있을 때만 도달하므로 항상 true로 set한다.
-      isFrozenRef.current = true;
-      console.log('[FROZEN ON] 저장된 견적이 존재 → 모든 자동 동기화 차단(저장 시점 데이터 고정)');
     } else {
       // 견적 데이터가 아예 없으면 빈 행만 생성
       addRow();
       isHydratedRef.current = true;
       setIsHydratedState(true);
       skipAutoSyncRef.current = false;
-      // 견적이 한 번도 저장된 적 없는 신규 케이스는 자동 동기화 허용
-      isFrozenRef.current = false;
     }
   }, [latestEstimate, masterDataList, selectedCaseId]);
 
@@ -5261,6 +5284,9 @@ export default function FieldEstimate() {
         }));
 
       // 노무비 데이터 (id 제외, rowIndex 추가)
+      // [고정] 모든 행에 lockedAtSave: true 박아 저장 → 다시 열 때 자동 동기화가 표준값을 덮어쓰지 않음.
+      //   견적서/현장출동보고서/인보이스가 모두 동일한 "저장 시점 데이터"를 기준으로 표시되도록 보장.
+      //   "복구면적 가져오기" 등 명시적 수동 액션은 별도 경로이므로 영향 없음.
       const laborCostData = laborCostRows.map(({ id, ...rest }, index) => {
         const isIlw = rest.detailWork === "일위대가";
         const C = rest.damageArea || 0;
@@ -5280,11 +5306,13 @@ export default function FieldEstimate() {
             amount: correctedAmount,
             pricePerSqm: correctedPricePerSqm,
             quantity: correctedQuantity,
+            lockedAtSave: true,
             rowIndex: index,
           };
         }
         return {
           ...rest,
+          lockedAtSave: true,
           rowIndex: index,
         };
       });
@@ -5326,6 +5354,11 @@ export default function FieldEstimate() {
     onSuccess: () => {
       const wasAutoSave = isAutoSavingRef.current;
       isAutoSavingRef.current = false;
+
+      // [LOCK] race 방지: 저장 완료 즉시 로컬 노무비 state도 lockedAtSave=true 박기.
+      // refetch/hydration 사이 자동 sync useEffect가 lock 없는 이전 state를 보고
+      // 표준값을 덮어쓰는 윈도우를 차단(저장 시점 스냅샷이 견적서/보고서/인보이스에 일관 적용되도록).
+      setLaborCostRows(prev => prev.map(row => ({ ...row, lockedAtSave: true })));
 
       if (wasAutoSave) {
         // 자동 저장: 사용자에게 토스트 노출하지 않음 (조용히 동기화)
