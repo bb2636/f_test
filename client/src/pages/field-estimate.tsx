@@ -1255,10 +1255,11 @@ export default function FieldEstimate() {
                 const existingRow = existingLinkedMap.get(linkedKey);
                 
                 if (existingRow) {
-                  // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음. 단, standardPrice/amount가
-                  // 모두 0인 빈 lock 행은 카탈로그가 새로 매칭되었을 때 자동 채움 허용 (단가표 늦게 등록된 케이스 대응).
+                  // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음.
+                  // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용
+                  // (단가/카탈로그는 채워졌지만 면적이 0으로 저장된 빈 lock 행 보강용).
                   const isEffectiveLock = existingRow.lockedAtSave &&
-                    ((Number(existingRow.standardPrice) || 0) > 0 || (Number(existingRow.amount) || 0) > 0);
+                    (Number(existingRow.damageArea) || 0) > 0;
                   if (isEffectiveLock) {
                     // 메타필드(소스/장소/위치)만 갱신.
                     newLaborRows.push({
@@ -1331,10 +1332,10 @@ export default function FieldEstimate() {
               const existingRow = existingLinkedMap.get(linkedKey);
               
               if (existingRow) {
-                // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음. 단, standardPrice/amount가
-                // 모두 0인 빈 lock 행은 카탈로그가 새로 매칭되었을 때 자동 채움 허용.
+                // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음.
+                // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
                 const isEffectiveLock = existingRow.lockedAtSave &&
-                  ((Number(existingRow.standardPrice) || 0) > 0 || (Number(existingRow.amount) || 0) > 0);
+                  (Number(existingRow.damageArea) || 0) > 0;
                 if (isEffectiveLock) {
                   // 메타필드(소스/장소/위치)만 갱신.
                   newLaborRows.push({
@@ -2832,13 +2833,7 @@ export default function FieldEstimate() {
           if (!existingDemolition) {
             const demolitionRow = createDemolitionLaborRow(areaRow, demolitionCatalogItem, rawRepairArea);
             newLaborRows.push(demolitionRow);
-            console.log('[자동연동] 철거공사 행 생성:', workName, '→ mapped:', mappedDemolitionName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)', '| 카탈로그 size:', mergedIlwidaegaCatalog.length);
-            if (!demolitionCatalogItem) {
-              const demolitionItems = mergedIlwidaegaCatalog
-                .filter(it => normalizeForMatch(it.공종 || '') === normalizeForMatch('철거공사'))
-                .map(it => `${it.공사명}/${it.노임항목}`);
-              console.log('[자동연동] 매칭실패 진단 — 카탈로그의 철거공사 항목들:', demolitionItems);
-            }
+            console.log('[자동연동] 철거공사 행 생성:', workName, demolitionCatalogItem ? '(DB매칭)' : '(빈행)');
           } else if (demolitionCatalogItem) {
             // 카탈로그 매칭이 가능한 경우 빈 행만 채움 (표시명은 영역행 원본 유지하므로 nameMismatch 불필요)
             const isEmpty = (!existingDemolition.standardPrice || existingDemolition.standardPrice === 0) &&
@@ -2985,9 +2980,9 @@ export default function FieldEstimate() {
       // 2. 나머지 행 업데이트 (장소, 위치, 피해면적 동기화)
       return filteredRows.map(laborRow => {
         // [LOCK] 저장 시점에 확정된 행은 어떤 update 분기(철거/FIXED/일반)에서도 표준값 덮어쓰지 않음.
-        // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+        // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
         const isEffectiveLockTop = laborRow.lockedAtSave &&
-          ((Number(laborRow.standardPrice) || 0) > 0 || (Number(laborRow.amount) || 0) > 0);
+          (Number(laborRow.damageArea) || 0) > 0;
         if (isEffectiveLockTop) return laborRow;
         if (!laborRow.sourceAreaRowId) return laborRow;
         
@@ -3098,9 +3093,9 @@ export default function FieldEstimate() {
             (linkedAreaRow.workType === '가구공사' || linkedAreaRow.workType === '욕실공사');
           if (isFixedLaborItem) {
             // [LOCK] 저장 시점에 확정된 FIXED 행은 자동 동기화로 덮어쓰지 않음.
-            // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+            // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
             const isEffectiveLockFixed = laborRow.lockedAtSave &&
-              ((Number(laborRow.standardPrice) || 0) > 0 || (Number(laborRow.amount) || 0) > 0);
+              (Number(laborRow.damageArea) || 0) > 0;
             if (isEffectiveLockFixed) {
               return laborRow;
             }
@@ -3149,9 +3144,9 @@ export default function FieldEstimate() {
           }
           
           // [LOCK] 저장 시점에 확정된 행은 자동 동기화로 덮어쓰지 않음.
-          // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+          // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
           const isEffectiveLockGen = laborRow.lockedAtSave &&
-            ((Number(laborRow.standardPrice) || 0) > 0 || (Number(laborRow.amount) || 0) > 0);
+            (Number(laborRow.damageArea) || 0) > 0;
           if (isEffectiveLockGen) {
             return laborRow;
           }

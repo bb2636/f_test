@@ -310,9 +310,9 @@ export function LaborCostSection({
     let hasChanges = false;
     const updatedRows = rows.map((row) => {
       // [LOCK] 저장 시점에 확정된 행은 면적/수량/단가 자동 보정 대상에서 제외 (스냅샷 보존).
-      // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+      // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
       const isEffectiveLock = row.lockedAtSave &&
-        ((Number(row.standardPrice) || 0) > 0 || (Number(row.amount) || 0) > 0);
+        (Number(row.damageArea) || 0) > 0;
       if (isEffectiveLock) return row;
       // 연동된 행만 대상
       if (!row.isLinkedFromRecovery) return row;
@@ -434,9 +434,9 @@ export function LaborCostSection({
     let hasChanges = false;
     const updatedRows = rows.map((row) => {
       // [LOCK] 저장 시점에 확정된 행은 FIXED 정규화로 덮어쓰지 않음 (스냅샷 보존).
-      // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+      // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
       const isEffectiveLockFixedNorm = row.lockedAtSave &&
-        ((Number(row.standardPrice) || 0) > 0 || (Number(row.amount) || 0) > 0);
+        (Number(row.damageArea) || 0) > 0;
       if (isEffectiveLockFixedNorm) return row;
       if (row.detailWork !== "일위대가") return row;
       if (!isFixedIlwidaegaWorkName(row.workName)) return row;
@@ -1440,19 +1440,6 @@ export function LaborCostSection({
         const mergeKey = `${row.category}|${row.workName}|${row.detailItem}|${row.unit}|${row.standardPrice}`;
         const isFixedItem = isFixedLaborWorkName(row.workName || "");
         // [진단-MERGE] 한 줄 텍스트 — 콘솔 펼치기 없이 즉시 비교 가능
-        const _srcId = (row as any).sourceAreaRowId ?? null;
-        const _srcIdNormalized = _srcId
-          ? String(_srcId).replace(/^demolition-/, "").split(",")[0]
-          : null;
-        const _srcArea = _srcIdNormalized
-          ? (areaCalculationRows || []).find(
-              (ar: any) => ar.id === _srcIdNormalized,
-            )
-          : null;
-        const _srcDesc = _srcArea
-          ? `srcArea[wn=${(_srcArea as any).workName} repair=${(_srcArea as any).repairArea} damage=${(_srcArea as any).damageArea}]`
-          : (_srcId ? `srcArea[NOT_FOUND]` : `srcArea[noSrcId]`);
-        const _lockField = (row as any).lockedAtSave ? "L" : "-";
         const _line =
           `[진단-MERGE] cat=${JSON.stringify(row.category)} ` +
           `wn=${JSON.stringify(row.workName)} ` +
@@ -1460,8 +1447,7 @@ export function LaborCostSection({
           `u=${JSON.stringify(row.unit)} ` +
           `E=${row.standardPrice} D=${row.standardWorkQuantity} C=${row.damageArea} ` +
           `qty=${row.quantity} amt=${row.amount} ` +
-          `lock=${_lockField} ` +
-          `src=${_srcId ?? "-"} ${_srcDesc} ` +
+          `src=${(row as any).sourceAreaRowId ?? "-"} ` +
           `id=${row.id} ` +
           `merge=${demolitionMap.has(mergeKey) ? "→" + demolitionMap.get(mergeKey)!.id : "NEW"}`;
         _diagSummary.push(_line);
