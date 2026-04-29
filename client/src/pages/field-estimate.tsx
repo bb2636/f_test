@@ -3419,9 +3419,10 @@ export default function FieldEstimate() {
         const currentRow = laborCostRows.find(r => r.id === existing.id);
         if (!currentRow) return;
         // [LOCK] 저장 시점에 확정된 행은 stale 갱신 대상에서 제외 (표준값 보존).
-        // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+        // 단, 피해면적(C)이 0인 빈 lock 행은 산출표 면적으로 자동 채움 허용
+        //  → 단가는 카탈로그 매칭됐지만 면적이 0으로 저장된 행 보강용.
         const isEffectiveLockStale = currentRow.lockedAtSave &&
-          ((Number(currentRow.standardPrice) || 0) > 0 || (Number(currentRow.amount) || 0) > 0);
+          (Number(currentRow.damageArea) || 0) > 0;
         if (isEffectiveLockStale) return;
 
         const D = entry.catalogItem.기준작업량 || 0;
