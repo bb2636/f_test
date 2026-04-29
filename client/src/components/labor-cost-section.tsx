@@ -309,8 +309,11 @@ export function LaborCostSection({
     // 연동된 행 중 복구면적/수량이 업데이트 필요한 행 찾기
     let hasChanges = false;
     const updatedRows = rows.map((row) => {
-      // [LOCK] 저장 시점에 확정된 행은 면적/수량/단가 자동 보정 대상에서 제외 (스냅샷 보존)
-      if (row.lockedAtSave) return row;
+      // [LOCK] 저장 시점에 확정된 행은 면적/수량/단가 자동 보정 대상에서 제외 (스냅샷 보존).
+      // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+      const isEffectiveLock = row.lockedAtSave &&
+        ((Number(row.standardPrice) || 0) > 0 || (Number(row.amount) || 0) > 0);
+      if (isEffectiveLock) return row;
       // 연동된 행만 대상
       if (!row.isLinkedFromRecovery) return row;
 
@@ -430,8 +433,11 @@ export function LaborCostSection({
 
     let hasChanges = false;
     const updatedRows = rows.map((row) => {
-      // [LOCK] 저장 시점에 확정된 행은 FIXED 정규화로 덮어쓰지 않음 (스냅샷 보존)
-      if (row.lockedAtSave) return row;
+      // [LOCK] 저장 시점에 확정된 행은 FIXED 정규화로 덮어쓰지 않음 (스냅샷 보존).
+      // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+      const isEffectiveLockFixedNorm = row.lockedAtSave &&
+        ((Number(row.standardPrice) || 0) > 0 || (Number(row.amount) || 0) > 0);
+      if (isEffectiveLockFixedNorm) return row;
       if (row.detailWork !== "일위대가") return row;
       if (!isFixedIlwidaegaWorkName(row.workName)) return row;
 

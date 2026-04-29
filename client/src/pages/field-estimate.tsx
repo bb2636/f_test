@@ -1255,8 +1255,12 @@ export default function FieldEstimate() {
                 const existingRow = existingLinkedMap.get(linkedKey);
                 
                 if (existingRow) {
-                  if (existingRow.lockedAtSave) {
-                    // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음. 메타필드(소스/장소/위치)만 갱신.
+                  // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음. 단, standardPrice/amount가
+                  // 모두 0인 빈 lock 행은 카탈로그가 새로 매칭되었을 때 자동 채움 허용 (단가표 늦게 등록된 케이스 대응).
+                  const isEffectiveLock = existingRow.lockedAtSave &&
+                    ((Number(existingRow.standardPrice) || 0) > 0 || (Number(existingRow.amount) || 0) > 0);
+                  if (isEffectiveLock) {
+                    // 메타필드(소스/장소/위치)만 갱신.
                     newLaborRows.push({
                       ...existingRow,
                       sourceAreaRowId: perAreaSourceId,
@@ -1327,8 +1331,12 @@ export default function FieldEstimate() {
               const existingRow = existingLinkedMap.get(linkedKey);
               
               if (existingRow) {
-                if (existingRow.lockedAtSave) {
-                  // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음. 메타필드(소스/장소/위치)만 갱신.
+                // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음. 단, standardPrice/amount가
+                // 모두 0인 빈 lock 행은 카탈로그가 새로 매칭되었을 때 자동 채움 허용.
+                const isEffectiveLock = existingRow.lockedAtSave &&
+                  ((Number(existingRow.standardPrice) || 0) > 0 || (Number(existingRow.amount) || 0) > 0);
+                if (isEffectiveLock) {
+                  // 메타필드(소스/장소/위치)만 갱신.
                   newLaborRows.push({
                     ...existingRow,
                     sourceAreaRowId: sourceAreaRowId,
@@ -2970,8 +2978,11 @@ export default function FieldEstimate() {
       
       // 2. 나머지 행 업데이트 (장소, 위치, 피해면적 동기화)
       return filteredRows.map(laborRow => {
-        // [LOCK] 저장 시점에 확정된 행은 어떤 update 분기(철거/FIXED/일반)에서도 표준값 덮어쓰지 않음
-        if (laborRow.lockedAtSave) return laborRow;
+        // [LOCK] 저장 시점에 확정된 행은 어떤 update 분기(철거/FIXED/일반)에서도 표준값 덮어쓰지 않음.
+        // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+        const isEffectiveLockTop = laborRow.lockedAtSave &&
+          ((Number(laborRow.standardPrice) || 0) > 0 || (Number(laborRow.amount) || 0) > 0);
+        if (isEffectiveLockTop) return laborRow;
         if (!laborRow.sourceAreaRowId) return laborRow;
         
         // 피해철거공사 행인지 확인 (demolition- 접두사)
@@ -3081,7 +3092,10 @@ export default function FieldEstimate() {
             (linkedAreaRow.workType === '가구공사' || linkedAreaRow.workType === '욕실공사');
           if (isFixedLaborItem) {
             // [LOCK] 저장 시점에 확정된 FIXED 행은 자동 동기화로 덮어쓰지 않음.
-            if (laborRow.lockedAtSave) {
+            // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+            const isEffectiveLockFixed = laborRow.lockedAtSave &&
+              ((Number(laborRow.standardPrice) || 0) > 0 || (Number(laborRow.amount) || 0) > 0);
+            if (isEffectiveLockFixed) {
               return laborRow;
             }
             const isHelper = normalizeForMatch(laborRow.detailItem || '') === normalizeForMatch('보통인부');
@@ -3129,7 +3143,10 @@ export default function FieldEstimate() {
           }
           
           // [LOCK] 저장 시점에 확정된 행은 자동 동기화로 덮어쓰지 않음.
-          if (laborRow.lockedAtSave) {
+          // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+          const isEffectiveLockGen = laborRow.lockedAtSave &&
+            ((Number(laborRow.standardPrice) || 0) > 0 || (Number(laborRow.amount) || 0) > 0);
+          if (isEffectiveLockGen) {
             return laborRow;
           }
           // standardWorkQuantity가 0이면 카탈로그 동기화 강제 (D/E 조회 필요)
@@ -3395,8 +3412,11 @@ export default function FieldEstimate() {
         if (!existing.isLinkedFromRecovery) return; // 수동 행 보호
         const currentRow = laborCostRows.find(r => r.id === existing.id);
         if (!currentRow) return;
-        // [LOCK] 저장 시점에 확정된 행은 stale 갱신 대상에서 제외 (표준값 보존)
-        if (currentRow.lockedAtSave) return;
+        // [LOCK] 저장 시점에 확정된 행은 stale 갱신 대상에서 제외 (표준값 보존).
+        // 단, standardPrice/amount가 모두 0인 빈 lock 행은 카탈로그 매칭 시 자동 채움 허용.
+        const isEffectiveLockStale = currentRow.lockedAtSave &&
+          ((Number(currentRow.standardPrice) || 0) > 0 || (Number(currentRow.amount) || 0) > 0);
+        if (isEffectiveLockStale) return;
 
         const D = entry.catalogItem.기준작업량 || 0;
         const E = entry.catalogItem.노임단가 || 0;
