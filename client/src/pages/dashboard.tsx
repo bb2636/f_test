@@ -587,6 +587,9 @@ export default function Dashboard() {
         setLocation("/dashboard");
         break;
       case "접수하기":
+        // 새 접수 시작: 이전 "이어서 작성하기" 잔여 editCaseId 정리
+        // (정리하지 않으면 intake 페이지가 옛 케이스를 다시 로드하려다 실패 토스트가 뜸)
+        localStorage.removeItem("editCaseId");
         setLocation("/intake");
         break;
       case "종합진행관리":
