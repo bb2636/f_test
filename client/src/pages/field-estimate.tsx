@@ -1634,8 +1634,16 @@ export default function FieldEstimate() {
       if (!AUTO_SYNC_MATERIAL_WORK_NAMES.includes(rawWorkName) && !isItemInLinkSettings(workType, rawWorkName)) return;
       
       // 가설공사: 자재비DB에는 '건축물현장정리'-보양재만 존재.
-      // 모든 가설공사 workName(건축물보양, 준공청소 등)을 '건축물현장정리'로 통합하여 매칭/집계.
-      const normalizedWorkName = workType === '가설공사' ? '건축물현장정리' : rawWorkName;
+      // '건축물보양' 면적만 보양재 자재비 수량으로 집계되도록 '건축물현장정리'로 매핑.
+      // '준공청소' 등 다른 가설공사 항목은 보양재와 무관하므로 자재비 연동 제외(면적 합산 금지).
+      let normalizedWorkName = rawWorkName;
+      if (workType === '가설공사') {
+        if (rawWorkName === '건축물보양') {
+          normalizedWorkName = '건축물현장정리';
+        } else {
+          return; // 준공청소 등 가설공사 기타 항목은 자재비 연동에서 제외
+        }
+      }
       
       // 가구공사 조합 항목: 자재비DB에는 단독 항목(상부장, 하부장, 키큰장)만 존재.
       // 조합을 구성 단독 항목으로 분해하여 각각 자재비 행을 생성.
