@@ -786,6 +786,11 @@ export default function FieldReport() {
   const lastSyncedAmountRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // [금액일관성] 보고서 화면 진입만으로 case.estimateAmount 캐시가 자동 덮어써져
+    // 견적서/인보이스/메일 본문 사이의 금액 불일치를 일으키던 동작을 비활성화한다.
+    // 견적 작성 화면 저장 시점(routes.ts:6131 updateCaseEstimateAmount)이 캐시 갱신의 유일한 경로.
+    return;
+    // --- 이하 기존 자동 동기화 로직은 보존(미실행) ---
     if (isPartnerReadOnly) return;
     const cid = reportData?.case?.id;
     if (!cid) return;
