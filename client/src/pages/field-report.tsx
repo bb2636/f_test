@@ -294,7 +294,12 @@ export default function FieldReport() {
     enabled: !!selectedCaseId,
     retry: 2, // 실패 시 2회 재시도
     retryDelay: 1000, // 1초 후 재시도
-    staleTime: 30000, // 30초 동안 데이터를 fresh로 유지
+    // [최신반영] 관리자가 견적/케이스 정보를 변경했을 때 협력업체가 보고서를 다시 열거나
+    // 창 포커스만 줘도 즉시 최신 데이터를 가져오도록 항상 stale 처리.
+    // 폴링은 추가하지 않음 — 화면에서 추가메모 등 입력 중인 값이 백그라운드 갱신으로
+    // 덮어쓰일 수 있어 진입/포커스 트리거에만 의존.
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   // 디버깅 로그
@@ -610,9 +615,17 @@ export default function FieldReport() {
   }, [reportData?.case.additionalNotes]);
 
   // 견적서 작성 탭과 동일한 데이터 소스(/api/estimates/:caseId/latest) — 합계 일치를 위해 사용
+  // [최신반영] 협력업체 화면이 관리자가 저장한 최신 견적서를 즉시 반영하도록:
+  // - staleTime: 0 + refetchOnMount: 'always' → 화면 진입/포커스마다 fresh fetch
+  // - refetchInterval: 30_000 → 화면을 켜둔 동안 30초마다 백그라운드 자동 갱신
+  // 견적서 데이터(노무비/자재비)는 협력업체가 입력하지 않는 readOnly 영역이므로
+  // 폴링이 사용자 입력을 덮어쓸 위험 없음.
   const { data: latestEstimateForReport } = useQuery<{ estimate: any; rows: any[] }>({
     queryKey: ["/api/estimates", selectedCaseId, "latest"],
     enabled: !!selectedCaseId,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchInterval: 30_000,
   });
 
   // 견적 합계 계산
