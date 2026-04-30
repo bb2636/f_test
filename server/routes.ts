@@ -1809,7 +1809,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           caseNumber: victimCase.caseNumber || undefined,
                           caseGroupId,
                           status: "접수완료",
-                          // 피해세대의 상세주소는 -0 폼 값으로 덮어쓰지 않고 기존 값 유지
+                          // 피해자 4개 필드는 -0 폼 값으로 덮어쓰지 않고 기존 값 유지
+                          victimName: victimCase.victimName,
+                          victimContact: victimCase.victimContact,
+                          victimAddress: victimCase.victimAddress,
                           victimAddressDetail: victimCase.victimAddressDetail,
                         },
                       );
@@ -2749,7 +2752,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   ...updateDataWithoutId,
                   caseNumber: victimCase.caseNumber,
                   status: updateData.status || victimCase.status,
-                  // 피해세대의 상세주소는 -0 폼 값으로 덮어쓰지 않고 기존 값 유지
+                  // 피해자 4개 필드는 -0 폼 값으로 덮어쓰지 않고 기존 값 유지
+                  victimName: victimCase.victimName,
+                  victimContact: victimCase.victimContact,
+                  victimAddress: victimCase.victimAddress,
                   victimAddressDetail: victimCase.victimAddressDetail,
                 });
                 if (updatedVictim) completedCases.push(updatedVictim);
