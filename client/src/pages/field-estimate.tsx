@@ -2382,6 +2382,15 @@ export default function FieldEstimate() {
 
   // 복구면적 변경 → 자재비 자동 동기화 useEffect
   useEffect(() => {
+    // [원본보존] 협력업체에서는 어떠한 자동 동기화/저장도 발동하지 않는다.
+    // 관리자가 한 번 저장한 견적이 협력업체 화면 진입만으로 화면 계산값으로 덮어써져
+    // DB까지 자동 저장되던 문제 차단. 협력업체 화면에는 "복구면적 불러오기" 버튼이 없어
+    // 잘못 변형된 값을 되돌릴 수 없으므로, 변형 자체가 일어나지 않도록 한다.
+    if (isPartner) {
+      console.log("[SYNC SKIP] Partner role — keep saved estimate as-is");
+      return;
+    }
+
     // Hydration 완료 전에는 동기화 건너뛰기
     if (!isHydratedRef.current) {
       console.log("[SYNC SKIP] Hydration not complete");
@@ -2430,6 +2439,12 @@ export default function FieldEstimate() {
 
   useEffect(() => {
     if (selectedCategory !== "자재비") return;
+    // [원본보존] 협력업체는 관리자가 저장한 견적을 그대로 봐야 한다.
+    // 자재비 탭 진입만으로 sync→자동저장이 발동해 DB의 저장본이 변형되던 경로 차단.
+    if (isPartner) {
+      console.log("[자동연동 SKIP] 자재비 탭 진입: 협력업체");
+      return;
+    }
     if (!isHydratedRef.current) return;
     if (isLossPreventionCase) return;
     // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
@@ -2443,11 +2458,19 @@ export default function FieldEstimate() {
     syncMaterialFromRecoveryArea();
     // 자재비 탭 진입 시 싱크 결과를 DB에 자동 저장
     triggerAutoSaveAfterSync("material:tabEnter");
-  }, [selectedCategory, isAutoSyncEligibleCase]);
+  }, [selectedCategory, isAutoSyncEligibleCase, isPartner]);
 
   // 노무비 탭 진입 시 복구면적 자동 동기화 (협력업체도 동일한 화면값을 보도록 readOnly 가드 제거)
   useEffect(() => {
     if (selectedCategory !== "노무비") return;
+    // [원본보존] 협력업체는 관리자가 저장한 노무비를 그대로 봐야 한다.
+    // 노무비 탭 진입만으로 sync→자동저장이 발동해 저장본이 화면 계산값으로
+    // 덮어써지고, 협력업체에는 "복구면적 불러오기" 버튼이 없어 되돌릴 방법이 없던
+    // 문제 차단. (관리자 동작은 그대로 보존)
+    if (isPartner) {
+      console.log("[자동연동 SKIP] 노무비 탭 진입: 협력업체");
+      return;
+    }
     if (!isHydratedRef.current) return;
     // 손해방지(원인세대) 케이스는 복구면적 산출표를 사용하지 않으므로 자동 동기화 차단
     if (isLossPreventionCase) return;
@@ -2470,7 +2493,7 @@ export default function FieldEstimate() {
     syncLaborFromRecoveryArea();
     // 노무비 싱크 결과를 DB에 자동 저장 → 보고서/PDF가 항상 화면과 일치
     triggerAutoSaveAfterSync("labor:tabEnter");
-  }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length, isAutoSyncEligibleCase]);
+  }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length, isAutoSyncEligibleCase, isPartner]);
 
   const materialCatalogLoadedRef = useRef(false);
   useEffect(() => {
@@ -5676,6 +5699,13 @@ export default function FieldEstimate() {
   // - readOnly / 케이스 미선택 / 미수화 / 저장 진행 중인 경우 스킵
   // - 사용자가 직접 누르는 "저장"과는 분리 (toast 미표시)
   const triggerAutoSaveAfterSync = (reason: string) => {
+    // [원본보존] 이중 안전장치: 협력업체 세션에서는 어떤 경로로 호출되더라도
+    // 자동 저장이 발동되지 않도록 함수 진입에서 즉시 차단.
+    // 관리자가 저장한 견적이 협력업체 화면 진입만으로 덮어써지는 경로 완전 봉쇄.
+    if (isPartner) {
+      console.log(`[AUTO-SAVE SKIP] Partner role (사유: ${reason})`);
+      return;
+    }
     if (isReadOnly) return;
     if (!selectedCaseId) return;
     if (!isHydratedRef.current) return;
