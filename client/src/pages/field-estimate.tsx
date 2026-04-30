@@ -279,6 +279,13 @@ export default function FieldEstimate() {
   // 초기 로드 직후 자동 동기화 방지 (새 행 자동 생성 방지)
   const skipAutoSyncRef = useRef(true);
 
+  // [원본보존-협력업체] 협력업체 진입 시 어떠한 자동 변형(useEffect)도 발동되지 않도록
+  // 컴포넌트 함수 최상단에 ref를 두고 currentUser 로드 시 갱신.
+  // ref이므로 isPartner 변수 선언(2200행대) 이전에 위치한 dedup useEffect에서도 안전하게 참조 가능.
+  // currentUser가 아직 undefined면 ref는 false 유지 → 다른 가드(`!currentUser || isPartner`)와 함께 보수적으로 차단.
+  const isPartnerRef = useRef(false);
+  const isUserLoadedRef = useRef(false);
+
   // 싱크 결과 자동 저장: 화면(sync 결과)과 DB가 항상 일치하도록 자동 저장
   // - isAutoSavingRef: 자동 저장 중인지 표시 → onSuccess에서 toast 스킵
   // - autoSaveDebounceRef: 짧은 시간 내 여러 sync 호출을 1회 저장으로 합침
@@ -408,6 +415,9 @@ export default function FieldEstimate() {
   // 일반 행: 공종|공사명|노임항목
   const lastDeduplicationRef = useRef<string>('');
   useEffect(() => {
+    // [원본보존-협력업체] currentUser 미로드 또는 협력업체이면 dedup 자체를 건너뛴다.
+    // (감지 key와 제거 key가 미세하게 다른 잠재적 위험을 차단)
+    if (!isUserLoadedRef.current || isPartnerRef.current) return;
     if (laborCostRows.length === 0) return;
     
     if (syncGuardRef.current) {
@@ -465,6 +475,9 @@ export default function FieldEstimate() {
   // 연동된 행(isLinkedFromRecovery=true)에서 같은 공종+공사명 조합은 첫 번째만 유지
   const lastMaterialDeduplicationRef = useRef<string>('');
   useEffect(() => {
+    // [원본보존-협력업체] currentUser 미로드 또는 협력업체이면 dedup 자체를 건너뛴다.
+    // (자재 dedup key가 `공종|공사명`뿐이라 자재항목이 다른 정상 행을 잘못 제거할 위험을 차단)
+    if (!isUserLoadedRef.current || isPartnerRef.current) return;
     if (materialRows.length === 0) return;
     
     // 중복 체크: 연동된 행에서 같은 key가 여러 개인지 확인
@@ -898,6 +911,12 @@ export default function FieldEstimate() {
   const { data: currentUser } = useQuery<User>({
     queryKey: ['/api/user'],
   });
+
+  // [원본보존-협력업체] currentUser가 로드되는 즉시 ref를 갱신하여
+  // isPartner 변수 선언 이전 위치(dedup 등)의 useEffect에서도 안전하게 차단 가능.
+  // 렌더 중 ref 갱신은 idempotent하므로 strict mode 이중 호출에도 무해.
+  isPartnerRef.current = currentUser?.role === "협력사";
+  isUserLoadedRef.current = currentUser !== undefined;
 
   // 현재 날짜 (KST) 가져오기
   const getCurrentDate = () => {
@@ -2386,7 +2405,7 @@ export default function FieldEstimate() {
     // 관리자가 한 번 저장한 견적이 협력업체 화면 진입만으로 화면 계산값으로 덮어써져
     // DB까지 자동 저장되던 문제 차단. 협력업체 화면에는 "복구면적 불러오기" 버튼이 없어
     // 잘못 변형된 값을 되돌릴 수 없으므로, 변형 자체가 일어나지 않도록 한다.
-    if (isPartner) {
+    if (!currentUser || isPartner) {
       console.log("[SYNC SKIP] Partner role — keep saved estimate as-is");
       return;
     }
@@ -2435,13 +2454,13 @@ export default function FieldEstimate() {
     syncMaterialFromRecoveryArea();
     // 싱크 결과를 DB에 자동 저장 → PDF/저장본이 항상 화면과 일치하도록 보정
     triggerAutoSaveAfterSync("material:recoverySignature");
-  }, [recoverySignature, isLossPreventionCase, isReadOnly, isAutoSyncEligibleCase]);
+  }, [recoverySignature, isLossPreventionCase, isReadOnly, isAutoSyncEligibleCase, isPartner, currentUser]);
 
   useEffect(() => {
     if (selectedCategory !== "자재비") return;
     // [원본보존] 협력업체는 관리자가 저장한 견적을 그대로 봐야 한다.
     // 자재비 탭 진입만으로 sync→자동저장이 발동해 DB의 저장본이 변형되던 경로 차단.
-    if (isPartner) {
+    if (!currentUser || isPartner) {
       console.log("[자동연동 SKIP] 자재비 탭 진입: 협력업체");
       return;
     }
@@ -2458,7 +2477,7 @@ export default function FieldEstimate() {
     syncMaterialFromRecoveryArea();
     // 자재비 탭 진입 시 싱크 결과를 DB에 자동 저장
     triggerAutoSaveAfterSync("material:tabEnter");
-  }, [selectedCategory, isAutoSyncEligibleCase, isPartner]);
+  }, [selectedCategory, isAutoSyncEligibleCase, isPartner, currentUser]);
 
   // 노무비 탭 진입 시 복구면적 자동 동기화 (협력업체도 동일한 화면값을 보도록 readOnly 가드 제거)
   useEffect(() => {
@@ -2467,7 +2486,7 @@ export default function FieldEstimate() {
     // 노무비 탭 진입만으로 sync→자동저장이 발동해 저장본이 화면 계산값으로
     // 덮어써지고, 협력업체에는 "복구면적 불러오기" 버튼이 없어 되돌릴 방법이 없던
     // 문제 차단. (관리자 동작은 그대로 보존)
-    if (isPartner) {
+    if (!currentUser || isPartner) {
       console.log("[자동연동 SKIP] 노무비 탭 진입: 협력업체");
       return;
     }
@@ -2493,10 +2512,12 @@ export default function FieldEstimate() {
     syncLaborFromRecoveryArea();
     // 노무비 싱크 결과를 DB에 자동 저장 → 보고서/PDF가 항상 화면과 일치
     triggerAutoSaveAfterSync("labor:tabEnter");
-  }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length, isAutoSyncEligibleCase, isPartner]);
+  }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length, isAutoSyncEligibleCase, isPartner, currentUser]);
 
   const materialCatalogLoadedRef = useRef(false);
   useEffect(() => {
+    // [원본보존] 협력업체는 관리자가 저장한 자재비 단위를 그대로 봐야 함
+    if (!currentUser || isPartner) return;
     if (!isHydratedRef.current) return;
     if (materialByWorknameCatalog.length === 0) return;
     if (materialCatalogLoadedRef.current) return;
@@ -2528,7 +2549,7 @@ export default function FieldEstimate() {
       });
       return changed ? updated : prev;
     });
-  }, [isHydratedState, materialByWorknameCatalog]);
+  }, [isHydratedState, materialByWorknameCatalog, currentUser, isPartner]);
   
   // 공종 목록 (노무비 DB에서 가져온 후 케이스 유형별 필터링)
   // 손해방지 케이스: DAMAGE_PREVENTION_WORK_TYPES만 표시
@@ -2555,6 +2576,10 @@ export default function FieldEstimate() {
   // 피해복구 케이스에서만 작동 (손해방지 케이스 제외)
   // 주의: 새 행 생성은 skipAutoSyncRef.current가 false일 때만 실행
   useEffect(() => {
+    // [원본보존] 협력업체에서는 노무비→자재비 자동 동기화 차단
+    // (관리자 저장본을 그대로 표시. setMaterialRows 변형 금지.)
+    if (!currentUser || isPartner) return;
+
     // Hydration 완료 전에는 동기화 건너뛰기 (중복 행 방지)
     if (!isHydratedRef.current) {
       return;
@@ -2674,12 +2699,16 @@ export default function FieldEstimate() {
       
       return [...updatedRows, ...newRows];
     });
-  }, [laborCostRows, isLossPreventionCase]);
+  }, [laborCostRows, isLossPreventionCase, isPartner, currentUser]);
 
   // 복구면적 산출표 → 노무비 자동 연동 (피해복구 케이스에서만)
   // 일위대가DB에서 공종+공사명으로 조회하여 ALL matching 노임항목 행을 자동 생성
   // 복구면적 → 피해면적 추가 복사
   useEffect(() => {
+    // [원본보존] 협력업체에서는 복구면적→노무비 자동 연동 차단
+    // (관리자 저장본을 그대로 표시. setLaborCostRows 변형 금지.)
+    if (!currentUser || isPartner) return;
+
     if (!isHydratedRef.current) {
       return;
     }
@@ -3376,7 +3405,7 @@ export default function FieldEstimate() {
         return laborRow;
       });
     });
-  }, [rows, mergedIlwidaegaCatalog, laborRateTiers, isAutoSyncEligibleCase]); // rows(복구면적 산출표), 일위대가 카탈로그, 노임단가 비율 변경 시 실행 + cutoff 적용 대상 변화 감지
+  }, [rows, mergedIlwidaegaCatalog, laborRateTiers, isAutoSyncEligibleCase, isPartner, currentUser]); // rows(복구면적 산출표), 일위대가 카탈로그, 노임단가 비율 변경 시 실행 + cutoff 적용 대상 변화 감지 + 협력업체 가드
 
   // ========== 철거공사 Reconcile useEffect ==========
   // 복구면적 산출표(rows)의 공사명을 기반으로 철거공사 노무비를 자동 생성/삭제
@@ -3386,6 +3415,13 @@ export default function FieldEstimate() {
   const demolitionPendingRef = useRef<boolean>(false);
   
   useEffect(() => {
+    // [원본보존] 협력업체에서는 철거공사 자동 Reconcile 차단
+    // (관리자 저장본을 그대로 표시. setLaborCostRows 변형 금지.)
+    if (!currentUser || isPartner) {
+      demolitionPendingRef.current = false;
+      return;
+    }
+
     // Hydration 완료 전에는 건너뛰기
     if (!isHydratedRef.current) {
       demolitionPendingRef.current = false; // 조기 종료 시 플래그 리셋
@@ -3803,7 +3839,7 @@ export default function FieldEstimate() {
         return [...updatedRows, ...newDemolitionRows];
       });
     });
-  }, [rows, laborCostRows, mergedIlwidaegaCatalog, deletedLinkedLaborKeys, exclusionsLoaded, laborRateTiers, isAutoSyncEligibleCase]); // laborCostRows, 노임단가 비율, exclusionsLoaded 포함 + cutoff 적용 대상 변화 감지
+  }, [rows, laborCostRows, mergedIlwidaegaCatalog, deletedLinkedLaborKeys, exclusionsLoaded, laborRateTiers, isAutoSyncEligibleCase, isPartner, currentUser]); // laborCostRows, 노임단가 비율, exclusionsLoaded 포함 + cutoff 적용 대상 변화 감지 + 협력업체 가드
 
   // 최신 견적 가져오기
   // [원본보존] 협력업체는 관리자가 저장한 최신값을 항상 보도록 매 진입마다 새로 fetch + 30초 폴링.
@@ -4098,7 +4134,7 @@ export default function FieldEstimate() {
       setIsHydratedState(true);
       skipAutoSyncRef.current = false;
     }
-  }, [latestEstimate, masterDataList, selectedCaseId]);
+  }, [latestEstimate, masterDataList, selectedCaseId, isPartner, currentUser]);
 
   // 소수점 첫째자리 형식으로 변환하는 함수 (예: "2" -> "2.0", "2.5" -> "2.5")
   const formatDecimal = (value: string): string => {
@@ -5712,7 +5748,7 @@ export default function FieldEstimate() {
     // [원본보존] 이중 안전장치: 협력업체 세션에서는 어떤 경로로 호출되더라도
     // 자동 저장이 발동되지 않도록 함수 진입에서 즉시 차단.
     // 관리자가 저장한 견적이 협력업체 화면 진입만으로 덮어써지는 경로 완전 봉쇄.
-    if (isPartner) {
+    if (!currentUser || isPartner) {
       console.log(`[AUTO-SAVE SKIP] Partner role (사유: ${reason})`);
       return;
     }
