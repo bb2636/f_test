@@ -3403,8 +3403,9 @@ async function renderEstimatePage(
       const unitPrice = isIlwidaega
         ? (Number(row.pricePerSqm) || 0)
         : (Number(row.standardPrice) || Number(row.pricePerSqm) || Number(row.unitPrice) || 0);
-      // 머지된 행은 mergedAmount/mergedQuantity 우선 사용 (화면 견적서와 합계 일치 보장)
-      const amount = Number(row.mergedAmount ?? row.amount) || 0;
+      // 머지된 행은 mergedAmount, 일반 일위대가 행은 calculateIWithTiers로 동적 계산.
+      // (DB에 옛 산식 amount가 박혀 있어도 PDF 합계가 항상 화면 footer 및 case.estimateAmount와 일치하도록 보장.)
+      const amount = getMergedRowAmount(row as any, laborRateTiers as any);
       const rawStandardPrice = Number(row.standardPrice) || 0;
       const mergedQty = row.mergedQuantity;
       const quantity = mergedQty != null

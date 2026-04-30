@@ -1275,7 +1275,7 @@ export default function FieldManagement() {
                             </div>
                           </div>
                           
-                          {!isReadOnly && !isLossPreventionCase && (caseItem.fieldSurveyStatus !== "submitted" || caseItem.status === "반려") && (
+                          {!isReadOnly && !isLossPreventionCase && (
                             <button
                               type="button"
                               onClick={(e) => {
