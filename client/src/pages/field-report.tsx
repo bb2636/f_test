@@ -5384,7 +5384,11 @@ export default function FieldReport() {
                                               fontWeight: 600,
                                             }}
                                           >
-                                            {Math.round(row.amount || 0).toLocaleString()}
+                                            {/* [금액일관성] 행별 합계도 footer/관리자 노무비 화면과 동일하게 동적 계산.
+                                                일위대가(C>0,D>0,E>0)는 calculateIWithTiers, 그 외에는 row.amount 폴백으로
+                                                기존 로직(피해복구/손해방지) 보존. DB 저장 옛 amount가 협력업체 화면에 남아
+                                                관리자 화면과 불일치하던 문제 해결. */}
+                                            {Math.round(getMergedRowAmount(row as any, laborRateTiers)).toLocaleString()}
                                           </td>
                                           <td
                                             style={{
