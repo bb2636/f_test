@@ -833,7 +833,9 @@ export default function FieldEstimate() {
     const D = standardWorkQty;
     const E = laborPrice;
     
-    let calculatedQuantity = 1;
+    // [면적0 보정] 면적 0이면 수량 0으로 시작 (사용자 요청: 면적 미입력 시 자동 1 차단).
+    // 면적 > 0 이지만 D/E 결손이면 기존대로 1 유지(회귀 방지).
+    let calculatedQuantity = C > 0 ? 1 : 0;
     let calculatedAmount = 0;
     let calculatedPricePerSqm = 0;
     
@@ -1278,7 +1280,36 @@ export default function FieldEstimate() {
       const base = matched || wn || '';
       return DEMOLITION_WORKNAME_ALIASES[base] || base;
     };
-    const existingDemolitionRows = existingLinkedRows.filter(row => row.category === '철거공사');
+    // [공종 꼬임 방지] 산출표 변경 후 "복구면적 가져오기" 시,
+    // 산출표에 더 이상 없는 철거공사 항목(예: 화장실 SMC → 침실 변경 후 SMC 잔류)을 제거하기 위해
+    // 현재 산출표 rows에서 생성될 valid한 철거공사 키 집합을 미리 계산.
+    const validDemoKeySet = new Set<string>();
+    rows.forEach(areaRow => {
+      if (!areaRow.workType || !areaRow.workName || areaRow.workType === '철거공사') return;
+      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(areaRow.workType) && !isItemInLinkSettings(areaRow.workType, areaRow.workName)) return;
+      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(areaRow.workName) && !isItemInLinkSettings(areaRow.workType, areaRow.workName)) return;
+      const matchedName = matchDemolitionWorkName(areaRow.workName);
+      if (!matchedName) return;
+      const canonicalName = DEMOLITION_WORKNAME_ALIASES[matchedName] || matchedName;
+      const catalogItems = mergedIlwidaegaCatalog.filter(
+        item => normalizeForMatch(item.공종 || '') === normalizeForMatch('철거공사') &&
+               normalizeForMatch(item.공사명 || '') === normalizeForMatch(canonicalName)
+      );
+      const detailItems = catalogItems.length > 0
+        ? catalogItems.map(c => c.노임항목 || '보통인부')
+        : ['보통인부'];
+      detailItems.forEach(detail => {
+        validDemoKeySet.add(`${normalizeForMatch(canonicalName)}|${normalizeForMatch(detail)}`);
+      });
+    });
+
+    // 기존 철거공사 행 중 산출표에 여전히 존재하는 항목만 보존 (사용자 수정값 유지).
+    // 산출표에서 빠진 항목은 자동 제거 — 공종 변경(화장실→침실) 시 잔류 행 정리.
+    const existingDemolitionRows = existingLinkedRows.filter(row => {
+      if (row.category !== '철거공사') return false;
+      const k = `${normalizeForMatch(canonicalizeDemo(row.workName || ''))}|${normalizeForMatch(row.detailItem || '')}`;
+      return validDemoKeySet.has(k);
+    });
     const demolitionKeySet = new Set(existingDemolitionRows.map(row =>
       `${normalizeForMatch(canonicalizeDemo(row.workName || ''))}|${normalizeForMatch(row.detailItem || '')}`
     ));
@@ -1311,8 +1342,14 @@ export default function FieldEstimate() {
         const rawRepairArea = Number(row.repairArea) || 0;
         const demoCeilingMult = getCeilingMultiplier(row.workType || '', row.location || '');
         const repairArea = Math.round(rawRepairArea * demoCeilingMult * 10) / 10;
-        let qty = 1, amt = 0, ppsqm = 0;
-        if (item.D > 0 && item.E > 0 && repairArea > 0) {
+        // [면적0 보정] 복구면적이 0이면 수량/합계도 0으로 시작.
+        // - 면적 0: quantity 0 (사용자 요청 - 합계 0과 일관성).
+        // - 면적 > 0 이지만 카탈로그 D/E 결손: 기존대로 1 유지(회귀 방지).
+        const hasArea = repairArea > 0;
+        const hasCatalog = item.D > 0 && item.E > 0;
+        let qty = !hasArea ? 0 : (hasCatalog ? 1 : 1);
+        let amt = 0, ppsqm = 0;
+        if (hasCatalog && hasArea) {
           amt = calculateIWithTiers(repairArea, item.D, item.E, laborRateTiers);
           ppsqm = calculateAppliedUnitPriceWithTiers(repairArea, item.D, item.E, laborRateTiers);
           qty = calculateQuantityWithTiers(repairArea, item.D, item.E, laborRateTiers);
@@ -1472,7 +1509,10 @@ export default function FieldEstimate() {
               
               let appliedUnitPrice = 0;
               let totalAmount = 0;
-              let calculatedQuantity = 1;
+              // [면적0 보정] 복구면적이 0이면 수량도 0으로 시작.
+              // 예: 건축물보양 면적을 입력하지 않은 상태에서 자동 1로 잡혀 사용자 혼동.
+              // 면적 > 0 이지만 카탈로그 D/E가 결손이면 기존대로 1 유지(회귀 방지).
+              let calculatedQuantity = C > 0 ? 1 : 0;
               if (D > 0 && E > 0 && C > 0) {
                 totalAmount = calculateIWithTiers(C, D, E, laborRateTiers);
                 appliedUnitPrice = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
@@ -1543,16 +1583,19 @@ export default function FieldEstimate() {
           const existingRow = existingLinkedMap.get(linkedKey);
           
           if (existingRow) {
+            // [면적0 보정] 기존 fallback 행도 면적 0이면 quantity/amount/단가 0으로 override (사용자 요청).
+            const isZeroArea = (Number(totalArea) || 0) <= 0;
             newLaborRows.push({
               ...existingRow,
               sourceAreaRowId,
               place: combinedPlace,
               position: combinedPosition,
               damageArea: totalArea,
+              ...(isZeroArea ? { quantity: 0, amount: 0, pricePerSqm: 0 } : {}),
             });
             existingLinkedMap.delete(linkedKey);
           } else {
-            newLaborRows.push(createBlankLaborRow({
+            const fallbackRow = createBlankLaborRow({
               sourceAreaRowId,
               isLinkedFromRecovery: true,
               place: combinedPlace,
@@ -1560,7 +1603,13 @@ export default function FieldEstimate() {
               category: workType,
               workName: workName,
               damageArea: totalArea,
-            }));
+            });
+            // [면적0 보정] 카탈로그 매칭 없는 fallback도 면적 0이면 quantity/금액 0으로 시작.
+            if ((Number(fallbackRow.damageArea) || 0) <= 0) {
+              fallbackRow.quantity = 0;
+              fallbackRow.amount = 0;
+            }
+            newLaborRows.push(fallbackRow);
           }
         }
       });
@@ -2916,7 +2965,9 @@ export default function FieldEstimate() {
             const E = catalogItem.노임단가 || 0; // 노임단가(인당)
             const fixedTotal = catalogItem.일위대가 || 0; // 일위대가 (FIXED 합계)
             
-            let calculatedQuantity = 1;
+            // [면적0 보정] 면적 0이면 수량 0으로 시작 (사용자 요청).
+            // 면적 > 0 + D/E 결손이면 기존 1 유지.
+            let calculatedQuantity = C > 0 ? 1 : 0;
             let calculatedAmount = 0;
             let calculatedPricePerSqm = 0;
             
@@ -2967,6 +3018,11 @@ export default function FieldEstimate() {
             workName: workName,
             damageArea: damageAreaValue,
           });
+          // [면적0 보정] 카탈로그 매칭 없는 fallback도 면적 0이면 quantity/금액 0으로 시작.
+          if ((Number(mainRow.damageArea) || 0) <= 0) {
+            mainRow.quantity = 0;
+            mainRow.amount = 0;
+          }
           newLaborRows.push(mainRow);
         }
         
@@ -2981,7 +3037,10 @@ export default function FieldEstimate() {
           companionItems.forEach((catalogItem, cidx) => {
             const cD = catalogItem.기준작업량 || 0;
             const cE = catalogItem.노임단가 || 0;
-            let cQty = 1, cAmt = 0, cPps = 0;
+            // [면적0 보정] 면적 0이면 수량 0으로 시작 (사용자 요청).
+            // 면적 > 0 + D/E 결손이면 기존 1 유지.
+            let cQty = damageAreaValue > 0 ? 1 : 0;
+            let cAmt = 0, cPps = 0;
             if (cD > 0 && cE > 0 && damageAreaValue > 0) {
               cAmt = calculateIWithTiers(damageAreaValue, cD, cE, laborRateTiers);
               cPps = calculateAppliedUnitPriceWithTiers(damageAreaValue, cD, cE, laborRateTiers);
@@ -3261,6 +3320,11 @@ export default function FieldEstimate() {
               newPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
               newQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
               newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
+            } else if (C <= 0) {
+              // [면적0 보정] 산출표 면적이 0으로 변경되면 수량/금액/단가 0으로 명시 override (사용자 요청).
+              newPricePerSqm = 0;
+              newQuantity = 0;
+              newAmount = 0;
             }
             
             return {
@@ -3385,6 +3449,11 @@ export default function FieldEstimate() {
               newPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
               newQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
               newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
+            } else if (C <= 0) {
+              // [면적0 보정] 산출표 면적이 0으로 변경되면 수량/금액/단가 0으로 명시 override (사용자 요청).
+              newPricePerSqm = 0;
+              newQuantity = 0;
+              newAmount = 0;
             }
             
             return {
@@ -3627,7 +3696,9 @@ export default function FieldEstimate() {
         const fixedIlwidaega = Number(entry.catalogItem.일위대가) || 0;
         const isFixed = isFixedIlwidaegaWorkName(entry.matchedWorkName) && fixedIlwidaega > 0 && E > 0;
 
-        let amt = 0, ppsqm = 0, qty = 1;
+        // [면적0 보정] 면적 0이면 수량/금액도 0으로 시작 (사용자 요청).
+        // 면적 > 0 + D/E 결손이면 기존 1 유지.
+        let amt = 0, ppsqm = 0, qty = C > 0 ? 1 : 0;
         if (isFixed) {
           amt = fixedIlwidaega;
           ppsqm = E;
@@ -3787,7 +3858,9 @@ export default function FieldEstimate() {
 
           let calculatedAmount = 0;
           let calculatedPricePerSqm = 0;
-          let calculatedQuantity = 1;
+          // [면적0 보정] 면적 0이면 수량 0으로 시작 (사용자 요청).
+          // 면적 > 0 + D/E 결손이면 기존 1 유지.
+          let calculatedQuantity = C > 0 ? 1 : 0;
           if (isFixed) {
             // FIXED: 합계=일위대가(DB), 적용단가=노임단가(E), 수량=합계/E
             calculatedAmount = fixedIlwidaega;
@@ -4294,6 +4367,10 @@ export default function FieldEstimate() {
         ...blank,
         id: `labor-${baseTs}-${idx}-${Math.random().toString(36).slice(2, 8)}`,
         detailWork: matchedDetailWork,
+        // [손방] 손해방지 샘플은 사용자가 직접 수량을 입력해야 하므로 기본값 0으로 셋팅
+        // (createBlankLaborRow의 기본 quantity:1을 override) → 합계도 0으로 시작
+        quantity: 0,
+        amount: 0,
       };
     });
 
@@ -5252,7 +5329,8 @@ export default function FieldEstimate() {
             unit: '㎡',
             standardPrice: E, // 노임단가 (E)
             standardWorkQuantity: D, // 기준작업량 (D)
-            quantity: 1, // 초기값 1, useEffect에서 복구면적 기준으로 재계산됨
+            // [면적0 보정] 면적 0이면 수량 0으로 시작 (사용자 요청).
+            quantity: currentRepairArea > 0 ? 1 : 0,
             applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
             salesMarkupRate: 0,
             pricePerSqm: 0, // 초기값 0, useEffect에서 E 기준으로 계산됨
@@ -5298,7 +5376,8 @@ export default function FieldEstimate() {
             unit: '㎡',
             standardPrice: 0,
             standardWorkQuantity: 0,
-            quantity: 1,
+            // [면적0 보정] 면적 0이면 수량 0으로 시작 (사용자 요청).
+            quantity: currentRepairArea > 0 ? 1 : 0,
             applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
             salesMarkupRate: 0,
             pricePerSqm: 0,
@@ -5346,7 +5425,8 @@ export default function FieldEstimate() {
               unit: '㎡',
               standardPrice: E,
               standardWorkQuantity: D,
-              quantity: 1,
+              // [면적0 보정] 면적 0이면 수량 0으로 시작 (사용자 요청).
+              quantity: adjustedRepairArea > 0 ? 1 : 0,
               applicationRates: { ceiling: false, wall: false, floor: false, molding: false },
               salesMarkupRate: 0,
               pricePerSqm: 0,
