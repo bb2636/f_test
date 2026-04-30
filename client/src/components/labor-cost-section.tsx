@@ -1357,6 +1357,10 @@ export function LaborCostSection({
               // 노무비DB 폴백 케이스: D가 없으면 단순 계산 (단가 × 수량)
               updated.amount = Math.round(E * quantity);
               // pricePerSqm은 이미 설정되어 있음 (단가_인)
+            } else if (isLossPreventionCase && E > 0) {
+              // 손해방지 케이스 폴백: 복구면적(C)이 없어도 적용단가(E) × 수량으로 계산
+              // 기존 피해복구 로직(C>0 분기)은 그대로 유지
+              updated.amount = Math.round(E * quantity);
             } else {
               updated.pricePerSqm = 0;
               updated.amount = 0;
@@ -2682,11 +2686,14 @@ export function LaborCostSection({
                       const Cv = row.damageArea || 0;
                       const Dv = row.standardWorkQuantity || 0;
                       const Ev = row.standardPrice || 0;
+                      const Qv = Number(row.quantity) || 0;
                       const computedAmount = isFixed
                         ? ((row as MergedLaborCostRow).mergedAmount ?? row.amount ?? 0)
                         : (isIlwidaegaRow && Cv > 0 && Dv > 0 && Ev > 0)
                           ? calculateIWithTiers(Cv, Dv, Ev, laborRateTiers)
-                          : ((row as MergedLaborCostRow).mergedAmount ?? row.amount ?? 0);
+                          : (isLossPreventionCase && isIlwidaegaRow && Ev > 0)
+                            ? Math.round(Ev * Qv)
+                            : ((row as MergedLaborCostRow).mergedAmount ?? row.amount ?? 0);
                       return computedAmount.toLocaleString();
                     })()}
                   </td>
@@ -2778,8 +2785,13 @@ export function LaborCostSection({
                   const Cv = row.damageArea || 0;
                   const Dv = row.standardWorkQuantity || 0;
                   const Ev = row.standardPrice || 0;
+                  const Qv = Number(row.quantity) || 0;
                   if (isIlw && Cv > 0 && Dv > 0 && Ev > 0) {
                     return sum + calculateIWithTiers(Cv, Dv, Ev, laborRateTiers);
+                  }
+                  // 손해방지 케이스: 복구면적이 없는 일위대가 행도 E×수량으로 합산
+                  if (isLossPreventionCase && isIlw && Ev > 0) {
+                    return sum + Math.round(Ev * Qv);
                   }
                   return sum + (row.amount || 0);
                 }, 0),
