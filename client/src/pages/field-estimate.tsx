@@ -3806,9 +3806,16 @@ export default function FieldEstimate() {
   }, [rows, laborCostRows, mergedIlwidaegaCatalog, deletedLinkedLaborKeys, exclusionsLoaded, laborRateTiers, isAutoSyncEligibleCase]); // laborCostRows, 노임단가 비율, exclusionsLoaded 포함 + cutoff 적용 대상 변화 감지
 
   // 최신 견적 가져오기
+  // [원본보존] 협력업체는 관리자가 저장한 최신값을 항상 보도록 매 진입마다 새로 fetch + 30초 폴링.
+  // 관리자/그 외 사용자는 입력 중 화면이 출렁이지 않도록 기본 캐시 정책 유지.
   const { data: latestEstimate, isLoading: isLoadingEstimate } = useQuery<{ estimate: any; rows: any[] }>({
     queryKey: ["/api/estimates", selectedCaseId, "latest"],
     enabled: !!selectedCaseId,
+    ...(isPartner ? {
+      staleTime: 0,
+      refetchOnMount: "always" as const,
+      refetchInterval: 30_000,
+    } : {}),
   });
 
   // 제출 조건 상태 계산 (견적 완료 상태)
@@ -3871,7 +3878,10 @@ export default function FieldEstimate() {
     if (latestEstimate === undefined) return;
     
     // Hydration이 이미 완료되었거나, 케이스가 선택되지 않았으면 skip
-    if (isHydratedRef.current || !selectedCaseId) return;
+    // [원본보존] 단, 협력업체는 관리자가 새로 저장한 값이 반영되도록 latestEstimate가
+    // 변경될 때마다 화면을 다시 채워줌. 협력업체는 자동sync/자동저장이 모두 차단되어
+    // 있으므로 화면 재hydrate가 DB를 변형시키지 않는다. (관리자 동작은 그대로 유지)
+    if ((isHydratedRef.current && !isPartner) || !selectedCaseId) return;
     
     // 마스터 데이터가 로드될 때까지 대기
     if (masterDataList.length === 0) return;
