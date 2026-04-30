@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/popover";
 import { formatCaseNumber } from "@/lib/utils";
 import { useLaborRateTiers } from "@/hooks/use-labor-rate-tiers";
-import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount } from "@/lib/labor-merge";
+import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount, isFixedLaborWorkName } from "@/lib/labor-merge";
+import { calculateQuantityWithTiers } from "@shared/labor-rate-tiers-utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -5375,7 +5376,21 @@ export default function FieldReport() {
                                               textAlign: "center",
                                             }}
                                           >
-                                            {Number(row.quantity || 0).toFixed(1)}
+                                            {/* [수량일관성] 일반 일위대가는 관리자 노무비 화면(2614-2622)과 동일하게
+                                                calculateQuantityWithTiers로 동적 계산. FIXED(가구/욕실)·비일위대가는
+                                                저장 수량 그대로 사용해 기존 로직 보존. */}
+                                            {(() => {
+                                              const r = row as any;
+                                              const isIlw = r.detailWork === "일위대가";
+                                              const isFixed = isIlw && isFixedLaborWorkName(r.workName);
+                                              const Cv = Number(r.damageArea) || 0;
+                                              const Dv = Number(r.standardWorkQuantity) || 0;
+                                              const Ev = Number(r.standardPrice) || 0;
+                                              const dynamicQty = !isFixed && isIlw && Cv > 0 && Dv > 0 && Ev > 0
+                                                ? calculateQuantityWithTiers(Cv, Dv, Ev, laborRateTiers)
+                                                : Number(r.quantity || 0);
+                                              return dynamicQty.toFixed(1);
+                                            })()}
                                           </td>
                                           <td
                                             style={{

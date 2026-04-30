@@ -132,13 +132,22 @@ export function getMergedRowAmount(
   row: MergedLaborCostRow,
   laborRateTiers: LaborRateTier[],
 ): number {
-  if (row.mergedAmount != null) return row.mergedAmount;
+  // [금액일관성] 관리자 노무비 화면(labor-cost-section.tsx 합계 셀)과 동일 로직.
+  // - FIXED 일위대가(가구/욕실 SMC·리빙보드·도기류·붙박이장 등)는 면적 무관 합산이므로
+  //   머지/저장값(mergedAmount→amount) 우선.
+  // - 그 외 일반 일위대가(C>0, D>0, E>0)는 매번 calculateIWithTiers로 동적 계산.
+  //   DB에 옛 산식 mergedAmount/amount가 박혀 있어도 화면/PDF/footer 표시가 항상 새 산식과 일치.
+  // - 비일위대가/손해방지/D=0 등은 기존 동작대로 머지값→저장값 폴백 (피해복구·손방 안전 보존).
   const isIlw = row.detailWork === "일위대가";
+  const isFixed = isIlw && isFixedLaborWorkName(row.workName);
+  if (isFixed) {
+    return row.mergedAmount ?? row.amount ?? 0;
+  }
   const C = row.damageArea || 0;
   const D = row.standardWorkQuantity || 0;
   const E = row.standardPrice || 0;
   if (isIlw && C > 0 && D > 0 && E > 0) {
     return calculateIWithTiers(C, D, E, laborRateTiers);
   }
-  return row.amount || 0;
+  return row.mergedAmount ?? row.amount ?? 0;
 }
