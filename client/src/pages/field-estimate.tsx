@@ -152,7 +152,7 @@ const LOSS_PREVENTION_SAMPLE_TEMPLATES: LossPreventionSampleTemplate[] = [
       { category: "원인철거", workName: "철거", detailItem: "보통인부" },
     ],
     materialRows: [
-      { workType: "원인공사", workName: "방수", materialName: "도막방수재 고요스 18L" },
+      { workType: "원인공사", workName: "방수", materialName: "도막방수재 고뫄스 18L" },
       { workType: "원인공사", workName: "방수", materialName: "방수프라이머 18L" },
       { workType: "원인공사", workName: "방수", materialName: "액체모르타르방수재 가사리(20L)" },
       { workType: "원인공사", workName: "방수", materialName: "레미탈" },
