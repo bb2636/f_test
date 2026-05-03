@@ -42,6 +42,19 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// [세션 keep-alive] 인증된 API 요청은 사용자 활동 신호로 간주.
+// useIdleTimeout이 이 이벤트를 들어 자동 로그아웃 타이머를 리셋함.
+// (자동 저장/조회 요청 중에 mouse/keyboard 이벤트 미감지로 인한 부당한 30분 로그아웃 방지)
+function notifyUserActivity() {
+  try {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("app:user-activity"));
+    }
+  } catch {
+    // ignore
+  }
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -54,6 +67,7 @@ export async function apiRequest(
     credentials: "include",
   });
 
+  if (res.ok) notifyUserActivity();
   await throwIfResNotOk(res);
   return res;
 }
@@ -72,6 +86,7 @@ export const getQueryFn: <T>(options: {
       return null;
     }
 
+    if (res.ok) notifyUserActivity();
     await throwIfResNotOk(res);
     return await res.json();
   };
