@@ -4594,7 +4594,12 @@ export default function FieldEstimate() {
     setSelectedLaborRows(new Set());
     setMaterialRows(newMaterialRows);
     setSelectedMaterialRows(new Set());
-    console.log("[손방 샘플 적용]", template.label, `노무비 ${newLaborRows.length}행 / 자재비 ${newMaterialRows.length}행`);
+    // [손방 샘플 재적용] 메모리 삭제 키도 함께 정리해 잔재로 새 템플릿 항목이 막히지 않도록 한다.
+    //   견적서는 laborCostRows + materialRows 합산으로 자동 갱신되므로 별도 처리 불필요.
+    if (deletedLinkedLaborKeys.size > 0) {
+      setDeletedLinkedLaborKeys(new Set());
+    }
+    console.log("[손방 샘플 적용]", template.label, `노무비 ${newLaborRows.length}행 / 자재비 ${newMaterialRows.length}행 (견적서 자동 갱신)`);
   };
 
   const handleLossSampleConfirm = () => {
@@ -8451,7 +8456,7 @@ export default function FieldEstimate() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
                     <AlertDialogDescription>
-                      샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
+                      샘플을 불러오면 현재 입력 중인 노무비·자재비·견적서가 새 손방 템플릿 내용으로 모두 교체됩니다. 계속하시겠습니까?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -8955,7 +8960,7 @@ export default function FieldEstimate() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
                   <AlertDialogDescription>
-                    샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
+                    샘플을 불러오면 현재 입력 중인 노무비·자재비·견적서가 새 손방 템플릿 내용으로 모두 교체됩니다. 계속하시겠습니까?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
