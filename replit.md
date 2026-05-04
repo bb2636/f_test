@@ -3,6 +3,9 @@
 ## Overview
 본 시스템은 **누수 사고의 접수부터 현장조사, 견적, 정산, 통계, 기준정보 관리까지 전 과정을 디지털화한 통합 관리 플랫폼**입니다. This comprehensive Insurance Accident Management System digitalizes and automates the entire workflow for water damage insurance claims. It serves insurance companies, platform administrators (FLOXN), repair companies, clients, assessors, and investigators, focusing on automating document generation, transmission, and approvals. The platform features robust role-based authentication, an administrator panel for user management, and an intuitive dashboard, all built with a clean, responsive UI/UX and clear FLOXN branding.
 
+## Testing
+- **자동 저장 회귀 테스트** (`client/src/lib/auto-save-scheduler.test.ts`): 탭 전환 시 자동 저장 동작의 4가지 회귀 시나리오(변경 없음 skip / 실 변경 저장 / 디바운스 윈도우 내 누락 방지 / 연속 no-op skip) + 협력업체 가드를 vitest로 검증. 자동 저장 트리거 로직은 `client/src/lib/auto-save-scheduler.ts`로 추출되어 React 외부에서 단위 테스트 가능. 실행: `npm test`.
+
 ## User Preferences
 - I prefer simple language.
 - I want iterative development.

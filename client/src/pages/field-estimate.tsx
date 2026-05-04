@@ -38,6 +38,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { LaborCostSection, type LaborCatalogItem, type LaborCostRow } from "@/components/labor-cost-section";
 import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount, isFixedLaborWorkName, isMergeableLaborRow } from "@/lib/labor-merge";
 import { MaterialCostSection, type MaterialCatalogItem, type MaterialRow } from "@/components/material-cost-section";
+import {
+  createAutoSaveScheduler,
+  type AutoSaveSchedulerDeps,
+} from "@/lib/auto-save-scheduler";
 
 // 복구면적 → 노무비/자재비 자동 동기화 적용 시작 시각 (KST, ISO 8601)
 // 이 시각(포함) 이후 생성된 신규 접수건에서만 자동 동기화가 동작한다.
@@ -288,17 +292,10 @@ export default function FieldEstimate() {
 
   // 싱크 결과 자동 저장: 화면(sync 결과)과 DB가 항상 일치하도록 자동 저장
   // - isAutoSavingRef: 자동 저장 중인지 표시 → onSuccess에서 toast 스킵
-  // - autoSaveDebounceRef: 짧은 시간 내 여러 sync 호출을 1회 저장으로 합침
+  // [Task #12] 디바운스 타이머/baseline hash는 `auto-save-scheduler.ts`로 이동.
+  //   - 자동 저장 트리거 모듈은 단위 테스트(client/src/lib/auto-save-scheduler.test.ts)
+  //     로 회귀 시나리오 4종 + 협력업체 가드를 자동 검증한다.
   const isAutoSavingRef = useRef(false);
-  const autoSaveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // [Task #11] 자동 저장 변경 감지(no-op skip)
-  //   - sync useEffect가 탭 전환만으로 발동되어도 실제로 행/필드가 바뀌지 않은
-  //     경우(이미 동기화 완료 상태)에는 불필요한 DB write를 발생시키지 않는다.
-  //   - autoSaveBaselineRef: triggerAutoSaveAfterSync 호출 시점(=sync 직전)의 hash.
-  //   - 디바운스 만료 시점에 latest state hash와 비교 → 동일하면 skip.
-  //   - latestStateRef들은 useEffect로 매 렌더 동기화 (setTimeout closure stale 방지).
-  //   - 협력업체/cutoff/lockedAtSave 등 기존 가드는 모두 유지. sync 함수 본체 미변경.
-  const autoSaveBaselineRef = useRef<{ hash: string; reason: string } | null>(null);
   const rowsRef = useRef<AreaCalculationRow[]>([]);
   const laborCostRowsRef = useRef<LaborCostRow[]>([]);
   const materialRowsRef = useRef<MaterialRow[]>([]);
@@ -6105,69 +6102,47 @@ export default function FieldEstimate() {
       material: materialRowsRef.current,
     });
 
-  const triggerAutoSaveAfterSync = (reason: string) => {
-    // [원본보존] 이중 안전장치: 협력업체 세션에서는 어떤 경로로 호출되더라도
-    // 자동 저장이 발동되지 않도록 함수 진입에서 즉시 차단.
-    // 관리자가 저장한 견적이 협력업체 화면 진입만으로 덮어써지는 경로 완전 봉쇄.
-    if (!currentUser || isPartner) {
-      console.log(`[AUTO-SAVE SKIP] Partner role (사유: ${reason})`);
-      return;
-    }
-    if (isReadOnly) return;
-    if (!selectedCaseId) return;
-    if (!isHydratedRef.current) return;
-    if (saveMutation.isPending) return;
-
-    // [Task #11] sync 직전 시점의 baseline hash 캡쳐.
-    //   - sync 함수가 setState를 호출했더라도 React는 다음 렌더에서 적용하므로,
-    //     이 시점의 ref는 아직 sync 이전 값(=baseline).
-    //   - ★ 중요: 디바운스 윈도우 안에서 Trigger A(실 변경) 후 Trigger B(no-op)가
-    //     오면 baseline을 B 시점(이미 A 결과 반영 후)으로 덮을 경우, 비교 시 동일하게
-    //     보여 A의 변경이 영원히 저장되지 않을 수 있다 (architect 지적).
-    //     → baseline은 "디바운스 시작 시점의 가장 이른 sync 직전 상태"를 보존해야
-    //     마지막 시점의 latest hash와 비교했을 때 누적 변경 여부가 정확히 잡힌다.
-    //     디바운스가 비어있을 때만 baseline 캡쳐. 디바운스 reset은 그대로 수행하여
-    //     최종 저장 발동 시점은 마지막 trigger 기준 1500ms로 유지.
-    if (!autoSaveDebounceRef.current) {
-      const baselineHash = computeAutoSaveHash();
-      autoSaveBaselineRef.current = { hash: baselineHash, reason };
-    } else {
-      clearTimeout(autoSaveDebounceRef.current);
-    }
-    autoSaveDebounceRef.current = setTimeout(() => {
-      autoSaveDebounceRef.current = null;
-      if (saveMutation.isPending) return;
-      // [Task #11] 1단계 변경 감지: latest state hash와 baseline 비교.
-      //   동일 → sync가 화면을 변경하지 않은 no-op이므로 DB write skip.
-      const baselineSnapshot = autoSaveBaselineRef.current;
-      autoSaveBaselineRef.current = null;
-      const baselineReason = baselineSnapshot?.reason ?? reason;
-      if (baselineSnapshot) {
-        const currentHash = computeAutoSaveHash();
-        if (currentHash === baselineSnapshot.hash) {
-          console.log(
-            `[AUTO-SAVE SKIP] no-op sync (변경 없음, 시작 사유: ${baselineReason}, 마지막 사유: ${reason})`,
-          );
-          return;
-        }
-      }
-      // [Task #11] 2단계 가드 통과 검증: 위험 ⑧/⑩/⑪이 latest state에 살아남았으면
-      //   DB write 차단. 선행 task의 sync 가드가 어떤 이유로든 우회된 경우,
-      //   사용자가 화면을 보기 전에 잘못된 상태가 영구화되는 것을 막는 마지막 안전망.
-      const validation = validateAutoSyncGuards();
-      if (!validation.ok) {
-        console.error(
-          `[AUTO-SAVE BLOCK] 가드 검증 실패로 자동 저장 차단 (사유: ${baselineReason}):`,
-          validation.violations,
-        );
-        return;
-      }
-      console.log(
-        `[AUTO-SAVE] 싱크 결과 자동 저장 시작 (가드 통과, 시작 사유: ${baselineReason}, 마지막 사유: ${reason})`,
-      );
+  // [Task #12] 스케줄러 동작은 `client/src/lib/auto-save-scheduler.ts`로 추출하여
+  //   회귀 시나리오를 단위 테스트로 자동 검증한다. 이 컴포넌트에서는 의존성을
+  //   주입하는 얇은 어댑터만 유지한다.
+  //   - 스케줄러 인스턴스는 ref로 1회만 생성 (디바운스 타이머/baseline state 보존).
+  //   - 매 렌더에서 `latestAutoSaveDepsRef.current`를 갱신하여, 스케줄러가 호출될
+  //     때마다 latest closure(currentUser/isPartner/isReadOnly/selectedCaseId/
+  //     saveMutation 포함)를 보도록 한다 → stale state 차단.
+  //   - 동작은 기존 in-line 구현과 1:1 동일 (architect 1차 리뷰의 baseline 보호 포함).
+  const latestAutoSaveDepsRef = useRef<AutoSaveSchedulerDeps>({
+    isPartnerSession: () => true, // 초기값: 안전 측 (어떤 호출이든 즉시 차단)
+    isEligible: () => false,
+    computeHash: () => "",
+    validateGuards: () => ({ ok: true, violations: [] }),
+    onPerformSave: () => {},
+  });
+  latestAutoSaveDepsRef.current = {
+    isPartnerSession: () => !currentUser || isPartner,
+    isEligible: () =>
+      !isReadOnly &&
+      !!selectedCaseId &&
+      isHydratedRef.current &&
+      !saveMutation.isPending,
+    computeHash: computeAutoSaveHash,
+    validateGuards: validateAutoSyncGuards,
+    onPerformSave: () => {
       isAutoSavingRef.current = true;
       saveMutation.mutate();
-    }, 1500);
+    },
+  };
+  const autoSaveSchedulerRef = useRef<ReturnType<typeof createAutoSaveScheduler> | null>(null);
+  if (autoSaveSchedulerRef.current === null) {
+    autoSaveSchedulerRef.current = createAutoSaveScheduler({
+      isPartnerSession: () => latestAutoSaveDepsRef.current.isPartnerSession(),
+      isEligible: () => latestAutoSaveDepsRef.current.isEligible(),
+      computeHash: () => latestAutoSaveDepsRef.current.computeHash(),
+      validateGuards: () => latestAutoSaveDepsRef.current.validateGuards(),
+      onPerformSave: () => latestAutoSaveDepsRef.current.onPerformSave(),
+    });
+  }
+  const triggerAutoSaveAfterSync = (reason: string) => {
+    autoSaveSchedulerRef.current?.trigger(reason);
   };
 
   // 저장
