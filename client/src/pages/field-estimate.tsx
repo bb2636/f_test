@@ -2826,15 +2826,14 @@ export default function FieldEstimate() {
       }).filter(Boolean)
     );
 
-    // [수동행 우선] 사용자가 수동 추가한 노무비 행(isLinkedFromRecovery=false)과
-    // 같은 공종|공사명|노임항목 키의 자동 행은 생성하지 않는다 — 견적 중복 합산 방지.
-    // 자동 sync 중복 가드는 sourceAreaRowId 기반(existingSourceAreaIds)이라 수동행 키 매칭은 별도.
-    // 수동 "복구면적 가져오기" 경로(syncLaborFromRecoveryArea)와 동일 패턴.
-    const manualKeySetForAutoSync = new Set(
-      laborCostRows
-        .filter(r => !r.isLinkedFromRecovery)
-        .map(r => `${normalizeForMatch(r.category || '')}|${normalizeForMatch(r.workName || '')}|${normalizeForMatch(r.detailItem || '')}`)
-    );
+    // [수동행 가드 정밀화 — Task #8]
+    // 이전 manualKeySetForAutoSync 글로벌 키 차단은 제거됨.
+    // 사유: 같은 영역행 중복은 existingSourceAreaIds / existingFixedFurnitureBathSourceIds로,
+    //       같은 workName 중복(다른 영역행)은 existingLinkedWorkNames로 이미 차단되어 있어
+    //       글로벌 (공종|공사명|노임항목) 키 차단은 사용자가 자동행을 모두 삭제하고
+    //       수동행으로 운영 중인 경우, 새 영역행이 추가되어도 자동행 생성을 막아 견적 누락을 일으킨다.
+    //       사용자 요청: "수동행도 기존 자동연동 로직에 충돌 및 중복이 안 된다면 자동연동에 추가".
+    // Task #7의 deletion 가드(deletedLinkedLaborKeys)는 filteredNewLaborRows에서 유지된다.
 
     // 가구/욕실 FIXED 본체(내장공) 행 전용 sync set — 철거공사/바탕만들기 동반행은 제외
     const existingFixedFurnitureBathSourceIds = new Set(
@@ -3233,17 +3232,16 @@ export default function FieldEstimate() {
 
       console.log('[진단5] newLaborRows push 결과', newLaborRows.length, '개:',
         newLaborRows.map(r => `${r.category}/${r.workName}/${r.detailItem}/srcId=${r.sourceAreaRowId?.slice(-8)}/qty=${r.quantity}/std=${r.standardPrice}`));
-      // [수동행 우선] 사용자가 같은 공종|공사명|노임항목으로 수동행을 이미 추가했다면 자동 행 생성 skip
-      // [삭제키 가드] 사용자가 의도적으로 삭제한 자동행 키는 다시 생성하지 않음
+      // [삭제키 가드 — Task #7] 사용자가 의도적으로 삭제한 자동행 키는 다시 생성하지 않음
       //   - 철거공사 reconcile useEffect와 동일한 makeLinkedLaborDeletionKey 사용 → 키 형식 일관성 보장
       //   - 키 형식: `${category}|${normalizedWorkName}|${detailItem}` (sourceAreaRowId는 무시)
       //   - 적용 대상: 일반 행, FIXED 본체, companion(바탕만들기), demolitionOnly 철거공사 행 모두
+      // [수동행 가드 — Task #8에서 정밀화]
+      //   - 이전 manualKeySetForAutoSync 글로벌 키 차단은 제거됨.
+      //   - 같은 영역행 중복은 existingSourceAreaIds 등 sourceAreaRowId 기반 가드,
+      //     같은 workName 다른 영역행 중복은 existingLinkedWorkNames로 이미 차단되어 있다.
+      //   - 사용자 요청: "수동행도 기존 자동연동 로직에 충돌 및 중복이 안 된다면 자동연동에 추가".
       const filteredNewLaborRows = newLaborRows.filter(r => {
-        const k = `${normalizeForMatch(r.category || '')}|${normalizeForMatch(r.workName || '')}|${normalizeForMatch(r.detailItem || '')}`;
-        if (manualKeySetForAutoSync.has(k)) {
-          console.log('[자동연동] 수동행 우선 - 자동 행 생성 skip:', r.category, r.workName, r.detailItem);
-          return false;
-        }
         const deletionKey = makeLinkedLaborDeletionKey(
           r.sourceAreaRowId || '',
           r.category || '',
