@@ -1472,8 +1472,10 @@ export default function FieldEstimate() {
                   // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음.
                   // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용
                   // (단가/카탈로그는 채워졌지만 면적이 0으로 저장된 빈 lock 행 보강용).
+                  // 추가: 합계(amount)가 0인 잠금은 잘못 박힌 빈 lock으로 간주 → 자동 보정 허용.
                   const isEffectiveLock = existingRow.lockedAtSave &&
-                    (Number(existingRow.damageArea) || 0) > 0;
+                    (Number(existingRow.damageArea) || 0) > 0 &&
+                    (Number(existingRow.amount) || 0) > 0;
                   if (isEffectiveLock) {
                     // 메타필드(소스/장소/위치)만 갱신.
                     newLaborRows.push({
@@ -1551,8 +1553,10 @@ export default function FieldEstimate() {
               if (existingRow) {
                 // [LOCK] 저장 시점에 확정된 행은 표준값 덮어쓰지 않음.
                 // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
+                // 추가: 합계(amount)가 0인 잠금은 잘못 박힌 빈 lock으로 간주 → 자동 보정 허용.
                 const isEffectiveLock = existingRow.lockedAtSave &&
-                  (Number(existingRow.damageArea) || 0) > 0;
+                  (Number(existingRow.damageArea) || 0) > 0 &&
+                  (Number(existingRow.amount) || 0) > 0;
                 if (isEffectiveLock) {
                   // 메타필드(소스/장소/위치)만 갱신.
                   newLaborRows.push({
@@ -3390,8 +3394,10 @@ export default function FieldEstimate() {
       return filteredRows.map(laborRow => {
         // [LOCK] 저장 시점에 확정된 행은 어떤 update 분기(철거/FIXED/일반)에서도 표준값 덮어쓰지 않음.
         // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
+        // 추가: 합계(amount)가 0인 잠금은 잘못 박힌 빈 lock으로 간주 → 자동 보정 허용.
         const isEffectiveLockTop = laborRow.lockedAtSave &&
-          (Number(laborRow.damageArea) || 0) > 0;
+          (Number(laborRow.damageArea) || 0) > 0 &&
+          (Number(laborRow.amount) || 0) > 0;
         if (isEffectiveLockTop) return laborRow;
         if (!laborRow.sourceAreaRowId) return laborRow;
         
@@ -3508,8 +3514,10 @@ export default function FieldEstimate() {
           if (isFixedLaborItem) {
             // [LOCK] 저장 시점에 확정된 FIXED 행은 자동 동기화로 덮어쓰지 않음.
             // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
+            // 추가: 합계(amount)가 0인 잠금은 잘못 박힌 빈 lock으로 간주 → 자동 보정 허용.
             const isEffectiveLockFixed = laborRow.lockedAtSave &&
-              (Number(laborRow.damageArea) || 0) > 0;
+              (Number(laborRow.damageArea) || 0) > 0 &&
+              (Number(laborRow.amount) || 0) > 0;
             if (isEffectiveLockFixed) {
               return laborRow;
             }
@@ -3559,8 +3567,10 @@ export default function FieldEstimate() {
           
           // [LOCK] 저장 시점에 확정된 행은 자동 동기화로 덮어쓰지 않음.
           // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
+          // 추가: 합계(amount)가 0인 잠금은 잘못 박힌 빈 lock으로 간주 → 자동 보정 허용.
           const isEffectiveLockGen = laborRow.lockedAtSave &&
-            (Number(laborRow.damageArea) || 0) > 0;
+            (Number(laborRow.damageArea) || 0) > 0 &&
+            (Number(laborRow.amount) || 0) > 0;
           if (isEffectiveLockGen) {
             return laborRow;
           }
@@ -3842,8 +3852,10 @@ export default function FieldEstimate() {
         // [LOCK] 저장 시점에 확정된 행은 stale 갱신 대상에서 제외 (표준값 보존).
         // 단, 피해면적(C)이 0인 빈 lock 행은 산출표 면적으로 자동 채움 허용
         //  → 단가는 카탈로그 매칭됐지만 면적이 0으로 저장된 행 보강용.
+        // 추가: 합계(amount)가 0인 잠금은 잘못 박힌 빈 lock으로 간주 → 자동 갱신 허용.
         const isEffectiveLockStale = currentRow.lockedAtSave &&
-          (Number(currentRow.damageArea) || 0) > 0;
+          (Number(currentRow.damageArea) || 0) > 0 &&
+          (Number(currentRow.amount) || 0) > 0;
         if (isEffectiveLockStale) return;
 
         const D = entry.catalogItem.기준작업량 || 0;

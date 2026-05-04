@@ -311,8 +311,11 @@ export function LaborCostSection({
     const updatedRows = rows.map((row) => {
       // [LOCK] 저장 시점에 확정된 행은 면적/수량/단가 자동 보정 대상에서 제외 (스냅샷 보존).
       // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
+      // 추가: 합계(amount)가 0인 잠금은 잘못 박힌 빈 lock으로 간주 → 자동 보정 허용
+      //       (단가/면적은 있으나 합계만 0으로 저장된 깨진 행 자가복구).
       const isEffectiveLock = row.lockedAtSave &&
-        (Number(row.damageArea) || 0) > 0;
+        (Number(row.damageArea) || 0) > 0 &&
+        (Number(row.amount) || 0) > 0;
       if (isEffectiveLock) return row;
       // 연동된 행만 대상
       if (!row.isLinkedFromRecovery) return row;
@@ -435,8 +438,11 @@ export function LaborCostSection({
     const updatedRows = rows.map((row) => {
       // [LOCK] 저장 시점에 확정된 행은 FIXED 정규화로 덮어쓰지 않음 (스냅샷 보존).
       // 단, 피해면적(C)이 0인 행은 lock 효과 없음 → 산출표 면적이 흘러들어와 자동 채워지도록 허용.
+      // 추가: 합계(amount)가 0인 잠금은 잘못 박힌 빈 lock으로 간주 → 정규화 허용
+      //       (저장 시 isMergeable 분기로 amount 보정이 SKIP되어 0인 채로 박힌 행 자가복구).
       const isEffectiveLockFixedNorm = row.lockedAtSave &&
-        (Number(row.damageArea) || 0) > 0;
+        (Number(row.damageArea) || 0) > 0 &&
+        (Number(row.amount) || 0) > 0;
       if (isEffectiveLockFixedNorm) return row;
       if (row.detailWork !== "일위대가") return row;
       if (!isFixedIlwidaegaWorkName(row.workName)) return row;

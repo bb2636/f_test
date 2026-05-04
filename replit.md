@@ -6,6 +6,16 @@
 ## Testing
 - **자동 저장 회귀 테스트** (`client/src/lib/auto-save-scheduler.test.ts`): 탭 전환 시 자동 저장 동작의 4가지 회귀 시나리오(변경 없음 skip / 실 변경 저장 / 디바운스 윈도우 내 누락 방지 / 연속 no-op skip) + 협력업체 가드를 vitest로 검증. 자동 저장 트리거 로직은 `client/src/lib/auto-save-scheduler.ts`로 추출되어 React 외부에서 단위 테스트 가능. 실행: `npm test`.
 
+## 노무비 행 잠금(lockedAtSave) 가드 정책
+- **목적**: 저장 시점에 박힌 표준값(`lockedAtSave=true`)을 자동 동기화가 덮어쓰지 못하도록 보호.
+- **가드 공통 조건** (8곳: `labor-cost-section.tsx` L319/L446, `field-estimate.tsx` L1479/L1560/L3401/L3521/L3574/L3859):
+  `lockedAtSave && damageArea > 0 && amount > 0` 이면 SKIP.
+- **두 가지 자가복구 출구**:
+  1) **면적=0 빈 lock**: 산출표 면적이 흘러들어와 자동 채움 허용 (단가/카탈로그는 채워졌지만 면적이 0으로 저장된 행 보강).
+  2) **합계=0 빈 lock**: 잘못 박힌 lock으로 간주, 정규화/자동 동기화 허용 (저장 시 FIXED 항목의 amount 보정이 SKIP되어 0으로 박힌 행 자가복구).
+- **보호 범위**: 정상 값(damageArea>0 && amount>0)으로 박힌 행은 어떤 자동 경로로도 덮어쓰지 않음. 산식·계산 로직은 손대지 않음.
+- **행 삭제 가드**(`field-estimate.tsx` L3304)는 별개: 잠긴 행은 자동 reconcile에서도 무조건 살려두며, 합계 보정은 다른 8곳에서 처리.
+
 ## User Preferences
 - I prefer simple language.
 - I want iterative development.
