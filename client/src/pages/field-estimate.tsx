@@ -3234,10 +3234,24 @@ export default function FieldEstimate() {
       console.log('[진단5] newLaborRows push 결과', newLaborRows.length, '개:',
         newLaborRows.map(r => `${r.category}/${r.workName}/${r.detailItem}/srcId=${r.sourceAreaRowId?.slice(-8)}/qty=${r.quantity}/std=${r.standardPrice}`));
       // [수동행 우선] 사용자가 같은 공종|공사명|노임항목으로 수동행을 이미 추가했다면 자동 행 생성 skip
+      // [삭제키 가드] 사용자가 의도적으로 삭제한 자동행 키는 다시 생성하지 않음
+      //   - 철거공사 reconcile useEffect와 동일한 makeLinkedLaborDeletionKey 사용 → 키 형식 일관성 보장
+      //   - 키 형식: `${category}|${normalizedWorkName}|${detailItem}` (sourceAreaRowId는 무시)
+      //   - 적용 대상: 일반 행, FIXED 본체, companion(바탕만들기), demolitionOnly 철거공사 행 모두
       const filteredNewLaborRows = newLaborRows.filter(r => {
         const k = `${normalizeForMatch(r.category || '')}|${normalizeForMatch(r.workName || '')}|${normalizeForMatch(r.detailItem || '')}`;
         if (manualKeySetForAutoSync.has(k)) {
           console.log('[자동연동] 수동행 우선 - 자동 행 생성 skip:', r.category, r.workName, r.detailItem);
+          return false;
+        }
+        const deletionKey = makeLinkedLaborDeletionKey(
+          r.sourceAreaRowId || '',
+          r.category || '',
+          r.workName || '',
+          r.detailItem || ''
+        );
+        if (deletedLinkedLaborKeys.has(deletionKey)) {
+          console.log('[자동연동] 삭제키 가드 - 자동 행 생성 skip:', r.category, r.workName, r.detailItem, 'key=', deletionKey);
           return false;
         }
         return true;
@@ -3594,7 +3608,7 @@ export default function FieldEstimate() {
         return laborRow;
       });
     });
-  }, [rows, mergedIlwidaegaCatalog, laborRateTiers, isAutoSyncEligibleCase, isPartner, currentUser]); // rows(복구면적 산출표), 일위대가 카탈로그, 노임단가 비율 변경 시 실행 + cutoff 적용 대상 변화 감지 + 협력업체 가드
+  }, [rows, mergedIlwidaegaCatalog, laborRateTiers, isAutoSyncEligibleCase, isPartner, currentUser, deletedLinkedLaborKeys]); // rows(복구면적 산출표), 일위대가 카탈로그, 노임단가 비율 변경 시 실행 + cutoff 적용 대상 변화 감지 + 협력업체 가드 + 삭제키 가드 (사용자 삭제 직후 useEffect 재발화로 정합 상태 유지)
 
   // ========== 철거공사 Reconcile useEffect ==========
   // 복구면적 산출표(rows)의 공사명을 기반으로 철거공사 노무비를 자동 생성/삭제
