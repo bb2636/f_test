@@ -490,11 +490,14 @@ export default function FieldEstimate() {
   }, [laborCostRows]);
 
   // 자재비 행 중복 자동 제거 (React 배치 처리로 인한 중복 방지)
-  // 연동된 행(isLinkedFromRecovery=true)에서 같은 공종+공사명 조합은 첫 번째만 유지
+  // 연동된 행(isLinkedFromRecovery=true)에서 같은 공종+공사명+자재항목 조합은 첫 번째만 유지
+  // [버그 수정 2026-05-04] 이전엔 key가 `공종|공사명`뿐이라 같은 공사명에 여러 자재항목이
+  // 등록된 경우(예: 도배 = 실크벽지 + 합지벽지) 첫 행만 남기고 나머지를 잘못 제거했다.
+  // 자재항목까지 키에 포함하여, 진짜 동일 자재항목 중복만 제거하도록 정확화.
+  // (협력업체 차단 가드는 보수적으로 유지 — 자동저장 차단과 함께 이중 안전장치 역할.)
   const lastMaterialDeduplicationRef = useRef<string>('');
   useEffect(() => {
     // [원본보존-협력업체] currentUser 미로드 또는 협력업체이면 dedup 자체를 건너뛴다.
-    // (자재 dedup key가 `공종|공사명`뿐이라 자재항목이 다른 정상 행을 잘못 제거할 위험을 차단)
     if (!isUserLoadedRef.current || isPartnerRef.current) return;
     if (materialRows.length === 0) return;
     
@@ -504,7 +507,8 @@ export default function FieldEstimate() {
     let hasDuplicates = false;
     
     for (const row of linkedRows) {
-      const key = `${row.공종}|${row.공사명}`;
+      const itemKey = (row.자재항목 ?? '').toString().trim() || '__NONE__';
+      const key = `${row.공종}|${row.공사명}|${itemKey}`;
       keyCount[key] = (keyCount[key] || 0) + 1;
       if (keyCount[key] > 1) {
         hasDuplicates = true;
@@ -541,7 +545,8 @@ export default function FieldEstimate() {
         keepIds.add(row.id);
         return;
       }
-      const key = `${row.공종}|${row.공사명}`;
+      const itemKey = (row.자재항목 ?? '').toString().trim() || '__NONE__';
+      const key = `${row.공종}|${row.공사명}|${itemKey}`;
       if (seen.has(key)) {
         console.log('[자재비 중복 제거] 제거:', row.공종, row.공사명, '자재항목:', row.자재항목);
         return;
