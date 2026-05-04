@@ -14,6 +14,16 @@
 5. **샘플견적 손방 화장실 — 원인공사 방수 보통인부 단가** (Bug 3): `applyLossPreventionSampleTemplate`에서 정확매칭(공종+공사명+노임항목/세부항목) 실패 시, 공사명+노임항목/세부항목으로 카탈로그 검색 → 후보가 정확히 1개일 때만 단가 채택(다수 후보면 모호성으로 폴백 포기). 단가>0 조건 추가. **[2026-05-04 후속]** 적용단가(`pricePerSqm`)가 0으로 남던 부수 회귀 보강: 손해방지 케이스는 복구면적(C)이 없어 `calculateAppliedUnitPriceWithTiers` 경로가 작동하지 않으므로, 샘플 적용 시 `pricePerSqm = matchedStandardPrice`(E)로 초기 채움 (수동 detailItem 선택 시 L1219의 동일 동작과 일치). 산식 미변경.
 6. **석고보드 철거 수량/금액 누락 재발** (Bug 2): `field-estimate.tsx` L3478~3498(자동 동기화 reconcile의 철거공사 행 업데이트)에서 카탈로그 lookup 시 `laborRow.workName`(예: '석고보드')을 그대로 사용하여 `mergedIlwidaegaCatalog`(공사명='석고')와 매칭 실패 → D/E가 0으로 남아 수량·금액이 영구 0으로 굳던 회귀. `matchDemolitionWorkName` + `DEMOLITION_WORKNAME_ALIASES`로 canonical 이름 산출 후 원본 또는 alias 중 하나만 일치해도 매치하도록 변경. 산식·계산 로직 미변경, 매칭 가드만 보강.
 
+## 누수탐지 항목 경비여부 자동 체크 (2026-05-04 후속)
+누수탐지 관련 노무비 항목은 보험 정산 관행상 **경비**로 분류되어 일반관리비/이윤 산정 대상에서 제외되어야 함. 사용자 매번 수동 체크하는 불편을 제거하기 위해 5개 진입점에 자동 체크 가드 추가 (`includeInEstimate=false` 자동 설정, 사용자가 필요 시 직접 토글 가능):
+1. **`labor-cost-section.tsx` `handleWorkNameChange` (L219~225)**: `updateRow`에 위임만 하도록 단순화. (이전 분기 우회 로직은 카탈로그 매칭/하위필드 리셋 누락 위험으로 제거)
+2. **`labor-cost-section.tsx` `updateRow` workName 분기 (L1086~1090)**: value="누수탐지"면 기존 카탈로그 매칭/리셋 로직 그대로 두고 `includeInEstimate=false`만 추가 패치.
+3. **`labor-cost-section.tsx` `updateRow` category 분기 (L813~852)**: 공종이 "누수탐지" 또는 "누수탐지비용"으로 바뀌면 includeInEstimate=false 자동.
+4. **`labor-cost-section.tsx` `addRowInCategory` (L1771~1802)**: 누수탐지/누수탐지비용 그룹에서 + 추가 시 신규 행 `includeInEstimate=false` 초기화.
+5. **`field-estimate.tsx` 견적서 공종 Select (L8631~8656)** 및 **`applyLossPreventionSampleTemplate` (L4616~4633)**: 동일 가드 적용.
+
+산식 미변경, 매칭/가드만 추가. 합계 분리 로직(L4947~4992)은 그대로 — `includeInEstimate` 값만 자동 채워준다. 사용자가 수동으로 경비 체크박스를 토글한 뒤 다시 공종/공사명을 "누수탐지"로 바꾸면 자동 false가 다시 적용되는 구조.
+
 ## 노무비 행 잠금(lockedAtSave) 가드 정책
 - **목적**: 저장 시점에 박힌 표준값(`lockedAtSave=true`)을 자동 동기화가 덮어쓰지 못하도록 보호.
 - **가드 공통 조건** (8곳: `labor-cost-section.tsx` L319/L446, `field-estimate.tsx` L1479/L1560/L3401/L3521/L3574/L3859):

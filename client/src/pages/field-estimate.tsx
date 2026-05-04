@@ -4610,6 +4610,9 @@ export default function FieldEstimate() {
         unit: matchedUnit,
         standardPrice: matchedStandardPrice,
       });
+      // [누수탐지 경비여부 자동체크 2026-05-04] 누수탐지/누수탐지비용 항목은 경비로 자동 분류
+      //   (includeInEstimate=false → 관리비/이윤 산정 대상에서 제외). 산식 변경 없음, 가드만 추가.
+      const isLeakDetection = seed.category === "누수탐지" || seed.category === "누수탐지비용";
       return {
         ...blank,
         id: `labor-${baseTs}-${idx}-${Math.random().toString(36).slice(2, 8)}`,
@@ -4623,6 +4626,7 @@ export default function FieldEstimate() {
         //   수동 detailItem 선택 시(L1219) pricePerSqm = 단가_인을 채워주는 동작과 동일하게,
         //   샘플 적용 시점에도 적용단가 = E(노임단가)를 즉시 표시. 산식 변경 없음.
         pricePerSqm: matchedStandardPrice,
+        includeInEstimate: isLeakDetection ? false : blank.includeInEstimate,
       };
     });
 
@@ -8638,8 +8642,14 @@ export default function FieldEstimate() {
                                       workName: "종합검사",
                                       detailWork: "",
                                       standardPrice: 0,
-                                      unit: "회"
+                                      unit: "회",
+                                      // [누수탐지 경비여부 자동체크 2026-05-04] 누수탐지비용 = 경비 항목
+                                      includeInEstimate: false,
                                     };
+                                  }
+                                  // [누수탐지 경비여부 자동체크 2026-05-04] 공종이 "누수탐지"면 경비 자동 체크
+                                  if (value === "누수탐지") {
+                                    return { ...r, category: value, includeInEstimate: false };
                                   }
                                   return { ...r, category: value };
                                 }

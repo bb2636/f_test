@@ -214,29 +214,11 @@ export function LaborCostSection({
   };
 
   // 공사명 선택 시 단순 업데이트 (팝업 제거됨)
-  // 손해방지 케이스에서 공사명이 "누수탐지"면 경비여부 자동 체크
+  // [누수탐지 경비여부 자동체크 2026-05-04] updateRow 내부 workName 분기에서
+  //   value="누수탐지"일 때 includeInEstimate=false 자동 패치. 본 핸들러는 단순 위임만 한다.
+  //   (이전엔 updateRow를 우회했으나 카탈로그 매칭/하위필드 리셋 로직이 누락되는 회귀 위험 있음)
   const handleWorkNameChange = (rowId: string, workName: string) => {
-    // 손해방지 케이스이고 공사명이 "누수탐지"면 updateRow 후 includeInEstimate 체크
-    if (isLossPreventionCase && workName === "누수탐지") {
-      // 먼저 updateRow로 workName 업데이트 및 금액 계산 수행
-      // updateRow 내부 로직을 복사하여 includeInEstimate도 함께 설정
-      const updatedRows = rows.map((row) => {
-        if (row.id === rowId) {
-          const updated = { ...row, workName, includeInEstimate: false };
-
-          // 금액 계산 (standardPrice * quantity)
-          const standardPrice = Number(updated.standardPrice) || 0;
-          const quantity = Number(updated.quantity) || 0;
-          updated.amount = Math.round(standardPrice * quantity);
-
-          return updated;
-        }
-        return row;
-      });
-      onRowsChange(updatedRows);
-    } else {
-      updateRow(rowId, "workName", workName);
-    }
+    updateRow(rowId, "workName", workName);
   };
 
   const getCeilingMultiplier = (workType: string, location: string): number => {
@@ -823,6 +805,8 @@ export function LaborCostSection({
               molding: false,
             };
             updated.pricePerSqm = 0;
+            // [누수탐지 경비여부 자동체크 2026-05-04] 누수탐지비용 = 경비 항목
+            updated.includeInEstimate = false;
           } else {
             updated.workName = "";
             updated.detailWork = "";
@@ -836,6 +820,10 @@ export function LaborCostSection({
               molding: false,
             };
             updated.pricePerSqm = 0;
+            // [누수탐지 경비여부 자동체크 2026-05-04] 공종이 "누수탐지"면 경비 자동 체크
+            if (value === "누수탐지") {
+              updated.includeInEstimate = false;
+            }
           }
         }
 
@@ -1072,6 +1060,12 @@ export function LaborCostSection({
                 matchingItems.length,
               );
             }
+          }
+
+          // [누수탐지 경비여부 자동체크 2026-05-04] 공사명="누수탐지" → 경비 자동 체크
+          //   기존 하위필드 리셋/카탈로그 매칭 로직은 그대로 유지하고 includeInEstimate만 추가 패치.
+          if (value === "누수탐지") {
+            updated.includeInEstimate = false;
           }
         }
 
@@ -1774,6 +1768,8 @@ export function LaborCostSection({
   // 공종 그룹 내 행 추가
   const addRowInCategory = (category: string, afterRowId: string) => {
     if (isReadOnly) return;
+    // [누수탐지 경비여부 자동체크 2026-05-04] 누수탐지/누수탐지비용 그룹에 + 추가 시 경비 자동 체크
+    const isLeakDetection = category === "누수탐지" || category === "누수탐지비용";
     const newRow: LaborCostRow = {
       id: `labor-${Date.now()}-${Math.random()}`,
       sourceAreaRowId: "",
@@ -1797,7 +1793,7 @@ export function LaborCostSection({
       pricePerSqm: 0,
       damageArea: 0,
       deduction: 0,
-      includeInEstimate: true,
+      includeInEstimate: !isLeakDetection,
       request: "",
       amount: 0,
     };
