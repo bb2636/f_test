@@ -8456,7 +8456,7 @@ export default function FieldEstimate() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
                     <AlertDialogDescription>
-                      샘플을 불러오면 현재 입력 중인 노무비·자재비·견적서가 새 손방 템플릿 내용으로 모두 교체됩니다. 계속하시겠습니까?
+                      샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -8960,7 +8960,7 @@ export default function FieldEstimate() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
                   <AlertDialogDescription>
-                    샘플을 불러오면 현재 입력 중인 노무비·자재비·견적서가 새 손방 템플릿 내용으로 모두 교체됩니다. 계속하시겠습니까?
+                    샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
