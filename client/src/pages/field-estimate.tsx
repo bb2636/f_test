@@ -2513,12 +2513,12 @@ export default function FieldEstimate() {
 
   // 복구면적 변경 → 자재비 자동 동기화 useEffect
   useEffect(() => {
-    // [원본보존] 협력업체에서는 어떠한 자동 동기화/저장도 발동하지 않는다.
-    // 관리자가 한 번 저장한 견적이 협력업체 화면 진입만으로 화면 계산값으로 덮어써져
-    // DB까지 자동 저장되던 문제 차단. 협력업체 화면에는 "복구면적 불러오기" 버튼이 없어
-    // 잘못 변형된 값을 되돌릴 수 없으므로, 변형 자체가 일어나지 않도록 한다.
-    if (!currentUser || isPartner) {
-      console.log("[SYNC SKIP] Partner role — keep saved estimate as-is");
+    // [정책 변경 2026-05-04] 협력업체 화면에서도 자재비 자동 동기화 발동.
+    // 노무비 철거 자동연동을 협력업체에 풀어준 것과 일관되게, 자재비도 노무비/복구면적
+    // 변화에 맞춰 자동 동기화한다(사용자 요청). 자동저장 자체는 별도 가드(L6150)로
+    // 여전히 차단되므로 화면 표시만 갱신되고 DB 반영은 협력업체가 명시 저장 시 일어난다.
+    if (!currentUser) {
+      console.log("[SYNC SKIP] No current user");
       return;
     }
 
@@ -2570,10 +2570,11 @@ export default function FieldEstimate() {
 
   useEffect(() => {
     if (selectedCategory !== "자재비") return;
-    // [원본보존] 협력업체는 관리자가 저장한 견적을 그대로 봐야 한다.
-    // 자재비 탭 진입만으로 sync→자동저장이 발동해 DB의 저장본이 변형되던 경로 차단.
-    if (!currentUser || isPartner) {
-      console.log("[자동연동 SKIP] 자재비 탭 진입: 협력업체");
+    // [정책 변경 2026-05-04] 협력업체 화면에서도 자재비 탭 진입 시 자동 동기화 발동.
+    // 자동저장은 별도 가드(L6150)로 여전히 차단되므로 화면 갱신만 일어나며,
+    // DB 반영은 협력업체가 명시적으로 저장할 때만 함께 들어간다.
+    if (!currentUser) {
+      console.log("[자동연동 SKIP] 자재비 탭 진입: 사용자 미로드");
       return;
     }
     if (!isHydratedRef.current) return;
@@ -2689,9 +2690,10 @@ export default function FieldEstimate() {
   // 피해복구 케이스에서만 작동 (손해방지 케이스 제외)
   // 주의: 새 행 생성은 skipAutoSyncRef.current가 false일 때만 실행
   useEffect(() => {
-    // [원본보존] 협력업체에서는 노무비→자재비 자동 동기화 차단
-    // (관리자 저장본을 그대로 표시. setMaterialRows 변형 금지.)
-    if (!currentUser || isPartner) return;
+    // [정책 변경 2026-05-04] 협력업체 화면에서도 노무비→자재비 자동 동기화 발동.
+    // 노무비에 추가/변경된 행에 맞춰 자재비도 동일한 공종/공사명으로 자동 생성된다(사용자 요청).
+    // 자동저장은 별도 가드(L6150)로 여전히 차단되므로 DB 반영은 명시 저장 시 함께 들어간다.
+    if (!currentUser) return;
 
     // Hydration 완료 전에는 동기화 건너뛰기 (중복 행 방지)
     if (!isHydratedRef.current) {
