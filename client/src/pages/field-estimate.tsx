@@ -740,7 +740,9 @@ export default function FieldEstimate() {
       priceStandard: '',
       unit: options?.unit || '',
       standardPrice: options?.standardPrice || 0,
-      quantity: 1,
+      // [면적0 보정] options.damageArea가 명시되었고 0 이하이면 quantity 0으로 시작
+      // (수동 추가는 damageArea 미지정 → 기존대로 1 유지, 회귀 방지).
+      quantity: (options && options.damageArea !== undefined && (Number(options.damageArea) || 0) <= 0) ? 0 : 1,
       applicationRates: {
         ceiling: false,
         wall: false,
@@ -2895,6 +2897,45 @@ export default function FieldEstimate() {
       if (laborCostRows.find(r => r.sourceAreaRowId === demolitionSourceId)) return false;
       return true;
     });
+
+    // [공종 꼬임 방지] 산출표가 변경되어 더 이상 유효하지 않은 stale 철거 행 자동 제거
+    // 예: 화장실(욕실공사 SMC) → 침실(목공사 석고보드) 변경 후 SMC 철거공사 행 잔존 케이스.
+    // alreadySyncedDemolitionRefreshes는 빈 행만 갱신 → FIXED 항목(SMC 등)은 정리 못함 → 별도 정리 필요.
+    const staleDemolitionRemoveIds = new Set<string>();
+    laborCostRows.forEach(row => {
+      if (!row.isLinkedFromRecovery) return;
+      if (row.category !== '철거공사') return;
+      if (!row.sourceAreaRowId || !row.sourceAreaRowId.startsWith('demolition-')) return;
+      const areaRowId = row.sourceAreaRowId.replace('demolition-', '');
+      const areaRow = rows.find(r => r.id === areaRowId);
+      // 산출표 영역행이 사라졌으면 stale
+      if (!areaRow) {
+        staleDemolitionRemoveIds.add(row.id);
+        return;
+      }
+      if (!areaRow.workType || !areaRow.workName) return;
+      // 영역행이 더 이상 demolition 대상이 아니면 stale
+      if (!needsDemolitionRow(areaRow.workType, areaRow.workName)) {
+        staleDemolitionRemoveIds.add(row.id);
+        return;
+      }
+      // 영역행의 새 demolition 매핑과 기존 노무비 행의 workName이 다르면 stale
+      const expectedDemoName = getDemolitionMapping(areaRow.workType, areaRow.workName).demolitionWorkName;
+      const expectedCanon = DEMOLITION_WORKNAME_ALIASES[expectedDemoName] || expectedDemoName;
+      const existingMatched = matchDemolitionWorkName(row.workName || '');
+      const existingCanon = existingMatched
+        ? (DEMOLITION_WORKNAME_ALIASES[existingMatched] || existingMatched)
+        : (row.workName || '');
+      if (normalizeForMatch(existingCanon) !== normalizeForMatch(expectedCanon)) {
+        staleDemolitionRemoveIds.add(row.id);
+      }
+    });
+    if (staleDemolitionRemoveIds.size > 0) {
+      console.log('[자동연동] stale 철거공사 행 제거:', staleDemolitionRemoveIds.size, '개 (산출표 변경으로 매핑 불일치)');
+      lastLaborSetSourceRef.current = 'autoSync-stale-demo';
+      setLaborCostRows(prev => prev.filter(r => !staleDemolitionRemoveIds.has(r.id)));
+      return;
+    }
 
     // 이미 연동된 철거공사 행 마이그레이션: workName 매핑이 변경된 경우(예: '석고보드' → '석고') 갱신
     const alreadySyncedDemolitionRefreshes: { oldId: string; newRow: LaborCostRow }[] = [];
