@@ -1204,7 +1204,10 @@ export default function FieldEstimate() {
 
   // 복구면적 산출표에서 노무비로 동기화 (일위대가DB 기반 자동 생성)
   // 일위대가DB에서 공종+공사명으로 조회하여 ALL matching 노임항목 행을 자동 생성
-  const syncLaborFromRecoveryArea = () => {
+  // [Task #10] clearDeletedKeys: 사용자가 명시적으로 "복구면적 가져오기" 버튼을 누른 경우에만 true.
+  //   자동 호출(노무비 탭 진입 등)에서는 false → 메모리 삭제 키 보존 → 부활 윈도우 차단.
+  const syncLaborFromRecoveryArea = (opts?: { clearDeletedKeys?: boolean }) => {
+    const clearDeletedKeys = opts?.clearDeletedKeys === true;
     console.log('[복구면적가져오기] START', {
       isReadOnly,
       rowsCount: rows.length,
@@ -1212,14 +1215,17 @@ export default function FieldEstimate() {
       catalogCount: mergedIlwidaegaCatalog.length,
       deletedKeysCount: deletedLinkedLaborKeys.size,
       deletedKeysSample: Array.from(deletedLinkedLaborKeys).slice(0, 10),
+      clearDeletedKeys,
     });
     // 협력업체(readOnly)도 동일한 화면값을 보도록 isReadOnly 가드 제거 (저장은 별도로 차단됨)
     if (rows.length === 0) return;
     
-    // ★ 메모리 삭제 키 초기화 — 수동 삭제했던 연동 행도 다시 가져올 수 있도록
-    // DB 삭제 키는 유지 (자동 동기화에서 계속 보호)
-    if (deletedLinkedLaborKeys.size > 0) {
-      console.log('[복구면적가져오기] deletedLinkedLaborKeys 메모리 초기화:', deletedLinkedLaborKeys.size, '개 키 (DB 유지)');
+    // ★ 메모리 삭제 키 초기화 — 사용자가 명시적으로 "복구면적 가져오기" 버튼을 눌렀을 때만 작동.
+    //   자동 호출(노무비 탭 진입 등)에서 무조건 클리어하면 같은 케이스 안에서 케이스 ID가
+    //   바뀌기 전까지 DB 재로드가 일어나지 않아, 사용자가 삭제했던 행이 일시적으로 부활하는
+    //   윈도우가 생겼다 (위험 ⑩). DB 삭제 키는 항상 유지 (자동 동기화에서 계속 보호).
+    if (clearDeletedKeys && deletedLinkedLaborKeys.size > 0) {
+      console.log('[복구면적가져오기] deletedLinkedLaborKeys 메모리 초기화:', deletedLinkedLaborKeys.size, '개 키 (DB 유지, 사용자 명시 버튼)');
       setDeletedLinkedLaborKeys(new Set());
     }
     
@@ -2593,6 +2599,7 @@ export default function FieldEstimate() {
       catalogLen: mergedIlwidaegaCatalog.length,
       rowsLen: rows.length,
     });
+    // [Task #10] 자동 호출 — 메모리 삭제 키는 클리어하지 않음 (부활 윈도우 차단).
     syncLaborFromRecoveryArea();
     // 노무비 싱크 결과를 DB에 자동 저장 → 보고서/PDF가 항상 화면과 일치
     triggerAutoSaveAfterSync("labor:tabEnter");
@@ -8238,7 +8245,7 @@ export default function FieldEstimate() {
                   {/* 손해방지 케이스는 복구면적 산출표가 없으므로 숨김 */}
                   {!isLossPreventionCase && (
                     <Button
-                      onClick={syncLaborFromRecoveryArea}
+                      onClick={() => syncLaborFromRecoveryArea({ clearDeletedKeys: true })}
                       variant="outline"
                       size="sm"
                       disabled={rows.length === 0 || isReadOnly}
