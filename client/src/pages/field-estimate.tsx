@@ -291,6 +291,17 @@ export default function FieldEstimate() {
   // - autoSaveDebounceRef: 짧은 시간 내 여러 sync 호출을 1회 저장으로 합침
   const isAutoSavingRef = useRef(false);
   const autoSaveDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // [Task #11] 자동 저장 변경 감지(no-op skip)
+  //   - sync useEffect가 탭 전환만으로 발동되어도 실제로 행/필드가 바뀌지 않은
+  //     경우(이미 동기화 완료 상태)에는 불필요한 DB write를 발생시키지 않는다.
+  //   - autoSaveBaselineRef: triggerAutoSaveAfterSync 호출 시점(=sync 직전)의 hash.
+  //   - 디바운스 만료 시점에 latest state hash와 비교 → 동일하면 skip.
+  //   - latestStateRef들은 useEffect로 매 렌더 동기화 (setTimeout closure stale 방지).
+  //   - 협력업체/cutoff/lockedAtSave 등 기존 가드는 모두 유지. sync 함수 본체 미변경.
+  const autoSaveBaselineRef = useRef<{ hash: string; reason: string } | null>(null);
+  const rowsRef = useRef<AreaCalculationRow[]>([]);
+  const laborCostRowsRef = useRef<LaborCostRow[]>([]);
+  const materialRowsRef = useRef<MaterialRow[]>([]);
 
   // 노임단가 적용비율 데이터 (DB에서 가져옴)
   const { data: laborRateTiersData } = useLaborRateTiers();
@@ -316,6 +327,13 @@ export default function FieldEstimate() {
     const rawCaseId = localStorage.getItem('selectedFieldSurveyCaseId');
     return (rawCaseId && rawCaseId !== 'null' && rawCaseId !== 'undefined') ? rawCaseId : '';
   });
+
+  // [Task #11] latest state ref 동기화 — triggerAutoSaveAfterSync의 setTimeout
+  //   콜백이 stale closure를 보지 않도록, 매 렌더에서 ref를 최신 state로 갱신.
+  //   기존 state/sync 로직은 일절 미변경 (읽기 전용 ref).
+  useEffect(() => { rowsRef.current = rows; }, [rows]);
+  useEffect(() => { laborCostRowsRef.current = laborCostRows; }, [laborCostRows]);
+  useEffect(() => { materialRowsRef.current = materialRows; }, [materialRows]);
 
   // 케이스 변경 시 DB에서 삭제된 연동 노무비 키 로드 (영속화된 데이터)
   useEffect(() => {
@@ -5991,6 +6009,26 @@ export default function FieldEstimate() {
   // - sync useEffect 끝에서 호출 → 짧은 디바운스(1.5초) 후 saveMutation 실행
   // - readOnly / 케이스 미선택 / 미수화 / 저장 진행 중인 경우 스킵
   // - 사용자가 직접 누르는 "저장"과는 분리 (toast 미표시)
+  // [Task #11] sync 결과 변경 감지용 hash.
+  //   - JSON.stringify로 핵심 state 3종(rows/labor/material)을 통째로 직렬화.
+  //   - sync 함수들은 매칭된 기존 행의 id를 보존하므로(existingLinkedMap 등),
+  //     실제 변경이 없으면 hash 동일 → false positive 적음.
+  //   - 신규 행이 생기면 새 id가 부여돼 hash가 달라지므로 변경 감지됨.
+  const computeAutoSaveHash = () => {
+    try {
+      return JSON.stringify({
+        rows: rowsRef.current,
+        labor: laborCostRowsRef.current,
+        material: materialRowsRef.current,
+      });
+    } catch (e) {
+      // 직렬화 실패는 사실상 발생하지 않지만, 만일의 경우 변경 감지를 보수적으로
+      // "변경 있음"으로 처리해 기존 동작(저장)을 보장.
+      console.warn("[AUTO-SAVE] hash 계산 실패, 변경 감지 우회:", e);
+      return `__hash_failed_${Date.now()}__`;
+    }
+  };
+
   const triggerAutoSaveAfterSync = (reason: string) => {
     // [원본보존] 이중 안전장치: 협력업체 세션에서는 어떤 경로로 호출되더라도
     // 자동 저장이 발동되지 않도록 함수 진입에서 즉시 차단.
@@ -6004,12 +6042,38 @@ export default function FieldEstimate() {
     if (!isHydratedRef.current) return;
     if (saveMutation.isPending) return;
 
-    if (autoSaveDebounceRef.current) {
+    // [Task #11] sync 직전 시점의 baseline hash 캡쳐.
+    //   - sync 함수가 setState를 호출했더라도 React는 다음 렌더에서 적용하므로,
+    //     이 시점의 ref는 아직 sync 이전 값(=baseline).
+    //   - ★ 중요: 디바운스 윈도우 안에서 Trigger A(실 변경) 후 Trigger B(no-op)가
+    //     오면 baseline을 B 시점(이미 A 결과 반영 후)으로 덮을 경우, 비교 시 동일하게
+    //     보여 A의 변경이 영원히 저장되지 않을 수 있다 (architect 지적).
+    //     → baseline은 "디바운스 시작 시점의 가장 이른 sync 직전 상태"를 보존해야
+    //     마지막 시점의 latest hash와 비교했을 때 누적 변경 여부가 정확히 잡힌다.
+    //     디바운스가 비어있을 때만 baseline 캡쳐. 디바운스 reset은 그대로 수행하여
+    //     최종 저장 발동 시점은 마지막 trigger 기준 1500ms로 유지.
+    if (!autoSaveDebounceRef.current) {
+      const baselineHash = computeAutoSaveHash();
+      autoSaveBaselineRef.current = { hash: baselineHash, reason };
+    } else {
       clearTimeout(autoSaveDebounceRef.current);
     }
     autoSaveDebounceRef.current = setTimeout(() => {
       autoSaveDebounceRef.current = null;
       if (saveMutation.isPending) return;
+      // [Task #11] 변경 감지: latest state hash와 baseline 비교.
+      //   동일 → sync가 화면을 변경하지 않은 no-op이므로 DB write skip.
+      //   (위험 ⑧⑨⑩⑪ 시나리오는 선행 task에서 부활/오매칭 자체가 차단되므로,
+      //    여기서 변경이 감지되면 정합성 있는 변경이라고 간주해도 안전.)
+      const baselineSnapshot = autoSaveBaselineRef.current;
+      autoSaveBaselineRef.current = null;
+      if (baselineSnapshot) {
+        const currentHash = computeAutoSaveHash();
+        if (currentHash === baselineSnapshot.hash) {
+          console.log(`[AUTO-SAVE SKIP] no-op sync (변경 없음, 사유: ${reason})`);
+          return;
+        }
+      }
       console.log(`[AUTO-SAVE] 싱크 결과 자동 저장 시작 (사유: ${reason})`);
       isAutoSavingRef.current = true;
       saveMutation.mutate();
