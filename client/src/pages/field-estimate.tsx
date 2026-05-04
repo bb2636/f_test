@@ -2749,8 +2749,10 @@ export default function FieldEstimate() {
                 공사명: linkedLaborRow.workName || ''
               };
             }
+            // linked 행 정상 매칭 + 변경 없음 → 그대로 반환 (자동 플래그/autoKey 보존)
+            return matRow;
           }
-          // [orphan 강등 — Task #9] sourceLaborRowId가 있는데 노무비 행을 못 찾으면
+          // [orphan 강등 — Task #9] linked 노무비 행이 사라진 진짜 orphan에만 한정.
           // (사용자가 노무비 행 삭제 후 자재비 잔존 등) 사용자 수동행으로 강등하여
           // reconcile/자동 동기화에서 stale로 판단되어 삭제되는 위험을 차단한다.
           // hydration orphan 보호 패턴(L4279~4289)과 동일: 자동 플래그만 끄고 sourceLaborRowId는 보존.
