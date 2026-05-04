@@ -11,7 +11,7 @@
 2. **노무비 수량 ".5" → "0.5" 표기 정규화** (Bug 4): `labor-cost-section.tsx` 수량 input에 `onBlur` 추가. blur 시 `parseFloat` 후 `String(num)`으로 표시값을 정규화 (산식·상태값은 onChange에서 처리되므로 미변경).
 3. **자재비 보양재 중복 누적 차단** (Bug 1): `field-estimate.tsx` 자재비 dedup `useEffect`에서 `isPartnerRef.current` 가드 제거 — 협력업체에서도 동일 `공종|공사명` 키로 dedup 동작. 자동저장 차단은 별도 계층(저장 mutation)에서 그대로 유지.
 4. **실크/합지 수량 합치기** (Bug 6): `8dca8f1` commit에서 dedup key를 `공종|공사명`(자재항목 제외)로 유지해 이미 fix됨. 추가 변경 없음.
-5. **샘플견적 손방 화장실 — 원인공사 방수 보통인부 단가** (Bug 3): `applyLossPreventionSampleTemplate`에서 정확매칭(공종+공사명+노임항목/세부항목) 실패 시, 공사명+노임항목/세부항목으로 카탈로그 검색 → 후보가 정확히 1개일 때만 단가 채택(다수 후보면 모호성으로 폴백 포기). 단가>0 조건 추가.
+5. **샘플견적 손방 화장실 — 원인공사 방수 보통인부 단가** (Bug 3): `applyLossPreventionSampleTemplate`에서 정확매칭(공종+공사명+노임항목/세부항목) 실패 시, 공사명+노임항목/세부항목으로 카탈로그 검색 → 후보가 정확히 1개일 때만 단가 채택(다수 후보면 모호성으로 폴백 포기). 단가>0 조건 추가. **[2026-05-04 후속]** 적용단가(`pricePerSqm`)가 0으로 남던 부수 회귀 보강: 손해방지 케이스는 복구면적(C)이 없어 `calculateAppliedUnitPriceWithTiers` 경로가 작동하지 않으므로, 샘플 적용 시 `pricePerSqm = matchedStandardPrice`(E)로 초기 채움 (수동 detailItem 선택 시 L1219의 동일 동작과 일치). 산식 미변경.
 6. **석고보드 철거 수량/금액 누락 재발** (Bug 2): `field-estimate.tsx` L3478~3498(자동 동기화 reconcile의 철거공사 행 업데이트)에서 카탈로그 lookup 시 `laborRow.workName`(예: '석고보드')을 그대로 사용하여 `mergedIlwidaegaCatalog`(공사명='석고')와 매칭 실패 → D/E가 0으로 남아 수량·금액이 영구 0으로 굳던 회귀. `matchDemolitionWorkName` + `DEMOLITION_WORKNAME_ALIASES`로 canonical 이름 산출 후 원본 또는 alias 중 하나만 일치해도 매치하도록 변경. 산식·계산 로직 미변경, 매칭 가드만 보강.
 
 ## 노무비 행 잠금(lockedAtSave) 가드 정책

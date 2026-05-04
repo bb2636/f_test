@@ -4618,6 +4618,11 @@ export default function FieldEstimate() {
         // (createBlankLaborRow의 기본 quantity:1을 override) → 합계도 0으로 시작
         quantity: 0,
         amount: 0,
+        // [손방 적용단가 보강 2026-05-04] 손해방지 케이스는 복구면적(C)이 없어 자동
+        //   재계산 경로(C>0 && D>0 && E>0)가 작동하지 않아 pricePerSqm이 0으로 남음.
+        //   수동 detailItem 선택 시(L1219) pricePerSqm = 단가_인을 채워주는 동작과 동일하게,
+        //   샘플 적용 시점에도 적용단가 = E(노임단가)를 즉시 표시. 산식 변경 없음.
+        pricePerSqm: matchedStandardPrice,
       };
     });
 
