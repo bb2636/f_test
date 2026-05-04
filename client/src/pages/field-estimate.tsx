@@ -3475,10 +3475,17 @@ export default function FieldEstimate() {
             let E = laborRow.standardPrice || 0;
             
             // D가 0이면 일위대가 카탈로그에서 조회 (오버라이드 적용된 값 사용)
+            // [Bug 2 fix 2026-05-04] 철거공사 공사명에 alias 매핑 적용 ('석고보드'→'석고').
+            //   카탈로그는 '석고'로 등록돼 있는데 표시명은 영역행 원본('석고보드')을 따르므로,
+            //   alias를 적용하지 않으면 D=0인 빈 행에서 카탈로그 매칭이 실패하여
+            //   수량/금액이 영구적으로 0에 머무는 회귀가 발생. 산식 변경 없음 - 매칭만 보정.
             if (D === 0 && laborRow.category && laborRow.workName) {
+              const matchedRaw = matchDemolitionWorkName(laborRow.workName) || laborRow.workName;
+              const canonicalLookupName = DEMOLITION_WORKNAME_ALIASES[matchedRaw] || matchedRaw;
               const catalogItem = mergedIlwidaegaCatalog.find(item => 
                 normalizeForMatch(item.공종) === normalizeForMatch(laborRow.category) &&
-                normalizeForMatch(item.공사명) === normalizeForMatch(laborRow.workName) &&
+                (normalizeForMatch(item.공사명) === normalizeForMatch(laborRow.workName) ||
+                 normalizeForMatch(item.공사명) === normalizeForMatch(canonicalLookupName)) &&
                 (!laborRow.detailItem || normalizeForMatch(item.노임항목) === normalizeForMatch(laborRow.detailItem))
               );
               if (catalogItem) {
