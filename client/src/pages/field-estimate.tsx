@@ -6017,17 +6017,15 @@ export default function FieldEstimate() {
   //     latest state가 가드를 통과한 상태인지 한 번 더 확인하여, 어떤 경로로든
   //     부활/오매칭이 들어오면 DB write를 차단.
   //   - 검증 항목:
-  //     ⑧ 삭제된 연동 노무비 키 부활: isLinkedFromRecovery=true && autoKey가
+  //     ⑧ 삭제된 연동 노무비 키 부활: isLinkedFromRecovery=true && deletionKey가
   //        deletedLinkedLaborKeys에 들어있으면 위반.
-  //     ⑩ 자재비 orphan: sourceLaborRowId가 현재 laborCostRows에 없으면 위반.
-  //   - ⑪ 수동행 중복은 sync 직전 글로벌 set 비교가 필요해 외부 검증이 어렵다.
-  //     선행 task #8의 3중 가드(existingSourceAreaIds + FixedFurnitureBath +
-  //     LinkedWorkNames)에 의존하고, 여기서는 ⑧/⑩만 차단.
-  //   - ⑪에 대해서는 위반이 의심되는 패턴(공종+공사명+영역행 id 동일한 자동행
-  //     2개 이상)이 발견되면 경고 로그만 남기고 차단은 하지 않음.
-  const validateAutoSyncGuards = (): { ok: boolean; violations: string[]; warnings: string[] } => {
+  //     ⑩ 자재비 orphan: 자동/연동 플래그가 살아있는 자재비 행의 sourceLaborRowId가
+  //        현재 laborCostRows에 없으면 위반 (정상 demote는 통과).
+  //     ⑪ 자동행 중복: 동일 deletionKey를 가진 isLinkedFromRecovery 자동행이 2개
+  //        이상이면 sync 가드 우회 → 위반.
+  //   - 셋 모두 violations에 누적되어 자동 저장 자체를 차단한다.
+  const validateAutoSyncGuards = (): { ok: boolean; violations: string[] } => {
     const violations: string[] = [];
-    const warnings: string[] = [];
     const labor = laborCostRowsRef.current;
     const material = materialRowsRef.current;
     const deletedKeys = deletedLinkedLaborKeysRef.current;
@@ -6067,27 +6065,30 @@ export default function FieldEstimate() {
       }
     }
 
-    // ⑪ 자동행 중복 패턴 (best-effort 경고만)
-    //   - 동일 deletionKey를 가진 isLinkedFromRecovery 자동행이 2개 이상이면
-    //     수동행 글로벌 가드 우회 가능성 → warning 기록(차단 X).
+    // ⑪ 자동행 중복 패턴 (blocking)
+    //   - sync 함수들은 동일한 면적행 source(sourceAreaRowId) 기준으로 자동행을
+    //     매칭/재사용한다. 따라서 (sourceAreaRowId + category + workName +
+    //     detailItem) 조합이 동일한 isLinkedFromRecovery 자동행이 2개 이상이면
+    //     같은 source가 중복 매칭된 명백한 가드 우회 → 차단.
+    //   - 주의: makeLinkedLaborDeletionKey는 sourceAreaRowId를 포함하지 않아
+    //     FIXED 가구/욕조 등 위치별로 행이 생성되는 정상 케이스에서 false positive
+    //     를 일으킨다. ⑪ 중복 검증은 반드시 sourceAreaRowId까지 포함한 키로 한다.
+    const dupKey = (row: LaborCostRow) =>
+      `${row.sourceAreaRowId || ''}|${row.category || ''}|${row.workName || ''}|${row.detailItem || ''}`;
     const autoLaborKeyCount = new Map<string, number>();
     for (const row of labor) {
       if (!row.isLinkedFromRecovery) continue;
-      const k = makeLinkedLaborDeletionKey(
-        row.sourceAreaRowId || '',
-        row.category || '',
-        row.workName || '',
-        row.detailItem || '',
-      );
+      if (!row.sourceAreaRowId) continue; // source가 없으면 비교 불가 → skip
+      const k = dupKey(row);
       autoLaborKeyCount.set(k, (autoLaborKeyCount.get(k) ?? 0) + 1);
     }
     autoLaborKeyCount.forEach((count, key) => {
       if (count > 1) {
-        warnings.push(`위험⑪(의심): 동일 키 노무비 자동행 ${count}개 (key=${key})`);
+        violations.push(`위험⑪: 동일 source+키 노무비 자동행 ${count}개 중복 (key=${key})`);
       }
     });
 
-    return { ok: violations.length === 0, violations, warnings };
+    return { ok: violations.length === 0, violations };
   };
 
   // [Task #11] sync 결과 변경 감지용 hash.
@@ -6150,16 +6151,10 @@ export default function FieldEstimate() {
           return;
         }
       }
-      // [Task #11] 2단계 가드 통과 검증: 위험 ⑧/⑩이 latest state에 살아남았으면
+      // [Task #11] 2단계 가드 통과 검증: 위험 ⑧/⑩/⑪이 latest state에 살아남았으면
       //   DB write 차단. 선행 task의 sync 가드가 어떤 이유로든 우회된 경우,
       //   사용자가 화면을 보기 전에 잘못된 상태가 영구화되는 것을 막는 마지막 안전망.
       const validation = validateAutoSyncGuards();
-      if (validation.warnings.length > 0) {
-        console.warn(
-          `[AUTO-SAVE WARN] 가드 의심 패턴 (사유: ${baselineReason}):`,
-          validation.warnings,
-        );
-      }
       if (!validation.ok) {
         console.error(
           `[AUTO-SAVE BLOCK] 가드 검증 실패로 자동 저장 차단 (사유: ${baselineReason}):`,
