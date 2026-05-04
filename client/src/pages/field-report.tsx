@@ -2807,6 +2807,31 @@ export default function FieldReport() {
             </button>
             <button
               onClick={async () => {
+                // [버그 수정] 직접입력이 체크된 경우, 입력값 검증을 먼저 수행해 정확한 안내 제공.
+                //   기존 코드는 형식이 잘못되면 directly "수신자를 선택해주세요"라고 잘못 안내해
+                //   사용자가 진짜 원인(예: '@' 누락)을 알 수 없었음.
+                if (selectedEmailRecipients.custom) {
+                  const trimmed = (emailAddress || "").trim();
+                  if (!trimmed) {
+                    toast({
+                      title: "입력 오류",
+                      description: "직접 입력 이메일 주소를 입력해주세요.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  // 간단 이메일 형식 검증: 공백 없이 @ + . 포함
+                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+                    toast({
+                      title: "이메일 형식 오류",
+                      description:
+                        "올바른 이메일 주소를 입력해주세요. (예: example@domain.com)",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                }
+
                 // 선택된 이메일 주소 수집
                 const emailRecipients: string[] = [];
                 if (
@@ -2826,25 +2851,13 @@ export default function FieldReport() {
                   emailAddress &&
                   emailAddress.includes("@")
                 ) {
-                  emailRecipients.push(emailAddress);
+                  emailRecipients.push(emailAddress.trim());
                 }
 
                 if (emailRecipients.length === 0) {
                   toast({
                     title: "입력 오류",
                     description: "최소 하나의 수신자를 선택해주세요.",
-                    variant: "destructive",
-                  });
-                  return;
-                }
-
-                if (
-                  selectedEmailRecipients.custom &&
-                  (!emailAddress || !emailAddress.includes("@"))
-                ) {
-                  toast({
-                    title: "입력 오류",
-                    description: "올바른 이메일 주소를 입력해주세요.",
                     variant: "destructive",
                   });
                   return;
