@@ -495,11 +495,17 @@ export default function FieldEstimate() {
   // syncMaterialFromRecoveryArea가 매칭에 실패해 매번 새 행을 만드는 케이스에서 4중복을
   // 그대로 통과시켰다. 사용자 요청(실크+합지 수량 1로 합산)도 동일하게 공종+공사명 단위
   // dedup이어야 충족된다. 따라서 키를 다시 `공종|공사명`으로 되돌린다.
-  // (협력업체 차단 가드는 보수적으로 유지 — 자동저장 차단과 함께 이중 안전장치 역할.)
+  // [Bug 1 fix 2026-05-04] 협력업체 가드 제거.
+  //   - 직전 commits(3f9e4bf, fce921b)로 협력업체에서도 sync useEffect가 실행되도록 변경됨.
+  //   - 그러나 dedup useEffect만 isPartnerRef 가드를 유지해 협력업체에서는 중복 제거가 발동하지
+  //     않아 "복구면적 가져오기" 클릭 시 보양재 등이 매 클릭마다 누적되는 회귀 발생.
+  //   - sync 로직과 동일하게 협력업체에서도 dedup이 동작하도록 가드를 제거. 자동 저장 차단은
+  //     별도(저장 mutation 단계)에서 그대로 유지되므로 데이터 정합성 위험 없음.
   const lastMaterialDeduplicationRef = useRef<string>('');
+  // [Bug 1 fix 2026-05-04] 가드 변경 — partner도 dedup 동작.
   useEffect(() => {
-    // [원본보존-협력업체] currentUser 미로드 또는 협력업체이면 dedup 자체를 건너뛴다.
-    if (!isUserLoadedRef.current || isPartnerRef.current) return;
+    // currentUser 미로드 시에만 dedup 보류 (partner 가드 제거 — Bug 1).
+    if (!isUserLoadedRef.current) return;
     if (materialRows.length === 0) return;
     
     // 중복 체크: 연동된 행에서 같은 key가 여러 개인지 확인
@@ -4535,14 +4541,32 @@ export default function FieldEstimate() {
     const baseTs = Date.now();
     const newLaborRows: LaborCostRow[] = template.laborRows.map((seed, idx) => {
       // 1) 일위대가 카탈로그 매칭 (공종+공사명+노임항목)
-      const ilwiItem = mergedIlwidaegaCatalog.find(
+      let ilwiItem = mergedIlwidaegaCatalog.find(
         item =>
           item.공종 === seed.category &&
           item.공사명 === seed.workName &&
           item.노임항목 === seed.detailItem,
       );
+      // [Bug 3 fix 2026-05-04] 1-fallback) 공종 무관 매칭 (예: 원인공사+방수+보통인부 누락 시
+      //   방수공사+방수+보통인부에서 단가 가져오기).
+      //   안전장치: 후보가 정확히 1개일 때만 적용 (단가 모호성 차단).
+      //   2개 이상이면 자동선택을 포기하고 0으로 두어 사용자가 수동 보정하도록 함.
+      if (!ilwiItem) {
+        const ilwiCandidates = mergedIlwidaegaCatalog.filter(
+          item =>
+            normalizeForMatch(item.공사명 || '') === normalizeForMatch(seed.workName) &&
+            normalizeForMatch(item.노임항목 || '') === normalizeForMatch(seed.detailItem) &&
+            (Number(item.노임단가) || 0) > 0,
+        );
+        if (ilwiCandidates.length === 1) {
+          ilwiItem = ilwiCandidates[0];
+          console.log('[Bug3 폴백] 일위대가 공종무관 매칭 적용:', seed.category, seed.workName, seed.detailItem, '→', ilwiItem.공종);
+        } else if (ilwiCandidates.length > 1) {
+          console.log('[Bug3 폴백] 일위대가 후보 다수 — 모호성으로 폴백 포기:', seed.workName, seed.detailItem, ilwiCandidates.map(c => c.공종));
+        }
+      }
       // 2) 노무비 카탈로그 폴백 매칭 (공종+공사명+세부항목)
-      const laborItem = !ilwiItem
+      let laborItem = !ilwiItem
         ? laborCatalog.find(
             item =>
               item.공종 === seed.category &&
@@ -4550,6 +4574,21 @@ export default function FieldEstimate() {
               item.세부항목 === seed.detailItem,
           )
         : null;
+      // [Bug 3 fix 2026-05-04] 2-fallback) 공종 무관 노무비 매칭. 단일 후보일 때만 적용.
+      if (!ilwiItem && !laborItem) {
+        const laborCandidates = laborCatalog.filter(
+          item =>
+            normalizeForMatch(item.공사명 || '') === normalizeForMatch(seed.workName) &&
+            normalizeForMatch(item.세부항목 || '') === normalizeForMatch(seed.detailItem) &&
+            (Number(item.단가_인) || 0) > 0,
+        );
+        if (laborCandidates.length === 1) {
+          laborItem = laborCandidates[0];
+          console.log('[Bug3 폴백] 노무비 공종무관 매칭 적용:', seed.category, seed.workName, seed.detailItem, '→', laborItem.공종);
+        } else if (laborCandidates.length > 1) {
+          console.log('[Bug3 폴백] 노무비 후보 다수 — 모호성으로 폴백 포기:', seed.workName, seed.detailItem, laborCandidates.map(c => c.공종));
+        }
+      }
 
       const matchedDetailWork: '노무비' | '일위대가' = ilwiItem ? '일위대가' : '노무비';
       const matchedStandardPrice = ilwiItem

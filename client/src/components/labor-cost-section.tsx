@@ -2195,6 +2195,8 @@ export function LaborCostSection({
                   )}
 
                   {/* +/- 버튼 컬럼 */}
+                  {/* [Bug 5 fix 2026-05-04] 협력업체 화면에서도 +/- 버튼 항상 표시.
+                      isReadOnly(제출 후 미반려) 상태에서는 disabled로 비활성화만 적용. */}
                   <td
                     style={{
                       padding: "4px",
@@ -2202,7 +2204,6 @@ export function LaborCostSection({
                       width: "60px",
                     }}
                   >
-                    {(isPartner && row.isLinkedFromRecovery) ? null : (
                     <div
                       style={{
                         display: "flex",
@@ -2255,7 +2256,6 @@ export function LaborCostSection({
                         −
                       </button>
                     </div>
-                    )}
                   </td>
 
                   {/* 공사명 - 각 행마다 별도 셀 (연동 행은 잠금 표시) */}
@@ -2648,6 +2648,22 @@ export function LaborCostSection({
                             const roundedValue =
                               Math.round(safeValue * 10) / 10;
                             updateRow(row.id, "quantity", roundedValue);
+                          }}
+                          onBlur={(e) => {
+                            // [Bug 4 fix 2026-05-04] 사용자가 ".5" 형태로 입력한 경우
+                            // type="number" 입력의 표시값을 강제로 "0.5"로 정규화.
+                            // (브라우저는 동일 numeric value면 표시 문자열을 자동 갱신하지 않음)
+                            if (isLinkedRow) return;
+                            const raw = e.target.value;
+                            const numValue = parseFloat(raw);
+                            if (!isNaN(numValue) && numValue > 0) {
+                              const normalized = String(numValue);
+                              if (raw !== normalized) {
+                                e.target.value = normalized;
+                              }
+                            } else if (raw === "." || raw === "-") {
+                              e.target.value = "";
+                            }
                           }}
                           className="h-9 border text-center"
                           style={{

@@ -556,8 +556,9 @@ export function MaterialCostSection({
                   ) : null}
                   
                   {/* +/- 버튼 컬럼 (각 행마다) */}
+                  {/* [Bug 5 fix 2026-05-04] 협력업체 화면에서도 +/- 버튼 항상 표시.
+                      isReadOnly(제출 후 미반려) 상태에서는 disabled로 비활성화만 적용. */}
                   <td style={{ padding: "0 8px", textAlign: "center", borderBottom: groupBorderBottom, borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
-                    {(isPartner && isLinkedRow) ? null : (
                     <div style={{ display: "flex", gap: "4px", justifyContent: "center" }}>
                       <button
                         type="button"
@@ -604,7 +605,6 @@ export function MaterialCostSection({
                         −
                       </button>
                     </div>
-                    )}
                   </td>
                   
                   {/* 공사명 - 자재비는 연동 행도 수정 가능 */}
