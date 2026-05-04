@@ -4495,7 +4495,17 @@ export default function FieldEstimate() {
     setSelectedCategory("복구면적 산출표");
     setRows(newRows);
     setSelectedRows(new Set());
-    console.log("[샘플 적용] 대물피해 샘플 템플릿 적용:", template.label, `${newRows.length}행`);
+    // [샘플 재적용] 연동된 노무비/자재비/견적서까지 모두 초기화 → 새 면적 행에 따라 자동 재연동.
+    //   견적서는 laborCostRows + materialRows 합산으로 자동 계산되므로 둘만 비우면 0이 됨.
+    //   메모리 삭제 키도 비워서 새 면적 항목들이 막히지 않도록 한다 (DB 삭제 키는 별도 유지).
+    setLaborCostRows([createBlankLaborRow()]);
+    setSelectedLaborRows(new Set());
+    setMaterialRows([createBlankMaterialRow()]);
+    setSelectedMaterialRows(new Set());
+    if (deletedLinkedLaborKeys.size > 0) {
+      setDeletedLinkedLaborKeys(new Set());
+    }
+    console.log("[샘플 적용] 대물피해 샘플 템플릿 적용:", template.label, `${newRows.length}행 (노무비/자재비/견적서 초기화)`);
   };
 
   const handleSampleConfirm = () => {
@@ -7180,7 +7190,7 @@ export default function FieldEstimate() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
                   <AlertDialogDescription>
-                    샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
+                    샘플을 불러오면 복구면적 산출표는 물론, 연동된 노무비·자재비·견적서까지 모두 초기화됩니다. 이후 새로 입력되는 항목으로 자동 재연동됩니다. 계속하시겠습니까?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
