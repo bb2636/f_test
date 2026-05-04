@@ -334,4 +334,45 @@
   .data-table-row > div:last-child {
     border-right: none;
   }
+
+  /* ============================================================
+   * 테이블 행 압축 유틸리티 (6개 화면 공용)
+   * - 페이지: 종합진행관리 / 정산청구 / 정산종결 / 접수취소 /
+   *           종결건 통계 / 미결건 통계
+   * - 컬럼 너비, 색상, 폰트, 정렬 변경 없음 (수직 간격만 축소)
+   * - 인라인 padding 을 덮어쓰기 위해 !important 사용
+   *
+   * 행 높이 변경 전/후 비교(px):
+   *   td 세로 padding:  12px → 6px  (위/아래 합 24px → 12px, 약 -50%)
+   *   th 세로 padding:  12px → 8px  (위/아래 합 24px → 16px, 약 -33%)
+   *   line-height:      1.5 → 1.3  (글자 줄바꿈 영향 X)
+   *   data-table-row 셀 padding: 14px → 8px (위/아래 합 28px → 16px, 약 -43%)
+   *   data-table-row 폰트/색상/너비/버튼 일체 동일
+   * ============================================================ */
+  .compact-row td {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    line-height: 1.3 !important;
+  }
+  .compact-row th {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    line-height: 1.3 !important;
+  }
+  /* div grid 기반 커스텀 테이블(comprehensive-progress) 전용 */
+  .compact-data-row > div,
+  .compact-data-header > div {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    line-height: 1.3 !important;
+  }
+  /* 화면 상단(제목/검색/필터) 수직 간격 압축 */
+  .compact-page-header {
+    margin-bottom: 12px !important; /* 기존 mb-6=24px → 12px */
+  }
+  .compact-section {
+    padding-top: 16px !important;   /* 기존 24px → 16px */
+    padding-bottom: 16px !important;
+    margin-bottom: 12px !important; /* 기존 24px → 12px */
+  }
 }
