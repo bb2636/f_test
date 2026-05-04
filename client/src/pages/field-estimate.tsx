@@ -3650,9 +3650,11 @@ export default function FieldEstimate() {
   const demolitionPendingRef = useRef<boolean>(false);
   
   useEffect(() => {
-    // [원본보존] 협력업체에서는 철거공사 자동 Reconcile 차단
-    // (관리자 저장본을 그대로 표시. setLaborCostRows 변형 금지.)
-    if (!currentUser || isPartner) {
+    // [정책 변경 2026-05-04] 협력업체 화면에서도 철거공사 자동 Reconcile 발동.
+    // 협력업체가 견적 작성 시 도배/석고보드 등에 대응하는 철거 행이 자동 추가되어
+    // 관리자 화면과 일관된 결과를 보여주도록 한다(사용자 요청).
+    // 다른 자동연동/dedup의 isPartner 원본보존 가드는 그대로 유지된다.
+    if (!currentUser) {
       demolitionPendingRef.current = false;
       return;
     }
