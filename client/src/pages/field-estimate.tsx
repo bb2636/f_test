@@ -2126,14 +2126,23 @@ export default function FieldEstimate() {
     // 2. 그 외 공사명: 수동 입력이므로 유지
     // 이렇게 하면: 복구면적에서 항목 삭제 시 자재비도 함께 삭제됨
     const filteredManualRows = manualRows.filter(row => {
+      const norm = (v: any) => (v ?? "").toString().trim();
       const workName = (row.공사명 || '').toString().trim();
-      if (AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName)) {
-        console.log('[자재비 수동행 제거 - 자동연동 대상]', row.공종, row.공사명, row.자재항목);
-        return false;
-      }
+      // 바탕만들기 수동행: 자재비DB에 없는 항목 → 항상 제거
       if (isBatangRow(workName)) {
         console.log('[자재비 수동행 제거 - 바탕만들기]', row.공종, row.공사명, row.자재항목);
         return false;
+      }
+      // 자동연동 대상 공사명: 동일 키의 자동행이 있을 때만 수동행 제거 (중복 방지).
+      // 자동행이 없으면(예: 산출표에서 영역행이 없거나, 면적 결손으로 자동키 미생성) 사용자 수동행 보존.
+      if (AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName)) {
+        const manualKey = `${norm(row.공종)}|${norm(row.공사명)}|${norm(row.자재항목) || "__NONE__"}`;
+        if (nextAutoKeys.has(manualKey)) {
+          console.log('[자재비 수동행 제거 - 자동행과 중복]', row.공종, row.공사명, row.자재항목);
+          return false;
+        }
+        console.log('[자재비 수동행 보존 - 매칭 자동행 없음]', row.공종, row.공사명, row.자재항목);
+        return true;
       }
       return true;
     });
@@ -2817,6 +2826,16 @@ export default function FieldEstimate() {
       }).filter(Boolean)
     );
 
+    // [수동행 우선] 사용자가 수동 추가한 노무비 행(isLinkedFromRecovery=false)과
+    // 같은 공종|공사명|노임항목 키의 자동 행은 생성하지 않는다 — 견적 중복 합산 방지.
+    // 자동 sync 중복 가드는 sourceAreaRowId 기반(existingSourceAreaIds)이라 수동행 키 매칭은 별도.
+    // 수동 "복구면적 가져오기" 경로(syncLaborFromRecoveryArea)와 동일 패턴.
+    const manualKeySetForAutoSync = new Set(
+      laborCostRows
+        .filter(r => !r.isLinkedFromRecovery)
+        .map(r => `${normalizeForMatch(r.category || '')}|${normalizeForMatch(r.workName || '')}|${normalizeForMatch(r.detailItem || '')}`)
+    );
+
     // 가구/욕실 FIXED 본체(내장공) 행 전용 sync set — 철거공사/바탕만들기 동반행은 제외
     const existingFixedFurnitureBathSourceIds = new Set(
       laborCostRows
@@ -2935,6 +2954,32 @@ export default function FieldEstimate() {
       lastLaborSetSourceRef.current = 'autoSync-stale-demo';
       setLaborCostRows(prev => prev.filter(r => !staleDemolitionRemoveIds.has(r.id)));
       return;
+    }
+
+    // [공종 꼬임 방지] 산출표가 변경되어 더 이상 유효하지 않은 stale 바탕만들기 동반행 자동 제거
+    // 예: 산출표 영역행의 공사명이 바탕만들기를 더 이상 필요로 하지 않는 항목으로 변경된 경우.
+    // 마킹만 하고 hard return하지 않음 — useEffect deps에 laborCostRows가 없어 재진입 안 되므로,
+    // 같은 사이클에서 새 companion 생성이 동시에 진행되도록 furnitureBathHelperRemoveIds 패턴을 따른다.
+    const staleBatangRemoveIds = new Set<string>();
+    laborCostRows.forEach(row => {
+      if (!row.isLinkedFromRecovery) return;
+      if (!row.sourceAreaRowId || !row.sourceAreaRowId.includes('::batang')) return;
+      const areaRowId = extractOriginalSourceId(row.sourceAreaRowId);
+      const areaRow = rows.find(r => r.id === areaRowId);
+      // 부모 영역행이 사라졌으면 stale
+      if (!areaRow) {
+        staleBatangRemoveIds.add(row.id);
+        return;
+      }
+      if (!areaRow.workType || !areaRow.workName) return;
+      // 부모 영역행이 더 이상 같은 바탕만들기 companion을 요구하지 않으면 stale
+      const expectedCompanions = getCompanionWorkNames(areaRow.workType, areaRow.workName);
+      if (!expectedCompanions.includes(row.workName || '')) {
+        staleBatangRemoveIds.add(row.id);
+      }
+    });
+    if (staleBatangRemoveIds.size > 0) {
+      console.log('[자동연동] stale 바탕만들기 동반행 제거 마킹:', staleBatangRemoveIds.size, '개 (부모 공사명 변경)');
     }
 
     // 이미 연동된 철거공사 행 마이그레이션: workName 매핑이 변경된 경우(예: '석고보드' → '석고') 갱신
@@ -3188,22 +3233,32 @@ export default function FieldEstimate() {
 
       console.log('[진단5] newLaborRows push 결과', newLaborRows.length, '개:',
         newLaborRows.map(r => `${r.category}/${r.workName}/${r.detailItem}/srcId=${r.sourceAreaRowId?.slice(-8)}/qty=${r.quantity}/std=${r.standardPrice}`));
+      // [수동행 우선] 사용자가 같은 공종|공사명|노임항목으로 수동행을 이미 추가했다면 자동 행 생성 skip
+      const filteredNewLaborRows = newLaborRows.filter(r => {
+        const k = `${normalizeForMatch(r.category || '')}|${normalizeForMatch(r.workName || '')}|${normalizeForMatch(r.detailItem || '')}`;
+        if (manualKeySetForAutoSync.has(k)) {
+          console.log('[자동연동] 수동행 우선 - 자동 행 생성 skip:', r.category, r.workName, r.detailItem);
+          return false;
+        }
+        return true;
+      });
       lastLaborSetSourceRef.current = 'autoSync-addNewRows';
       setLaborCostRows(prev => {
         const refreshMap = new Map(staleEmptyDemolitionRefreshes.map(r => [r.oldId, r.newRow]));
         const nonEmptyRows = prev
           .filter(row => row.sourceAreaRowId || row.place || row.position || row.category || row.workName)
           .filter(row => !furnitureBathHelperRemoveIds.has(row.id))
+          .filter(row => !staleBatangRemoveIds.has(row.id))
           .map(row => refreshMap.get(row.id) || row);
-        const result = [...nonEmptyRows, ...newLaborRows];
+        const result = [...nonEmptyRows, ...filteredNewLaborRows];
         const fbResult = result.filter(r => (r.category === '가구공사' || r.category === '욕실공사') && r.workName && r.detailItem !== '보통인부' && (r.workName === 'SMC' || r.workName === '상부장'));
         console.log('[진단5-B] setLaborCostRows 직후 SMC/상부장 본체 행:', fbResult.map(r => `${r.workName}/${r.detailItem}/srcId=${r.sourceAreaRowId?.slice(-8)}/qty=${r.quantity}`));
         return result;
       });
-    } else if (furnitureBathHelperRemoveIds.size > 0) {
-      // 새로 추가할 행은 없지만 보통인부 정리만 필요한 경우
-      lastLaborSetSourceRef.current = 'autoSync-removeFurnitureBathHelper';
-      setLaborCostRows(prev => prev.filter(r => !furnitureBathHelperRemoveIds.has(r.id)));
+    } else if (furnitureBathHelperRemoveIds.size > 0 || staleBatangRemoveIds.size > 0) {
+      // 새로 추가할 행은 없지만 보통인부/stale 바탕만들기 정리만 필요한 경우
+      lastLaborSetSourceRef.current = 'autoSync-removeFurnitureBathHelperOrBatang';
+      setLaborCostRows(prev => prev.filter(r => !furnitureBathHelperRemoveIds.has(r.id) && !staleBatangRemoveIds.has(r.id)));
     }
 
     lastLaborSetSourceRef.current = 'autoSync-reconcile';
