@@ -7195,7 +7195,7 @@ export default function FieldEstimate() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>샘플 불러오기 확인</AlertDialogTitle>
                   <AlertDialogDescription>
-                    샘플을 불러오면 복구면적 산출표는 물론, 연동된 노무비·자재비·견적서까지 모두 초기화됩니다. 이후 새로 입력되는 항목으로 자동 재연동됩니다. 계속하시겠습니까?
+                    샘플을 불러오면 현재 입력 중인 내용이 초기화됩니다. 계속하시겠습니까?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
