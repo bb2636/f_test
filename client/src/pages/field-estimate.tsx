@@ -2733,7 +2733,7 @@ export default function FieldEstimate() {
       );
       
       // 기존 행 업데이트 + 새 행 추가 (한 번에 처리)
-      const updatedRows = filteredRows.map((matRow, index) => {
+      const updatedRows = filteredRows.map((matRow) => {
         // sourceLaborRowId가 있으면 해당 노무비 행과 동기화
         if (matRow.sourceLaborRowId) {
           const linkedLaborRow = laborCostRows.find(lr => lr.id === matRow.sourceLaborRowId);
@@ -2750,29 +2750,20 @@ export default function FieldEstimate() {
               };
             }
           }
+          // [orphan 보호 — Task #9] sourceLaborRowId가 있는데 노무비 행을 못 찾으면
+          // (사용자가 노무비 행 삭제 후 자재비 잔존 등) 그대로 보존하여 자동 동기화 차단.
+          // hydration orphan 강등 패턴(L4283~4330)과 별개로, 런타임에서도 변형 금지.
           return matRow;
         }
         
-        // sourceLaborRowId가 없으면 같은 인덱스의 노무비 행과 동기화
-        const correspondingLaborRow = laborCostRows[index];
-        if (correspondingLaborRow) {
-          // 연결된 노무비 행이 목공사-반자틀 또는 복구면적 연동 행이면 동기화 건너뛰기
-          if (shouldExcludeFromMaterialSync(correspondingLaborRow.category || '', correspondingLaborRow.workName || '', correspondingLaborRow.isLinkedFromRecovery)) {
-            return matRow;
-          }
-          
-          const needsCategoryUpdate = correspondingLaborRow.category !== matRow.공종;
-          const needsWorkNameUpdate = correspondingLaborRow.workName !== matRow.공사명;
-          
-          if (needsCategoryUpdate || needsWorkNameUpdate) {
-            // 공종, 공사명 그대로 복사
-            return { 
-              ...matRow, 
-              공종: correspondingLaborRow.category || '',
-              공사명: correspondingLaborRow.workName || ''
-            };
-          }
-        }
+        // [인덱스 fallback 차단 — Task #9]
+        // 이전엔 sourceLaborRowId가 없는 자재비 행을 같은 인덱스의 노무비 행과 동기화했으나,
+        // 사용자가 노무비 중간 행을 삭제하면 인덱스가 밀려 엉뚱한 자재비의 공종/공사명이
+        // 사용자 모르게 변경되는 위험 ⑨이 발생한다. 또 사용자 수동 자재비 행
+        // (createBlankMaterialRow를 sourceLaborRowId 없이 호출, L776/L2186/L4522/L5003)도
+        // 영향 받아 위험 ②가 우회될 수 있다.
+        // → sourceLaborRowId 없는 자재비 행은 자동 동기화 대상에서 제외.
+        // 노무비→자재비 신규 연결은 아래 newRows 단계에서 sourceLaborRowId를 부여한 채 추가된다.
         return matRow;
       });
       
