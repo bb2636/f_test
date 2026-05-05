@@ -7727,6 +7727,13 @@ export class DbStorage implements IStorage {
     return results;
   }
 
+  async deleteAllUnitPriceOverrides(): Promise<number> {
+    const result = await db.execute(sql`DELETE FROM unit_price_overrides`);
+    const count = (result as any).rowCount ?? 0;
+    console.log("[deleteAllUnitPriceOverrides] Deleted rows:", count);
+    return count;
+  }
+
   // Estimate Exclusions methods (철거공사 노무비 삭제 영속화)
   async getEstimateExclusions(caseId: string, exclusionType: string): Promise<EstimateExclusion[]> {
     return await db

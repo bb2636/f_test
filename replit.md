@@ -14,6 +14,11 @@
 5. **샘플견적 손방 화장실 — 원인공사 방수 보통인부 단가** (Bug 3): `applyLossPreventionSampleTemplate`에서 정확매칭(공종+공사명+노임항목/세부항목) 실패 시, 공사명+노임항목/세부항목으로 카탈로그 검색 → 후보가 정확히 1개일 때만 단가 채택(다수 후보면 모호성으로 폴백 포기). 단가>0 조건 추가. **[2026-05-04 후속]** 적용단가(`pricePerSqm`)가 0으로 남던 부수 회귀 보강: 손해방지 케이스는 복구면적(C)이 없어 `calculateAppliedUnitPriceWithTiers` 경로가 작동하지 않으므로, 샘플 적용 시 `pricePerSqm = matchedStandardPrice`(E)로 초기 채움 (수동 detailItem 선택 시 L1219의 동일 동작과 일치). 산식 미변경.
 6. **석고보드 철거 수량/금액 누락 재발** (Bug 2): `field-estimate.tsx` L3478~3498(자동 동기화 reconcile의 철거공사 행 업데이트)에서 카탈로그 lookup 시 `laborRow.workName`(예: '석고보드')을 그대로 사용하여 `mergedIlwidaegaCatalog`(공사명='석고')와 매칭 실패 → D/E가 0으로 남아 수량·금액이 영구 0으로 굳던 회귀. `matchDemolitionWorkName` + `DEMOLITION_WORKNAME_ALIASES`로 canonical 이름 산출 후 원본 또는 alias 중 하나만 일치해도 매치하도록 변경. 산식·계산 로직 미변경, 매칭 가드만 보강.
 
+## 일위대가 D값 오버라이드 — 신규 엑셀 업로드 시 자동 초기화 (2026-05-05)
+- **증상**: 새 일위대가 엑셀을 업로드해도 변경된 기준작업량(D값)이 견적/표시에 반영 안 됨. 셀별 수동 편집만 저장된 듯 보임.
+- **원인**: `unit_price_overrides`(D값 셀별 오버라이드)는 업로드와 별개 테이블. 새 엑셀 업로드 후에도 이전 오버라이드가 남아 `mergedIlwidaegaCatalog`(field-estimate.tsx L688) 및 admin 입력 폼(db-management-tab.tsx L740~742)이 신규 엑셀의 D값을 가림.
+- **해결**: 가드 추가 — `POST /api/excel-data` 라우트에서 `type === "일위대가"`이면 저장 직후 `storage.deleteAllUnitPriceOverrides()` 호출(server/routes.ts L4458~4475, server/storage.ts L7733~7738). 클라이언트 `saveExcelDataMutation.onSuccess`에서 `/api/unit-price-overrides`, `/api/ilwidaega-catalog` 캐시 무효화(client/src/pages/admin-settings.tsx L991~995). 산식·UI·계산 미변경.
+
 ## 누수탐지 항목 경비여부 자동 체크 (2026-05-04 후속)
 누수탐지 관련 노무비 항목은 보험 정산 관행상 **경비**로 분류되어 일반관리비/이윤 산정 대상에서 제외되어야 함. 사용자 매번 수동 체크하는 불편을 제거하기 위해 5개 진입점에 자동 체크 가드 추가 (`includeInEstimate=false` 자동 설정, 사용자가 필요 시 직접 토글 가능):
 1. **`labor-cost-section.tsx` `handleWorkNameChange` (L219~225)**: `updateRow`에 위임만 하도록 단순화. (이전 분기 우회 로직은 카탈로그 매칭/하위필드 리셋 누락 위험으로 제거)

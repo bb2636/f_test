@@ -4451,6 +4451,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await storage.saveExcelData(validatedData);
 
       console.log("[Excel Upload] Success! Saved with ID:", result.id);
+
+      // 일위대가 새 엑셀 업로드 시 기존 D값 오버라이드 전부 제거
+      // (이전 override가 새 엑셀의 기준작업량을 가리는 문제 방지 — 산식 변경 없음, 가드 추가)
+      if (validatedData.type === "일위대가") {
+        try {
+          const deleted = await storage.deleteAllUnitPriceOverrides();
+          console.log(
+            "[Excel Upload] 일위대가 업로드 — unit_price_overrides 초기화 완료, 삭제:",
+            deleted,
+            "건",
+          );
+        } catch (clearErr) {
+          console.error(
+            "[Excel Upload] unit_price_overrides 초기화 실패:",
+            clearErr,
+          );
+          // 업로드 자체는 성공했으므로 응답은 그대로 유지
+        }
+      }
+
       res.json(result);
     } catch (error) {
       if (error instanceof z.ZodError) {

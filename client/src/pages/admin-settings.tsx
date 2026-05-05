@@ -987,6 +987,9 @@ export default function AdminSettings() {
           setSelectedMaterialVersionId(result.id);
         } else if (variables.type === "일위대가") {
           setSelectedUnitPriceVersionId(result.id);
+          // 일위대가 신규 업로드 시 서버가 unit_price_overrides 초기화 → 클라이언트 캐시도 무효화
+          queryClient.invalidateQueries({ queryKey: ["/api/unit-price-overrides"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/ilwidaega-catalog"] });
         }
       }
     },
