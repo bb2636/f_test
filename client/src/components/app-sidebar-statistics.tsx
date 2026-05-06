@@ -172,7 +172,7 @@ export function AppSidebarStatistics() {
                   className="flex items-center px-5 py-3 rounded-lg transition-colors text-left w-full"
                   style={{
                     background: isActive ? "#253297" : "transparent",
-                    borderRadius: isActive ? "9999px" : undefined,
+                    borderRadius: isActive ? "0" : undefined,
                     fontFamily: "Pretendard",
                     fontSize: "15px",
                     fontWeight: isActive ? 600 : 500,
@@ -198,7 +198,7 @@ export function AppSidebarStatistics() {
                               className="flex items-center justify-between w-full px-5 py-3 rounded-lg transition-colors"
                               style={{
                                 background: isChildActive ? "#253297" : "transparent",
-                                borderRadius: isChildActive ? "9999px" : undefined,
+                                borderRadius: isChildActive ? "0" : undefined,
                                 fontFamily: "Pretendard",
                                 fontSize: "16px",
                                 fontWeight: isChildActive ? 700 : 500,
@@ -222,7 +222,7 @@ export function AppSidebarStatistics() {
                                     className="flex items-center px-4 py-2.5 rounded-lg transition-colors text-left"
                                     style={{
                                       background: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#253297" : "transparent",
-                                      borderRadius: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "9999px" : undefined,
+                                      borderRadius: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "0" : undefined,
                                       fontFamily: "Pretendard",
                                       fontSize: "14px",
                                       fontWeight: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? 700 : 400,
@@ -247,7 +247,7 @@ export function AppSidebarStatistics() {
                           className="flex items-center px-5 py-3 rounded-lg transition-colors"
                           style={{
                             background: location === sub.url ? "#253297" : "transparent",
-                            borderRadius: location === sub.url ? "9999px" : undefined,
+                            borderRadius: location === sub.url ? "0" : undefined,
                             fontFamily: "Pretendard",
                             fontSize: "16px",
                             fontWeight: location === sub.url ? 700 : 500,
