@@ -180,7 +180,7 @@ export function FloatingIntakeButton() {
       <div
         style={{
           position: 'fixed',
-          bottom: '32px',
+          bottom: '120px',
           left: '32px',
           display: 'flex',
           flexDirection: 'column',

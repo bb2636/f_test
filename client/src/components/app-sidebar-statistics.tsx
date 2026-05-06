@@ -159,121 +159,105 @@ export function AppSidebarStatistics() {
           <div className="text-2xl font-bold text-gray-900">FLOXN</div>
         </div>
 
-        {/* Top-level Navigation (GlobalHeader 에서 이동) */}
-        <div className="flex flex-col gap-1 px-3 pt-3">
+        {/* Top-level Navigation (GlobalHeader 에서 이동) — '정산 및 통계' 활성 시 그 아래에 서브메뉴 중첩 표시 */}
+        <div className="flex flex-col gap-1 px-3 pt-3 flex-1 overflow-y-auto">
           {topMenu.map((item) => {
             const isActive = activeMenu === item.name;
             return (
-              <button
-                key={item.name}
-                type="button"
-                onClick={() => handleTopMenuClick(item.name)}
-                className="flex items-center px-5 py-3 rounded-lg transition-colors text-left"
-                style={{
-                  background: isActive ? "rgba(12, 12, 12, 0.06)" : "transparent",
-                  fontFamily: "Pretendard",
-                  fontSize: "15px",
-                  fontWeight: isActive ? 600 : 500,
-                  letterSpacing: "-0.02em",
-                  color: isActive ? "#0C0C0C" : "rgba(12, 12, 12, 0.7)",
-                }}
-                data-testid={`menu-${item.name}`}
-              >
-                {item.name}
-              </button>
-            );
-          })}
-        </div>
+              <div key={item.name}>
+                <button
+                  type="button"
+                  onClick={() => handleTopMenuClick(item.name)}
+                  className="flex items-center px-5 py-3 rounded-lg transition-colors text-left w-full"
+                  style={{
+                    background: isActive ? "rgba(12, 12, 12, 0.06)" : "transparent",
+                    fontFamily: "Pretendard",
+                    fontSize: "15px",
+                    fontWeight: isActive ? 600 : 500,
+                    letterSpacing: "-0.02em",
+                    color: isActive ? "#0C0C0C" : "rgba(12, 12, 12, 0.7)",
+                  }}
+                  data-testid={`menu-${item.name}`}
+                >
+                  {item.name}
+                </button>
 
-        {/* Divider */}
-        <div style={{ borderTop: "1px solid #E5E7EB", margin: "12px 16px" }} />
-
-        {/* 정산 및 통계 섹션 헤더 */}
-        <div className="px-8 pb-2">
-          <span
-            style={{
-              fontFamily: "Pretendard",
-              fontSize: "15px",
-              fontWeight: 500,
-              letterSpacing: "-0.01em",
-              color: "rgba(12, 12, 12, 0.5)",
-            }}
-          >
-            정산 및 통계
-          </span>
-        </div>
-
-        {/* 기존 서브메뉴 */}
-        <div className="flex flex-col px-3 gap-1 flex-1 overflow-y-auto">
-          {menuItems.map((item) => {
-            if (item.children) {
-              const isExpanded = expandedMenus.has(item.title);
-              const isChildActive = item.children.some(child => location === child.url || (child.url === "/statistics/closed" && location === "/statistics"));
-              return (
-                <div key={item.title}>
-                  <button
-                    onClick={() => toggleMenu(item.title)}
-                    className="flex items-center justify-between w-full px-5 py-3 rounded-lg transition-colors"
-                    style={{
-                      background: isChildActive ? "rgba(12, 12, 12, 0.04)" : "transparent",
-                      fontFamily: "Pretendard",
-                      fontSize: "16px",
-                      fontWeight: isChildActive ? 700 : 500,
-                      letterSpacing: "-0.02em",
-                      color: isChildActive ? "#008FED" : "rgba(12, 12, 12, 0.8)",
-                    }}
-                    data-testid={item.testId}
-                  >
-                    <span>{item.title}</span>
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                      style={{ color: isChildActive ? "#008FED" : "rgba(12, 12, 12, 0.4)" }}
-                    />
-                  </button>
-                  {isExpanded && (
-                    <div className="flex flex-col gap-0.5 ml-4 mt-0.5">
-                      {item.children.map((child) => (
+                {/* '정산 및 통계' 활성일 때만 그 아래에 서브메뉴(정산 조회/통계) 중첩 표시 */}
+                {item.name === "정산 및 통계" && isActive && (
+                  <div className="flex flex-col gap-1 ml-2 mt-1">
+                    {menuItems.map((sub) => {
+                      if (sub.children) {
+                        const isExpanded = expandedMenus.has(sub.title);
+                        const isChildActive = sub.children.some(child => location === child.url || (child.url === "/statistics/closed" && location === "/statistics"));
+                        return (
+                          <div key={sub.title}>
+                            <button
+                              onClick={() => toggleMenu(sub.title)}
+                              className="flex items-center justify-between w-full px-5 py-3 rounded-lg transition-colors"
+                              style={{
+                                background: isChildActive ? "rgba(12, 12, 12, 0.04)" : "transparent",
+                                fontFamily: "Pretendard",
+                                fontSize: "16px",
+                                fontWeight: isChildActive ? 700 : 500,
+                                letterSpacing: "-0.02em",
+                                color: isChildActive ? "#008FED" : "rgba(12, 12, 12, 0.8)",
+                              }}
+                              data-testid={sub.testId}
+                            >
+                              <span>{sub.title}</span>
+                              <ChevronDown
+                                className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                                style={{ color: isChildActive ? "#008FED" : "rgba(12, 12, 12, 0.4)" }}
+                              />
+                            </button>
+                            {isExpanded && (
+                              <div className="flex flex-col gap-0.5 ml-4 mt-0.5">
+                                {sub.children.map((child) => (
+                                  <button
+                                    key={child.title}
+                                    onClick={() => setLocation(child.url)}
+                                    className="flex items-center px-4 py-2.5 rounded-lg transition-colors text-left"
+                                    style={{
+                                      background: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "rgba(12, 12, 12, 0.08)" : "transparent",
+                                      fontFamily: "Pretendard",
+                                      fontSize: "14px",
+                                      fontWeight: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? 700 : 400,
+                                      letterSpacing: "-0.02em",
+                                      color: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#008FED" : "rgba(12, 12, 12, 0.65)",
+                                    }}
+                                    data-testid={child.testId}
+                                  >
+                                    <span style={{ marginRight: "6px", color: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#008FED" : "rgba(12, 12, 12, 0.3)" }}>•</span>
+                                    {child.title}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                      return (
                         <button
-                          key={child.title}
-                          onClick={() => setLocation(child.url)}
-                          className="flex items-center px-4 py-2.5 rounded-lg transition-colors text-left"
+                          key={sub.title}
+                          onClick={() => sub.url && setLocation(sub.url)}
+                          className="flex items-center px-5 py-3 rounded-lg transition-colors"
                           style={{
-                            background: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "rgba(12, 12, 12, 0.08)" : "transparent",
+                            background: location === sub.url ? "rgba(12, 12, 12, 0.08)" : "transparent",
                             fontFamily: "Pretendard",
-                            fontSize: "14px",
-                            fontWeight: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? 700 : 400,
+                            fontSize: "16px",
+                            fontWeight: location === sub.url ? 700 : 500,
                             letterSpacing: "-0.02em",
-                            color: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#008FED" : "rgba(12, 12, 12, 0.65)",
+                            color: location === sub.url ? "#008FED" : "rgba(12, 12, 12, 0.8)",
                           }}
-                          data-testid={child.testId}
+                          data-testid={sub.testId}
                         >
-                          <span style={{ marginRight: "6px", color: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#008FED" : "rgba(12, 12, 12, 0.3)" }}>•</span>
-                          {child.title}
+                          {sub.title}
                         </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            return (
-              <button
-                key={item.title}
-                onClick={() => item.url && setLocation(item.url)}
-                className="flex items-center px-5 py-3 rounded-lg transition-colors"
-                style={{
-                  background: location === item.url ? "rgba(12, 12, 12, 0.08)" : "transparent",
-                  fontFamily: "Pretendard",
-                  fontSize: "16px",
-                  fontWeight: location === item.url ? 700 : 500,
-                  letterSpacing: "-0.02em",
-                  color: location === item.url ? "#008FED" : "rgba(12, 12, 12, 0.8)",
-                }}
-                data-testid={item.testId}
-              >
-                {item.title}
-              </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
