@@ -186,7 +186,7 @@ export function AppSidebarStatistics() {
 
                 {/* '정산 및 통계' 활성일 때만 그 아래에 서브메뉴(정산 조회/통계) 중첩 표시 */}
                 {item.name === "정산 및 통계" && isActive && (
-                  <div className="flex flex-col gap-1 mt-1">
+                  <div className="flex flex-col gap-1 ml-2 mt-1">
                     {menuItems.map((sub) => {
                       if (sub.children) {
                         const isExpanded = expandedMenus.has(sub.title);
@@ -214,7 +214,7 @@ export function AppSidebarStatistics() {
                               />
                             </button>
                             {isExpanded && (
-                              <div className="flex flex-col gap-0.5 mt-0.5">
+                              <div className="flex flex-col gap-0.5 ml-4 mt-0.5">
                                 {sub.children.map((child) => (
                                   <button
                                     key={child.title}
