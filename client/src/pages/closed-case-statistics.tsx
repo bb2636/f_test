@@ -595,7 +595,7 @@ export default function ClosedCaseStatistics() {
   // [페이지네이션 2026-05-06] 한 페이지 10건. searchType에 따라 대상 리스트만 슬라이스.
   // 산식/렌더 함수(renderGroupedRow, renderIndividualRow) 변경 없음 — 입력 배열만 슬라이스.
   const currentList: any[] = searchType === "사고번호" ? groupedRows : filteredCases;
-  const { page, setPage, totalPages, pageItems } = useCompactPagination<any>(currentList, 10);
+  const { page, setPage, totalPages, pageItems } = useCompactPagination<any>(currentList, 15);
   useEffect(() => { setPage(1); }, [searchQuery, searchType, startDate, endDate, setPage]);
 
   const getManagerName = (c: Case): string => {
