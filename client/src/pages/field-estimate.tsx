@@ -501,6 +501,16 @@ export default function FieldEstimate() {
   //     않아 "복구면적 가져오기" 클릭 시 보양재 등이 매 클릭마다 누적되는 회귀 발생.
   //   - sync 로직과 동일하게 협력업체에서도 dedup이 동작하도록 가드를 제거. 자동 저장 차단은
   //     별도(저장 mutation 단계)에서 그대로 유지되므로 데이터 정합성 위험 없음.
+  // [별칭 정규화 2026-05-05] 자재비 매칭/dedup 키에서 동의어를 단일 명칭으로 환원.
+  // 가설공사: '건축물보양'(일위대가DB 신규 명칭) ↔ '건축물현장정리'(자재비DB 명칭) → '건축물현장정리'로 통일.
+  // 이로써 두 명칭으로 생성된 자재비 행들이 동일 key로 dedup·매칭되어 중복 누적이 차단된다.
+  const normalizeMaterialWorkName = (공종: string, 공사명: string): string => {
+    const w = (공종 || '').trim();
+    const n = (공사명 || '').trim();
+    if (w === '가설공사' && n === '건축물보양') return '건축물현장정리';
+    return n;
+  };
+
   const lastMaterialDeduplicationRef = useRef<string>('');
   // [Bug 1 fix 2026-05-04] 가드 변경 — partner도 dedup 동작.
   useEffect(() => {
@@ -509,12 +519,13 @@ export default function FieldEstimate() {
     if (materialRows.length === 0) return;
     
     // 중복 체크: 연동된 행에서 같은 key가 여러 개인지 확인
+    // [2026-05-05] 별칭 정규화 적용 — '건축물보양'/'건축물현장정리' 두 행이 양립하던 회귀 차단.
     const linkedRows = materialRows.filter(r => r.isLinkedFromRecovery);
     const keyCount: Record<string, number> = {};
     let hasDuplicates = false;
     
     for (const row of linkedRows) {
-      const key = `${row.공종}|${row.공사명}`;
+      const key = `${row.공종}|${normalizeMaterialWorkName(row.공종 || '', row.공사명 || '')}`;
       keyCount[key] = (keyCount[key] || 0) + 1;
       if (keyCount[key] > 1) {
         hasDuplicates = true;
@@ -551,7 +562,7 @@ export default function FieldEstimate() {
         keepIds.add(row.id);
         return;
       }
-      const key = `${row.공종}|${row.공사명}`;
+      const key = `${row.공종}|${normalizeMaterialWorkName(row.공종 || '', row.공사명 || '')}`;
       if (seen.has(key)) {
         console.log('[자재비 중복 제거] 제거:', row.공종, row.공사명, '자재항목:', row.자재항목);
         return;
@@ -1739,8 +1750,14 @@ export default function FieldEstimate() {
       // [회귀 수정 2026-05-04 재롤백] 자재항목 포함 키는 가설공사/건축물보양처럼 sync가
       // 매칭 실패해 매 클릭마다 새 행을 만드는 회귀를 유발했음. autoKey가 있는 행은
       // 그대로 매칭되고, autoKey 없는 행은 공종|공사명로 1:1 매칭하도록 보수적으로 복원.
+      // [별칭 정규화 2026-05-05] 가설공사 '건축물보양' → '건축물현장정리'로 키 정규화.
+      // 옛 명칭으로 생성된 행이 새 sync의 autoKey와 매칭되도록 하여 중복 누적을 차단.
       const norm = (v: any) => (v ?? "").toString().trim();
-      const key = row.autoKey || `${norm(row.공종)}|${norm(row.공사명)}`;
+      const normalizedName = normalizeMaterialWorkName(norm(row.공종), norm(row.공사명));
+      let key = row.autoKey || `${norm(row.공종)}|${normalizedName}`;
+      if (row.autoKey && norm(row.공종) === '가설공사' && row.autoKey.includes('|건축물보양')) {
+        key = row.autoKey.replace('|건축물보양', '|건축물현장정리');
+      }
       existingAutoRowsMap.set(key, row);
     });
     
@@ -2179,7 +2196,9 @@ export default function FieldEstimate() {
       // 자동연동 대상 공사명: 동일 키의 자동행이 있을 때만 수동행 제거 (중복 방지).
       // 자동행이 없으면(예: 산출표에서 영역행이 없거나, 면적 결손으로 자동키 미생성) 사용자 수동행 보존.
       if (AUTO_SYNC_MATERIAL_WORK_NAMES.includes(workName)) {
-        const manualKey = `${norm(row.공종)}|${norm(row.공사명)}|${norm(row.자재항목) || "__NONE__"}`;
+        // [별칭 정규화 2026-05-05] 가설공사 '건축물보양' 수동행을 신규 autoKey('건축물현장정리')로 매칭.
+        const normalizedName = normalizeMaterialWorkName(norm(row.공종), norm(row.공사명));
+        const manualKey = `${norm(row.공종)}|${normalizedName}|${norm(row.자재항목) || "__NONE__"}`;
         if (nextAutoKeys.has(manualKey)) {
           console.log('[자재비 수동행 제거 - 자동행과 중복]', row.공종, row.공사명, row.자재항목);
           return false;
