@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useCompactPagination } from "@/lib/use-compact-pagination";
+import { CompactPagination } from "@/components/ui/compact-pagination";
 import ReactDOM from "react-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -1231,6 +1233,17 @@ export default function ComprehensiveProgress() {
     });
   }, [cases, selectedStatus, searchQuery, selectedManager, user?.role, user?.company]);
 
+  // [페이지네이션 2026-05-06] 한 페이지 15건. 산식/렌더 변경 없음 — 입력 배열만 슬라이스.
+  const {
+    page: progressPage,
+    setPage: setProgressPage,
+    totalPages: progressTotalPages,
+    pageItems: pagedCases,
+  } = useCompactPagination(filteredData, 15);
+  useEffect(() => { setProgressPage(1); }, [
+    selectedStatus, searchQuery, selectedManager, setProgressPage,
+  ]);
+
   const totalCount = filteredData.length;
 
   // 협력사가 변경 가능한 상태 목록
@@ -1795,8 +1808,8 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    paddingTop: "14px",
-                    paddingBottom: "14px",
+                    paddingTop: "2px",
+                    paddingBottom: "2px",
                   }}
                 >
                   <Checkbox
@@ -1846,8 +1859,8 @@ export default function ComprehensiveProgress() {
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
                     paddingRight: "4px",
                     paddingLeft: "4px",
-                    paddingTop: "14px",
-                    paddingBottom: "14px",
+                    paddingTop: "2px",
+                    paddingBottom: "2px",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -1968,7 +1981,7 @@ export default function ComprehensiveProgress() {
                 </div>
               </div>
             ) : (
-              filteredData.map((caseItem, index) => {
+              pagedCases.map((caseItem, index) => {
                 return (
                   <div
                     key={caseItem.id}
@@ -1996,8 +2009,8 @@ export default function ComprehensiveProgress() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          paddingTop: "14px",
-                          paddingBottom: "14px",
+                          paddingTop: "2px",
+                          paddingBottom: "2px",
                         }}
                       >
                         <Checkbox
@@ -2020,8 +2033,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2036,8 +2049,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2052,8 +2065,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2068,8 +2081,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2084,8 +2097,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2143,8 +2156,8 @@ export default function ComprehensiveProgress() {
                             whiteSpace: "normal",
                             paddingRight: "4px",
                             paddingLeft: "4px",
-                            paddingTop: "14px",
-                            paddingBottom: "14px",
+                            paddingTop: "2px",
+                            paddingBottom: "2px",
                             display: "flex",
                             alignItems: "center",
                           }}
@@ -2162,8 +2175,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2178,8 +2191,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2195,8 +2208,8 @@ export default function ComprehensiveProgress() {
     
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "flex-end",
@@ -2212,8 +2225,8 @@ export default function ComprehensiveProgress() {
     
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2228,8 +2241,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2244,8 +2257,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2253,7 +2266,7 @@ export default function ComprehensiveProgress() {
                     >
                       {calculateElapsed3(caseItem)}
                     </div>
-                    <div onClick={(e) => e.stopPropagation()} style={{ paddingRight: "4px", paddingLeft: "4px", paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div onClick={(e) => e.stopPropagation()} style={{ paddingRight: "4px", paddingLeft: "4px", paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {/* 관리자: 모든 상태에서 변경 가능, 협력사: 현장정보제출/복구요청(2차승인) 상태에서만 변경 가능 */}
                       {user?.role === "관리자" ||
                       (user?.role === "협력사" &&
@@ -2371,8 +2384,8 @@ export default function ComprehensiveProgress() {
     
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                       }}
                     >
                       {/* 협력사 특이사항 빨간색 점: 미확인=채움, 확인=테두리만 */}
@@ -2424,8 +2437,8 @@ export default function ComprehensiveProgress() {
                           textDecoration: "underline",
                           paddingRight: "4px",
                           paddingLeft: "4px",
-                          paddingTop: "14px",
-                          paddingBottom: "14px",
+                          paddingTop: "2px",
+                          paddingBottom: "2px",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -2455,7 +2468,7 @@ export default function ComprehensiveProgress() {
                             : "현장조사 입력"}
                       </div>
                     )}
-                    <div style={{ paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "8px", overflow: "visible", minWidth: 0 }}>
+                    <div style={{ paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "8px", overflow: "visible", minWidth: 0 }}>
                       {caseItem.status === "배당대기" ? (
                         // 배당대기 상태 - 임시 저장 건이므로 이어서 작성하기 버튼
                         (<button
@@ -2548,6 +2561,13 @@ export default function ComprehensiveProgress() {
             )}
           </div>
         </div>
+        {/* Pagination: 한 페이지 15건. <<,>>는 페이지번호 그룹표시만 이동, < >는 데이터 ±1. */}
+        <CompactPagination
+          currentPage={progressPage}
+          totalPages={progressTotalPages}
+          onPageChange={setProgressPage}
+          testIdPrefix="pagination-progress"
+        />
       </div>
       {/* 상세보기 Sheet */}
       <Sheet
