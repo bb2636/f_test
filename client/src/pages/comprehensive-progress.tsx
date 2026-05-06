@@ -1719,7 +1719,7 @@ export default function ComprehensiveProgress() {
                 fontSize: "20px",
                 lineHeight: "128%",
                 letterSpacing: "-0.02em",
-                color: "#008FED",
+                color: "#253396",
               }}
             >
               {totalCount}
@@ -1837,8 +1837,8 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
-                    paddingRight: "4px",
-                    paddingLeft: "4px",
+                    paddingRight: (col.label?.startsWith("경과") || col.label === "메모") ? "8px" : "4px",
+                    paddingLeft: (col.label?.startsWith("경과") || col.label === "메모") ? "8px" : "4px",
                     paddingTop: "2px",
                     paddingBottom: "2px",
                     whiteSpace: "nowrap",
@@ -2203,8 +2203,8 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
     
-                        paddingRight: "4px",
-                        paddingLeft: "4px",
+                        paddingRight: "8px",
+                        paddingLeft: "8px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
                         display: "flex",
@@ -2219,8 +2219,8 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        paddingRight: "4px",
-                        paddingLeft: "4px",
+                        paddingRight: "8px",
+                        paddingLeft: "8px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
                         display: "flex",
@@ -2235,8 +2235,8 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        paddingRight: "4px",
-                        paddingLeft: "4px",
+                        paddingRight: "8px",
+                        paddingLeft: "8px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
                         display: "flex",
@@ -2362,8 +2362,8 @@ export default function ComprehensiveProgress() {
                         alignItems: "center",
                         gap: "4px",
     
-                        paddingRight: "4px",
-                        paddingLeft: "4px",
+                        paddingRight: "8px",
+                        paddingLeft: "8px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
                       }}
