@@ -902,8 +902,10 @@ export function MaterialCostSection({
                                   if (r.id === row.id) {
                                     const isPaint = r.공종 === '도장공사' && ['수성페인트', '무늬코트', '탄성코트'].includes(r.공사명 || '');
                                     if (isPaint) {
-                                      const laborPrice = r.기준단가 || 0;
-                                      const newTotal = Math.round(laborPrice * val);
+                                      // [표시/합계 정합화 2026-05-06] 페인트 행 합계 = 단가 × 수량.
+                                      // 기존엔 기준단가(노임단가) × 수량으로 계산되어 사용자가 입력한 단가가 무시됐음.
+                                      const unitPrice = r.단가 || 0;
+                                      const newTotal = Math.round(unitPrice * val);
                                       return { ...r, 수량EA: val, 수량: val, 합계: newTotal, 금액: newTotal, isOverridden: true };
                                     }
                                     const newTotal = Math.round((r.단가 || r.기준단가 || 0) * val);

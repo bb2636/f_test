@@ -1950,10 +1950,11 @@ export default function FieldEstimate() {
         } else if (existingRow) {
           // 자동 생성 행 (사용자 미수정): 카탈로그 단가가 숫자면 갱신, 아니면 기존값 유지
           const newPrice = catalogUnitPrice > 0 ? catalogUnitPrice : (existingRow.단가 || 0);
-          const amt = Math.round(newPrice * calculatedQty);
-          const qty = laborUnitPrice > 0 && amt > 0
-            ? Math.round((amt / laborUnitPrice) * 10) / 10
-            : calculatedQty;
+          // [표시 수량 정합화 2026-05-06] 페인트 행 수량은 복구면적(바닥+벽체+천장) 그대로 표시.
+          // 기존엔 amt/노임단가로 환산된 값(예 42.9)을 보여줘 사용자가 단가×수량으로 검산 시 합계와 안 맞음.
+          // 합계 산식(단가×복구면적)은 변경하지 않음.
+          const qty = calculatedQty;
+          const amt = Math.round(newPrice * qty);
           resultRowsMap.set(autoKey, {
             ...existingRow,
             autoKey,
@@ -1970,14 +1971,13 @@ export default function FieldEstimate() {
             autoUnitType: 'EA',
             isManualPriceEntry: isManualPriceEntryFlag,
           });
-          console.log(`[자재비 집계] 도장공사 ${data.공사명}: 기존 행 업데이트 (노임단가: ${laborUnitPrice}, 단가: ${newPrice}, 카탈로그단가: ${catalogPriceRaw}, 단위: ${dbUnit})`);
+          console.log(`[자재비 집계] 도장공사 ${data.공사명}: 기존 행 업데이트 (노임단가: ${laborUnitPrice}, 단가: ${newPrice}, 카탈로그단가: ${catalogPriceRaw}, 단위: ${dbUnit}, 표시수량=복구면적: ${qty})`);
         } else {
           // 새 행 생성: 카탈로그 단가가 숫자면 그것 사용, "직접입력"이면 0
           const newPrice = catalogUnitPrice > 0 ? catalogUnitPrice : 0;
-          const amt = Math.round(newPrice * calculatedQty);
-          const qty = laborUnitPrice > 0 && amt > 0
-            ? Math.round((amt / laborUnitPrice) * 10) / 10
-            : calculatedQty;
+          // [표시 수량 정합화 2026-05-06] 동일: 페인트 행 수량 = 복구면적
+          const qty = calculatedQty;
+          const amt = Math.round(newPrice * qty);
           resultRowsMap.set(autoKey, {
             id: `material-auto-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             공종: data.공종,
