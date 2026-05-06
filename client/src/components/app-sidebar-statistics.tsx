@@ -219,7 +219,7 @@ export function AppSidebarStatistics() {
                                   <button
                                     key={child.title}
                                     onClick={() => setLocation(child.url)}
-                                    className="flex items-center px-4 py-2.5 rounded-lg transition-colors text-left"
+                                    className="flex items-center px-4 py-2.5 rounded-lg transition-colors text-left self-start"
                                     style={{
                                       background: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#253297" : "transparent",
                                       borderRadius: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "12px" : undefined,
