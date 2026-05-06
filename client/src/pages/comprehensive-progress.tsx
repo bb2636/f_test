@@ -2073,10 +2073,10 @@ export default function ComprehensiveProgress() {
                       {caseItem.insuranceCompany || "-"}
                     </div>
                     <div
-                      className="tbl-text-sub"
                       style={{
                         fontFamily: "Pretendard",
                         fontSize: "13px",
+                        color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "2px",
@@ -2129,10 +2129,10 @@ export default function ComprehensiveProgress() {
                       }
                       return (
                         <div
-                          className="tbl-text-sub"
                           style={{
                             fontFamily: "Pretendard",
                             fontSize: "13px",
+                            color: "rgba(12, 12, 12, 0.8)",
                             lineHeight: "1.4",
                             wordBreak: "break-all",
                             whiteSpace: "normal",
@@ -2151,10 +2151,10 @@ export default function ComprehensiveProgress() {
                       );
                     })()}
                     <div
-                      className="tbl-text-sub"
                       style={{
                         fontFamily: "Pretendard",
                         fontSize: "13px",
+                        color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
                         paddingTop: "2px",
