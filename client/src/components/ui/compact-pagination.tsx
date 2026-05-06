@@ -96,20 +96,33 @@ export function CompactPagination({
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
-      {pageNumbers.map((p) => (
-        <Button
-          key={p}
-          variant={p === currentPage ? "outline" : "ghost"}
-          size="icon"
-          className="h-8 w-8 text-sm"
-          onClick={() => goToPage(p)}
-          aria-current={p === currentPage ? "page" : undefined}
-          aria-label={`${p}페이지`}
-          data-testid={`${testIdPrefix}-page-${p}`}
-        >
-          {p}
-        </Button>
-      ))}
+      {pageNumbers.map((p) => {
+        const isActive = p === currentPage;
+        return (
+          <Button
+            key={p}
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-sm"
+            style={
+              isActive
+                ? {
+                    background: "#1F2937",
+                    color: "#FFFFFF",
+                    border: "1px solid #1F2937",
+                    fontWeight: 600,
+                  }
+                : undefined
+            }
+            onClick={() => goToPage(p)}
+            aria-current={isActive ? "page" : undefined}
+            aria-label={`${p}페이지`}
+            data-testid={`${testIdPrefix}-page-${p}`}
+          >
+            {p}
+          </Button>
+        );
+      })}
       <Button
         variant="ghost"
         size="icon"
