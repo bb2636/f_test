@@ -1447,8 +1447,7 @@ export default function ComprehensiveProgress() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--color-bg)" }}>
-      <GlobalHeader />
+    <div style={{ background: "var(--color-bg)", minHeight: "100%" }}>
       {/* Main Content */}
       <div
         style={{
