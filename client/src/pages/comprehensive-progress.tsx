@@ -1536,7 +1536,14 @@ export default function ComprehensiveProgress() {
               >
                 <SelectValue placeholder="진행상태 선택" />
               </SelectTrigger>
-              <SelectContent style={{ background: "var(--color-input-bg)" }}>
+              <SelectContent
+                style={{
+                  backgroundColor: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
+                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                  zIndex: 1000,
+                }}
+              >
                 {statusOptions.map((option) => (
                   <SelectItem
                     key={option.key}
@@ -1649,7 +1656,14 @@ export default function ComprehensiveProgress() {
               >
                 <SelectValue placeholder="담당자 선택" />
               </SelectTrigger>
-              <SelectContent style={{ background: "var(--color-input-bg)" }}>
+              <SelectContent
+                style={{
+                  backgroundColor: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
+                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                  zIndex: 1000,
+                }}
+              >
                 <SelectItem value="전체" data-testid="option-manager-all">
                   전체
                 </SelectItem>
