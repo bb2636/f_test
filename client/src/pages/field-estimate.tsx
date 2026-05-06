@@ -1715,7 +1715,8 @@ export default function FieldEstimate() {
   };
 
   // 자동 연동 대상 공사명 (반자틀 제외)
-  const AUTO_SYNC_MATERIAL_WORK_NAMES = ['합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리', '수성페인트', '무늬코트', '탄성코트', 'SMC', '리빙보드', '도기류', '붙박이장', '상부장', '하부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
+  // '건축물현장정리' / '건축물보양' 둘 다 허용 (일위대가DB는 '건축물보양'으로 표기됨, 구 데이터/자재비DB 호환을 위해 옛 명칭도 유지)
+  const AUTO_SYNC_MATERIAL_WORK_NAMES = ['합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리', '건축물보양', '수성페인트', '무늬코트', '탄성코트', 'SMC', '리빙보드', '도기류', '붙박이장', '상부장', '하부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장'];
   
   // 복구면적 산출표에서 자재비로 동기화 (자재비DB 기반 자동 생성)
   // 핵심: 동일 Key(공종+공사명+자재항목)는 1행으로 merge, 전체 합산 후 마지막에 ceil 적용
@@ -1769,11 +1770,12 @@ export default function FieldEstimate() {
       if (!AUTO_SYNC_MATERIAL_WORK_NAMES.includes(rawWorkName) && !isItemInLinkSettings(workType, rawWorkName)) return;
       
       // 가설공사: 자재비DB에는 '건축물현장정리'-보양재만 존재.
-      // '건축물보양' 면적만 보양재 자재비 수량으로 집계되도록 '건축물현장정리'로 매핑.
+      // 일위대가DB 명칭이 '건축물보양'으로 변경되어 두 명칭을 동의어로 처리.
+      // '건축물보양' / '건축물현장정리' 둘 다 자재비 lookup 시 '건축물현장정리'으로 정규화.
       // '준공청소' 등 다른 가설공사 항목은 보양재와 무관하므로 자재비 연동 제외(면적 합산 금지).
       let normalizedWorkName = rawWorkName;
       if (workType === '가설공사') {
-        if (rawWorkName === '건축물보양') {
+        if (rawWorkName === '건축물보양' || rawWorkName === '건축물현장정리') {
           normalizedWorkName = '건축물현장정리';
         } else {
           return; // 준공청소 등 가설공사 기타 항목은 자재비 연동에서 제외
@@ -2440,7 +2442,7 @@ export default function FieldEstimate() {
     },
     '바닥': {
       '수장공사': ['마루', '장판'],
-      '가설공사': ['건축물현장정리'],
+      '가설공사': ['건축물보양'],
       '타일공사': ['줄눈', '타일'],
       '욕실공사': ['SMC', '리빙보드', '도기류'],
     },
@@ -2726,7 +2728,7 @@ export default function FieldEstimate() {
     // syncMaterialFromRecoveryArea가 처리하는 모든 공사명 (이중 생성 방지)
     // 가구공사/욕실공사 FIXED 항목 포함 — 노무비→자재비 useEffect는 이들을 제외
     const AUTO_MATERIAL_SYNC_WORK_NAMES = [
-      '합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리',
+      '합판', '석고', '석고보드', '몰딩', '걸레받이', '도배', '마루', '장판', '건축물현장정리', '건축물보양',
       '수성페인트', '무늬코트', '탄성코트',
       'SMC', '리빙보드', '도기류', '붙박이장',
       '상부장', '하부장', '상부장&하부장', '키큰장', '상부장&키큰장', '상부장&하부장&키큰장',
@@ -2734,7 +2736,7 @@ export default function FieldEstimate() {
     const shouldExcludeFromMaterialSync = (category: string, workName: string, isLinkedFromRecovery?: boolean): boolean => {
       if (!isLinkedFromRecovery) return true;
       if ((category === '목공사' && workName === '반자틀') || category === '철거공사') return true;
-      if (category === '가설공사' && workName !== '건축물현장정리') return true;
+      if (category === '가설공사' && workName !== '건축물현장정리' && workName !== '건축물보양') return true;
       if ((workName || '').startsWith('바탕만들기')) return true;
       if (AUTO_MATERIAL_SYNC_WORK_NAMES.includes(workName) || isItemInLinkSettings(category, workName)) {
         console.log('[노무비→자재비 useEffect] 자동연동 대상 제외:', category, workName);

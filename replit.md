@@ -14,6 +14,17 @@
 5. **샘플견적 손방 화장실 — 원인공사 방수 보통인부 단가** (Bug 3): `applyLossPreventionSampleTemplate`에서 정확매칭(공종+공사명+노임항목/세부항목) 실패 시, 공사명+노임항목/세부항목으로 카탈로그 검색 → 후보가 정확히 1개일 때만 단가 채택(다수 후보면 모호성으로 폴백 포기). 단가>0 조건 추가. **[2026-05-04 후속]** 적용단가(`pricePerSqm`)가 0으로 남던 부수 회귀 보강: 손해방지 케이스는 복구면적(C)이 없어 `calculateAppliedUnitPriceWithTiers` 경로가 작동하지 않으므로, 샘플 적용 시 `pricePerSqm = matchedStandardPrice`(E)로 초기 채움 (수동 detailItem 선택 시 L1219의 동일 동작과 일치). 산식 미변경.
 6. **석고보드 철거 수량/금액 누락 재발** (Bug 2): `field-estimate.tsx` L3478~3498(자동 동기화 reconcile의 철거공사 행 업데이트)에서 카탈로그 lookup 시 `laborRow.workName`(예: '석고보드')을 그대로 사용하여 `mergedIlwidaegaCatalog`(공사명='석고')와 매칭 실패 → D/E가 0으로 남아 수량·금액이 영구 0으로 굳던 회귀. `matchDemolitionWorkName` + `DEMOLITION_WORKNAME_ALIASES`로 canonical 이름 산출 후 원본 또는 alias 중 하나만 일치해도 매치하도록 변경. 산식·계산 로직 미변경, 매칭 가드만 보강.
 
+## 가설공사 '건축물현장정리' ↔ '건축물보양' 별칭 처리 (2026-05-05)
+- **증상**: 일위대가 DB에서 '건축물현장정리'를 '건축물보양'으로 변경했으나, 화면에서는 여전히 '건축물현장정리'로 표시/매칭됨.
+- **원인**: 코드 내 5곳에 '건축물현장정리'가 하드코딩되어 새 일위대가 DB 명칭('건축물보양')과 매칭되지 않음.
+- **해결** (가드/매칭만 변경, 산식 미변경):
+  1. `field-estimate.tsx` `AUTO_SYNC_MATERIAL_WORK_NAMES`(L1722) 및 `AUTO_MATERIAL_SYNC_WORK_NAMES`(L2733)에 '건축물보양' 추가 — 두 명칭 모두 자동연동 화이트리스트에 포함.
+  2. `field-estimate.tsx` 가설공사 가드(L2741): `workName !== '건축물현장정리' && workName !== '건축물보양'` — 두 명칭 모두 통과 허용.
+  3. `field-estimate.tsx` `DEFAULT_WORK_NAMES_BY_LOCATION_AND_TYPE` 바닥/가설공사 디폴트(L2447): '건축물현장정리' → '건축물보양'(신규 일위대가 DB 명칭 반영).
+  4. `ilwidaega-link-settings-modal.tsx` 디폴트 시드(L60): '건축물현장정리' → '건축물보양'.
+  5. `field-estimate.tsx` L1771~1781의 자재비 역매핑('건축물보양' → '건축물현장정리')은 유지 — 자재비 DB는 여전히 '건축물현장정리'-보양재 명칭이므로 자재비 lookup 시에만 옛 명칭으로 매핑. 사용자가 자재비 DB도 변경 시 재정리 필요.
+- **주의**: 이미 DB에 저장된 일위대가 연동 설정에 '건축물현장정리'이 남아있으면, 관리자가 일위대가 연동 설정 모달에서 직접 수정해야 함(서버 자동 마이그레이션 미수행).
+
 ## 일위대가 D값 오버라이드 — 신규 엑셀 업로드 시 자동 초기화 (2026-05-05)
 - **증상**: 새 일위대가 엑셀을 업로드해도 변경된 기준작업량(D값)이 견적/표시에 반영 안 됨. 셀별 수동 편집만 저장된 듯 보임.
 - **원인**: `unit_price_overrides`(D값 셀별 오버라이드)는 업로드와 별개 테이블. 새 엑셀 업로드 후에도 이전 오버라이드가 남아 `mergedIlwidaegaCatalog`(field-estimate.tsx L688) 및 admin 입력 폼(db-management-tab.tsx L740~742)이 신규 엑셀의 D값을 가림.

@@ -54,7 +54,7 @@ const DEFAULT_LINK_ITEMS: Array<{ location: string; category: string; workName: 
   { location: "벽면", category: "타일공사", workName: "타일" },
   { location: "바닥", category: "수장공사", workName: "마루" },
   { location: "바닥", category: "수장공사", workName: "장판" },
-  { location: "바닥", category: "가설공사", workName: "건축물현장정리" },
+  { location: "바닥", category: "가설공사", workName: "건축물보양" },
   { location: "바닥", category: "타일공사", workName: "줄눈" },
   { location: "바닥", category: "타일공사", workName: "타일" },
   { location: "바닥", category: "욕실공사", workName: "SMC" },
