@@ -139,9 +139,10 @@ export function AppSidebarStatistics() {
   return (
     <>
       <div
-        className="flex flex-col bg-white"
+        className="flex flex-col"
         style={{
           width: "260px",
+          background: "#eff0f5",
           borderRight: "1px solid #E5E7EB",
           height: "100vh",
         }}
@@ -170,12 +171,12 @@ export function AppSidebarStatistics() {
                   onClick={() => handleTopMenuClick(item.name)}
                   className="flex items-center px-5 py-3 rounded-lg transition-colors text-left w-full"
                   style={{
-                    background: isActive ? "rgba(12, 12, 12, 0.06)" : "transparent",
+                    background: isActive ? "#253297" : "transparent",
                     fontFamily: "Pretendard",
                     fontSize: "15px",
                     fontWeight: isActive ? 600 : 500,
                     letterSpacing: "-0.02em",
-                    color: isActive ? "#0C0C0C" : "rgba(12, 12, 12, 0.7)",
+                    color: isActive ? "#FFFFFF" : "#57677d",
                   }}
                   data-testid={`menu-${item.name}`}
                 >
@@ -195,19 +196,19 @@ export function AppSidebarStatistics() {
                               onClick={() => toggleMenu(sub.title)}
                               className="flex items-center justify-between w-full px-5 py-3 rounded-lg transition-colors"
                               style={{
-                                background: isChildActive ? "rgba(12, 12, 12, 0.04)" : "transparent",
+                                background: isChildActive ? "#253297" : "transparent",
                                 fontFamily: "Pretendard",
                                 fontSize: "16px",
                                 fontWeight: isChildActive ? 700 : 500,
                                 letterSpacing: "-0.02em",
-                                color: isChildActive ? "#008FED" : "rgba(12, 12, 12, 0.8)",
+                                color: isChildActive ? "#FFFFFF" : "#57677d",
                               }}
                               data-testid={sub.testId}
                             >
                               <span>{sub.title}</span>
                               <ChevronDown
                                 className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                                style={{ color: isChildActive ? "#008FED" : "rgba(12, 12, 12, 0.4)" }}
+                                style={{ color: isChildActive ? "#FFFFFF" : "#57677d" }}
                               />
                             </button>
                             {isExpanded && (
@@ -218,16 +219,16 @@ export function AppSidebarStatistics() {
                                     onClick={() => setLocation(child.url)}
                                     className="flex items-center px-4 py-2.5 rounded-lg transition-colors text-left"
                                     style={{
-                                      background: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "rgba(12, 12, 12, 0.08)" : "transparent",
+                                      background: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#253297" : "transparent",
                                       fontFamily: "Pretendard",
                                       fontSize: "14px",
                                       fontWeight: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? 700 : 400,
                                       letterSpacing: "-0.02em",
-                                      color: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#008FED" : "rgba(12, 12, 12, 0.65)",
+                                      color: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#FFFFFF" : "#57677d",
                                     }}
                                     data-testid={child.testId}
                                   >
-                                    <span style={{ marginRight: "6px", color: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#008FED" : "rgba(12, 12, 12, 0.3)" }}>•</span>
+                                    <span style={{ marginRight: "6px", color: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#FFFFFF" : "#57677d" }}>•</span>
                                     {child.title}
                                   </button>
                                 ))}
@@ -242,12 +243,12 @@ export function AppSidebarStatistics() {
                           onClick={() => sub.url && setLocation(sub.url)}
                           className="flex items-center px-5 py-3 rounded-lg transition-colors"
                           style={{
-                            background: location === sub.url ? "rgba(12, 12, 12, 0.08)" : "transparent",
+                            background: location === sub.url ? "#253297" : "transparent",
                             fontFamily: "Pretendard",
                             fontSize: "16px",
                             fontWeight: location === sub.url ? 700 : 500,
                             letterSpacing: "-0.02em",
-                            color: location === sub.url ? "#008FED" : "rgba(12, 12, 12, 0.8)",
+                            color: location === sub.url ? "#FFFFFF" : "#57677d",
                           }}
                           data-testid={sub.testId}
                         >
@@ -285,7 +286,7 @@ export function AppSidebarStatistics() {
                   fontSize: "14px",
                   fontWeight: 600,
                   letterSpacing: "-0.02em",
-                  color: "rgba(12, 12, 12, 0.8)",
+                  color: "#57677d",
                 }}
                 data-testid="user-info"
               >
@@ -297,7 +298,7 @@ export function AppSidebarStatistics() {
                   fontSize: "12px",
                   fontWeight: 500,
                   letterSpacing: "-0.01em",
-                  color: "rgba(12, 12, 12, 0.4)",
+                  color: "rgba(87, 103, 125, 0.6)",
                 }}
                 data-testid="user-position"
               >
