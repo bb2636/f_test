@@ -23,7 +23,7 @@ import {
 import logoIcon from "@assets/logo-frame.svg";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
-import { getStatusColor, getStatusDisplayText } from "@/lib/case-status";
+import { getStatusColor, getStatusDisplayText, STATUS_COLORS } from "@/lib/case-status";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";
 import { GlobalHeader } from "@/components/global-header";
@@ -2283,7 +2283,7 @@ export default function ComprehensiveProgress() {
                                 fontFamily: "Pretendard",
                                 fontSize: "12px",
                                 fontWeight: 600,
-                                color: "#56687f",
+                                color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#56687f" : getStatusColor(caseItem.status),
                                 textAlign: "center",
                                 lineHeight: "1.4",
                                 maxWidth: "140px",
@@ -2361,7 +2361,7 @@ export default function ComprehensiveProgress() {
                             fontFamily: "Pretendard",
                             fontSize: "12px",
                             fontWeight: 600,
-                            color: "#56687f",
+                            color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#56687f" : getStatusColor(caseItem.status),
                             textAlign: "center",
                             lineHeight: "1.4",
                             maxWidth: "140px",
@@ -2535,13 +2535,13 @@ export default function ComprehensiveProgress() {
                                 }}
                                 style={{
                                   padding: "6px 14px",
-                                  background: "var(--color-button-primary)",
-                                  border: "none",
+                                  background: "var(--color-bg)",
+                                  border: "1px solid var(--color-table-border)",
                                   borderRadius: "9999px",
                                   fontFamily: "Pretendard",
                                   fontSize: "12px",
                                   fontWeight: 500,
-                                  color: "#FFFFFF",
+                                  color: "#56687f",
                                   cursor: "pointer",
                                   whiteSpace: "nowrap",
                                 }}
