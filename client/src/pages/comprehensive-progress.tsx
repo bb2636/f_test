@@ -1447,7 +1447,7 @@ export default function ComprehensiveProgress() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ background: "var(--color-bg)" }}>
       <GlobalHeader />
       {/* Main Content */}
       <div
@@ -1572,8 +1572,8 @@ export default function ComprehensiveProgress() {
                   width: "100%",
                   height: "52px",
                   padding: "0 20px 0 52px",
-                  background: "#FDFDFD",
-                  border: "1px solid rgba(12, 12, 12, 0.1)",
+                  background: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
                   fontSize: "14px",
@@ -1593,7 +1593,7 @@ export default function ComprehensiveProgress() {
               style={{
                 width: "100px",
                 height: "52px",
-                background: "#008FED",
+                background: "var(--color-button-primary)",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
