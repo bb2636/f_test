@@ -22,8 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { CompactPagination } from "@/components/ui/compact-pagination";
-import { useCompactPagination } from "@/lib/use-compact-pagination";
 
 export default function SettlementAction() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -234,17 +232,8 @@ export default function SettlementAction() {
 
   const selectedCase = filteredSettlements.find((s) => s.id === selectedCaseId);
 
-  // 페이지네이션: 한 페이지 10건. 산식 변경 없음 — slice + page state만 추가.
-  const {
-    page: settlementPage,
-    setPage: setSettlementPage,
-    totalPages: settlementTotalPages,
-    pageItems: paginatedSettlements,
-  } = useCompactPagination(filteredSettlements, 10);
-
   const handleSearch = () => {
     console.log("Searching for:", searchQuery);
-    setSettlementPage(1);
   };
 
   // 정산 후 잔액 계산
@@ -343,7 +332,7 @@ export default function SettlementAction() {
   return (
     <div className="p-8">
       {/* Page title */}
-      <div className="flex items-center gap-2 mb-6 compact-page-header">
+      <div className="flex items-center gap-2 mb-6">
         <h1
           style={{
             fontFamily: "Pretendard",
@@ -366,7 +355,7 @@ export default function SettlementAction() {
       </div>
       {/* Search and Results Section - Combined */}
       <div
-        className="mb-6 compact-section"
+        className="mb-6"
         style={{
           background: "#FFFFFF",
           borderRadius: "12px",
@@ -375,7 +364,7 @@ export default function SettlementAction() {
         }}
       >
         {/* Search Input */}
-        <div className="flex gap-3 mb-6 compact-page-header">
+        <div className="flex gap-3 mb-6">
           <div className="relative flex-1">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2"
@@ -386,10 +375,7 @@ export default function SettlementAction() {
               type="text"
               placeholder="25219943"
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setSettlementPage(1);
-              }}
+              onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 height: "48px",
                 paddingLeft: "48px",
@@ -445,7 +431,7 @@ export default function SettlementAction() {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr className="compact-row" style={{ background: "rgba(12, 12, 12, 0.06)" }}>
+                <tr style={{ background: "rgba(12, 12, 12, 0.06)" }}>
                   <th
                     style={{
                       padding: "12px 16px",
@@ -602,7 +588,7 @@ export default function SettlementAction() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr className="compact-row">
+                  <tr>
                     <td colSpan={11} style={{ padding: "40px", textAlign: "center" }}>
                       <span
                         style={{
@@ -616,7 +602,7 @@ export default function SettlementAction() {
                     </td>
                   </tr>
                 ) : filteredSettlements.length === 0 ? (
-                  <tr className="compact-row">
+                  <tr>
                     <td colSpan={11} style={{ padding: "40px", textAlign: "center" }}>
                       <span
                         style={{
@@ -630,10 +616,9 @@ export default function SettlementAction() {
                     </td>
                   </tr>
                 ) : (
-                  paginatedSettlements.map((row) => (
+                  filteredSettlements.map((row) => (
                     <tr
                       key={row.id}
-                      className="compact-row"
                       style={{
                         background: selectedCaseId === row.id ? "rgba(0, 143, 237, 0.05)" : "#FFFFFF",
                         cursor: "pointer",
@@ -783,13 +768,6 @@ export default function SettlementAction() {
               </tbody>
             </table>
           </div>
-          {/* Pagination: 한 페이지 10건, 가운데 정렬, <<,<,1~10,>,>> */}
-          <CompactPagination
-            currentPage={settlementPage}
-            totalPages={settlementTotalPages}
-            onPageChange={setSettlementPage}
-            testIdPrefix="pagination-settlement"
-          />
         </div>
       </div>
       {/* Detail Section */}

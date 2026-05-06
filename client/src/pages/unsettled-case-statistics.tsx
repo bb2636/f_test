@@ -1,6 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
-import { useCompactPagination } from "@/lib/use-compact-pagination";
-import { CompactPagination } from "@/components/ui/compact-pagination";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { User, Case, Settlement, CaseStatusHistory } from "@shared/schema";
 import { Search, Calendar as CalendarIcon, ChevronRight, Star, Download, History } from "lucide-react";
@@ -263,17 +261,12 @@ interface GroupedRow {
   totalClaim: number | null;
 }
 
-// [테이블 압축 2026-05-06] 행/헤더 높이 압축 — 좌우 padding·폰트·정렬·색상은 유지.
-// 변경: padding 상하만 축소, line-height 축소.
-//   header: padding 12px 8px → 6px 8px (≈ 12px 절감/행), line-height 128% → 118%
-//   cell:   padding 10px 8px → 4px 8px (≈ 12px 절감/행), line-height 128% → 118%
-//   대략 row 높이 38~40px → 26~28px 수준으로 압축.
 const headerStyle: React.CSSProperties = {
-  padding: "6px 8px",
+  padding: "12px 8px",
   fontFamily: "Pretendard",
   fontSize: "14px",
   fontWeight: 600,
-  lineHeight: "118%",
+  lineHeight: "128%",
   letterSpacing: "-0.02em",
   color: "rgba(12, 12, 12, 0.6)",
   borderRight: "1px solid rgba(12, 12, 12, 0.06)",
@@ -284,10 +277,10 @@ const headerStyle: React.CSSProperties = {
 };
 
 const cellStyle: React.CSSProperties = {
-  padding: "4px 8px",
+  padding: "10px 8px",
   fontFamily: "Pretendard",
   fontSize: "13px",
-  lineHeight: "118%",
+  lineHeight: "128%",
   letterSpacing: "-0.02em",
   color: "rgba(12, 12, 12, 0.8)",
   borderRight: "1px solid rgba(12, 12, 12, 0.06)",
@@ -637,12 +630,6 @@ export default function UnsettledCaseStatistics() {
   }, [cases, searchQuery, searchType, historicalMode, historicalUnsettledCaseIds, settlementMap, invoicesByPrefixMap]);
 
   const displayCount = searchType === "사고번호" ? groupedRows.length : filteredCases.length;
-
-  // [페이지네이션 2026-05-06] 한 페이지 10건. searchType에 따라 대상 리스트만 슬라이스.
-  // 산식/렌더 함수(renderGroupedRow, renderIndividualRow) 변경 없음 — 입력 배열만 슬라이스.
-  const currentList: any[] = searchType === "사고번호" ? groupedRows : filteredCases;
-  const { page, setPage, totalPages, pageItems } = useCompactPagination<any>(currentList, 15);
-  useEffect(() => { setPage(1); }, [searchQuery, searchType, historicalMode, historicalDate, setPage]);
 
   const getManagerName = (c: Case): string => {
     if (c.managerId && userMap[c.managerId]) {
@@ -1268,20 +1255,14 @@ export default function UnsettledCaseStatistics() {
                 </td>
               </tr>
             ) : searchType === "사고번호" ? (
-              pageItems.map((g) => renderGroupedRow(g))
+              groupedRows.map((g) => renderGroupedRow(g))
             ) : (
-              pageItems.map((c) => renderIndividualRow(c))
+              filteredCases.map((c) => renderIndividualRow(c))
             )}
           </tbody>
         </table>
         </div>
       </div>
-      <CompactPagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        testIdPrefix="pagination-unsettled-stats"
-      />
     </div>
   );
 }
