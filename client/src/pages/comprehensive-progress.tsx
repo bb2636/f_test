@@ -2277,12 +2277,13 @@ export default function ComprehensiveProgress() {
                             <div
                               style={{
                                 padding: "6px 14px",
-                                background: "var(--color-input-bg)",
+                                background: "var(--color-bg)",
+                                border: "1px solid var(--color-table-border)",
                                 borderRadius: "9999px",
                                 fontFamily: "Pretendard",
                                 fontSize: "12px",
                                 fontWeight: 600,
-                                color: getStatusColor(caseItem.status),
+                                color: "#56687f",
                                 textAlign: "center",
                                 lineHeight: "1.4",
                                 maxWidth: "140px",
@@ -2354,12 +2355,13 @@ export default function ComprehensiveProgress() {
                         <div
                           style={{
                             padding: "6px 14px",
-                            background: "var(--color-input-bg)",
+                            background: "var(--color-bg)",
+                            border: "1px solid var(--color-table-border)",
                             borderRadius: "9999px",
                             fontFamily: "Pretendard",
                             fontSize: "12px",
                             fontWeight: 600,
-                            color: getStatusColor(caseItem.status),
+                            color: "#56687f",
                             textAlign: "center",
                             lineHeight: "1.4",
                             maxWidth: "140px",
