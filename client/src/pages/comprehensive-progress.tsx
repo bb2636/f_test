@@ -1752,6 +1752,7 @@ export default function ComprehensiveProgress() {
 
         {/* Table */}
         <div
+          className="table-card"
           style={{
             background: "#FFFFFF",
             boxShadow: "0px 0px 20px #DBE9F5",

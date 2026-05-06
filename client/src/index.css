@@ -383,4 +383,29 @@
   .data-table-row:hover {
     background-color: rgba(0, 0, 0, 0.02);
   }
+
+  /* ===== 테이블 카드 컨테이너 (STEP 3-1) =====
+   * 테이블 wrapper 에 .table-card 추가 시:
+   *  - 외곽 1px 테두리 (모던 SaaS 느낌)
+   *  - 헤더 배경 약간 어둡게 (구분 강화)
+   *  - 행 구분선 미니멀화
+   *  - hover 강조 (기본 hover 보다 살짝 더 또렷)
+   * 인라인 style 을 덮어쓰기 위해 !important 사용
+   * (행 padding/grid/컬럼은 변경 없음)
+   */
+  .table-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid rgba(12, 12, 12, 0.06);
+    overflow: hidden;
+  }
+  .table-card .data-table-header {
+    background-color: rgba(0, 0, 0, 0.02) !important;
+  }
+  .table-card .data-table-row {
+    border-bottom: 1px solid rgba(12, 12, 12, 0.06) !important;
+  }
+  .table-card .data-table-row:hover {
+    background-color: rgba(0, 0, 0, 0.035);
+  }
 }
