@@ -141,7 +141,7 @@ export function AppSidebarStatistics() {
       <div
         className="flex flex-col"
         style={{
-          width: "260px",
+          width: "220px",
           background: "#eff0f5",
           borderRight: "1px solid #E5E7EB",
           height: "100vh",
