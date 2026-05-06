@@ -161,7 +161,7 @@ export function AppSidebarStatistics() {
         </div>
 
         {/* Top-level Navigation (GlobalHeader 에서 이동) — '정산 및 통계' 활성 시 그 아래에 서브메뉴 중첩 표시 */}
-        <div className="flex flex-col gap-1 pr-3 pt-3 flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-1 pt-3 flex-1 overflow-y-auto">
           {topMenu.map((item) => {
             const isActive = activeMenu === item.name;
             return (
@@ -172,7 +172,7 @@ export function AppSidebarStatistics() {
                   className="flex items-center px-5 py-3 rounded-lg transition-colors text-left w-full"
                   style={{
                     background: isActive ? "#253297" : "transparent",
-                    borderRadius: isActive ? "0 9999px 9999px 0" : undefined,
+                    borderRadius: isActive ? "9999px" : undefined,
                     fontFamily: "Pretendard",
                     fontSize: "15px",
                     fontWeight: isActive ? 600 : 500,
@@ -186,7 +186,7 @@ export function AppSidebarStatistics() {
 
                 {/* '정산 및 통계' 활성일 때만 그 아래에 서브메뉴(정산 조회/통계) 중첩 표시 */}
                 {item.name === "정산 및 통계" && isActive && (
-                  <div className="flex flex-col gap-1 ml-2 mt-1">
+                  <div className="flex flex-col gap-1 mt-1">
                     {menuItems.map((sub) => {
                       if (sub.children) {
                         const isExpanded = expandedMenus.has(sub.title);
@@ -198,6 +198,7 @@ export function AppSidebarStatistics() {
                               className="flex items-center justify-between w-full px-5 py-3 rounded-lg transition-colors"
                               style={{
                                 background: isChildActive ? "#253297" : "transparent",
+                                borderRadius: isChildActive ? "9999px" : undefined,
                                 fontFamily: "Pretendard",
                                 fontSize: "16px",
                                 fontWeight: isChildActive ? 700 : 500,
@@ -213,7 +214,7 @@ export function AppSidebarStatistics() {
                               />
                             </button>
                             {isExpanded && (
-                              <div className="flex flex-col gap-0.5 ml-4 mt-0.5">
+                              <div className="flex flex-col gap-0.5 mt-0.5">
                                 {sub.children.map((child) => (
                                   <button
                                     key={child.title}
@@ -221,6 +222,7 @@ export function AppSidebarStatistics() {
                                     className="flex items-center px-4 py-2.5 rounded-lg transition-colors text-left"
                                     style={{
                                       background: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#253297" : "transparent",
+                                      borderRadius: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "9999px" : undefined,
                                       fontFamily: "Pretendard",
                                       fontSize: "14px",
                                       fontWeight: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? 700 : 400,
@@ -245,6 +247,7 @@ export function AppSidebarStatistics() {
                           className="flex items-center px-5 py-3 rounded-lg transition-colors"
                           style={{
                             background: location === sub.url ? "#253297" : "transparent",
+                            borderRadius: location === sub.url ? "9999px" : undefined,
                             fontFamily: "Pretendard",
                             fontSize: "16px",
                             fontWeight: location === sub.url ? 700 : 500,
