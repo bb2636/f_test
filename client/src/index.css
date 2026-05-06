@@ -375,4 +375,12 @@
     padding-bottom: 16px !important;
     margin-bottom: 12px !important; /* 기존 24px → 12px */
   }
+
+  /* ===== data-table row hover (기존 구조 확장) =====
+   * STEP 2-1: 기존 .data-table-row 구조에 hover 효과만 추가.
+   * 행 높이/패딩/색상/컬럼 변경 없음.
+   */
+  .data-table-row:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
 }
