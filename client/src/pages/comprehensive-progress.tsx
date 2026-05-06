@@ -2276,9 +2276,9 @@ export default function ComprehensiveProgress() {
                           >
                             <div
                               style={{
-                                padding: "6px 12px",
-                                background: "rgba(12, 12, 12, 0.05)",
-                                borderRadius: "6px",
+                                padding: "6px 14px",
+                                background: "var(--color-input-bg)",
+                                borderRadius: "9999px",
                                 fontFamily: "Pretendard",
                                 fontSize: "12px",
                                 fontWeight: 600,
@@ -2353,9 +2353,9 @@ export default function ComprehensiveProgress() {
                       ) : (
                         <div
                           style={{
-                            padding: "6px 12px",
-                            background: "rgba(12, 12, 12, 0.05)",
-                            borderRadius: "6px",
+                            padding: "6px 14px",
+                            background: "var(--color-input-bg)",
+                            borderRadius: "9999px",
                             fontFamily: "Pretendard",
                             fontSize: "12px",
                             fontWeight: 600,
@@ -2532,10 +2532,10 @@ export default function ComprehensiveProgress() {
                                   setShowInvoiceDialog(true);
                                 }}
                                 style={{
-                                  padding: "6px 12px",
-                                  background: "#008FED",
+                                  padding: "6px 14px",
+                                  background: "var(--color-button-primary)",
                                   border: "none",
-                                  borderRadius: "6px",
+                                  borderRadius: "9999px",
                                   fontFamily: "Pretendard",
                                   fontSize: "12px",
                                   fontWeight: 500,
