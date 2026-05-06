@@ -23,6 +23,7 @@ import {
 import logoIcon from "@assets/logo-frame.svg";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
+import { getStatusColor, getStatusDisplayText } from "@/lib/case-status";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";
 import { GlobalHeader } from "@/components/global-header";
@@ -230,27 +231,8 @@ const CASE_STATUSES = [
   "접수취소",
 ] as const;
 
-// 상태값을 화면 표시용 텍스트로 변환하는 함수 (변환 없이 그대로 반환)
-const getStatusDisplayText = (status: string | null | undefined): string => {
-  if (!status) return "배당대기";
-  return status;
-};
-
-// 상태별 색상
-const getStatusColor = (status: string | null | undefined) => {
-  if (status === "1차승인") return "#008FED"; // 파란색
-  if (status === "복구요청(2차승인)") return "#00C853"; // 초록색
-  if (status === "접수취소" || status === "반려") return "#ED1C00"; // 빨간색
-  if (
-    status === "입금완료" ||
-    status === "부분지급" ||
-    status === "지급완료" ||
-    status === "정산완료" ||
-    status === "종결"
-  )
-    return "#4CAF50"; // 완료 초록색
-  return "rgba(12, 12, 12, 0.7)"; // 기본 회색
-};
+// 상태 표시 텍스트 / 색상 함수는 client/src/lib/case-status.ts 에서 import
+// (산식·로직 변경 없음 — 단순 추출)
 
 const specialNotesFormSchema = z.object({
   specialNotes: z
