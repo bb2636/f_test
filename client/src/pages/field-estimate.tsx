@@ -942,6 +942,11 @@ export default function FieldEstimate() {
     setSelectedRows(new Set());
     setSelectedLaborRows(new Set());
     setSelectedMaterialRows(new Set());
+
+    // [복구면적→노무비 자동반영] 케이스 전환 시 베이스라인/사용자편집 플래그 리셋
+    // — 이전 세션 면적이 새 케이스의 동일 id로 오해되어 spurious changedArea 판정되는 것 차단
+    prevRepairAreasRef.current = new Map();
+    userEditedAreaRef.current = false;
     
     // Query 캐시 무효화 (새 케이스 데이터 강제 로드)
     queryClient.invalidateQueries({ queryKey: ["/api/estimates", selectedCaseId, "latest"] });
@@ -2685,6 +2690,155 @@ export default function FieldEstimate() {
     // 노무비 싱크 결과를 DB에 자동 저장 → 보고서/PDF가 항상 화면과 일치
     triggerAutoSaveAfterSync("labor:tabEnter");
   }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length, isAutoSyncEligibleCase, isPartner, currentUser]);
+
+  // [복구면적 변경 → 노무비 자동 반영] 협력업체 포함, 모든 사용자 대상.
+  // - 기존 "노무비 탭 진입 sync"는 협력업체 SKIP되고, 저장된 행은 lockedAtSave로 잠겨
+  //   협력업체가 면적을 수정해도 노무비에 반영되지 않는 회귀가 있었다.
+  // - 본 effect는 산식을 변경하지 않고(calculate*WithTiers 그대로 사용) 면적이 바뀐
+  //   복구면적 행에 매핑된 노무비 행만 좁게 재계산한다.
+  //   · 매핑은 sourceAreaRowId(`demolition-`/`::batang` 접두/접미 포함)로 식별
+  //   · FIXED 일위대가(가구/욕실 SMC 등)는 위치별 고정 인분 유지 — 면적/금액만 갱신
+  //   · 잠금(lockedAtSave)은 본 분기에 한해 무효화(사용자 명시 면적 수정 = 의도적 갱신)
+  // - 다른 자동 sync 분기(탭 진입/manual button/reconcile)는 변경 없음.
+  const prevRepairAreasRef = useRef<Map<string, number>>(new Map());
+  const userEditedAreaRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (!currentUser) return;
+    if (!isHydratedRef.current) return;
+    if (isLossPreventionCase) return;
+    if (!isAutoSyncEligibleCase) return;
+
+    // 현재 면적 스냅샷
+    const currentMap = new Map<string, number>();
+    rows.forEach(r => currentMap.set(r.id, parseFloat(r.repairArea) || 0));
+
+    // 첫 실행: 베이스라인만 기록하고 종료 (초기 hydration 직후 spurious 트리거 방지)
+    if (prevRepairAreasRef.current.size === 0) {
+      prevRepairAreasRef.current = currentMap;
+      return;
+    }
+
+    // [source-guard] 사용자 명시 편집(updateRow)에서 set된 플래그가 없으면
+    // hydration/polling/외부 동기화로 들어온 변화 → lock 해제하지 않고 베이스라인만 갱신.
+    // (관리자 저장 스냅샷 보존 의도와 충돌 회피)
+    if (!userEditedAreaRef.current) {
+      prevRepairAreasRef.current = currentMap;
+      return;
+    }
+
+    // 면적이 실제로 바뀐 area row id 집합
+    const changedAreaIds = new Set<string>();
+    currentMap.forEach((area, id) => {
+      const prev = prevRepairAreasRef.current.get(id);
+      if (prev !== undefined && prev !== area) changedAreaIds.add(id);
+    });
+    prevRepairAreasRef.current = currentMap;
+    // 사용자 편집 플래그는 1회 소비
+    userEditedAreaRef.current = false;
+    if (changedAreaIds.size === 0) return;
+
+    console.log("[복구면적→노무비 자동반영] 변경 감지", {
+      changedCount: changedAreaIds.size,
+      isPartner,
+    });
+
+    setLaborCostRows(prevLabor => {
+      let mutated = false;
+      const next = prevLabor.map(laborRow => {
+        if (!laborRow.isLinkedFromRecovery || !laborRow.sourceAreaRowId) return laborRow;
+
+        // 매핑된 원본 area row id 추출 (demolition-/::batang 처리)
+        let origId = laborRow.sourceAreaRowId;
+        const isDemolition = origId.startsWith('demolition-');
+        if (isDemolition) origId = origId.replace('demolition-', '');
+        if (isCompanionSourceId(origId)) origId = extractOriginalSourceId(origId);
+
+        if (!changedAreaIds.has(origId)) return laborRow;
+
+        const areaRow = rows.find(r => r.id === origId);
+        if (!areaRow) return laborRow;
+
+        const rawArea = parseFloat(areaRow.repairArea) || 0;
+
+        // FIXED 일위대가 (가구공사/욕실공사 SMC/리빙보드/도기류/붙박이장/상부장 시리즈)
+        // 위치별 고정 수량(내장공 1.0, 보통인부 0.5) 유지. 면적/금액만 갱신.
+        // 단, 철거 동반행(`demolition-*`)은 FIXED 인분 분기를 타지 않고 일반 분기에서
+        // 카탈로그 D/E + calculate*WithTiers로 재계산 (기존 reconcile L3503 의미와 일치).
+        const isFixedLaborItem =
+          !isDemolition &&
+          laborRow.category !== '철거공사' &&
+          isFixedIlwidaegaWorkName(areaRow.workName || '') &&
+          (areaRow.workType === '가구공사' || areaRow.workType === '욕실공사');
+        if (isFixedLaborItem) {
+          const singleArea = Math.round(rawArea * 10) / 10;
+          const isHelper = normalizeForMatch(laborRow.detailItem || '') === normalizeForMatch('보통인부');
+          const fixedQty = isHelper ? 0.5 : 1.0;
+          const E = laborRow.standardPrice || 0;
+          const newAmount = Math.round(E * fixedQty);
+          if (
+            laborRow.damageArea === singleArea &&
+            laborRow.quantity === fixedQty &&
+            laborRow.amount === newAmount
+          ) return laborRow;
+          mutated = true;
+          return {
+            ...laborRow,
+            damageArea: singleArea,
+            quantity: fixedQty,
+            amount: newAmount,
+            pricePerSqm: E,
+            lockedAtSave: false,
+          };
+        }
+
+        // 일반/철거 행: 천장 할증 적용된 면적으로 산식 재적용
+        const ceilingMult = getCeilingMultiplier(areaRow.workType || '', areaRow.location || '');
+        const C = Math.round(rawArea * ceilingMult * 10) / 10;
+        const D = laborRow.standardWorkQuantity || 0;
+        const E = laborRow.standardPrice || 0;
+
+        let newQuantity = laborRow.quantity;
+        let newAmount = laborRow.amount;
+        let newPricePerSqm = laborRow.pricePerSqm;
+
+        if (C > 0 && D > 0 && E > 0) {
+          newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
+          newPricePerSqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+          newQuantity = calculateQuantityWithTiers(C, D, E, laborRateTiers);
+        } else if (C <= 0) {
+          // [면적0 보정] 산출표 면적이 0으로 변경되면 수량/금액/단가 0으로 명시 override
+          newAmount = 0;
+          newQuantity = 0;
+          newPricePerSqm = 0;
+        }
+
+        if (
+          laborRow.damageArea === C &&
+          laborRow.quantity === newQuantity &&
+          laborRow.amount === newAmount &&
+          laborRow.pricePerSqm === newPricePerSqm &&
+          !laborRow.lockedAtSave
+        ) return laborRow;
+
+        mutated = true;
+        return {
+          ...laborRow,
+          damageArea: C,
+          quantity: newQuantity,
+          amount: newAmount,
+          pricePerSqm: newPricePerSqm,
+          lockedAtSave: false,
+        };
+      });
+
+      if (!mutated) return prevLabor;
+      lastLaborSetSourceRef.current = 'recoveryAreaChange';
+      return next;
+    });
+
+    // 갱신된 노무비를 DB에 자동 저장 (관리자/협력업체 모두 화면값과 저장본 일치)
+    triggerAutoSaveAfterSync("labor:recoveryAreaChange");
+  }, [recoverySignature, isLossPreventionCase, isAutoSyncEligibleCase, currentUser, isPartner]);
 
   const materialCatalogLoadedRef = useRef(false);
   useEffect(() => {
@@ -4890,6 +5044,13 @@ export default function FieldEstimate() {
   const updateRow = (rowId: string, field: keyof AreaCalculationRow, value: string) => {
     // 읽기 전용 모드에서는 업데이트 불가
     if (isReadOnly) return;
+
+    // [복구면적→노무비 자동반영] 사용자 명시 편집 표식 — hydration/polling 유입은 false 유지.
+    // 면적 관련 필드 변경시에만 표식 (workType/workName 등 다른 필드는 별도 sync 경로 사용).
+    if (field === 'repairWidth' || field === 'repairHeight' || field === 'repairArea' ||
+        field === 'damageWidth' || field === 'damageHeight' || field === 'damageArea') {
+      userEditedAreaRef.current = true;
+    }
     
     // 현재 행의 인덱스 찾기 (노무비/자재비 연동용)
     const currentRowIndex = rows.findIndex(r => r.id === rowId);
