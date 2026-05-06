@@ -1754,10 +1754,7 @@ export default function ComprehensiveProgress() {
         <div
           className="table-card"
           style={{
-            background: "#FFFFFF",
             boxShadow: "0px 0px 20px #DBE9F5",
-            borderRadius: "12px",
-            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
             maxHeight: "calc(100vh - 260px)",
