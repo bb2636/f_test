@@ -4387,10 +4387,12 @@ export default function FieldEstimate() {
     if (latestEstimate === undefined) return;
     
     // Hydration이 이미 완료되었거나, 케이스가 선택되지 않았으면 skip
-    // [원본보존] 단, 협력업체는 관리자가 새로 저장한 값이 반영되도록 latestEstimate가
-    // 변경될 때마다 화면을 다시 채워줌. 협력업체는 자동sync/자동저장이 모두 차단되어
-    // 있으므로 화면 재hydrate가 DB를 변형시키지 않는다. (관리자 동작은 그대로 유지)
-    if ((isHydratedRef.current && !isPartner) || !selectedCaseId) return;
+    // [Bug fix 2026-05-06] 협력사 자동저장 허용 후, 협력사 재hydrate 분기를 제거.
+    //   기존 분기(`isHydratedRef && !isPartner`)는 관리자 신규 저장값이 협력사에 즉시
+    //   보이게 하려는 의도였으나, 자동저장 onSuccess가 invalidate→refetch를 트리거하면
+    //   사용자가 막 입력한 값/샘플 초기화 상태를 DB값으로 덮어써 무한 루프(폭주)를 일으킴.
+    //   협력사 화면도 "케이스당 1회 hydrate"로 통일 — 관리자 변경 반영은 새로고침/재진입 시.
+    if (isHydratedRef.current || !selectedCaseId) return;
     
     // 마스터 데이터가 로드될 때까지 대기
     if (masterDataList.length === 0) return;
