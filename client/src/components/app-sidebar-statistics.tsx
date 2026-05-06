@@ -186,7 +186,7 @@ export function AppSidebarStatistics() {
 
                 {/* '정산 및 통계' 활성일 때만 그 아래에 서브메뉴(정산 조회/통계) 중첩 표시 */}
                 {item.name === "정산 및 통계" && isActive && (
-                  <div className="flex flex-col gap-1 ml-2 mt-1">
+                  <div className="flex flex-col gap-1 ml-2 mr-3 mt-1">
                     {menuItems.map((sub) => {
                       if (sub.children) {
                         const isExpanded = expandedMenus.has(sub.title);
@@ -198,7 +198,7 @@ export function AppSidebarStatistics() {
                               className="flex items-center justify-between w-full px-5 py-3 rounded-lg transition-colors"
                               style={{
                                 background: isChildActive ? "#253297" : "transparent",
-                                borderRadius: isChildActive ? "0" : undefined,
+                                borderRadius: isChildActive ? "12px" : undefined,
                                 fontFamily: "Pretendard",
                                 fontSize: "16px",
                                 fontWeight: isChildActive ? 700 : 500,
@@ -214,7 +214,7 @@ export function AppSidebarStatistics() {
                               />
                             </button>
                             {isExpanded && (
-                              <div className="flex flex-col gap-0.5 ml-4 mt-0.5">
+                              <div className="flex flex-col gap-0.5 ml-4 mt-0.5 mr-2">
                                 {sub.children.map((child) => (
                                   <button
                                     key={child.title}
@@ -222,7 +222,7 @@ export function AppSidebarStatistics() {
                                     className="flex items-center px-4 py-2.5 rounded-lg transition-colors text-left"
                                     style={{
                                       background: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "#253297" : "transparent",
-                                      borderRadius: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "0" : undefined,
+                                      borderRadius: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? "12px" : undefined,
                                       fontFamily: "Pretendard",
                                       fontSize: "14px",
                                       fontWeight: (location === child.url || (child.url === "/statistics/closed" && location === "/statistics")) ? 700 : 400,
@@ -247,7 +247,7 @@ export function AppSidebarStatistics() {
                           className="flex items-center px-5 py-3 rounded-lg transition-colors"
                           style={{
                             background: location === sub.url ? "#253297" : "transparent",
-                            borderRadius: location === sub.url ? "0" : undefined,
+                            borderRadius: location === sub.url ? "12px" : undefined,
                             fontFamily: "Pretendard",
                             fontSize: "16px",
                             fontWeight: location === sub.url ? 700 : 500,
