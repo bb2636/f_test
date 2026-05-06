@@ -120,6 +120,19 @@
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* ===== 디자인 토큰 (STEP 4) =====
+   * 단계적 리뉴얼용 색상 토큰. 토큰 정의만 추가하고
+   * 적용은 STEP 별로 점진 진행 (현재: 종합진행관리 테이블만)
+   */
+  --color-bg: #f8fcfd;
+  --color-table-header: #f2f3f8;
+  --color-table-border: #e3e3ea;
+  --color-input-bg: #f2f3f8;
+  --color-button-primary: #57677e;
+  --color-sidebar-bg: #eff0f5;
+  --color-sidebar-active: #253396;
+  --color-text-main: #afb2b6;
 }
 
 .dark {
@@ -396,12 +409,12 @@
   .table-card {
     background-color: #ffffff;
     border-radius: 12px;
-    /* shadow 약화 후에도 또렷하게 보이도록 0.12 로 상향 */
-    border: 1px solid rgba(12, 12, 12, 0.12);
+    /* STEP 4-2: 디자인 토큰 사용 */
+    border: 1px solid var(--color-table-border);
     overflow: hidden;
   }
   .table-card .data-table-header {
-    background-color: rgba(0, 0, 0, 0.035) !important;
+    background-color: var(--color-table-header) !important;
   }
   /* 헤더 셀 세로 패딩 16px 로 확실히 강조 */
   .table-card .data-table-header > div {
@@ -409,7 +422,7 @@
     padding-bottom: 16px !important;
   }
   .table-card .data-table-row {
-    border-bottom: 1px solid rgba(12, 12, 12, 0.08) !important;
+    border-bottom: 1px solid var(--color-table-border) !important;
   }
   .table-card .data-table-row:hover {
     background-color: rgba(0, 0, 0, 0.035);
