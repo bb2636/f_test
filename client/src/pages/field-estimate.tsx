@@ -6265,13 +6265,24 @@ export default function FieldEstimate() {
       console.log("전체 apiRows:", JSON.stringify(apiRows, null, 2));
       console.log("========================================");
 
-      return await apiRequest("POST", `/api/estimates/${selectedCaseId}`, { 
-        rows: apiRows,
-        laborCostData,
-        materialCostData,
-        totalAmount: estimateSummary.total, // 견적 총액 전송
-        vatIncluded, // VAT 포함/별도 옵션
-      });
+      // [Bug fix 2026-05-06] 30초 timeout으로 mutation hang 방지.
+      //   네트워크/서버 지연으로 fetch가 응답을 못 받으면 saveMutation.isPending이
+      //   영구 true로 갇혀 scheduler isEligible 가드(`!saveMutation.isPending`)에
+      //   걸려 모든 후속 자동저장이 SKIP되고 저장 버튼이 "저장 중..."에 멈춤.
+      //   AbortController + 30초로 강제 회복 → onError 발동 → isPending=false.
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      try {
+        return await apiRequest("POST", `/api/estimates/${selectedCaseId}`, {
+          rows: apiRows,
+          laborCostData,
+          materialCostData,
+          totalAmount: estimateSummary.total, // 견적 총액 전송
+          vatIncluded, // VAT 포함/별도 옵션
+        }, { signal: controller.signal });
+      } finally {
+        clearTimeout(timeoutId);
+      }
     },
     onSuccess: () => {
       const wasAutoSave = isAutoSavingRef.current;
