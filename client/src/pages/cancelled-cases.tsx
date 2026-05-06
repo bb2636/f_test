@@ -1,4 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useCompactPagination } from "@/lib/use-compact-pagination";
+import { CompactPagination } from "@/components/ui/compact-pagination";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import {
@@ -275,6 +277,17 @@ export default function CancelledCases() {
       return extractNumericValue(b.caseNumber) - extractNumericValue(a.caseNumber);
     });
   }, [cancelledCases, insuranceCompany, assessor, manager, startDate, endDate, searchQuery]);
+
+  // [페이지네이션 2026-05-06] 한 페이지 15건. 산식/렌더 변경 없음 — 입력 배열만 슬라이스.
+  const {
+    page: cancelledPage,
+    setPage: setCancelledPage,
+    totalPages: cancelledTotalPages,
+    pageItems: pagedCases,
+  } = useCompactPagination(filteredData, 15);
+  useEffect(() => { setCancelledPage(1); }, [
+    searchQuery, insuranceCompany, assessor, manager, startDate, endDate, setCancelledPage,
+  ]);
 
   const handleReset = () => {
     setSearchQuery("");
@@ -692,8 +705,9 @@ export default function CancelledCases() {
                   justifyContent: col.textAlign === "center" ? "center" : "flex-start",
                   paddingRight: "4px",
                   paddingLeft: "4px",
-                  paddingTop: "14px",
-                  paddingBottom: "14px",
+                  paddingTop: "6px",
+                  paddingBottom: "6px",
+                  lineHeight: "118%",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -733,7 +747,7 @@ export default function CancelledCases() {
               </div>
             </div>
           ) : (
-            filteredData.map((caseItem) => {
+            pagedCases.map((caseItem) => {
               const caseNumberSuffix =
                 caseItem.caseNumber?.match(/-(\d+)$/)?.[1] || "0";
               const suffixNum = parseInt(caseNumberSuffix);
@@ -780,11 +794,12 @@ export default function CancelledCases() {
               const cellStyle: React.CSSProperties = {
                 fontFamily: "Pretendard",
                 fontSize: "13px",
+                lineHeight: "118%",
                 color: "rgba(12, 12, 12, 0.8)",
                 paddingRight: "4px",
                 paddingLeft: "4px",
-                paddingTop: "14px",
-                paddingBottom: "14px",
+                paddingTop: "6px",
+                paddingBottom: "6px",
                 display: "flex",
                 alignItems: "center",
               };
@@ -985,6 +1000,13 @@ export default function CancelledCases() {
             })
           )}
         </div>
+        {/* Pagination: 한 페이지 15건. <<,>>는 페이지번호 그룹표시만 이동, < >는 데이터 ±1. */}
+        <CompactPagination
+          currentPage={cancelledPage}
+          totalPages={cancelledTotalPages}
+          onPageChange={setCancelledPage}
+          testIdPrefix="pagination-cancelled"
+        />
       </div>
 
       <Sheet
