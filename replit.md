@@ -71,6 +71,7 @@
 - **Ilwidaega Overrides**: New Excel uploads of unit prices (`D` values) automatically clear existing `unit_price_overrides` to ensure the new data is reflected.
 - **Nusutamji (Leak Detection) Expenses**: Labor costs related to leak detection are automatically marked as expenses (`includeInEstimate=false`) and excluded from general management fees/profit calculation.
 - **Labor Row Locking**: Rows marked `lockedAtSave` (`lockedAtSave && damageArea > 0 && amount > 0`) are protected from automatic synchronization overwrites. Exceptions for `damageArea=0` or `amount=0` allow self-correction.
+- **협력사(Partner) 노무비 자동연동** (2026-05-06): 협력사 작성 중(isReadOnly=false)에는 (1) 노무비 탭 진입 sync 발동, (2) 면적 변경→노무비 자동반영(source-guard 면제), (3) 자동저장 허용. 자동저장 차단 분기는 `field-estimate.tsx` `isPartnerSession`(L6433) `() => !currentUser || (isPartner && isReadOnly)` + `auto-save-scheduler.ts` L89. 협력사 제출 후엔 자동저장 차단(원본 보존). 관리자 직접 추가행은 `isLinkedFromRecovery=false`로 `syncLaborFromRecoveryArea`(L1277)에서 보존.
 - **DB Connection Stability**: PostgreSQL connection pools are configured for resilience with auto-reconnect for Neon WebSocket issues.
 
 ## Pointers

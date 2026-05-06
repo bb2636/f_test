@@ -2658,12 +2658,15 @@ export default function FieldEstimate() {
   // 노무비 탭 진입 시 복구면적 자동 동기화 (협력업체도 동일한 화면값을 보도록 readOnly 가드 제거)
   useEffect(() => {
     if (selectedCategory !== "노무비") return;
-    // [원본보존] 협력업체는 관리자가 저장한 노무비를 그대로 봐야 한다.
-    // 노무비 탭 진입만으로 sync→자동저장이 발동해 저장본이 화면 계산값으로
-    // 덮어써지고, 협력업체에는 "복구면적 불러오기" 버튼이 없어 되돌릴 방법이 없던
-    // 문제 차단. (관리자 동작은 그대로 보존)
-    if (!currentUser || isPartner) {
-      console.log("[자동연동 SKIP] 노무비 탭 진입: 협력업체");
+    // [Bug 2 fix 2026-05-06] 협력업체 최초 작성 중에도 노무비 자동연동 발동.
+    //   기존엔 isPartner이면 무조건 SKIP했으나, 사용자 요구는 "협력업체에서 입력·수정한
+    //   값이 자동으로 관리자 화면에 반영"이므로 가드를 완화. 자동저장 정책은
+    //   `latestAutoSaveDepsRef.current.isPartnerSession`(L6433)에서 `isPartner && isReadOnly`로
+    //   분기 — 협력사 작성 중(미제출)은 자동저장 허용, 제출 후엔 차단(원본 보존).
+    //   관리자 직접 추가행(isLinkedFromRecovery=false)은 syncLaborFromRecoveryArea의
+    //   independentRows 분기(L1277)로 보존하므로 안전.
+    if (!currentUser) {
+      console.log("[자동연동 SKIP] 노무비 탭 진입: 사용자 미로드");
       return;
     }
     if (!isHydratedRef.current) return;
@@ -2721,7 +2724,13 @@ export default function FieldEstimate() {
     // [source-guard] 사용자 명시 편집(updateRow)에서 set된 플래그가 없으면
     // hydration/polling/외부 동기화로 들어온 변화 → lock 해제하지 않고 베이스라인만 갱신.
     // (관리자 저장 스냅샷 보존 의도와 충돌 회피)
-    if (!userEditedAreaRef.current) {
+    // [Bug 3 fix 2026-05-06] 협력업체 "작성 중"에만 source-guard 면제.
+    //   협력업체 화면에서 면적이 바뀌는 경로(updateRow + 복구면적 가져오기 버튼)는
+    //   모두 의도적 편집이며, 관리자 화면에 자동 반영되어야 한다는 사용자 요구사항.
+    //   단, 제출 후(isReadOnly=true)에는 가드 재활성화 → rehydrate/외부변경에 의한
+    //   불필요한 재계산/lockedAtSave 해제 차단(원본보존).
+    //   관리자(isPartner=false)는 기존대로 명시 편집만 trigger.
+    if (!userEditedAreaRef.current && !(isPartner && !isReadOnly)) {
       prevRepairAreasRef.current = currentMap;
       return;
     }
@@ -6417,7 +6426,10 @@ export default function FieldEstimate() {
     onPerformSave: () => {},
   });
   latestAutoSaveDepsRef.current = {
-    isPartnerSession: () => !currentUser || isPartner,
+    // [Bug 2/3 fix 2026-05-06] 협력사 작성 중(isReadOnly=false)에는 자동저장 허용 →
+    //   협력사 면적/노무비 수정이 즉시 DB 저장되어 관리자 화면에 자동 반영.
+    //   협력사 제출 후(isReadOnly=true)에는 기존대로 차단(원본 보존).
+    isPartnerSession: () => !currentUser || (isPartner && isReadOnly),
     isEligible: () =>
       !isReadOnly &&
       !!selectedCaseId &&
