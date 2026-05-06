@@ -705,9 +705,9 @@ export default function CancelledCases() {
                   justifyContent: col.textAlign === "center" ? "center" : "flex-start",
                   paddingRight: "4px",
                   paddingLeft: "4px",
-                  paddingTop: "6px",
-                  paddingBottom: "6px",
-                  lineHeight: "118%",
+                  paddingTop: "3px",
+                  paddingBottom: "3px",
+                  lineHeight: "115%",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -794,12 +794,12 @@ export default function CancelledCases() {
               const cellStyle: React.CSSProperties = {
                 fontFamily: "Pretendard",
                 fontSize: "13px",
-                lineHeight: "118%",
+                lineHeight: "115%",
                 color: "rgba(12, 12, 12, 0.8)",
                 paddingRight: "4px",
                 paddingLeft: "4px",
-                paddingTop: "6px",
-                paddingBottom: "6px",
+                paddingTop: "2px",
+                paddingBottom: "2px",
                 display: "flex",
                 alignItems: "center",
               };

@@ -1377,11 +1377,11 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         const stickyColLefts = stickyColWidths.map((_, i) => stickyColWidths.slice(0, i).reduce((a, b) => a + b, 0));
         const totalStickyWidth = stickyColWidths.reduce((a, b) => a + b, 0);
         const thBaseStyle: React.CSSProperties = {
-          padding: "6px 16px",
+          padding: "3px 16px",
           fontFamily: "Pretendard",
           fontSize: "14px",
           fontWeight: 600,
-          lineHeight: "118%",
+          lineHeight: "115%",
           color: "rgba(12, 12, 12, 0.8)",
           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
           borderRight: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1472,10 +1472,10 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                 pagedRows.map((row, index) => {
                   const rowBg = index % 2 === 0 ? "rgba(255, 255, 255, 1)" : "rgba(248, 248, 248, 1)";
                   const cellStyle: React.CSSProperties = {
-                    padding: "4px 16px",
+                    padding: "2px 16px",
                     fontFamily: "Pretendard",
                     fontSize: "14px",
-                    lineHeight: "118%",
+                    lineHeight: "115%",
                     color: "rgba(12, 12, 12, 0.8)",
                     borderRight: "1px solid rgba(12, 12, 12, 0.05)",
                     textAlign: "center",
