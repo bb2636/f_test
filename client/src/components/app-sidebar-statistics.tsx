@@ -161,7 +161,7 @@ export function AppSidebarStatistics() {
         </div>
 
         {/* Top-level Navigation (GlobalHeader 에서 이동) — '정산 및 통계' 활성 시 그 아래에 서브메뉴 중첩 표시 */}
-        <div className="flex flex-col gap-1 px-3 pt-3 flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-1 pr-3 pt-3 flex-1 overflow-y-auto">
           {topMenu.map((item) => {
             const isActive = activeMenu === item.name;
             return (
@@ -172,6 +172,7 @@ export function AppSidebarStatistics() {
                   className="flex items-center px-5 py-3 rounded-lg transition-colors text-left w-full"
                   style={{
                     background: isActive ? "#253297" : "transparent",
+                    borderRadius: isActive ? "0 9999px 9999px 0" : undefined,
                     fontFamily: "Pretendard",
                     fontSize: "15px",
                     fontWeight: isActive ? 600 : 500,
