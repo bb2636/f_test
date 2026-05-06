@@ -383,4 +383,13 @@
   .data-table-row:hover {
     background-color: rgba(0, 0, 0, 0.02);
   }
+
+  /* ===== 테이블 서브 텍스트 색상 =====
+   * STEP 2-2: 보조 정보 컬럼(주소/피보험자/담당자 등) 텍스트 톤 다운.
+   * 기존 rgba(12,12,12,0.8) → 0.65 (약간 더 정돈된 느낌, 가독성 유지).
+   * 인라인 color 를 덮어쓰기 위해 !important 사용.
+   */
+  .tbl-text-sub {
+    color: rgba(12, 12, 12, 0.65) !important;
+  }
 }
