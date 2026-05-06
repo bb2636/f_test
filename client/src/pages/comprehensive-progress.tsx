@@ -1475,7 +1475,7 @@ export default function ComprehensiveProgress() {
               fontSize: "28px",
               lineHeight: "128%",
               letterSpacing: "-0.02em",
-              color: "#0C0C0C",
+              color: "#858c93",
             }}
           >
             종합진행관리
@@ -1723,7 +1723,7 @@ export default function ComprehensiveProgress() {
                 fontSize: "20px",
                 lineHeight: "128%",
                 letterSpacing: "-0.02em",
-                color: "#253396",
+                color: "#858c93",
               }}
             >
               전체건
