@@ -1377,7 +1377,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         const stickyColLefts = stickyColWidths.map((_, i) => stickyColWidths.slice(0, i).reduce((a, b) => a + b, 0));
         const totalStickyWidth = stickyColWidths.reduce((a, b) => a + b, 0);
         const thBaseStyle: React.CSSProperties = {
-          padding: "3px 16px",
+          padding: "8px 16px",
           fontFamily: "Pretendard",
           fontSize: "14px",
           fontWeight: 600,

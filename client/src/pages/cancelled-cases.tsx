@@ -689,8 +689,8 @@ export default function CancelledCases() {
                   justifyContent: col.textAlign === "center" ? "center" : "flex-start",
                   paddingRight: "4px",
                   paddingLeft: "4px",
-                  paddingTop: "3px",
-                  paddingBottom: "3px",
+                  paddingTop: "8px",
+                  paddingBottom: "8px",
                   lineHeight: "115%",
                   whiteSpace: "nowrap",
                 }}
