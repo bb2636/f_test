@@ -1670,7 +1670,7 @@ export default function ComprehensiveProgress() {
               style={{
                 height: "52px",
                 padding: "0 20px",
-                background: "#008FED",
+                background: "var(--color-button-primary)",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
@@ -1707,7 +1707,7 @@ export default function ComprehensiveProgress() {
                 fontSize: "20px",
                 lineHeight: "128%",
                 letterSpacing: "-0.02em",
-                color: "rgba(12, 12, 12, 0.7)",
+                color: "#253396",
               }}
             >
               전체건
