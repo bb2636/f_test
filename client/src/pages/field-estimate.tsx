@@ -1750,13 +1750,16 @@ export default function FieldEstimate() {
       // [회귀 수정 2026-05-04 재롤백] 자재항목 포함 키는 가설공사/건축물보양처럼 sync가
       // 매칭 실패해 매 클릭마다 새 행을 만드는 회귀를 유발했음. autoKey가 있는 행은
       // 그대로 매칭되고, autoKey 없는 행은 공종|공사명로 1:1 매칭하도록 보수적으로 복원.
-      // [별칭 정규화 2026-05-05] 가설공사 '건축물보양' → '건축물현장정리'로 키 정규화.
-      // 옛 명칭으로 생성된 행이 새 sync의 autoKey와 매칭되도록 하여 중복 누적을 차단.
+      // [별칭 정규화 2026-05-05] 가설공사 '건축물보양' / '건축물현장정리' 둘 다 단일 canonical 키로 환원.
+      // 옛/신규 어떤 명칭으로 생성된 행이든 새 sync의 autoKey와 매칭되도록 양방향 정규화.
       const norm = (v: any) => (v ?? "").toString().trim();
       const normalizedName = normalizeMaterialWorkName(norm(row.공종), norm(row.공사명));
       let key = row.autoKey || `${norm(row.공종)}|${normalizedName}`;
-      if (row.autoKey && norm(row.공종) === '가설공사' && row.autoKey.includes('|건축물보양')) {
-        key = row.autoKey.replace('|건축물보양', '|건축물현장정리');
+      if (row.autoKey && norm(row.공종) === '가설공사') {
+        // autoKey 자체에 가설공사 보양 별칭이 들어있으면 canonical('건축물현장정리')로 환원.
+        if (row.autoKey.includes('|건축물보양')) {
+          key = row.autoKey.replace('|건축물보양', '|건축물현장정리');
+        }
       }
       existingAutoRowsMap.set(key, row);
     });
@@ -1844,9 +1847,18 @@ export default function FieldEstimate() {
       const isPaintingMaterial = data.공종 === '도장공사' && PAINTING_WORK_NAMES.includes(data.공사명);
 
       // 자재비DB에서 공사명으로 매칭되는 자재 찾기
-      const matchingMaterials = materialByWorknameCatalog.filter(
-        item => normalizeForMatch(item.공사명 || '') === normalizeForMatch(data.공사명 || '')
-      );
+      // [별칭 정규화 2026-05-05] 가설공사 '건축물현장정리' / '건축물보양' 둘 다 동일 항목으로 lookup.
+      // 자재비DB에 어느 명칭으로 등록되어 있어도 매칭되도록 양방향 처리.
+      const matchingMaterials = materialByWorknameCatalog.filter(item => {
+        const itemName = normalizeForMatch(item.공사명 || '');
+        const dataName = normalizeForMatch(data.공사명 || '');
+        if (itemName === dataName) return true;
+        if (data.공종 === '가설공사') {
+          const aliases = ['건축물현장정리', '건축물보양'].map(normalizeForMatch);
+          if (aliases.includes(itemName) && aliases.includes(dataName)) return true;
+        }
+        return false;
+      });
       
       // 수량 계산 (단위별 산식 적용)
       const ratio = MATERIAL_UNIT_RATIOS[data.공사명];
@@ -2017,12 +2029,14 @@ export default function FieldEstimate() {
           if (existingRow && existingRow.isOverridden) {
             // 사용자 수정 행: 사용자 입력값 보존, autoQuantity만 업데이트
             // 단, FIXED 항목(욕실/가구공사)의 수량은 자동 계산값이므로 항상 갱신
-            // 자재항목/자재/규격은 카탈로그를 진실의 원천으로 강제 갱신 (autoKey와 일치 보장)
+            // 자재항목/자재/규격/공사명은 카탈로그를 진실의 원천으로 강제 갱신 (autoKey와 일치 보장)
+            // [DB 명칭 연동 2026-05-05] 공사명도 카탈로그 명칭으로 강제 갱신 — DB에서 명칭 변경 시 화면도 즉시 반영.
             const isFixedAutoQty = isFixedMaterial && (data.공종 === '욕실공사' || data.공종 === '가구공사');
             const preservedPriceForOverride = existingRow.단가 || existingRow.기준단가 || 0;
             resultRowsMap.set(autoKey, {
               ...existingRow,
               autoKey,
+              공사명: material.공사명 || data.공사명,
               자재항목: material.자재항목,
               자재: material.자재항목,
               규격: material.규격 || existingRow.규격 || '',
@@ -2043,7 +2057,8 @@ export default function FieldEstimate() {
           } else if (existingRow) {
             // 기존 자동 행: 값 업데이트 (ID 유지)
             // 단, 사용자가 이미 입력한 단가는 보존 (0이 아닌 경우)
-            // 자재항목/자재/규격은 카탈로그를 진실의 원천으로 강제 갱신 (autoKey와 일치 보장)
+            // 자재항목/자재/규격/공사명은 카탈로그를 진실의 원천으로 강제 갱신 (autoKey와 일치 보장)
+            // [DB 명칭 연동 2026-05-05] 공사명도 카탈로그 명칭으로 강제 갱신 — DB에서 명칭 변경 시 화면도 즉시 반영.
             const existingPrice = existingRow.단가 || existingRow.기준단가 || 0;
             const preservedPrice = existingPrice > 0 ? existingPrice : unitPrice;
             // 사용자가 단가를 입력한 경우 isManualPriceEntry 유지 (isOverridden도 설정)
@@ -2051,6 +2066,7 @@ export default function FieldEstimate() {
             resultRowsMap.set(autoKey, {
               ...existingRow,
               autoKey,
+              공사명: material.공사명 || data.공사명,
               자재항목: material.자재항목,
               자재: material.자재항목,
               규격: material.규격 || existingRow.규격 || '',
@@ -2071,10 +2087,13 @@ export default function FieldEstimate() {
             console.log(`[자재비 집계] ${autoKey}: 기존 행 업데이트 (단가 보존: ${existingPrice > 0}, 직접입력: ${existingRow.isManualPriceEntry ?? isManualEntry})`);
           } else {
             // 새 자동 생성 행
+            // [DB 명칭 연동 2026-05-05] 공사명은 카탈로그(자재비DB) 명칭을 우선 채택.
+            // DB에서 명칭이 변경되면 화면에도 즉시 반영. 가설공사 '건축물현장정리'/'건축물보양'은
+            // 자재비DB 등록 명칭을 그대로 사용 → 환경별 DB 명칭 차이를 자동 흡수.
             resultRowsMap.set(autoKey, {
               id: `material-auto-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
               공종: data.공종,
-              공사명: data.공사명,
+              공사명: material.공사명 || data.공사명,
               자재항목: material.자재항목,
               자재: material.자재항목,
               규격: material.규격 || '',
