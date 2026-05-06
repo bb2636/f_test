@@ -14,6 +14,11 @@
 5. **샘플견적 손방 화장실 — 원인공사 방수 보통인부 단가** (Bug 3): `applyLossPreventionSampleTemplate`에서 정확매칭(공종+공사명+노임항목/세부항목) 실패 시, 공사명+노임항목/세부항목으로 카탈로그 검색 → 후보가 정확히 1개일 때만 단가 채택(다수 후보면 모호성으로 폴백 포기). 단가>0 조건 추가. **[2026-05-04 후속]** 적용단가(`pricePerSqm`)가 0으로 남던 부수 회귀 보강: 손해방지 케이스는 복구면적(C)이 없어 `calculateAppliedUnitPriceWithTiers` 경로가 작동하지 않으므로, 샘플 적용 시 `pricePerSqm = matchedStandardPrice`(E)로 초기 채움 (수동 detailItem 선택 시 L1219의 동일 동작과 일치). 산식 미변경.
 6. **석고보드 철거 수량/금액 누락 재발** (Bug 2): `field-estimate.tsx` L3478~3498(자동 동기화 reconcile의 철거공사 행 업데이트)에서 카탈로그 lookup 시 `laborRow.workName`(예: '석고보드')을 그대로 사용하여 `mergedIlwidaegaCatalog`(공사명='석고')와 매칭 실패 → D/E가 0으로 남아 수량·금액이 영구 0으로 굳던 회귀. `matchDemolitionWorkName` + `DEMOLITION_WORKNAME_ALIASES`로 canonical 이름 산출 후 원본 또는 alias 중 하나만 일치해도 매치하도록 변경. 산식·계산 로직 미변경, 매칭 가드만 보강.
 
+## 보양재 중복 누적 + +/- 버튼 UI 깨짐 — 두 root cause 직접 fix (2026-05-06)
+- **잔여 회귀 1 (중복 누적)**: 옛 코드로 저장된 자재비 행은 `autoKey` 없이 DB에 들어가, `existingAutoRowsMap`이 fallback key=`공종|공사명`(자재항목 제외)로 등록함. 그러나 sync는 자재항목 포함 autoKey(`공종|공사명|자재항목`)로만 lookup → MISS → 매 클릭마다 새 행 생성. **fix**: `field-estimate.tsx` L2029~ — autoKey hit 안 되면 `공종|공사명` fallback key로도 시도하는 lookup chain 추가. 옛 행도 1:1 매칭되어 update 분기 진입.
+- **잔여 회귀 2 (+/- 버튼 UI 깨짐)**: `material-cost-section.tsx`의 공종 셀이 `rowIndex===0`일 때만 `rowSpan={groupRows.length}`로 렌더링됨 → 행마다 `<td>` 개수가 다름. 행 0이 삭제되면 행 1이 새 첫 행이 되어 공종 `<td>`를 새로 가져야 하는데, React는 `<tr>` 내부 `<td>`를 위치 기반으로 비교(key 없음) → 기존 +/- `<td>`가 새로 추가된 공종 자리로 매핑되고 공사명 셀이 +/- 자리로 시프트되며 도미노로 모든 컬럼이 한 칸씩 밀림. **fix**: `<tr>` key에 `rowIndex`·`groupRows.length` 포함 → 그룹 구조 변할 때 React가 `<tr>`을 강제 remount하여 `<td>` 위치 시프트 차단.
+- **산식·계산 미변경**, dedup/매칭 키와 React reconciliation 키만 보강.
+
 ## 자재비 명칭 = 자재비DB 진실의 원천 + 가설공사 보양 양방향 매칭 (2026-05-05 후속)
 - **사용자 지시**: 화면 표시 명칭은 DB관리(노무비/자재비/일위대가)에 등록된 값을 기본으로 함. DB값 변경 시 연동 화면에도 즉시 반영. 가설공사 '건축물현장정리'와 '건축물보양'은 같은 항목으로 취급하되 표시는 현재 DB 등록 명칭으로.
 - **잔여 회귀 원인**: 다른 레플릿 환경의 자재비DB가 '건축물보양'으로 등록되어 있는 경우, sync의 자재비DB lookup이 한 방향(`item.공사명 === data.공사명`)만 매칭 → 매칭 실패로 매번 새 행 누적·공사명 불일치.

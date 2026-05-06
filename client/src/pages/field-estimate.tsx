@@ -2023,8 +2023,13 @@ export default function FieldEstimate() {
             (priceValue.includes('입력') || priceValue === '입력' || priceValue === '직접입력');
           const unitPrice = typeof priceValue === 'number' ? priceValue : 0;
           
-          // 기존 행이 있는지 확인
-          const existingRow = existingAutoRowsMap.get(autoKey);
+          // 기존 행이 있는지 확인.
+          // [중복 누적 fix 2026-05-06] autoKey 없이 저장된 옛 행은 fallback key=`공종|공사명`로
+          // 등록되어 있으므로 자재항목 포함 autoKey lookup만으로는 MISS → 매번 새 행 생성되던 회귀.
+          // autoKey 매칭 실패 시 `공종|공사명`(자재항목 제외) fallback도 시도해 1:1 매칭 확보.
+          const norm2 = (v: any) => (v ?? "").toString().trim();
+          const fallbackKey = `${norm2(data.공종)}|${norm2(data.공사명)}`;
+          const existingRow = existingAutoRowsMap.get(autoKey) || existingAutoRowsMap.get(fallbackKey);
           
           if (existingRow && existingRow.isOverridden) {
             // 사용자 수정 행: 사용자 입력값 보존, autoQuantity만 업데이트

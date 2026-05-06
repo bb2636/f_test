@@ -452,7 +452,11 @@ export function MaterialCostSection({
               
               return (
                 <tr 
-                  key={row.id} 
+                  // [+/- UI fix 2026-05-06] key에 그룹 길이·rowIndex 포함 → 행 추가/삭제로 그룹 구조가
+                  // 바뀌면 React가 <tr>을 강제 remount. rowSpan으로 인해 행마다 td 개수가 다른
+                  // 구조에서 위치 기반 td reconciliation이 셀 위치를 시프트시켜 +/- 버튼이 공사명
+                  // 자리로 밀리던 회귀를 차단.
+                  key={`${row.id}-${rowIndex}-${groupRows.length}`} 
                   style={{ 
                     height: "48px", 
                     borderBottom: groupBorderBottom,
