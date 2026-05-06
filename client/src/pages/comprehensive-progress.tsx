@@ -1803,8 +1803,8 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    paddingTop: "2px",
-                    paddingBottom: "2px",
+                    paddingTop: "0px",
+                    paddingBottom: "0px",
                   }}
                 >
                   <Checkbox
@@ -1854,8 +1854,9 @@ export default function ComprehensiveProgress() {
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
                     paddingRight: (col.label?.startsWith("경과") || col.label === "메모") ? "8px" : "4px",
                     paddingLeft: (col.label?.startsWith("경과") || col.label === "메모") ? "8px" : "4px",
-                    paddingTop: "2px",
-                    paddingBottom: "2px",
+                    paddingTop: "0px",
+                    paddingBottom: "0px",
+                    lineHeight: "115%",
                     whiteSpace: "nowrap",
                   }}
                 >
