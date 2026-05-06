@@ -2277,13 +2277,13 @@ export default function ComprehensiveProgress() {
                             <div
                               style={{
                                 padding: "6px 14px",
-                                background: "var(--color-bg)",
-                                border: "1px solid var(--color-table-border)",
+                                background: "#e7e7f5",
+                                border: "none",
                                 borderRadius: "9999px",
                                 fontFamily: "Pretendard",
                                 fontSize: "12px",
                                 fontWeight: 600,
-                                color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#56687f" : getStatusColor(caseItem.status),
+                                color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#9097c0" : getStatusColor(caseItem.status),
                                 textAlign: "center",
                                 lineHeight: "1.4",
                                 maxWidth: "140px",
@@ -2355,13 +2355,13 @@ export default function ComprehensiveProgress() {
                         <div
                           style={{
                             padding: "6px 14px",
-                            background: "var(--color-bg)",
-                            border: "1px solid var(--color-table-border)",
+                            background: "#e7e7f5",
+                            border: "none",
                             borderRadius: "9999px",
                             fontFamily: "Pretendard",
                             fontSize: "12px",
                             fontWeight: 600,
-                            color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#56687f" : getStatusColor(caseItem.status),
+                            color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#9097c0" : getStatusColor(caseItem.status),
                             textAlign: "center",
                             lineHeight: "1.4",
                             maxWidth: "140px",
@@ -2535,13 +2535,13 @@ export default function ComprehensiveProgress() {
                                 }}
                                 style={{
                                   padding: "6px 14px",
-                                  background: "var(--color-bg)",
-                                  border: "1px solid var(--color-table-border)",
+                                  background: "#e7e7f5",
+                                  border: "none",
                                   borderRadius: "9999px",
                                   fontFamily: "Pretendard",
                                   fontSize: "12px",
                                   fontWeight: 500,
-                                  color: "#56687f",
+                                  color: "#9097c0",
                                   cursor: "pointer",
                                   whiteSpace: "nowrap",
                                 }}
