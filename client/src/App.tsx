@@ -84,9 +84,7 @@ function Router() {
         <Route path="/comprehensive-progress">
           {() => (
             <ProtectedRoute category="종합진행관리">
-              <StatisticsLayout>
-                <ComprehensiveProgress />
-              </StatisticsLayout>
+              <ComprehensiveProgress />
             </ProtectedRoute>
           )}
         </Route>

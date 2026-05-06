@@ -120,19 +120,6 @@
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* ===== 디자인 토큰 (STEP 4) =====
-   * 단계적 리뉴얼용 색상 토큰. 토큰 정의만 추가하고
-   * 적용은 STEP 별로 점진 진행 (현재: 종합진행관리 테이블만)
-   */
-  --color-bg: #f8fcfd;
-  --color-table-header: #f2f3f8;
-  --color-table-border: #e3e3ea;
-  --color-input-bg: #f2f3f8;
-  --color-button-primary: #57677e;
-  --color-sidebar-bg: #eff0f5;
-  --color-sidebar-active: #253396;
-  --color-text-main: #afb2b6;
 }
 
 .dark {
@@ -387,44 +374,5 @@
     padding-top: 16px !important;   /* 기존 24px → 16px */
     padding-bottom: 16px !important;
     margin-bottom: 12px !important; /* 기존 24px → 12px */
-  }
-
-  /* ===== data-table row hover (기존 구조 확장) =====
-   * STEP 2-1: 기존 .data-table-row 구조에 hover 효과만 추가.
-   * 행 높이/패딩/색상/컬럼 변경 없음.
-   */
-  .data-table-row:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-  }
-
-  /* ===== 테이블 카드 컨테이너 (STEP 3-1) =====
-   * 테이블 wrapper 에 .table-card 추가 시:
-   *  - 외곽 1px 테두리 (모던 SaaS 느낌)
-   *  - 헤더 배경 약간 어둡게 (구분 강화)
-   *  - 행 구분선 미니멀화
-   *  - hover 강조 (기본 hover 보다 살짝 더 또렷)
-   * 인라인 style 을 덮어쓰기 위해 !important 사용
-   * (행 padding/grid/컬럼은 변경 없음)
-   */
-  .table-card {
-    background-color: #ffffff;
-    border-radius: 12px;
-    /* STEP 4-2: 디자인 토큰 사용 */
-    border: 1px solid var(--color-table-border);
-    overflow: hidden;
-  }
-  .table-card .data-table-header {
-    background-color: var(--color-table-header) !important;
-  }
-  /* 헤더 셀 세로 패딩 12px (16px → 살짝 축소) */
-  .table-card .data-table-header > div {
-    padding-top: 12px !important;
-    padding-bottom: 12px !important;
-  }
-  .table-card .data-table-row {
-    border-bottom: 1px solid var(--color-table-border) !important;
-  }
-  .table-card .data-table-row:hover {
-    background-color: rgba(0, 0, 0, 0.035);
   }
 }

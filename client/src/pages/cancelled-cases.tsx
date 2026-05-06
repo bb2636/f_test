@@ -40,7 +40,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatCaseNumber } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { getStatusColor, getStatusDisplayText } from "@/lib/case-status";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";
 
@@ -56,8 +55,25 @@ const safeParseNotesHistory = (
   }
 };
 
-// 상태 색상 / 표시 텍스트는 client/src/lib/case-status.ts 에서 import
-// (산식·로직 변경 없음 — 단순 추출)
+const getStatusColor = (status: string | null | undefined) => {
+  if (status === "1차승인") return "#008FED";
+  if (status === "복구요청(2차승인)") return "#00C853";
+  if (status === "접수취소" || status === "반려") return "#ED1C00";
+  if (
+    status === "입금완료" ||
+    status === "부분지급" ||
+    status === "지급완료" ||
+    status === "정산완료" ||
+    status === "종결"
+  )
+    return "#4CAF50";
+  return "rgba(12, 12, 12, 0.7)";
+};
+
+const getStatusDisplayText = (status: string | null | undefined): string => {
+  if (!status) return "배당대기";
+  return status;
+};
 
 const formatAmount = (amount: string | number | null | undefined): string => {
   if (!amount) return "-";
@@ -689,8 +705,8 @@ export default function CancelledCases() {
                   justifyContent: col.textAlign === "center" ? "center" : "flex-start",
                   paddingRight: "4px",
                   paddingLeft: "4px",
-                  paddingTop: "8px",
-                  paddingBottom: "8px",
+                  paddingTop: "3px",
+                  paddingBottom: "3px",
                   lineHeight: "115%",
                   whiteSpace: "nowrap",
                 }}

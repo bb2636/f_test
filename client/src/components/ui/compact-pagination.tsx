@@ -107,9 +107,9 @@ export function CompactPagination({
             style={
               isActive
                 ? {
-                    background: "#253396",
+                    background: "#1F2937",
                     color: "#FFFFFF",
-                    border: "1px solid #253396",
+                    border: "1px solid #1F2937",
                     fontWeight: 600,
                   }
                 : undefined

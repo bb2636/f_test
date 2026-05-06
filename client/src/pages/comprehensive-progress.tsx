@@ -23,7 +23,7 @@ import {
 import logoIcon from "@assets/logo-frame.svg";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
-import { getStatusColor, getStatusDisplayText, STATUS_COLORS } from "@/lib/case-status";
+import { getStatusColor, getStatusDisplayText } from "@/lib/case-status";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";
 import { GlobalHeader } from "@/components/global-header";
@@ -1447,7 +1447,8 @@ export default function ComprehensiveProgress() {
   }
 
   return (
-    <div style={{ background: "var(--color-bg)", minHeight: "100%" }}>
+    <div className="min-h-screen bg-white">
+      <GlobalHeader />
       {/* Main Content */}
       <div
         style={{
@@ -1474,7 +1475,7 @@ export default function ComprehensiveProgress() {
               fontSize: "28px",
               lineHeight: "128%",
               letterSpacing: "-0.02em",
-              color: "#56687f",
+              color: "#0C0C0C",
             }}
           >
             종합진행관리
@@ -1527,22 +1528,14 @@ export default function ComprehensiveProgress() {
                   fontSize: "14px",
                   fontWeight: 400,
                   letterSpacing: "-0.02em",
-                  background: "var(--color-input-bg)",
-                  border: "1px solid var(--color-table-border)",
+                  border: "1px solid rgba(12, 12, 12, 0.1)",
                   borderRadius: "6px",
                 }}
                 data-testid="select-status-filter"
               >
                 <SelectValue placeholder="진행상태 선택" />
               </SelectTrigger>
-              <SelectContent
-                style={{
-                  backgroundColor: "var(--color-input-bg)",
-                  border: "1px solid var(--color-table-border)",
-                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
-                  zIndex: 1000,
-                }}
-              >
+              <SelectContent>
                 {statusOptions.map((option) => (
                   <SelectItem
                     key={option.key}
@@ -1579,8 +1572,8 @@ export default function ComprehensiveProgress() {
                   width: "100%",
                   height: "52px",
                   padding: "0 20px 0 52px",
-                  background: "var(--color-input-bg)",
-                  border: "1px solid var(--color-table-border)",
+                  background: "#FDFDFD",
+                  border: "1px solid rgba(12, 12, 12, 0.1)",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
                   fontSize: "14px",
@@ -1600,7 +1593,7 @@ export default function ComprehensiveProgress() {
               style={{
                 width: "100px",
                 height: "52px",
-                background: "var(--color-button-primary)",
+                background: "#008FED",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
@@ -1646,8 +1639,7 @@ export default function ComprehensiveProgress() {
                   fontSize: "14px",
                   fontWeight: 400,
                   letterSpacing: "-0.02em",
-                  background: "var(--color-input-bg)",
-                  border: "1px solid var(--color-table-border)",
+                  border: "1px solid rgba(12, 12, 12, 0.1)",
                   borderRadius: "6px",
                   flexShrink: 0,
                 }}
@@ -1655,14 +1647,7 @@ export default function ComprehensiveProgress() {
               >
                 <SelectValue placeholder="담당자 선택" />
               </SelectTrigger>
-              <SelectContent
-                style={{
-                  backgroundColor: "var(--color-input-bg)",
-                  border: "1px solid var(--color-table-border)",
-                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
-                  zIndex: 1000,
-                }}
-              >
+              <SelectContent>
                 <SelectItem value="전체" data-testid="option-manager-all">
                   전체
                 </SelectItem>
@@ -1685,7 +1670,7 @@ export default function ComprehensiveProgress() {
               style={{
                 height: "52px",
                 padding: "0 20px",
-                background: "var(--color-button-primary)",
+                background: "#008FED",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
@@ -1722,7 +1707,7 @@ export default function ComprehensiveProgress() {
                 fontSize: "20px",
                 lineHeight: "128%",
                 letterSpacing: "-0.02em",
-                color: "#56687f",
+                color: "rgba(12, 12, 12, 0.7)",
               }}
             >
               전체건
@@ -1734,7 +1719,7 @@ export default function ComprehensiveProgress() {
                 fontSize: "20px",
                 lineHeight: "128%",
                 letterSpacing: "-0.02em",
-                color: "#253396",
+                color: "#008FED",
               }}
             >
               {totalCount}
@@ -1767,9 +1752,11 @@ export default function ComprehensiveProgress() {
 
         {/* Table */}
         <div
-          className="table-card"
           style={{
-            boxShadow: "0px 2px 6px rgba(0,0,0,0.04)",
+            background: "#FFFFFF",
+            boxShadow: "0px 0px 20px #DBE9F5",
+            borderRadius: "12px",
+            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
             maxHeight: "calc(100vh - 260px)",
@@ -1803,8 +1790,8 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    paddingTop: "0px",
-                    paddingBottom: "0px",
+                    paddingTop: "2px",
+                    paddingBottom: "2px",
                   }}
                 >
                   <Checkbox
@@ -1852,11 +1839,10 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
-                    paddingRight: (col.label?.startsWith("경과") || col.label === "메모") ? "8px" : "4px",
-                    paddingLeft: (col.label?.startsWith("경과") || col.label === "메모") ? "8px" : "4px",
-                    paddingTop: "0px",
-                    paddingBottom: "0px",
-                    lineHeight: "115%",
+                    paddingRight: "4px",
+                    paddingLeft: "4px",
+                    paddingTop: "2px",
+                    paddingBottom: "2px",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -2219,8 +2205,8 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
     
-                        paddingRight: "8px",
-                        paddingLeft: "8px",
+                        paddingRight: "4px",
+                        paddingLeft: "4px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
                         display: "flex",
@@ -2235,8 +2221,8 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        paddingRight: "8px",
-                        paddingLeft: "8px",
+                        paddingRight: "4px",
+                        paddingLeft: "4px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
                         display: "flex",
@@ -2251,8 +2237,8 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        paddingRight: "8px",
-                        paddingLeft: "8px",
+                        paddingRight: "4px",
+                        paddingLeft: "4px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
                         display: "flex",
@@ -2276,14 +2262,13 @@ export default function ComprehensiveProgress() {
                           >
                             <div
                               style={{
-                                padding: "6px 14px",
-                                background: "#e7e7f5",
-                                border: "none",
-                                borderRadius: "9999px",
+                                padding: "6px 12px",
+                                background: "rgba(12, 12, 12, 0.05)",
+                                borderRadius: "6px",
                                 fontFamily: "Pretendard",
                                 fontSize: "12px",
-                                fontWeight: 400,
-                                color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#253396" : getStatusColor(caseItem.status),
+                                fontWeight: 600,
+                                color: getStatusColor(caseItem.status),
                                 textAlign: "center",
                                 lineHeight: "1.4",
                                 maxWidth: "140px",
@@ -2354,14 +2339,13 @@ export default function ComprehensiveProgress() {
                       ) : (
                         <div
                           style={{
-                            padding: "6px 14px",
-                            background: "#e7e7f5",
-                            border: "none",
-                            borderRadius: "9999px",
+                            padding: "6px 12px",
+                            background: "rgba(12, 12, 12, 0.05)",
+                            borderRadius: "6px",
                             fontFamily: "Pretendard",
                             fontSize: "12px",
-                            fontWeight: 400,
-                            color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#253396" : getStatusColor(caseItem.status),
+                            fontWeight: 600,
+                            color: getStatusColor(caseItem.status),
                             textAlign: "center",
                             lineHeight: "1.4",
                             maxWidth: "140px",
@@ -2380,8 +2364,8 @@ export default function ComprehensiveProgress() {
                         alignItems: "center",
                         gap: "4px",
     
-                        paddingRight: "8px",
-                        paddingLeft: "8px",
+                        paddingRight: "4px",
+                        paddingLeft: "4px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
                       }}
@@ -2534,14 +2518,14 @@ export default function ComprehensiveProgress() {
                                   setShowInvoiceDialog(true);
                                 }}
                                 style={{
-                                  padding: "6px 14px",
-                                  background: "#e7e7f5",
+                                  padding: "6px 12px",
+                                  background: "#008FED",
                                   border: "none",
-                                  borderRadius: "9999px",
+                                  borderRadius: "6px",
                                   fontFamily: "Pretendard",
                                   fontSize: "12px",
                                   fontWeight: 500,
-                                  color: "#253396",
+                                  color: "#FFFFFF",
                                   cursor: "pointer",
                                   whiteSpace: "nowrap",
                                 }}

@@ -12,9 +12,3 @@ id = "nr-4Ry_4mHBVXeIZ4zSlu"
 uri = "file://docs/encryption-audit.txt"
 type = "text"
 title = "암호화/해시/마스킹 감사 문서"
-
-[[outputs]]
-id = "YTsnbdHYJKBL3iGUuHVd9"
-uri = "file://design_backup/DESIGN_CHANGES_LOG.md"
-type = "text"
-title = "디자인 리뉴얼 변경 내역 백업"
