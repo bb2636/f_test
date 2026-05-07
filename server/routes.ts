@@ -3175,6 +3175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "부분지급",
         "지급완료",
         "정산완료",
+        "종결",
         "접수취소",
       ];
 
