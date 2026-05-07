@@ -799,6 +799,19 @@ export default function FieldReport() {
 
   const lastSyncedAmountRef = useRef<number | null>(null);
 
+  // [백그라운드 이메일 폴링 cleanup] unmount 시 폴링 timeout/플래그 정리
+  const emailPollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const emailPollAbortedRef = useRef<boolean>(false);
+  useEffect(() => {
+    return () => {
+      emailPollAbortedRef.current = true;
+      if (emailPollTimeoutRef.current) {
+        clearTimeout(emailPollTimeoutRef.current);
+        emailPollTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   useEffect(() => {
     // [금액일관성] 보고서 화면 진입만으로 case.estimateAmount 캐시가 자동 덮어써져
     // 견적서/인보이스/메일 본문 사이의 금액 불일치를 일으키던 동작을 비활성화한다.
@@ -2871,7 +2884,8 @@ export default function FieldReport() {
                 });
 
                 try {
-                  // 서버 측에서 PDF 생성 및 이메일 전송 (다운로드와 동일한 PDF 형식 및 섹션 설정 사용)
+                  // [백그라운드화 2026-05-07] 서버는 즉시 jobId를 반환하고 PDF/이메일은 백그라운드 처리.
+                  // 클라이언트는 5초마다 작업 상태를 폴링하여 완료/실패 시 토스트 표시.
                   const response = await fetch(
                     "/api/send-field-report-email-v2",
                     {
@@ -2900,7 +2914,6 @@ export default function FieldReport() {
                     },
                   );
 
-                  // 502/프록시 에러 대응: text()로 먼저 받고 안전하게 JSON 파싱
                   const responseText = await response.text();
                   let result: any;
                   try {
@@ -2912,68 +2925,152 @@ export default function FieldReport() {
                     );
                   }
 
-                  if (response.ok) {
-                    // 이메일 전송 성공 시 케이스 상태를 "현장정보제출"로 변경
-                    try {
-                      await apiRequest(
-                        "PATCH",
-                        `/api/cases/${selectedCaseId}/status`,
-                        {
-                          status: "현장정보제출",
-                        },
-                      );
-                      // 케이스 데이터 새로고침
-                      queryClient.invalidateQueries({
-                        queryKey: [
-                          "/api/field-surveys",
-                          selectedCaseId,
-                          "report",
-                        ],
-                      });
-                      queryClient.invalidateQueries({
-                        queryKey: ["/api/cases"],
-                      });
-
-                      // 현장정보제출 상태 변경 시 심사자/조사자에게 SMS 발송
-                      try {
-                        await apiRequest(
-                          "POST",
-                          "/api/send-stage-notification",
-                          {
-                            caseId: selectedCaseId,
-                            stage: "현장정보제출",
-                            recipients: {
-                              partner: false,
-                              manager: false,
-                              assessorInvestigator: true,
-                            },
-                          },
-                        );
-                        console.log("현장정보제출 SMS 발송 완료");
-                      } catch (smsError) {
-                        console.error("SMS 발송 오류:", smsError);
-                      }
-                    } catch (statusError) {
-                      console.error("상태 업데이트 오류:", statusError);
-                    }
-
-                    const recipientList = emailRecipients.join(", ");
-                    toast({
-                      title: "전송 완료",
-                      description: `${recipientList}로 보고서가 전송되었습니다.`,
-                    });
-                    setShowEmailInputDialog(false);
-                    setEmailAddress("");
-                    setSelectedEmailRecipients({
-                      assessor: false,
-                      investigator: false,
-                      custom: false,
-                    });
-                  } else {
+                  if (!response.ok || !result?.jobId) {
                     throw new Error(
-                      result.error || "이메일 전송에 실패했습니다",
+                      result?.error || "이메일 발송 요청에 실패했습니다",
                     );
                   }
+
+                  const jobId: string = result.jobId;
+                  const recipientList = emailRecipients.join(", ");
+
+                  // 즉시 발송 다이얼로그 닫기 (사용자는 다른 작업 가능)
+                  setShowEmailInputDialog(false);
+                  setEmailAddress("");
+                  setSelectedEmailRecipients({
+                    assessor: false,
+                    investigator: false,
+                    custom: false,
+                  });
+
+                  toast({
+                    title: "발송 시작",
+                    description:
+                      "보고서를 백그라운드에서 발송 중입니다. 완료되면 알려드릴게요.",
+                  });
+
+                  // 폴링: 5초마다 상태 확인, 최대 3분 (36회)
+                  // unmount 시 emailPollAbortedRef로 중단, timeout은 ref로 추적해 정리
+                  const POLL_INTERVAL_MS = 5000;
+                  const MAX_POLLS = 36;
+                  emailPollAbortedRef.current = false;
+                  let polls = 0;
+                  const scheduleNext = () => {
+                    if (emailPollAbortedRef.current) return;
+                    emailPollTimeoutRef.current = setTimeout(
+                      pollJob,
+                      POLL_INTERVAL_MS,
+                    );
+                  };
+                  const pollJob = async (): Promise<void> => {
+                    if (emailPollAbortedRef.current) return;
+                    polls++;
+                    try {
+                      const r = await fetch(`/api/email-jobs/${jobId}`);
+                      if (emailPollAbortedRef.current) return;
+                      if (!r.ok) {
+                        if (polls < MAX_POLLS) {
+                          scheduleNext();
+                          return;
+                        }
+                        throw new Error("작업 상태 조회 실패");
+                      }
+                      const job = await r.json();
+                      if (emailPollAbortedRef.current) return;
+
+                      if (job.status === "completed") {
+                        // 케이스 상태를 "현장정보제출"로 변경 (성공 후처리)
+                        try {
+                          await apiRequest(
+                            "PATCH",
+                            `/api/cases/${selectedCaseId}/status`,
+                            { status: "현장정보제출" },
+                          );
+                          queryClient.invalidateQueries({
+                            queryKey: [
+                              "/api/field-surveys",
+                              selectedCaseId,
+                              "report",
+                            ],
+                          });
+                          queryClient.invalidateQueries({
+                            queryKey: ["/api/cases"],
+                          });
+                          try {
+                            await apiRequest(
+                              "POST",
+                              "/api/send-stage-notification",
+                              {
+                                caseId: selectedCaseId,
+                                stage: "현장정보제출",
+                                recipients: {
+                                  partner: false,
+                                  manager: false,
+                                  assessorInvestigator: true,
+                                },
+                              },
+                            );
+                            console.log("현장정보제출 SMS 발송 완료");
+                          } catch (smsError) {
+                            console.error("SMS 발송 오류:", smsError);
+                          }
+                        } catch (statusError) {
+                          console.error("상태 업데이트 오류:", statusError);
+                        }
+
+                        const partialFail = (job.failCount || 0) > 0;
+                        toast({
+                          title: partialFail ? "일부 전송 실패" : "전송 완료",
+                          description: partialFail
+                            ? job.message ||
+                              `일부 수신자에게 발송 실패가 있습니다`
+                            : `${recipientList}로 보고서가 전송되었습니다.`,
+                          variant: partialFail ? "destructive" : "default",
+                        });
+                        setIsSendingEmail(false);
+                        return;
+                      }
+
+                      if (job.status === "failed") {
+                        toast({
+                          title: "전송 실패",
+                          description:
+                            job.message || "이메일 전송에 실패했습니다.",
+                          variant: "destructive",
+                        });
+                        setIsSendingEmail(false);
+                        return;
+                      }
+
+                      // 아직 진행 중 (queued / generating_pdf / sending) → 다음 폴
+                      if (polls < MAX_POLLS) {
+                        scheduleNext();
+                      } else {
+                        toast({
+                          title: "확인 시간 초과",
+                          description:
+                            "발송 결과 확인이 지연되고 있습니다. 잠시 후 케이스를 새로고침해주세요.",
+                          variant: "destructive",
+                        });
+                        setIsSendingEmail(false);
+                      }
+                    } catch (pollError) {
+                      console.error("작업 상태 폴링 오류:", pollError);
+                      if (polls < MAX_POLLS) {
+                        scheduleNext();
+                      } else {
+                        toast({
+                          title: "상태 확인 실패",
+                          description:
+                            "발송 결과 확인이 어렵습니다. 잠시 후 새로고침해주세요.",
+                          variant: "destructive",
+                        });
+                        setIsSendingEmail(false);
+                      }
+                    }
+                  };
+                  // 첫 폴은 5초 후 시작 (서버에서 PDF 생성 시작 시간 확보)
+                  scheduleNext();
                 } catch (error) {
                   console.error("이메일 전송 오류:", error);
                   toast({
@@ -2984,7 +3081,6 @@ export default function FieldReport() {
                         : "이메일 전송 중 오류가 발생했습니다.",
                     variant: "destructive",
                   });
-                } finally {
                   setIsSendingEmail(false);
                 }
               }}

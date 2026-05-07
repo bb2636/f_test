@@ -64,6 +64,8 @@ import {
 } from "./evidence-pdf-service";
 import { compressPdf, isPdfFile, compressPdfForEmail } from "./pdf-compression";
 import { compressJpegBufferForPdf } from "./image-compress";
+import { pdfQueue } from "./pdf-queue";
+import { createEmailJob, updateEmailJob, getEmailJob } from "./email-jobs";
 import {
   renderInvoiceV1Template,
   renderInvoiceV2Template,
@@ -9121,21 +9123,26 @@ FLOXN 드림`;
       );
 
       // 10MB 제한을 적용한 PDF 생성 (이메일 첨부 용량 제한)
-      const pdfBuffer = await generatePdfWithSizeLimitPdfLib({
-        caseId,
-        sections: {
-          cover: true,
-          fieldReport: true,
-          drawing: true,
-          evidence: false,
-          estimate: false,
-          etc: false,
-        },
-        evidence: {
-          tab: "all",
-          selectedFileIds: [],
-        },
-      });
+      // [동시성 보호] pdfQueue로 직렬화하여 빈 PDF/생성 실패 방지
+      const pdfBuffer = await pdfQueue.run(
+        () =>
+          generatePdfWithSizeLimitPdfLib({
+            caseId,
+            sections: {
+              cover: true,
+              fieldReport: true,
+              drawing: true,
+              evidence: false,
+              estimate: false,
+              etc: false,
+            },
+            evidence: {
+              tab: "all",
+              selectedFileIds: [],
+            },
+          }),
+        `field-report-send-email/${caseId}`,
+      );
 
       console.log(
         `[Field Report Email] PDF generated, size: ${pdfBuffer.length} bytes`,
@@ -9213,21 +9220,26 @@ FLOXN 드림`;
       const allDocs = await storage.getDocumentsByCaseId(caseId);
       const allDocIds = allDocs.map((d) => d.id);
 
-      const pdfBuffer = await generatePdfWithSizeLimitPdfLib({
-        caseId,
-        sections: {
-          cover: true,
-          fieldReport: true,
-          drawing: true,
-          evidence: allDocIds.length > 0,
-          estimate: true,
-          etc: false,
-        },
-        evidence: {
-          tab: "전체",
-          selectedFileIds: allDocIds,
-        },
-      });
+      // [동시성 보호] pdfQueue로 직렬화
+      const pdfBuffer = await pdfQueue.run(
+        () =>
+          generatePdfWithSizeLimitPdfLib({
+            caseId,
+            sections: {
+              cover: true,
+              fieldReport: true,
+              drawing: true,
+              evidence: allDocIds.length > 0,
+              estimate: true,
+              etc: false,
+            },
+            evidence: {
+              tab: "전체",
+              selectedFileIds: allDocIds,
+            },
+          }),
+        `field-report-view/${caseId}`,
+      );
 
       console.log(
         `[View Field Report PDF] PDF generated, size: ${pdfBuffer.length} bytes`,
@@ -9393,7 +9405,10 @@ FLOXN 드림`;
         remarks: caseData.invoiceRemarks || "",
       };
 
-      const pdfBuffer = await generateInvoicePdf(invoiceData);
+      const pdfBuffer = await pdfQueue.run(
+        () => generateInvoicePdf(invoiceData),
+        `invoice-view/${caseId}`,
+      );
 
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
@@ -9683,7 +9698,10 @@ FLOXN 드림`;
 
       console.log(`[Invoice PDF] Generating PDF for download - case ${caseId}`);
 
-      let pdfBuffer = await generateInvoicePdf(invoiceData);
+      let pdfBuffer = await pdfQueue.run(
+        () => generateInvoicePdf(invoiceData),
+        `invoice-download/${caseId}`,
+      );
 
       console.log(
         `[Invoice PDF] PDF generated for download, size: ${pdfBuffer.length} bytes`,
@@ -10687,7 +10705,10 @@ FLOXN 드림`;
       console.log(`[Invoice PDF] Generating PDF for case ${caseId}`);
 
       // Generate PDF from template
-      let pdfBuffer = await generateInvoicePdf(invoiceData);
+      let pdfBuffer = await pdfQueue.run(
+        () => generateInvoicePdf(invoiceData),
+        `invoice-email/${caseId}`,
+      );
 
       console.log(
         `[Invoice PDF] PDF generated, size: ${pdfBuffer.length} bytes`,
@@ -12247,20 +12268,46 @@ FLOXN 드림`;
         return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
       }
 
-      // ========== 현장출동보고서 PDF 생성 (증빙자료 이미지 및 PDF 모두 포함) ==========
-      console.log(
-        `[send-field-report-email-v2] Generating PDF for case ${caseId} (with all evidence including PDFs)`,
-      );
-      const mainPdfBuffer = await generatePdfWithSizeLimitPdfLib({
+      // ========== [백그라운드화 2026-05-07] ==========
+      // PDF 생성 + SMTP 발송이 7~20초 걸려 클라이언트가 오래 대기 → UX 저하.
+      // 작업을 백그라운드로 돌리고 즉시 jobId 응답 → 클라이언트는 5초마다 폴링.
+      // PDF 생성은 pdfQueue로 직렬화하여 동시 생성 시 빈 PDF 버그도 함께 차단.
+      const job = createEmailJob({
         caseId,
-        sections,
-        evidence,
-        skipEvidence: false, // 증빙자료 이미지 포함
-        skipPdfAttachments: false, // p��로드된 PDF 파일도 포함
+        recipients: [...emails],
+        ownerUserId: req.session.userId,
       });
-      console.log(
-        `[send-field-report-email-v2] PDF generated: ${Math.round(mainPdfBuffer.length / 1024)}KB (${(mainPdfBuffer.length / 1024 / 1024).toFixed(2)}MB)`,
-      );
+
+      // 즉시 응답 (202 Accepted) — 백그라운드 작업 시작 알림
+      res.status(202).json({
+        success: true,
+        jobId: job.id,
+        message: "이메일 발송이 시작되었습니다. 잠시 후 결과가 표시됩니다.",
+      });
+
+      // 백그라운드 처리 시작 (응답은 이미 보냄)
+      (async () => {
+        try {
+          updateEmailJob(job.id, { status: "generating_pdf" });
+
+          // ========== 현장출동보고서 PDF 생성 (큐로 직렬화) ==========
+          console.log(
+            `[send-field-report-email-v2] [BG ${job.id}] Generating PDF for case ${caseId}`,
+          );
+          const mainPdfBuffer = await pdfQueue.run(
+            () =>
+              generatePdfWithSizeLimitPdfLib({
+                caseId,
+                sections,
+                evidence,
+                skipEvidence: false,
+                skipPdfAttachments: false,
+              }),
+            `field-report-email-v2/${caseId}`,
+          );
+          console.log(
+            `[send-field-report-email-v2] [BG ${job.id}] PDF generated: ${(mainPdfBuffer.length / 1024 / 1024).toFixed(2)}MB`,
+          );
 
       // ========== 첨부파일 준비 (단일 PDF) ==========
       // 파일명 우선순위: 사고번호 > 증권번호 > 접수번호
@@ -12397,6 +12444,8 @@ FLOXN 드림`;
       const sendResults: { email: string; success: boolean; error?: string }[] =
         [];
 
+      updateEmailJob(job.id, { status: "sending" });
+
       for (const recipientEmail of emails) {
         try {
           console.log(
@@ -12454,28 +12503,96 @@ FLOXN 드림`;
         }
       }
 
-      const successCount = sendResults.filter((r) => r.success).length;
-      const failedCount = sendResults.filter((r) => !r.success).length;
+          const successCount = sendResults.filter((r) => r.success).length;
+          const failedCount = sendResults.filter((r) => !r.success).length;
+          const errorMessages = sendResults
+            .filter((r) => !r.success)
+            .map((r) => `${r.email}: ${r.error || "전송 실패"}`);
 
-      if (successCount === 0) {
-        return res.status(500).json({
-          error: "이메일 전송에 실패했습니다. SMTP 설정을 확인해주세요.",
-          details: sendResults.filter((r) => !r.success),
+          if (successCount === 0) {
+            updateEmailJob(job.id, {
+              status: "failed",
+              successCount: 0,
+              failCount: failedCount,
+              errors: errorMessages,
+              message: "이메일 전송에 실패했습니다. SMTP 설정을 확인해주세요.",
+            });
+            return;
+          }
+
+          const completionMessage =
+            failedCount > 0
+              ? `${successCount}명에게 전송 완료, ${failedCount}명 전송 실패`
+              : `${successCount}명에게 현장출동보고서가 전송되었습니다`;
+
+          updateEmailJob(job.id, {
+            status: "completed",
+            successCount,
+            failCount: failedCount,
+            errors: errorMessages.length > 0 ? errorMessages : undefined,
+            message: completionMessage,
+          });
+        } catch (bgError: any) {
+          console.error(
+            `[send-field-report-email-v2] [BG ${job.id}] Background error:`,
+            bgError,
+          );
+          updateEmailJob(job.id, {
+            status: "failed",
+            message:
+              bgError?.message ||
+              "이메일 발송 중 오류가 발생했습니다",
+          });
+        }
+      })().catch((unhandled) => {
+        console.error(
+          `[send-field-report-email-v2] [BG ${job.id}] Unhandled background rejection:`,
+          unhandled,
+        );
+        updateEmailJob(job.id, {
+          status: "failed",
+          message: "예상치 못한 오류가 발생했습니다",
         });
-      }
-
-      const message =
-        failedCount > 0
-          ? `${successCount}명에게 전송 완료, ${failedCount}명 전송 실패`
-          : `${successCount}명에게 현장출동보고서가 PDF 첨부파일로 전송되었습니다`;
-
-      res.json({ success: true, message, results: sendResults });
+      });
     } catch (error) {
       console.error("Send field report email v2 error:", error);
-      res
-        .status(500)
-        .json({ error: "현장조사 리포트 이메일 전송 중 오류가 발생했습니다" });
+      // 이미 202 응답을 보냈을 수 있으므로 헤더 전송 여부 확인
+      if (!res.headersSent) {
+        res
+          .status(500)
+          .json({ error: "현장조사 리포트 이메일 전송 중 오류가 발생했습니다" });
+      }
     }
+  });
+
+  // ==========================================
+  // GET /api/email-jobs/:jobId - 백그라운드 이메일 발송 상태 조회 (폴링용)
+  // ==========================================
+  app.get("/api/email-jobs/:jobId", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+    const { jobId } = req.params;
+    const job = getEmailJob(jobId);
+    if (!job) {
+      return res.status(404).json({ error: "작업을 찾을 수 없거나 만료되었습니다" });
+    }
+    // 본인 작업만 조회 가능 (관리자는 모두 조회 가능)
+    const user = await storage.getUser(req.session.userId);
+    if (job.ownerUserId && job.ownerUserId !== req.session.userId && user?.role !== "관리자") {
+      return res.status(403).json({ error: "조회 권한이 없습니다" });
+    }
+    res.json({
+      jobId: job.id,
+      status: job.status,
+      message: job.message,
+      successCount: job.successCount,
+      failCount: job.failCount,
+      errors: job.errors,
+      recipients: job.recipients,
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+    });
   });
 
   // ==========================================
@@ -15115,10 +15232,14 @@ https://www.floxn.co.kr/
       console.log(
         `[pdf-download] Starting PDF generation for case ${payload.caseId}`,
       );
-      const pdfBuffer = await generatePdfWithSizeLimitPdfLib({
-        ...payload,
-        skipPdfAttachments: false, // PDF 첨부 파일도 포함
-      });
+      const pdfBuffer = await pdfQueue.run(
+        () =>
+          generatePdfWithSizeLimitPdfLib({
+            ...payload,
+            skipPdfAttachments: false, // PDF 첨부 파일도 포함
+          }),
+        `pdf-download/${payload.caseId}`,
+      );
       console.log(
         `[pdf-download] PDF generated: ${Math.round(pdfBuffer.length / 1024)}KB (${(pdfBuffer.length / 1024 / 1024).toFixed(2)}MB)`,
       );
