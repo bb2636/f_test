@@ -823,15 +823,15 @@ export default function FieldReport() {
     if (!cid) return;
     const computedTotal = calculateTotals.total;
     if (!Number.isFinite(computedTotal) || computedTotal <= 0) return;
-    const storedTotal = parseInt(reportData.case.estimateAmount || "0") || 0;
+    const storedTotal = parseInt((reportData as any)?.case?.estimateAmount || "0") || 0;
     if (computedTotal === storedTotal) {
       lastSyncedAmountRef.current = computedTotal;
       return;
     }
     if (lastSyncedAmountRef.current === computedTotal) return;
     lastSyncedAmountRef.current = computedTotal;
-    syncEstimateAmountMutation.mutate({ caseId: cid, totalAmount: computedTotal });
-  }, [calculateTotals.total, reportData?.case?.id, reportData?.case?.estimateAmount, isPartnerReadOnly]);
+    syncEstimateAmountMutation.mutate({ caseId: cid as string, totalAmount: computedTotal });
+  }, [calculateTotals.total, reportData?.case?.id, (reportData as any)?.case?.estimateAmount, isPartnerReadOnly]);
 
   // 데이터 로드 시 체크박스 초기화 (모두 체크된 상태로)
   useEffect(() => {
