@@ -11690,6 +11690,25 @@ FLOXN 드림`;
         );
       }
 
+      // ========== [SMTP 첨부 용량 가드 2026-05-07] ==========
+      // Hiworks SMTP 메시지 한도는 25MB지만, 첨부는 base64 인코딩(약 1.37배) 후 본문/헤더가
+      // 더해져 실제 raw 첨부 안전 한도는 약 18MB. 초과 시 552 5.3.4 "message file too big"
+      // 오류가 발생하므로 사전에 친절한 안내로 차단한다.
+      const SMTP_RAW_ATTACHMENT_LIMIT = 18 * 1024 * 1024;
+      if (pdfBuffer.length > SMTP_RAW_ATTACHMENT_LIMIT) {
+        const sizeMB = (pdfBuffer.length / 1024 / 1024).toFixed(1);
+        const limitMB = (SMTP_RAW_ATTACHMENT_LIMIT / 1024 / 1024).toFixed(0);
+        console.warn(
+          `[send-field-dispatch-invoice-email] 첨부 PDF 용량 초과: ${sizeMB}MB > ${limitMB}MB`,
+        );
+        return res.status(413).json({
+          error:
+            `첨부파일 용량이 너무 큽니다 (현재 ${sizeMB}MB, 제한 ${limitMB}MB).\n` +
+            `선택한 증빙자료 중 일부를 제외하고 다시 시도해주세요.\n` +
+            `(이미지가 많을수록 용량이 커집니다)`,
+        });
+      }
+
       // Upload PDF to Object Storage
       const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
       if (!bucketId) {
