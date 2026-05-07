@@ -2016,8 +2016,23 @@ export default function FieldEstimate() {
 
       
       if (matchingMaterials.length > 0) {
-        matchingMaterials.forEach(material => {
+        // [단일행 정책 2026-05-07] 한 공종+공사명에 자재비DB가 여러 자재(예: 도배의 실크벽지/합지벽지)를
+        // 등록한 경우, 자동연동 시에는 1행만 생성하고 자재항목은 비워 사용자가 드롭다운에서 선택하도록 함.
+        // (단일 매칭이면 그 자재로 자동 채움 — 기존 동작 유지)
+        // 산식 변경 없음, 매칭 정책만 조정.
+        const isSingleMaterialMatch = matchingMaterials.length === 1;
+        const materialsToCreate = isSingleMaterialMatch ? matchingMaterials : [null];
+        materialsToCreate.forEach(materialOrNull => {
           const norm = (v: any) => (v ?? "").toString().trim();
+          // 복수 매칭일 때는 빈 자재로 단일 행 생성 (자재항목 비움)
+          const material = materialOrNull ?? {
+            공종: data.공종,
+            공사명: data.공사명,
+            자재항목: '',
+            규격: '',
+            단위: dbUnit,
+            금액: 0,
+          } as typeof matchingMaterials[number];
           const itemKey = norm(material.자재항목) || "__NONE__";
           const autoKey = `${norm(data.공종)}|${norm(data.공사명)}|${itemKey}`;
           nextAutoKeys.add(autoKey);
