@@ -62,7 +62,7 @@ import {
   generateEvidencePdfs,
   logAttachmentSummary,
 } from "./evidence-pdf-service";
-import { compressPdf, isPdfFile, compressPdfForEmail } from "./pdf-compression";
+import { compressPdf, isPdfFile, compressPdfForEmail, compressPdfToTarget } from "./pdf-compression";
 import { compressJpegBufferForPdf } from "./image-compress";
 import { pdfQueue } from "./pdf-queue";
 import { createEmailJob, updateEmailJob, getEmailJob } from "./email-jobs";
@@ -15246,7 +15246,7 @@ https://www.floxn.co.kr/
       console.log(
         `[pdf-download] Starting PDF generation for case ${payload.caseId}`,
       );
-      const pdfBuffer = await pdfQueue.run(
+      let pdfBuffer = await pdfQueue.run(
         () =>
           generatePdfWithSizeLimitPdfLib({
             ...payload,
@@ -15257,6 +15257,35 @@ https://www.floxn.co.kr/
       console.log(
         `[pdf-download] PDF generated: ${Math.round(pdfBuffer.length / 1024)}KB (${(pdfBuffer.length / 1024 / 1024).toFixed(2)}MB)`,
       );
+
+      // Cloud Run autoscale 응답 한도(~32MB) 안전 마진 — 25MB 초과 시 Ghostscript 압축
+      const DOWNLOAD_TARGET_BYTES = 25 * 1024 * 1024;
+      if (pdfBuffer.length > DOWNLOAD_TARGET_BYTES) {
+        console.log(
+          `[pdf-download] Size ${(pdfBuffer.length / 1024 / 1024).toFixed(2)}MB > 25MB, applying Ghostscript compression`,
+        );
+        try {
+          const compressed = await compressPdfToTarget(pdfBuffer, DOWNLOAD_TARGET_BYTES);
+          if (compressed.success && compressed.compressedBuffer) {
+            pdfBuffer = compressed.compressedBuffer;
+            console.log(
+              `[pdf-download] Compressed to ${(pdfBuffer.length / 1024 / 1024).toFixed(2)}MB`,
+            );
+          }
+        } catch (compErr) {
+          console.error("[pdf-download] Compression failed:", (compErr as Error)?.message);
+        }
+      }
+
+      // 압축 후에도 응답 한도 초과 시 명확한 에러 응답 (인프라가 끊기 전에 차단)
+      if (pdfBuffer.length > 30 * 1024 * 1024) {
+        console.error(
+          `[pdf-download] Final size ${(pdfBuffer.length / 1024 / 1024).toFixed(2)}MB exceeds 30MB limit`,
+        );
+        return res.status(413).json({
+          error: `PDF 용량이 너무 큽니다 (${(pdfBuffer.length / 1024 / 1024).toFixed(1)}MB). 첨부 증빙자료 일부를 제외한 후 다시 시도해주세요.`,
+        });
+      }
 
       const caseData = await storage.getCaseById(payload.caseId);
       const accidentNo =
