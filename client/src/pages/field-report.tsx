@@ -403,6 +403,9 @@ export default function FieldReport() {
     custom: boolean;
   }>({ assessor: false, investigator: false, custom: false });
 
+  // PDF 백그라운드 생성 안내 팝업
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
   // 통합 PDF 다운로드/이메일 다이얼로그 상태 (Step 1)
   const [showPdfDialog, setShowPdfDialog] = useState(false);
   const [pdfDialogMode, setPdfDialogMode] = useState<"download" | "email">(
@@ -2412,10 +2415,7 @@ export default function FieldReport() {
                   setShowEmailInputDialog(true);
                 } else {
                   try {
-                    toast({
-                      title: "PDF 생성 중",
-                      description: "보고서를 생성하고 있습니다...",
-                    });
+                    setIsGeneratingPdf(true);
 
                     const selectedSectionKeys = Object.entries(downloadSections)
                       .filter(([_, checked]) => checked)
@@ -2492,6 +2492,8 @@ export default function FieldReport() {
                           : "보고서 생성 중 오류가 발생했습니다.",
                       variant: "destructive",
                     });
+                  } finally {
+                    setIsGeneratingPdf(false);
                   }
                 }
               }}
@@ -4749,10 +4751,7 @@ export default function FieldReport() {
                         <button
                           onClick={async () => {
                             const caseNo = caseData?.caseNumber || "estimate";
-                            toast({
-                              title: "PDF 생성 중",
-                              description: "잠시만 기다려주세요...",
-                            });
+                            setIsGeneratingPdf(true);
                             try {
                               const response = await fetch("/api/pdf/download", {
                                 method: "POST",
@@ -4793,6 +4792,8 @@ export default function FieldReport() {
                                 description: "PDF 파일 생성 중 오류가 발생했습니다.",
                                 variant: "destructive",
                               });
+                            } finally {
+                              setIsGeneratingPdf(false);
                             }
                           }}
                           className="flex items-center gap-2 px-4 py-2 rounded hover-elevate"
@@ -6138,6 +6139,30 @@ export default function FieldReport() {
           </TabsContent>
         </div>
       </Tabs>
+      {/* PDF 백그라운드 생성 안내 팝업 */}
+      <Dialog open={isGeneratingPdf} onOpenChange={() => { /* 닫기 비활성화 */ }}>
+        <DialogContent
+          className="sm:max-w-md"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          data-testid="dialog-pdf-generating"
+        >
+          <div className="flex flex-col items-center gap-4 py-6">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <div className="text-center">
+              <div style={{ fontFamily: "Pretendard", fontSize: "18px", fontWeight: 600, marginBottom: "8px" }}>
+                PDF 생성 중입니다
+              </div>
+              <div style={{ fontFamily: "Pretendard", fontSize: "14px", color: "rgba(12, 12, 12, 0.6)", lineHeight: 1.6 }}>
+                백그라운드에서 보고서를 생성하고 있습니다.<br />
+                첨부 자료가 많은 경우 1~2분 소요될 수 있습니다.<br />
+                잠시만 기다려주세요.
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* SMS 알림 발송 다이얼로그 */}
       {reportData?.case && (
         <SmsNotificationDialog
