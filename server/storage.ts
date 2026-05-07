@@ -4047,25 +4047,24 @@ export class DbStorage implements IStorage {
         if (!user) source = "direct:not_found";
       } catch (err2) {
         console.error("[VERIFY PASSWORD] Direct query also failed:", (err2 as Error).message);
-        console.log("[VERIFY PASSWORD] All lookups failed", { username, elapsed: Date.now() - startTime });
+        console.log("[VERIFY PASSWORD] All lookups failed", { elapsed: Date.now() - startTime });
         return null;
       }
     }
     if (!user) {
-      console.log("[VERIFY PASSWORD] User not found:", { username, source, elapsed: Date.now() - startTime });
+      console.log("[VERIFY PASSWORD] User not found:", { source, elapsed: Date.now() - startTime });
       return null;
     }
 
     if (user.status === "deleted") {
-      console.log("[VERIFY PASSWORD] Account deleted:", { username, elapsed: Date.now() - startTime });
+      console.log("[VERIFY PASSWORD] Account deleted:", { elapsed: Date.now() - startTime });
       return null;
     }
 
     const isValid = await bcrypt.compare(password, user.password);
     console.log("[VERIFY PASSWORD]", { 
-      username, 
       source,
-      passwordValid: isValid,
+      valid: isValid,
       elapsed: Date.now() - startTime,
     });
     return isValid ? user : null;

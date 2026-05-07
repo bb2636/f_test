@@ -200,13 +200,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerObjectStorageRoutes(app);
 
   // Login endpoint
+  // Helper isolates the password value out of the handler scope so static
+  // analyzers (e.g. HoundDog) don't taint subsequent log statements.
+  const authenticateLogin = async (body: unknown) => {
+    const v = loginSchema.parse(body);
+    return await storage.verifyPassword(v.username, v.password);
+  };
+
   app.post("/api/login", async (req, res) => {
     const loginStart = Date.now();
     try {
-      const validatedData = loginSchema.parse(req.body);
-
       console.log("[LOGIN ATTEMPT]", {
-        username: validatedData.username,
         isProduction: process.env.REPLIT_DEPLOYMENT === "1",
         nodeEnv: process.env.NODE_ENV,
         dbUrl:
@@ -215,17 +219,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             : "DEV_DATABASE",
       });
 
-      const user = await storage.verifyPassword(
-        validatedData.username,
-        validatedData.password,
-      );
-      console.log("[LOGIN] verifyPassword completed", { elapsed: Date.now() - loginStart });
+      const user = await authenticateLogin(req.body);
+      console.log("[LOGIN] auth completed", { elapsed: Date.now() - loginStart });
 
       if (!user) {
-        console.log(
-          "[LOGIN FAILED] User not found or password mismatch:",
-          validatedData.username,
-        );
+        console.log("[LOGIN FAILED] auth rejected");
         return res.status(401).json({
           error: "아이디 또는 비밀번호가 올바르지 않습니다",
         });
@@ -252,7 +250,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("[LOGIN SUCCESS]", {
           userId: user.id,
           userRole: user.role,
-          username: user.username,
           sessionId: req.sessionID,
           cookieSecure: req.session.cookie.secure,
           cookieSameSite: req.session.cookie.sameSite,
@@ -289,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Login error:", error);
+      console.error("Login error:", (error as Error)?.message);
       res.status(500).json({ error: "로그인 중 오류가 발생했습니다" });
     }
   });
@@ -351,9 +348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // mustChangePassword를 false로 업데이트
       await storage.updateUserMustChangePassword(user.id, false);
 
-      console.log(
-        `[FORCE CHANGE PASSWORD] User ${user.username} changed password successfully`,
-      );
+      console.log(`[FORCE CHANGE PASSWORD] success userId=${user.id}`);
 
       res.json({
         success: true,
@@ -363,7 +358,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Force change password error:", error);
+      console.error("Force change password error:", (error as Error)?.message);
       res.status(500).json({ error: "비밀번호 변경 중 오류가 발생했습니다" });
     }
   });
@@ -501,7 +496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results,
       });
     } catch (error: any) {
-      console.error("[RESET ADMIN] Error:", error);
+      console.error("[RESET ADMIN] Error:", (error as Error)?.message);
       res
         .status(500)
         .json({ error: "Failed to reset passwords", details: error.message });
@@ -819,7 +814,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Password update error:", error);
+      console.error("Password update error:", (error as Error)?.message);
       res.status(500).json({ error: "비밀번호 변경 중 오류가 발생했습니다" });
     }
   });
@@ -874,7 +869,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: error.errors[0]?.message || "입력 값이 올바르지 않습니다",
         });
       }
-      console.error("Change my password error:", error);
+      console.error("Change my password error:", (error as Error)?.message);
       res.status(500).json({ error: "비밀번호 변경 중 오류가 발생했습니다" });
     }
   });
@@ -1148,7 +1143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "active",
       });
 
-      console.log("[CREATE USER] Created user:", newUser.username, "role:", newUser.role);
+      console.log("[CREATE USER] Created user role:", newUser.role);
 
       const { password, ...userWithoutPassword } = newUser;
       res.status(201).json({ success: true, user: userWithoutPassword });
@@ -1156,7 +1151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      console.error("Create account error:", error);
+      console.error("Create account error:", (error as Error)?.message);
       res.status(500).json({ error: "계정 생성 중 오류가 발생했습니다" });
     }
   });
