@@ -2494,7 +2494,7 @@ export default function AdminSettings() {
           {/* User List Section */}
           <div>
             {/* Header with Count */}
-            <div className="flex items-center justify-between px-5 py-2 mb-2">
+            <div className="flex items-center justify-between px-5 py-1">
               <div className="flex items-center gap-4">
                 <span
                   style={{
