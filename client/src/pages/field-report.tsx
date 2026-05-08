@@ -1692,7 +1692,7 @@ export default function FieldReport() {
             </div>
             <div
               className="p-3 rounded-lg"
-              style={{ background: "rgba(12, 12, 12, 0.03)" }}
+              style={{ background: "white" }}
             >
               <div
                 style={{
@@ -1871,7 +1871,7 @@ export default function FieldReport() {
             </div>
             <div
               className="p-3 rounded-lg"
-              style={{ background: "rgba(12, 12, 12, 0.03)" }}
+              style={{ background: "white" }}
             >
               <div
                 style={{
@@ -2243,7 +2243,7 @@ export default function FieldReport() {
                         border: isSelected
                           ? "2px solid #253396"
                           : "1px solid rgba(12, 12, 12, 0.1)",
-                        background: "rgba(12, 12, 12, 0.03)",
+                        background: "white",
                         boxSizing: "border-box",
                       }}
                     >
@@ -2280,7 +2280,7 @@ export default function FieldReport() {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              background: "rgba(12, 12, 12, 0.05)",
+                              background: "white",
                             }}
                           >
                             <svg
@@ -2576,7 +2576,7 @@ export default function FieldReport() {
                   padding: "12px 16px",
                   background: selectedEmailRecipients.assessor
                     ? "rgba(37, 51, 150, 0.1)"
-                    : "rgba(12, 12, 12, 0.02)",
+                    : "white",
                   borderRadius: "8px",
                   marginBottom: "8px",
                   cursor: "pointer",
@@ -2638,7 +2638,7 @@ export default function FieldReport() {
                   padding: "12px 16px",
                   background: selectedEmailRecipients.investigator
                     ? "rgba(37, 51, 150, 0.1)"
-                    : "rgba(12, 12, 12, 0.02)",
+                    : "white",
                   borderRadius: "8px",
                   marginBottom: "8px",
                   cursor: "pointer",
@@ -2698,7 +2698,7 @@ export default function FieldReport() {
               <div
                 style={{
                   padding: "12px 16px",
-                  background: "rgba(12, 12, 12, 0.02)",
+                  background: "white",
                   borderRadius: "8px",
                   marginBottom: "8px",
                   fontFamily: "Pretendard",
@@ -2720,7 +2720,7 @@ export default function FieldReport() {
                 padding: "12px 16px",
                 background: selectedEmailRecipients.custom
                   ? "rgba(37, 51, 150, 0.1)"
-                  : "rgba(12, 12, 12, 0.02)",
+                  : "white",
                 borderRadius: "8px",
                 cursor: "pointer",
                 border: selectedEmailRecipients.custom
@@ -2810,7 +2810,7 @@ export default function FieldReport() {
               style={{
                 flex: 1,
                 padding: "14px",
-                background: "rgba(12, 12, 12, 0.05)",
+                background: "white",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
@@ -3130,7 +3130,7 @@ export default function FieldReport() {
         <div
           className="p-4 flex items-center justify-between"
           style={{
-            background: "rgba(12, 12, 12, 0.04)",
+            background: "white",
             backdropFilter: "blur(7px)",
             borderRadius: "12px",
           }}
@@ -3330,7 +3330,7 @@ export default function FieldReport() {
         {/* 메인 콘텐츠 컨테이너 - blur 효과 */}
         <div
           style={{
-            background: "rgba(12, 12, 12, 0.04)",
+            background: "white",
             backdropFilter: "blur(7px)",
             borderRadius: "12px",
             padding: "8px 0 20px",
@@ -3383,7 +3383,7 @@ export default function FieldReport() {
                       }}
                       className="flex items-center gap-2 px-4 py-3"
                       style={{
-                        background: "#FDFDFD",
+                        background: "white",
                         boxShadow: "2px 4px 30px #BDD1F0",
                         borderRadius: "10px",
                         border: "none",
@@ -3427,7 +3427,7 @@ export default function FieldReport() {
                     }}
                     className="flex items-center gap-2 px-4 py-3"
                     style={{
-                      background: "#FDFDFD",
+                      background: "white",
                       boxShadow: "2px 4px 30px #BDD1F0",
                       borderRadius: "10px",
                       border: "none",
@@ -3674,7 +3674,7 @@ export default function FieldReport() {
                         fontFamily: "Pretendard",
                         fontSize: "14px",
                         color: "#0C0C0C",
-                        background: "rgba(12, 12, 12, 0.03)",
+                        background: "white",
                         whiteSpace: "pre-wrap",
                       }}
                     >
@@ -3706,7 +3706,7 @@ export default function FieldReport() {
                       fontFamily: "Pretendard",
                       fontSize: "14px",
                       color: "#0C0C0C",
-                      background: "rgba(12, 12, 12, 0.03)",
+                      background: "white",
                       whiteSpace: "pre-wrap",
                     }}
                   >
@@ -3807,7 +3807,7 @@ export default function FieldReport() {
                             <div
                               key={index}
                               className="p-3 rounded flex items-center gap-3"
-                              style={{ background: "rgba(12, 12, 12, 0.03)" }}
+                              style={{ background: "white" }}
                             >
                               <div
                                 className="w-1.5 h-1.5 rounded-full"
@@ -3960,7 +3960,7 @@ export default function FieldReport() {
                             fontFamily: "Pretendard",
                             fontSize: "14px",
                             color: "#0C0C0C",
-                            background: "rgba(12, 12, 12, 0.03)",
+                            background: "white",
                             whiteSpace: "pre-wrap",
                           }}
                         >
@@ -4427,7 +4427,7 @@ export default function FieldReport() {
                   }}
                   className="flex items-center gap-2 px-4 py-3"
                   style={{
-                    background: "#FDFDFD",
+                    background: "white",
                     boxShadow: "2px 4px 30px #BDD1F0",
                     borderRadius: "10px",
                     border: "none",
@@ -4493,7 +4493,7 @@ export default function FieldReport() {
                       <div
                         key={category}
                         style={{
-                          background: "#FDFDFD",
+                          background: "white",
                           borderRadius: "12px",
                           padding: "8px 16px 16px",
                         }}
@@ -4579,7 +4579,7 @@ export default function FieldReport() {
                                     style={{
                                       width: "64px",
                                       height: "64px",
-                                      background: "rgba(12, 12, 12, 0.04)",
+                                      background: "white",
                                       borderRadius: "6px",
                                       display: "flex",
                                       alignItems: "center",
@@ -4702,7 +4702,7 @@ export default function FieldReport() {
               ) : (
                 <div
                   style={{
-                    background: "#FDFDFD",
+                    background: "white",
                     borderRadius: "12px",
                     padding: "40px",
                     textAlign: "center",
@@ -4915,7 +4915,7 @@ export default function FieldReport() {
                           >
                             <thead>
                               <tr
-                                style={{ background: "rgba(12, 12, 12, 0.03)" }}
+                                style={{ background: "white" }}
                               >
                                 <th
                                   style={{
@@ -4987,7 +4987,7 @@ export default function FieldReport() {
                                 </th>
                               </tr>
                               <tr
-                                style={{ background: "rgba(12, 12, 12, 0.02)" }}
+                                style={{ background: "white" }}
                               >
                                 <th
                                   colSpan={3}
@@ -5223,7 +5223,7 @@ export default function FieldReport() {
                           >
                             <thead>
                               <tr
-                                style={{ background: "rgba(12, 12, 12, 0.03)" }}
+                                style={{ background: "white" }}
                               >
                                 <th
                                   style={{
@@ -5560,7 +5560,7 @@ export default function FieldReport() {
                             <tfoot>
                               <tr
                                 style={{
-                                  background: "rgba(12, 12, 12, 0.04)",
+                                  background: "white",
                                   borderTop: "2px solid rgba(12, 12, 12, 0.2)",
                                 }}
                               >
@@ -5649,7 +5649,7 @@ export default function FieldReport() {
                           >
                             <thead>
                               <tr
-                                style={{ background: "rgba(12, 12, 12, 0.03)" }}
+                                style={{ background: "white" }}
                               >
                                 <th
                                   style={{
@@ -5827,7 +5827,7 @@ export default function FieldReport() {
                             <tfoot>
                               <tr
                                 style={{
-                                  background: "rgba(12, 12, 12, 0.04)",
+                                  background: "white",
                                   borderTop: "2px solid rgba(12, 12, 12, 0.2)",
                                 }}
                               >

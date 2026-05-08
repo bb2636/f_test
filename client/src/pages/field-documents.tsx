@@ -1583,7 +1583,7 @@ export default function FieldDocuments() {
                               }}
                               className={`px-4 py-3 flex items-center gap-2 ${isCurrent ? "" : "cursor-pointer hover:bg-gray-50"}`}
                               style={{
-                                borderBottom: "1px solid rgba(12, 12, 12, 0.05)",
+                                borderBottom: "1px solid white",
                                 background: isCurrent ? "rgba(255, 193, 7, 0.08)" : undefined,
                               }}
                               data-testid={`related-case-${rc.id}`}
@@ -1634,7 +1634,7 @@ export default function FieldDocuments() {
           <div
             className="p-4 rounded-lg"
             style={{
-              background: "rgba(12, 12, 12, 0.03)",
+              background: "white",
             }}
           >
             {/* 첫 번째 줄: 보험사명 + 사고번호 */}
@@ -1843,7 +1843,7 @@ export default function FieldDocuments() {
               className="flex items-center justify-center px-1.5 py-1"
               style={{
                 background:
-                  photoSubFilter === "전체" ? "#FDFDFD" : "transparent",
+                  photoSubFilter === "전체" ? "white" : "transparent",
                 boxShadow:
                   photoSubFilter === "전체"
                     ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
@@ -1870,7 +1870,7 @@ export default function FieldDocuments() {
               className="flex items-center justify-center px-1.5 py-1"
               style={{
                 background:
-                  photoSubFilter === "현장출동사진" ? "#FDFDFD" : "transparent",
+                  photoSubFilter === "현장출동사진" ? "white" : "transparent",
                 boxShadow:
                   photoSubFilter === "현장출동사진"
                     ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
@@ -1898,7 +1898,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   photoSubFilter === "수리중 사진"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   photoSubFilter === "수리중 사진"
@@ -1927,7 +1927,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   photoSubFilter === "복구완료 사진"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   photoSubFilter === "복구완료 사진"
@@ -1970,7 +1970,7 @@ export default function FieldDocuments() {
               className="flex items-center justify-center px-1.5 py-1"
               style={{
                 background:
-                  basicDataSubFilter === "전체" ? "#FDFDFD" : "transparent",
+                  basicDataSubFilter === "전체" ? "white" : "transparent",
                 boxShadow:
                   basicDataSubFilter === "전체"
                     ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
@@ -1998,7 +1998,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   basicDataSubFilter === "보험금 청구서"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   basicDataSubFilter === "보험금 청구서"
@@ -2027,7 +2027,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   basicDataSubFilter === "개인정보 동의서(가족용)"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   basicDataSubFilter === "개인정보 동의서(가족용)"
@@ -2071,7 +2071,7 @@ export default function FieldDocuments() {
               className="flex items-center justify-center px-1.5 py-1"
               style={{
                 background:
-                  evidenceSubFilter === "전체" ? "#FDFDFD" : "transparent",
+                  evidenceSubFilter === "전체" ? "white" : "transparent",
                 boxShadow:
                   evidenceSubFilter === "전체"
                     ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
@@ -2099,7 +2099,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   evidenceSubFilter === "주민등록등본"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   evidenceSubFilter === "주민등록등본"
@@ -2128,7 +2128,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   evidenceSubFilter === "등기부등본"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   evidenceSubFilter === "등기부등본"
@@ -2157,7 +2157,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   evidenceSubFilter === "건축물대장"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   evidenceSubFilter === "건축물대장"
@@ -2186,7 +2186,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   evidenceSubFilter === "기타증빙자료(민원일지 등)"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   evidenceSubFilter === "기타증빙자료(민원일지 등)"
@@ -2230,7 +2230,7 @@ export default function FieldDocuments() {
               className="flex items-center justify-center px-1.5 py-1"
               style={{
                 background:
-                  claimDataSubFilter === "전체" ? "#FDFDFD" : "transparent",
+                  claimDataSubFilter === "전체" ? "white" : "transparent",
                 boxShadow:
                   claimDataSubFilter === "전체"
                     ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
@@ -2257,7 +2257,7 @@ export default function FieldDocuments() {
               className="flex items-center justify-center px-1.5 py-1"
               style={{
                 background:
-                  claimDataSubFilter === "복구완료 및 위임장" ? "#FDFDFD" : "transparent",
+                  claimDataSubFilter === "복구완료 및 위임장" ? "white" : "transparent",
                 boxShadow:
                   claimDataSubFilter === "복구완료 및 위임장"
                     ? "0px 2px 14px rgba(0, 0, 0, 0.12)"
@@ -2285,7 +2285,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   claimDataSubFilter === "도급계약서"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   claimDataSubFilter === "도급계약서"
@@ -2314,7 +2314,7 @@ export default function FieldDocuments() {
               style={{
                 background:
                   claimDataSubFilter === "부가세 청구자료"
-                    ? "#FDFDFD"
+                    ? "white"
                     : "transparent",
                 boxShadow:
                   claimDataSubFilter === "부가세 청구자료"
@@ -2447,7 +2447,7 @@ export default function FieldDocuments() {
                   style={{
                     width: "64px",
                     height: "64px",
-                    background: "rgba(12, 12, 12, 0.04)",
+                    background: "white",
                   }}
                 >
                   {uploadingFile.file.type.startsWith("image/") ? (
@@ -2631,7 +2631,7 @@ export default function FieldDocuments() {
                   className="relative rounded-lg overflow-hidden cursor-pointer group"
                   style={{
                     aspectRatio: "4/3",
-                    background: "rgba(12, 12, 12, 0.04)",
+                    background: "white",
                     border: "1px solid rgba(12, 12, 12, 0.08)",
                   }}
                   onClick={() => handleDownload(doc)}
@@ -2739,7 +2739,7 @@ export default function FieldDocuments() {
                               ? "rgba(12, 12, 12, 0.8)"
                               : "rgba(12, 12, 12, 0.4)",
                             background: isSelected
-                              ? "linear-gradient(0deg, rgba(37, 51, 150, 0.07), rgba(37, 51, 150, 0.07)), #FDFDFD"
+                              ? "linear-gradient(0deg, rgba(37, 51, 150, 0.07), rgba(37, 51, 150, 0.07)), white"
                               : "#FFFFFF",
                             paddingTop: "10px",
                             paddingBottom: "10px",
@@ -2804,7 +2804,7 @@ export default function FieldDocuments() {
                   background:
                     selectedCaseId === caseItem.id
                       ? "rgba(37, 51, 150, 0.05)"
-                      : "rgba(12, 12, 12, 0.02)",
+                      : "white",
                   border: "1px solid rgba(12, 12, 12, 0.08)",
                 }}
                 data-testid={`case-item-${caseItem.id}`}

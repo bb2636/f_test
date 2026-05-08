@@ -6590,7 +6590,7 @@ export default function FieldEstimate() {
           <div 
             className="p-4 rounded-lg"
             style={{
-              background: "rgba(12, 12, 12, 0.03)",
+              background: "white",
             }}
           >
             {/* 첫 번째 줄: 보험사명 + 사고번호 */}
@@ -6791,7 +6791,7 @@ export default function FieldEstimate() {
                 <thead>
                   <tr
                     style={{
-                      background: "rgba(12, 12, 12, 0.04)",
+                      background: "white",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.06)",
                     }}
                   >
@@ -6889,7 +6889,7 @@ export default function FieldEstimate() {
                             fontWeight: 600, 
                             color: "rgba(12, 12, 12, 0.6)", 
                             textAlign: "center",
-                            background: "rgba(12, 12, 12, 0.04)",
+                            background: "white",
                             height: "43px",
                             display: "flex",
                             alignItems: "center",
@@ -6970,7 +6970,7 @@ export default function FieldEstimate() {
                             fontWeight: 600, 
                             color: "rgba(12, 12, 12, 0.6)", 
                             textAlign: "center",
-                            background: "rgba(12, 12, 12, 0.04)",
+                            background: "white",
                             height: "43px",
                             display: "flex",
                             alignItems: "center",
@@ -7071,7 +7071,7 @@ export default function FieldEstimate() {
                                 padding: "8px",
                                 verticalAlign: "middle",
                                 borderRight: "1px solid rgba(12, 12, 12, 0.06)",
-                                background: "rgba(12, 12, 12, 0.02)",
+                                background: "white",
                                 textAlign: "center",
                               }}
                             >
@@ -7104,7 +7104,7 @@ export default function FieldEstimate() {
                                 padding: "8px",
                                 verticalAlign: "top",
                                 borderRight: "1px solid rgba(12, 12, 12, 0.06)",
-                                background: "rgba(12, 12, 12, 0.02)",
+                                background: "white",
                               }}
                             >
                               <Select
@@ -7311,7 +7311,7 @@ export default function FieldEstimate() {
                             border: "1px solid rgba(12, 12, 12, 0.1)",
                             borderRadius: "8px",
                             textAlign: "center",
-                            background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                            background: isReadOnly ? "white" : undefined,
                           }}
                           data-testid={`input-damage-width-${globalIndex}`}
                         />
@@ -7344,7 +7344,7 @@ export default function FieldEstimate() {
                             border: "1px solid rgba(12, 12, 12, 0.1)",
                             borderRadius: "8px",
                             textAlign: "center",
-                            background: (isReadOnly || isLinearWorkName(row.workName, row.workType)) ? "rgba(12, 12, 12, 0.02)" : undefined,
+                            background: (isReadOnly || isLinearWorkName(row.workName, row.workType)) ? "white" : undefined,
                           }}
                           data-testid={`input-damage-height-${globalIndex}`}
                         />
@@ -7362,7 +7362,7 @@ export default function FieldEstimate() {
                             border: "1px solid rgba(12, 12, 12, 0.1)",
                             borderRadius: "4px",
                             textAlign: "center",
-                            background: "rgba(12, 12, 12, 0.02)",
+                            background: "white",
                           }}
                           data-testid={`input-damage-area-${globalIndex}`}
                         />
@@ -7392,7 +7392,7 @@ export default function FieldEstimate() {
                             border: "1px solid rgba(12, 12, 12, 0.1)",
                             borderRadius: "8px",
                             textAlign: "center",
-                            background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                            background: isReadOnly ? "white" : undefined,
                           }}
                           data-testid={`input-repair-width-${globalIndex}`}
                         />
@@ -7425,7 +7425,7 @@ export default function FieldEstimate() {
                             border: "1px solid rgba(12, 12, 12, 0.1)",
                             borderRadius: "8px",
                             textAlign: "center",
-                            background: (isReadOnly || isLinearWorkName(row.workName, row.workType)) ? "rgba(12, 12, 12, 0.02)" : undefined,
+                            background: (isReadOnly || isLinearWorkName(row.workName, row.workType)) ? "white" : undefined,
                           }}
                           data-testid={`input-repair-height-${globalIndex}`}
                         />
@@ -7443,7 +7443,7 @@ export default function FieldEstimate() {
                             border: "1px solid rgba(12, 12, 12, 0.1)",
                             borderRadius: "4px",
                             textAlign: "center",
-                            background: "rgba(12, 12, 12, 0.02)",
+                            background: "white",
                           }}
                           data-testid={`input-repair-area-${globalIndex}`}
                         />
@@ -7462,7 +7462,7 @@ export default function FieldEstimate() {
                             fontSize: "14px",
                             border: "1px solid rgba(12, 12, 12, 0.1)",
                             borderRadius: "8px",
-                            background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                            background: isReadOnly ? "white" : undefined,
                           }}
                           data-testid={`input-note-${globalIndex}`}
                         />
@@ -7559,7 +7559,7 @@ export default function FieldEstimate() {
               <div
                 style={{
                   flex: 1,
-                  background: "rgba(12, 12, 12, 0.02)",
+                  background: "white",
                   borderRadius: "12px",
                   padding: "24px",
                 }}
@@ -7604,7 +7604,7 @@ export default function FieldEstimate() {
                     style={{
                       flex: 1,
                       padding: "12px 16px",
-                      background: "rgba(12, 12, 12, 0.04)",
+                      background: "white",
                       borderRadius: "8px",
                       fontFamily: "Pretendard",
                       fontWeight: 400,
@@ -7644,7 +7644,7 @@ export default function FieldEstimate() {
                     style={{
                       flex: 1,
                       padding: "12px 16px",
-                      background: "rgba(12, 12, 12, 0.04)",
+                      background: "white",
                       borderRadius: "8px",
                       fontFamily: "Pretendard",
                       fontWeight: 400,
@@ -7683,7 +7683,7 @@ export default function FieldEstimate() {
                     style={{
                       flex: 1,
                       padding: "12px 16px",
-                      background: "rgba(12, 12, 12, 0.04)",
+                      background: "white",
                       borderRadius: "8px",
                       fontFamily: "Pretendard",
                       fontWeight: 400,
@@ -7702,7 +7702,7 @@ export default function FieldEstimate() {
               <div
                 style={{
                   flex: 1,
-                  background: "rgba(12, 12, 12, 0.04)",
+                  background: "white",
                   borderRadius: "12px",
                   padding: "24px",
                 }}
@@ -7765,7 +7765,7 @@ export default function FieldEstimate() {
                     style={{
                       width: "100%",
                       padding: "10px 20px",
-                      background: "rgba(12, 12, 12, 0.04)",
+                      background: "white",
                       borderRadius: "8px",
                       border: "none",
                       fontFamily: "Pretendard",
@@ -7801,7 +7801,7 @@ export default function FieldEstimate() {
                     style={{
                       width: "100%",
                       padding: "10px 20px",
-                      background: "rgba(12, 12, 12, 0.04)",
+                      background: "white",
                       borderRadius: "8px",
                       border: "none",
                       fontFamily: "Pretendard",
@@ -7837,7 +7837,7 @@ export default function FieldEstimate() {
                     style={{
                       width: "100%",
                       padding: "10px 20px",
-                      background: "rgba(12, 12, 12, 0.04)",
+                      background: "white",
                       borderRadius: "8px",
                       border: "none",
                       fontFamily: "Pretendard",
@@ -7933,7 +7933,7 @@ export default function FieldEstimate() {
               {rows.length > 0 && (
                 <div
                   style={{
-                    background: "#FDFDFD",
+                    background: "white",
                     boxShadow: "0px 0px 20px #DBE9F5",
                     borderRadius: "8px",
                     overflow: "auto",
@@ -7949,7 +7949,7 @@ export default function FieldEstimate() {
                     <thead>
                       <tr
                         style={{
-                          background: "rgba(12, 12, 12, 0.04)",
+                          background: "white",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.06)",
                         }}
                       >
@@ -7991,7 +7991,7 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 color: row.category ? "#0C0C0C" : "rgba(12, 12, 12, 0.4)",
-                                background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                                background: isReadOnly ? "white" : undefined,
                               }}
                             >
                               <option value="">선택</option>
@@ -8013,7 +8013,7 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 color: row.location ? "#0C0C0C" : "rgba(12, 12, 12, 0.4)",
-                                background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                                background: isReadOnly ? "white" : undefined,
                               }}
                             >
                               <option value="">선택</option>
@@ -8038,7 +8038,7 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 color: row.workType ? "#0C0C0C" : "rgba(12, 12, 12, 0.4)",
-                                background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                                background: isReadOnly ? "white" : undefined,
                               }}
                             >
                               <option value="">공종 선택</option>
@@ -8060,7 +8060,7 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 color: row.workName ? "#0C0C0C" : "rgba(12, 12, 12, 0.4)",
-                                background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                                background: isReadOnly ? "white" : undefined,
                               }}
                             >
                               <option value="">공사명 선택</option>
@@ -8083,7 +8083,7 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 textAlign: "right",
-                                background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                                background: isReadOnly ? "white" : undefined,
                               }}
                             />
                           </td>
@@ -8101,11 +8101,11 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 textAlign: "right",
-                                background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                                background: isReadOnly ? "white" : undefined,
                               }}
                             />
                           </td>
-                          <td style={{ padding: "8px", fontFamily: "Pretendard", fontSize: "14px", textAlign: "right", background: "rgba(12, 12, 12, 0.02)" }}>{row.damageArea}</td>
+                          <td style={{ padding: "8px", fontFamily: "Pretendard", fontSize: "14px", textAlign: "right", background: "white" }}>{row.damageArea}</td>
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
@@ -8120,7 +8120,7 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 textAlign: "right",
-                                background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                                background: isReadOnly ? "white" : undefined,
                               }}
                             />
                           </td>
@@ -8138,11 +8138,11 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 textAlign: "right",
-                                background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                                background: isReadOnly ? "white" : undefined,
                               }}
                             />
                           </td>
-                          <td style={{ padding: "8px", fontFamily: "Pretendard", fontSize: "14px", textAlign: "right", background: "rgba(12, 12, 12, 0.02)" }}>{row.repairArea}</td>
+                          <td style={{ padding: "8px", fontFamily: "Pretendard", fontSize: "14px", textAlign: "right", background: "white" }}>{row.repairArea}</td>
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
@@ -8156,7 +8156,7 @@ export default function FieldEstimate() {
                                 borderRadius: "4px",
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
-                                background: isReadOnly ? "rgba(12, 12, 12, 0.02)" : undefined,
+                                background: isReadOnly ? "white" : undefined,
                               }}
                             />
                           </td>
@@ -8299,7 +8299,7 @@ export default function FieldEstimate() {
             <div
               style={{
                 marginTop: "40px",
-                background: "#F7FBFF",
+                background: "white",
                 borderRadius: "12px",
                 padding: "24px 32px",
               }}
@@ -8832,7 +8832,7 @@ export default function FieldEstimate() {
                     <thead>
                       <tr
                         style={{
-                          background: "rgba(12, 12, 12, 0.02)",
+                          background: "white",
                           height: "48px",
                         }}
                       >
@@ -9005,7 +9005,7 @@ export default function FieldEstimate() {
                           </td>
                           
                           {/* 수량(인) - Editable Input */}
-                          <td style={{ padding: "0 8px", background: "#EFF6FF" }}>
+                          <td style={{ padding: "0 8px", background: "white" }}>
                             <Input
                               value={row.quantity}
                               onChange={(e) => {
@@ -9018,7 +9018,7 @@ export default function FieldEstimate() {
                           </td>
                           
                           {/* 적용률 - Checkboxes + Input */}
-                          <td style={{ padding: "0 8px", background: "#EFF6FF" }}>
+                          <td style={{ padding: "0 8px", background: "white" }}>
                             <div className="flex items-center gap-2">
                               <div className="flex items-center gap-1">
                                 <Checkbox 
@@ -9085,7 +9085,7 @@ export default function FieldEstimate() {
                           </td>
                           
                           {/* 적용단가 - Editable Input with comma formatting */}
-                          <td style={{ padding: "0 8px", background: "#EFF6FF" }}>
+                          <td style={{ padding: "0 8px", background: "white" }}>
                             <Input
                               type="text"
                               inputMode="numeric"
@@ -9118,7 +9118,7 @@ export default function FieldEstimate() {
                           </td>
 
                           {/* 공제(원) - Editable Input */}
-                          <td style={{ padding: "0 8px", background: "#EFF6FF" }}>
+                          <td style={{ padding: "0 8px", background: "white" }}>
                             <Input
                               type="text"
                               inputMode="numeric"
@@ -9157,7 +9157,7 @@ export default function FieldEstimate() {
                           </td>
 
                           {/* 요청 - Editable Input */}
-                          <td style={{ padding: "0 8px", background: "#EFF6FF" }}>
+                          <td style={{ padding: "0 8px", background: "white" }}>
                             <Input
                               value={row.request || ''}
                               onChange={(e) => {
@@ -9432,7 +9432,7 @@ export default function FieldEstimate() {
                   selectedCaseId === caseItem.id ? 'ring-2 ring-blue-500' : ''
                 }`}
                 style={{
-                  background: selectedCaseId === caseItem.id ? "rgba(37, 51, 150, 0.05)" : "rgba(12, 12, 12, 0.02)",
+                  background: selectedCaseId === caseItem.id ? "rgba(37, 51, 150, 0.05)" : "white",
                   border: "1px solid rgba(12, 12, 12, 0.08)",
                 }}
                 data-testid={`case-item-${caseItem.id}`}
