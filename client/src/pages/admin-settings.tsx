@@ -2440,29 +2440,34 @@ export default function AdminSettings() {
                   검색
                 </label>
                 <div className="flex items-center gap-2">
-                  <div
-                    className="flex items-center flex-1 px-4 gap-2"
-                    style={{
-                      height: "42px",
-                      background: "#FDFDFD",
-                      border: "1px solid var(--color-table-border)",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  <div style={{ position: "relative", flex: 1 }}>
+                    <Search
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2"
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        color: "rgba(12, 12, 12, 0.4)",
+                      }}
+                    />
                     <input
                       type="text"
                       placeholder="성함을 입력해주세요."
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
                       onKeyDown={handleSearchKeyDown}
-                      className="flex-1 outline-none bg-transparent"
                       style={{
+                        width: "100%",
+                        height: "52px",
+                        padding: "0 20px 0 52px",
+                        background: "var(--color-input-bg)",
+                        border: "1px solid var(--color-table-border)",
+                        borderRadius: "8px",
                         fontFamily: "Pretendard",
                         fontSize: "14px",
                         fontWeight: 400,
                         letterSpacing: "-0.02em",
-                        color: "rgba(12, 12, 12, 0.9)",
+                        color: "#0C0C0C",
+                        outline: "none",
                       }}
                       data-testid="input-search"
                     />
@@ -2470,18 +2475,17 @@ export default function AdminSettings() {
                   <button
                     onClick={handleSearch}
                     style={{
-                      height: "42px",
-                      padding: "0 20px",
+                      width: "100px",
+                      height: "52px",
                       background: "var(--color-button-primary)",
-                      border: "none",
                       borderRadius: "8px",
+                      border: "none",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "16px",
                       fontWeight: 600,
                       letterSpacing: "-0.02em",
                       color: "#FFFFFF",
                       cursor: "pointer",
-                      whiteSpace: "nowrap",
                     }}
                     data-testid="button-search"
                   >
