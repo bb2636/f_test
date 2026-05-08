@@ -53,14 +53,18 @@ function Router() {
         <Route path="/home">
           {() => (
             <ProtectedRoute category="홈">
-              <Dashboard />
+              <StatisticsLayout>
+                <Dashboard />
+              </StatisticsLayout>
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/dashboard">
           {() => (
             <ProtectedRoute category="홈">
-              <Dashboard />
+              <StatisticsLayout>
+                <Dashboard />
+              </StatisticsLayout>
             </ProtectedRoute>
           )}
         </Route>

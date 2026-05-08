@@ -949,8 +949,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen text-slate-900" style={{ background: "var(--color-bg)" }}>
-      <GlobalHeader />
-
       <main
         className="relative z-10 mx-auto max-w-[1400px] px-4 md:px-8 pb-14 pt-8"
         ref={pdfContentRef}
