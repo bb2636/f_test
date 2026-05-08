@@ -2947,7 +2947,10 @@ export default function Intake({
 
         {/* Bottom Actions - Fixed */}
         {!readOnly && (
-          <div className="fixed inset-x-0 bottom-0 border-t bg-white/95 backdrop-blur z-50">
+          <div
+            className="fixed right-0 bottom-0 border-t bg-white/95 backdrop-blur z-50"
+            style={{ left: isModal ? 0 : "220px" }}
+          >
             <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4">
               {isModal && initialCaseId ? (
                 <>
