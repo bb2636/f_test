@@ -2994,7 +2994,7 @@ export default function Intake({
                       style={{
                         background: (submitMutation.isPending || !isFormValid)
                           ? "#cbd5e1"
-                          : "var(--color-button-primary)",
+                          : "#253396",
                         cursor: (submitMutation.isPending || !isFormValid) ? "not-allowed" : "pointer",
                       }}
                       type="button"

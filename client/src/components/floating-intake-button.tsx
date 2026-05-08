@@ -655,7 +655,7 @@ export function FloatingIntakeButton() {
                   alignItems: 'center',
                   gap: '8px',
                   padding: '10px 24px',
-                  background: 'var(--color-button-primary)',
+                  background: '#253396',
                   fontFamily: 'Pretendard',
                   fontWeight: 600,
                   fontSize: '14px',
