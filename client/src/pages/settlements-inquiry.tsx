@@ -1261,7 +1261,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                   >
                     초기화
                   </Button>
-                  <Button onClick={handleDateRangeApply}>적용</Button>
+                  <Button onClick={handleDateRangeApply} style={{ background: "#253396", color: "#FFFFFF" }}>적용</Button>
                 </div>
               </PopoverContent>
             </Popover>
