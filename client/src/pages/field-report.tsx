@@ -4904,7 +4904,7 @@ export default function FieldReport() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="overflow-x-auto" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
+                        <div className="overflow-x-auto [&_th]:border-r [&_td]:border-r [&_th]:border-r-[rgba(12,12,12,0.1)] [&_td]:border-r-[rgba(12,12,12,0.1)] [&_th:last-child]:border-r-0 [&_td:last-child]:border-r-0" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
                           <table
                             style={{
                               minWidth: "1100px",
@@ -5208,7 +5208,7 @@ export default function FieldReport() {
                     </CardHeader>
                     <CardContent>
                       {parsedLaborCosts.length > 0 ? (
-                        <div className="overflow-x-auto" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
+                        <div className="overflow-x-auto [&_th]:border-r [&_td]:border-r [&_th]:border-r-[rgba(12,12,12,0.1)] [&_td]:border-r-[rgba(12,12,12,0.1)] [&_th:last-child]:border-r-0 [&_td:last-child]:border-r-0" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
                           <table
                             style={{
                               minWidth: "1100px",
@@ -5632,7 +5632,7 @@ export default function FieldReport() {
                     </CardHeader>
                     <CardContent>
                       {parsedMaterialCosts.length > 0 ? (
-                        <div className="overflow-x-auto" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
+                        <div className="overflow-x-auto [&_th]:border-r [&_td]:border-r [&_th]:border-r-[rgba(12,12,12,0.1)] [&_td]:border-r-[rgba(12,12,12,0.1)] [&_th:last-child]:border-r-0 [&_td:last-child]:border-r-0" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
                           <table
                             style={{
                               minWidth: "950px",
