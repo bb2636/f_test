@@ -1188,7 +1188,7 @@ export default function FieldReport() {
                 background: "rgba(253, 253, 253, 0.8)",
                 backdropFilter: "blur(7px)",
                 borderRadius: "6px",
-                border: "1px solid rgba(12, 12, 12, 0.1)",
+                border: "1px solid rgba(12, 12, 12, 0.2)",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
                 fontWeight: 500,
@@ -2088,7 +2088,7 @@ export default function FieldReport() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  borderBottom: "1px solid rgba(12, 12, 12, 0.1)",
+                  borderBottom: "1px solid rgba(12, 12, 12, 0.2)",
                   marginBottom: "16px",
                 }}
               >
@@ -2242,7 +2242,7 @@ export default function FieldReport() {
                         cursor: "pointer",
                         border: isSelected
                           ? "2px solid #253396"
-                          : "1px solid rgba(12, 12, 12, 0.1)",
+                          : "1px solid rgba(12, 12, 12, 0.2)",
                         background: "white",
                         boxSizing: "border-box",
                       }}
@@ -3293,7 +3293,7 @@ export default function FieldReport() {
         <div
           className="flex items-center border-b-2 mb-0"
           style={{
-            borderColor: "rgba(12, 12, 12, 0.1)",
+            borderColor: "rgba(12, 12, 12, 0.2)",
           }}
         >
           {["현장조사", "도면", "증빙자료", "견적서", "기타사항/원인"].map(
@@ -4914,15 +4914,13 @@ export default function FieldReport() {
                             }}
                           >
                             <thead>
-                              <tr
-                                style={{ background: "white" }}
-                              >
+                              <tr style={{ background: "#f4f5fa" }}>
                                 <th
                                   style={{
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   장소
@@ -4932,7 +4930,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   위치
@@ -4942,7 +4940,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   공사내용
@@ -4953,9 +4951,9 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     borderLeft:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   피해면적
@@ -4966,9 +4964,9 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     borderLeft:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   복구면적
@@ -4978,22 +4976,20 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     borderLeft:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   비고
                                 </th>
                               </tr>
-                              <tr
-                                style={{ background: "white" }}
-                              >
+                              <tr style={{ background: "#f4f5fa" }}>
                                 <th
                                   colSpan={3}
                                   style={{
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 ></th>
                                 <th
@@ -5002,9 +4998,9 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     fontSize: "12px",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     borderLeft:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   가로(m)
@@ -5015,7 +5011,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     fontSize: "12px",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   세로(m)
@@ -5026,7 +5022,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     fontSize: "12px",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   면적(㎡)
@@ -5037,9 +5033,9 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     fontSize: "12px",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     borderLeft:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   가로(m)
@@ -5050,7 +5046,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     fontSize: "12px",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   세로(m)
@@ -5061,7 +5057,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     fontSize: "12px",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 >
                                   면적(㎡)
@@ -5069,9 +5065,9 @@ export default function FieldReport() {
                                 <th
                                   style={{
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     borderLeft:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                   }}
                                 ></th>
                               </tr>
@@ -5222,15 +5218,13 @@ export default function FieldReport() {
                             }}
                           >
                             <thead>
-                              <tr
-                                style={{ background: "white" }}
-                              >
+                              <tr style={{ background: "#f4f5fa" }}>
                                 <th
                                   style={{
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "100px",
                                   }}
                                 >
@@ -5241,7 +5235,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "100px",
                                   }}
                                 >
@@ -5252,7 +5246,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "100px",
                                   }}
                                 >
@@ -5263,7 +5257,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "90px",
                                   }}
                                 >
@@ -5274,7 +5268,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "90px",
                                   }}
                                 >
@@ -5285,7 +5279,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "70px",
                                   }}
                                 >
@@ -5296,7 +5290,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "100px",
                                   }}
                                 >
@@ -5307,7 +5301,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "80px",
                                   }}
                                 >
@@ -5318,7 +5312,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "120px",
                                   }}
                                 >
@@ -5648,15 +5642,13 @@ export default function FieldReport() {
                             }}
                           >
                             <thead>
-                              <tr
-                                style={{ background: "white" }}
-                              >
+                              <tr style={{ background: "#f4f5fa" }}>
                                 <th
                                   style={{
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "100px",
                                   }}
                                 >
@@ -5667,7 +5659,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "100px",
                                   }}
                                 >
@@ -5678,7 +5670,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "120px",
                                   }}
                                 >
@@ -5689,7 +5681,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "90px",
                                   }}
                                 >
@@ -5700,7 +5692,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "70px",
                                   }}
                                 >
@@ -5711,7 +5703,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "60px",
                                   }}
                                 >
@@ -5722,7 +5714,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "100px",
                                   }}
                                 >
@@ -5733,7 +5725,7 @@ export default function FieldReport() {
                                     padding: "12px 8px",
                                     textAlign: "center",
                                     borderBottom:
-                                      "1px solid rgba(12, 12, 12, 0.1)",
+                                      "1px solid rgba(12, 12, 12, 0.2)",
                                     minWidth: "120px",
                                   }}
                                 >
