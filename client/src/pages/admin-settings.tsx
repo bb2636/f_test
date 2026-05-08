@@ -2439,32 +2439,54 @@ export default function AdminSettings() {
                 >
                   검색
                 </label>
-                <div
-                  className="flex items-center px-4 gap-2"
-                  style={{
-                    height: "42px",
-                    background: "#FDFDFD",
-                    border: "1px solid var(--color-table-border)",
-                    borderRadius: "8px",
-                  }}
-                >
-                  <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="성함을 입력해주세요."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    onKeyDown={handleSearchKeyDown}
-                    className="flex-1 outline-none bg-transparent"
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center flex-1 px-4 gap-2"
                     style={{
+                      height: "42px",
+                      background: "#FDFDFD",
+                      border: "1px solid var(--color-table-border)",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="성함을 입력해주세요."
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      onKeyDown={handleSearchKeyDown}
+                      className="flex-1 outline-none bg-transparent"
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "14px",
+                        fontWeight: 400,
+                        letterSpacing: "-0.02em",
+                        color: "rgba(12, 12, 12, 0.9)",
+                      }}
+                      data-testid="input-search"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSearch}
+                    style={{
+                      height: "42px",
+                      padding: "0 20px",
+                      background: "var(--color-button-primary)",
+                      border: "none",
+                      borderRadius: "8px",
                       fontFamily: "Pretendard",
                       fontSize: "14px",
-                      fontWeight: 400,
+                      fontWeight: 600,
                       letterSpacing: "-0.02em",
-                      color: "rgba(12, 12, 12, 0.9)",
+                      color: "#FFFFFF",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
                     }}
-                    data-testid="input-search"
-                  />
+                    data-testid="button-search"
+                  >
+                    조회
+                  </button>
                 </div>
               </div>
             </div>
