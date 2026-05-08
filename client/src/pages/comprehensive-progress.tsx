@@ -2429,7 +2429,7 @@ export default function ComprehensiveProgress() {
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "13px",
-                          color: "#008FED",
+                          color: "var(--color-button-primary)",
                           fontWeight: 500,
                           cursor: "pointer",
                           textDecoration: "underline",
@@ -2476,14 +2476,14 @@ export default function ComprehensiveProgress() {
                             setLocation("/intake");
                           }}
                           style={{
-                            padding: "6px 12px",
-                            background: "#EFF6FF",
-                            border: "1px solid #008FED",
-                            borderRadius: "6px",
+                            padding: "6px 14px",
+                            background: "#e7e7f5",
+                            border: "none",
+                            borderRadius: "9999px",
                             fontFamily: "Pretendard",
                             fontSize: "12px",
                             fontWeight: 500,
-                            color: "#008FED",
+                            color: "#253396",
                             cursor: "pointer",
                             whiteSpace: "nowrap",
                           }}
@@ -2682,14 +2682,14 @@ export default function ComprehensiveProgress() {
                           border: "none",
                           borderBottom:
                             detailTab === tab
-                              ? "2px solid #008FED"
+                              ? "2px solid var(--color-button-primary)"
                               : "2px solid transparent",
                           fontFamily: "Pretendard",
                           fontSize: "16px",
                           fontWeight: detailTab === tab ? 600 : 400,
                           color:
                             detailTab === tab
-                              ? "#008FED"
+                              ? "var(--color-button-primary)"
                               : "rgba(12, 12, 12, 0.6)",
                           cursor: "pointer",
                           transition: "all 0.2s",
@@ -2747,7 +2747,7 @@ export default function ComprehensiveProgress() {
                               <div
                                 style={{
                                   padding: "6px 16px",
-                                  background: "#008FED",
+                                  background: "var(--color-button-primary)",
                                   borderRadius: "4px",
                                   fontFamily: "Pretendard",
                                   fontWeight: 500,
@@ -3165,7 +3165,7 @@ export default function ComprehensiveProgress() {
                                 style={{
                                   width: "100%",
                                   padding: "14px",
-                                  background: "#008FED",
+                                  background: "var(--color-button-primary)",
                                   borderRadius: "8px",
                                   border: "none",
                                   fontFamily: "Pretendard",
@@ -3234,7 +3234,7 @@ export default function ComprehensiveProgress() {
                                     "정산완료",
                                     "종결",
                                   ].includes(selectedCase.status || "")
-                                    ? "#008FED"
+                                    ? "var(--color-button-primary)"
                                     : "#ccc",
                                   borderRadius: "8px",
                                   border: "none",
@@ -3282,7 +3282,7 @@ export default function ComprehensiveProgress() {
                               style={{
                                 width: "100%",
                                 padding: "14px",
-                                background: "#008FED",
+                                background: "var(--color-button-primary)",
                                 borderRadius: "8px",
                                 border: "none",
                                 fontFamily: "Pretendard",
@@ -3966,7 +3966,7 @@ export default function ComprehensiveProgress() {
                                   }
                                   style={{
                                     padding: "12px 20px",
-                                    background: "#008FED",
+                                    background: "var(--color-button-primary)",
                                     border: "none",
                                     borderRadius: "8px",
                                     fontFamily: "Pretendard",
@@ -4019,12 +4019,12 @@ export default function ComprehensiveProgress() {
                                     style={{
                                       padding: "8px 16px",
                                       background: "transparent",
-                                      border: "1px solid #008FED",
+                                      border: "1px solid var(--color-button-primary)",
                                       borderRadius: "8px",
                                       fontFamily: "Pretendard",
                                       fontWeight: 600,
                                       fontSize: "13px",
-                                      color: "#008FED",
+                                      color: "var(--color-button-primary)",
                                       cursor: ackNotesMutation.isPending
                                         ? "not-allowed"
                                         : "pointer",
@@ -4224,7 +4224,7 @@ export default function ComprehensiveProgress() {
                                       padding: "8px 20px",
                                       background:
                                         lmsMessageType && lmsRecipientType
-                                          ? "#008FED"
+                                          ? "var(--color-button-primary)"
                                           : "rgba(12, 12, 12, 0.15)",
                                       border: "none",
                                       borderRadius: "6px",
@@ -4495,7 +4495,7 @@ export default function ComprehensiveProgress() {
                                           padding: "6px 14px",
                                           background:
                                             manualHistoryDate && manualHistoryContent
-                                              ? "#008FED"
+                                              ? "var(--color-button-primary)"
                                               : "rgba(12, 12, 12, 0.15)",
                                           border: "none",
                                           borderRadius: "6px",
@@ -4765,7 +4765,7 @@ export default function ComprehensiveProgress() {
                 }
               }}
               disabled={sendLmsMutation.isPending}
-              style={{ background: "#008FED" }}
+              style={{ background: "var(--color-button-primary)" }}
               data-testid="button-confirm-lms-send"
             >
               {sendLmsMutation.isPending ? "발송 중..." : "발송확인"}
