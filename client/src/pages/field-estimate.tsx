@@ -6791,7 +6791,7 @@ export default function FieldEstimate() {
                 <thead>
                   <tr
                     style={{
-                      background: "white",
+                      background: "#f4f5fa",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.06)",
                     }}
                   >
@@ -7949,7 +7949,7 @@ export default function FieldEstimate() {
                     <thead>
                       <tr
                         style={{
-                          background: "white",
+                          background: "#f4f5fa",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.06)",
                         }}
                       >
@@ -8832,7 +8832,7 @@ export default function FieldEstimate() {
                     <thead>
                       <tr
                         style={{
-                          background: "white",
+                          background: "#f4f5fa",
                           height: "48px",
                         }}
                       >
