@@ -148,7 +148,9 @@ function Router() {
         <Route path="/intake">
           {() => (
             <ProtectedRoute category="새로운접수">
-              <Intake key={Date.now()} />
+              <StatisticsLayout>
+                <Intake key={Date.now()} />
+              </StatisticsLayout>
             </ProtectedRoute>
           )}
         </Route>

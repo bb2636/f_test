@@ -1905,7 +1905,6 @@ export default function Intake({
       className={`relative ${isModal ? "bg-white" : "min-h-screen"}`}
       style={!isModal ? { background: "var(--color-bg)" } : undefined}
     >
-      {!isModal && <GlobalHeader />}
       <main
         className={`mx-auto max-w-[1400px] ${isModal ? "px-4 pb-24 pt-4" : "px-6 pb-24 pt-6"}`}
       >
