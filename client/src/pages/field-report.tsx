@@ -2071,7 +2071,7 @@ export default function FieldReport() {
                     style={{
                       width: "18px",
                       height: "18px",
-                      accentColor: "#008FED",
+                      accentColor: "#253396",
                       cursor: "pointer",
                     }}
                   />
@@ -2148,7 +2148,7 @@ export default function FieldReport() {
                           border: "none",
                           borderBottom:
                             documentTab === tab
-                              ? "2px solid #008FED"
+                              ? "2px solid #253396"
                               : "2px solid transparent",
                           marginBottom: "-1px",
                           cursor: "pointer",
@@ -2157,7 +2157,7 @@ export default function FieldReport() {
                           fontWeight: documentTab === tab ? 600 : 400,
                           color:
                             documentTab === tab
-                              ? "#008FED"
+                              ? "#253396"
                               : "rgba(12, 12, 12, 0.6)",
                         }}
                       >
@@ -2172,7 +2172,7 @@ export default function FieldReport() {
                           style={{
                             width: "14px",
                             height: "14px",
-                            accentColor: "#008FED",
+                            accentColor: "#253396",
                             cursor: "pointer",
                           }}
                         />
@@ -2181,7 +2181,7 @@ export default function FieldReport() {
                           <span
                             style={{
                               fontSize: "12px",
-                              color: "#008FED",
+                              color: "#253396",
                               fontWeight: 500,
                             }}
                           >
@@ -2197,7 +2197,7 @@ export default function FieldReport() {
                     fontFamily: "Pretendard",
                     fontSize: "14px",
                     fontWeight: 500,
-                    color: "#008FED",
+                    color: "#253396",
                   }}
                 >
                   {selectedDocuments.size}개
@@ -2241,7 +2241,7 @@ export default function FieldReport() {
                         overflow: "hidden",
                         cursor: "pointer",
                         border: isSelected
-                          ? "2px solid #008FED"
+                          ? "2px solid #253396"
                           : "1px solid rgba(12, 12, 12, 0.1)",
                         background: "rgba(12, 12, 12, 0.03)",
                         boxSizing: "border-box",
@@ -2316,7 +2316,7 @@ export default function FieldReport() {
                             height: "20px",
                             borderRadius: "4px",
                             background: isSelected
-                              ? "#008FED"
+                              ? "#253396"
                               : "rgba(255, 255, 255, 0.9)",
                             border: isSelected
                               ? "none"
@@ -2404,7 +2404,7 @@ export default function FieldReport() {
                 fontFamily: "Pretendard",
                 fontWeight: 600,
                 fontSize: "14px",
-                color: "#008FED",
+                color: "#253396",
                 cursor: "pointer",
               }}
               data-testid="button-cancel-pdf-dialog"
@@ -2503,7 +2503,7 @@ export default function FieldReport() {
               style={{
                 flex: 1,
                 padding: "14px",
-                background: "#008FED",
+                background: "#253396",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
@@ -2575,13 +2575,13 @@ export default function FieldReport() {
                   gap: "10px",
                   padding: "12px 16px",
                   background: selectedEmailRecipients.assessor
-                    ? "rgba(0, 143, 237, 0.1)"
+                    ? "rgba(37, 51, 150, 0.1)"
                     : "rgba(12, 12, 12, 0.02)",
                   borderRadius: "8px",
                   marginBottom: "8px",
                   cursor: "pointer",
                   border: selectedEmailRecipients.assessor
-                    ? "1px solid rgba(0, 143, 237, 0.3)"
+                    ? "1px solid rgba(37, 51, 150, 0.3)"
                     : "1px solid rgba(12, 12, 12, 0.08)",
                 }}
                 onClick={() =>
@@ -2637,13 +2637,13 @@ export default function FieldReport() {
                   gap: "10px",
                   padding: "12px 16px",
                   background: selectedEmailRecipients.investigator
-                    ? "rgba(0, 143, 237, 0.1)"
+                    ? "rgba(37, 51, 150, 0.1)"
                     : "rgba(12, 12, 12, 0.02)",
                   borderRadius: "8px",
                   marginBottom: "8px",
                   cursor: "pointer",
                   border: selectedEmailRecipients.investigator
-                    ? "1px solid rgba(0, 143, 237, 0.3)"
+                    ? "1px solid rgba(37, 51, 150, 0.3)"
                     : "1px solid rgba(12, 12, 12, 0.08)",
                 }}
                 onClick={() =>
@@ -2719,12 +2719,12 @@ export default function FieldReport() {
                 gap: "10px",
                 padding: "12px 16px",
                 background: selectedEmailRecipients.custom
-                  ? "rgba(0, 143, 237, 0.1)"
+                  ? "rgba(37, 51, 150, 0.1)"
                   : "rgba(12, 12, 12, 0.02)",
                 borderRadius: "8px",
                 cursor: "pointer",
                 border: selectedEmailRecipients.custom
-                  ? "1px solid rgba(0, 143, 237, 0.3)"
+                  ? "1px solid rgba(37, 51, 150, 0.3)"
                   : "1px solid rgba(12, 12, 12, 0.08)",
               }}
               onClick={() =>
@@ -3094,8 +3094,8 @@ export default function FieldReport() {
                 flex: 1,
                 padding: "14px",
                 background: isSendingEmail
-                  ? "rgba(0, 143, 237, 0.5)"
-                  : "#008FED",
+                  ? "rgba(37, 51, 150, 0.5)"
+                  : "#253396",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
@@ -3141,7 +3141,7 @@ export default function FieldReport() {
             <div className="flex items-center gap-4">
               <div
                 className="w-2 h-2 rounded-full"
-                style={{ background: "#008FED" }}
+                style={{ background: "#253396" }}
               />
               <div className="flex items-center gap-2">
                 <span
@@ -3313,7 +3313,7 @@ export default function FieldReport() {
                   border: "none",
                   borderBottom:
                     activeTab === tab
-                      ? "2px solid #008FED"
+                      ? "2px solid #253396"
                       : "2px solid transparent",
                   marginBottom: "-2px",
                   cursor: "pointer",
@@ -3394,14 +3394,14 @@ export default function FieldReport() {
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                         <path
                           d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                          stroke="#008FED"
+                          stroke="#253396"
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                         <polyline
                           points="22,6 12,13 2,6"
-                          stroke="#008FED"
+                          stroke="#253396"
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -3413,7 +3413,7 @@ export default function FieldReport() {
                           fontSize: "18px",
                           fontWeight: 600,
                           letterSpacing: "-0.02em",
-                          color: "#008FED",
+                          color: "#253396",
                         }}
                       >
                         이메일 전송
@@ -3438,7 +3438,7 @@ export default function FieldReport() {
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                       <path
                         d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
-                        stroke="#008FED"
+                        stroke="#253396"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -3450,7 +3450,7 @@ export default function FieldReport() {
                         fontSize: "18px",
                         fontWeight: 600,
                         letterSpacing: "-0.02em",
-                        color: "#008FED",
+                        color: "#253396",
                       }}
                     >
                       전체 다운로드
@@ -3649,8 +3649,8 @@ export default function FieldReport() {
                       style={{
                         fontFamily: "Pretendard",
                         fontSize: "14px",
-                        color: "#008FED",
-                        background: "rgba(0, 143, 237, 0.1)",
+                        color: "#253396",
+                        background: "rgba(37, 51, 150, 0.1)",
                       }}
                     >
                       {caseData.accidentCategory || "-"}
@@ -3811,7 +3811,7 @@ export default function FieldReport() {
                             >
                               <div
                                 className="w-1.5 h-1.5 rounded-full"
-                                style={{ background: "#008FED" }}
+                                style={{ background: "#253396" }}
                               />
                               <span
                                 style={{
@@ -3919,8 +3919,8 @@ export default function FieldReport() {
                                 style={{
                                   fontFamily: "Pretendard",
                                   fontSize: "14px",
-                                  color: "#008FED",
-                                  background: "rgba(0, 143, 237, 0.1)",
+                                  color: "#253396",
+                                  background: "rgba(37, 51, 150, 0.1)",
                                 }}
                               >
                                 {type}
@@ -3986,8 +3986,8 @@ export default function FieldReport() {
                       style={{
                         fontFamily: "Pretendard",
                         fontSize: "14px",
-                        color: "#008FED",
-                        background: "rgba(0, 143, 237, 0.1)",
+                        color: "#253396",
+                        background: "rgba(37, 51, 150, 0.1)",
                       }}
                     >
                       {caseData.recoveryMethodType || "-"}
@@ -4374,7 +4374,7 @@ export default function FieldReport() {
                     }}
                     disabled={claimSubmitMutation.isPending}
                     style={{
-                      background: "#008FED",
+                      background: "#253396",
                       color: "#FFFFFF",
                       fontFamily: "Pretendard",
                       fontSize: "16px",
@@ -4438,7 +4438,7 @@ export default function FieldReport() {
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
-                      stroke="#008FED"
+                      stroke="#253396"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -4450,7 +4450,7 @@ export default function FieldReport() {
                       fontSize: "18px",
                       fontWeight: 600,
                       letterSpacing: "-0.02em",
-                      color: "#008FED",
+                      color: "#253396",
                     }}
                   >
                     전체 다운로드
@@ -4684,7 +4684,7 @@ export default function FieldReport() {
                                   >
                                     <path
                                       d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
-                                      stroke="#008FED"
+                                      stroke="#253396"
                                       strokeWidth="2"
                                       strokeLinecap="round"
                                       strokeLinejoin="round"
@@ -4801,8 +4801,8 @@ export default function FieldReport() {
                           }}
                           className="flex items-center gap-2 px-4 py-2 rounded hover-elevate"
                           style={{
-                            background: "rgba(0, 143, 237, 0.1)",
-                            border: "1px solid rgba(0, 143, 237, 0.3)",
+                            background: "rgba(37, 51, 150, 0.1)",
+                            border: "1px solid rgba(37, 51, 150, 0.3)",
                           }}
                           data-testid="button-download-estimate"
                         >
@@ -4814,7 +4814,7 @@ export default function FieldReport() {
                           >
                             <path
                               d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
-                              stroke="#008FED"
+                              stroke="#253396"
                               strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -4825,7 +4825,7 @@ export default function FieldReport() {
                               fontFamily: "Pretendard",
                               fontSize: "14px",
                               fontWeight: 600,
-                              color: "#008FED",
+                              color: "#253396",
                             }}
                           >
                             다운로드
@@ -4840,8 +4840,8 @@ export default function FieldReport() {
                             }}
                             className="flex items-center gap-2 px-4 py-2 rounded hover-elevate"
                             style={{
-                              background: "rgba(0, 143, 237, 0.1)",
-                              border: "1px solid rgba(0, 143, 237, 0.3)",
+                              background: "rgba(37, 51, 150, 0.1)",
+                              border: "1px solid rgba(37, 51, 150, 0.3)",
                             }}
                             data-testid="button-email-estimate"
                           >
@@ -4853,14 +4853,14 @@ export default function FieldReport() {
                             >
                               <path
                                 d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                                stroke="#008FED"
+                                stroke="#253396"
                                 strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                               />
                               <path
                                 d="M22 6l-10 7L2 6"
-                                stroke="#008FED"
+                                stroke="#253396"
                                 strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -4871,7 +4871,7 @@ export default function FieldReport() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 fontWeight: 600,
-                                color: "#008FED",
+                                color: "#253396",
                               }}
                             >
                               이메일 전송
@@ -5583,8 +5583,8 @@ export default function FieldReport() {
                                     fontFamily: "Pretendard",
                                     fontSize: "16px",
                                     fontWeight: 700,
-                                    color: "#008FED",
-                                    background: "rgba(0, 143, 237, 0.05)",
+                                    color: "#253396",
+                                    background: "rgba(37, 51, 150, 0.05)",
                                   }}
                                 >
                                   {Math.round(
@@ -5850,8 +5850,8 @@ export default function FieldReport() {
                                     fontFamily: "Pretendard",
                                     fontSize: "16px",
                                     fontWeight: 700,
-                                    color: "#008FED",
-                                    background: "rgba(0, 143, 237, 0.05)",
+                                    color: "#253396",
+                                    background: "rgba(37, 51, 150, 0.05)",
                                   }}
                                 >
                                   {parsedMaterialCosts
@@ -5985,14 +5985,14 @@ export default function FieldReport() {
                                   name="vat"
                                   checked={calculateTotals.vatIncluded}
                                   disabled
-                                  style={{ accentColor: "#008FED" }}
+                                  style={{ accentColor: "#253396" }}
                                 />
                                 <span
                                   style={{
                                     fontFamily: "Pretendard",
                                     fontSize: "13px",
                                     color: calculateTotals.vatIncluded
-                                      ? "#008FED"
+                                      ? "#253396"
                                       : "#686A6E",
                                   }}
                                 >
@@ -6005,14 +6005,14 @@ export default function FieldReport() {
                                   name="vat"
                                   checked={!calculateTotals.vatIncluded}
                                   disabled
-                                  style={{ accentColor: "#008FED" }}
+                                  style={{ accentColor: "#253396" }}
                                 />
                                 <span
                                   style={{
                                     fontFamily: "Pretendard",
                                     fontSize: "13px",
                                     color: !calculateTotals.vatIncluded
-                                      ? "#008FED"
+                                      ? "#253396"
                                       : "#686A6E",
                                   }}
                                 >
@@ -6039,7 +6039,7 @@ export default function FieldReport() {
                                 fontFamily: "Pretendard",
                                 fontSize: "16px",
                                 fontWeight: 700,
-                                color: "#008FED",
+                                color: "#253396",
                               }}
                             >
                               총 합계
@@ -6049,7 +6049,7 @@ export default function FieldReport() {
                                 fontFamily: "Pretendard",
                                 fontSize: "18px",
                                 fontWeight: 700,
-                                color: "#008FED",
+                                color: "#253396",
                               }}
                             >
                               {calculateTotals.total.toLocaleString()}
