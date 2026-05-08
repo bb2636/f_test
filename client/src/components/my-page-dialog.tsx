@@ -327,11 +327,11 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
           <div 
             className="w-48 flex-shrink-0 p-6"
             style={{ 
-              background: '#F8F9FA',
-              borderRight: '1px solid #E9ECEF',
+              background: 'var(--color-table-header)',
+              borderRight: '1px solid var(--color-table-border)',
             }}
           >
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">마이페이지</h2>
+            <h2 className="text-lg font-semibold mb-6" style={{ color: '#56687f' }}>마이페이지</h2>
             <nav className="space-y-1">
               {menuItems.map((item) => (
                 <button
@@ -339,7 +339,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                     activeTab === item.id
-                      ? "bg-[#008FED]/10 text-[#008FED] font-medium"
+                      ? "bg-[#e7e7f5] text-[#253396] font-medium"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
                   data-testid={`tab-${item.id}`}
@@ -350,10 +350,10 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
             </nav>
           </div>
 
-          <div className="flex-1 p-8 overflow-y-auto relative" style={{ maxHeight: 'calc(90vh - 2rem)' }}>
+          <div className="flex-1 p-8 overflow-y-auto relative" style={{ maxHeight: 'calc(90vh - 2rem)', background: 'var(--color-bg)' }}>
             {activeTab === "profile" && (
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">내 프로필 설정</h3>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: '#56687f' }}>내 프로필 설정</h3>
                 <p className="text-sm text-gray-500 mb-6">
                   최신 연락수단을 유지해주세요. 변경사항은 즉시 저장됩니다.
                 </p>
@@ -361,9 +361,9 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                 <div className="flex items-center gap-4 mb-6">
                   <div 
                     className="w-24 h-24 rounded-lg flex items-center justify-center relative flex-shrink-0"
-                    style={{ background: 'rgba(0, 143, 237, 0.15)' }}
+                    style={{ background: '#e7e7f5' }}
                   >
-                    <span className="text-3xl font-bold text-[#008FED]">
+                    <span className="text-3xl font-bold" style={{ color: '#253396' }}>
                       {getInitials(user.name)}
                     </span>
                     <button 
@@ -389,7 +389,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                   {!showPasswordChange ? (
                     <button
                       onClick={() => setShowPasswordChange(true)}
-                      className="flex items-center gap-2 text-sm text-[#008FED] hover:text-[#0070BE] transition-colors"
+                      className="flex items-center gap-2 text-sm transition-colors hover:opacity-80"
+                      style={{ color: 'var(--color-button-primary)' }}
                       data-testid="button-show-password-change"
                     >
                       <Lock className="w-4 h-4" />
@@ -502,7 +503,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                             !/[0-9]/.test(newPassword) ||
                             changePasswordMutation.isPending
                           }
-                          className="w-full bg-[#008FED] hover:bg-[#0070BE]"
+                          className="w-full hover:opacity-90"
+                          style={{ background: 'var(--color-button-primary)' }}
                           data-testid="button-submit-password-change"
                         >
                           {changePasswordMutation.isPending ? "변경 중..." : "비밀번호 변경"}
@@ -650,7 +652,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                           }
                         }}
                         disabled={!inquiryTitle.trim() || !inquiryContent.trim() || createInquiryMutation.isPending}
-                        className="bg-[#008FED] hover:bg-[#0070BE] px-8"
+                        className="px-8 hover:opacity-90"
+                        style={{ background: 'var(--color-button-primary)' }}
                         data-testid="button-submit-inquiry"
                       >
                         {createInquiryMutation.isPending ? "등록 중..." : "확인"}
@@ -732,9 +735,9 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
 
                                         {/* 관리자 답변 */}
                                         {inquiry.response && (
-                                          <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-[#008FED]">
+                                          <div className="p-4 rounded-lg border-l-4" style={{ background: '#e7e7f5', borderLeftColor: 'var(--color-button-primary)' }}>
                                             <div className="flex items-center gap-2 mb-2">
-                                              <span className="text-sm font-medium text-[#008FED]">관리자 답변</span>
+                                              <span className="text-sm font-medium" style={{ color: '#253396' }}>관리자 답변</span>
                                               {inquiry.respondedAt && (
                                                 <span className="text-xs text-gray-400">
                                                   {format(new Date(inquiry.respondedAt), "yyyy-MM-dd HH:mm")}
@@ -752,8 +755,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                                         {isAdmin && inquiry.status !== "완료" && (
                                           <div className="mt-4">
                                             {respondingInquiryId === inquiry.id ? (
-                                              <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                                <h5 className="font-medium text-[#008FED]">답변 작성</h5>
+                                              <div className="space-y-3 p-4 rounded-lg border" style={{ background: '#e7e7f5', borderColor: 'var(--color-table-border)' }}>
+                                                <h5 className="font-medium" style={{ color: '#253396' }}>답변 작성</h5>
                                                 <Input
                                                   placeholder="답변 제목을 입력하세요"
                                                   value={responseTitle}
@@ -794,7 +797,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                                                       }
                                                     }}
                                                     disabled={!responseTitle.trim() || !responseContent.trim() || respondInquiryMutation.isPending}
-                                                    className="bg-[#008FED] hover:bg-[#0070BE]"
+                                                    className="hover:opacity-90"
+                                                    style={{ background: 'var(--color-button-primary)' }}
                                                     data-testid="button-submit-response"
                                                   >
                                                     {respondInquiryMutation.isPending ? "등록 중..." : "답변 등록"}
@@ -808,7 +812,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                                                   e.stopPropagation();
                                                   setRespondingInquiryId(inquiry.id);
                                                 }}
-                                                className="bg-[#008FED] hover:bg-[#0070BE]"
+                                                className="hover:opacity-90"
+                                                style={{ background: 'var(--color-button-primary)' }}
                                                 data-testid={`button-respond-${inquiry.id}`}
                                               >
                                                 답변하기
@@ -833,7 +838,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
 
             {activeTab === "favorites" && (
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">즐겨찾기 목록</h3>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: '#56687f' }}>즐겨찾기 목록</h3>
                 <p className="text-sm text-gray-500 mb-6">
                   자주 쓰는 화면을 고정해 빠르게 접근하세요. 불필요한 항목은 수시로 정리해 주세요.
                 </p>
@@ -841,7 +846,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={handleSelectAll}
-                    className="text-sm text-[#008FED] hover:underline font-medium"
+                    className="text-sm hover:underline font-medium"
+                    style={{ color: 'var(--color-button-primary)' }}
                     data-testid="button-select-all-favorites"
                   >
                     전체 선택
@@ -875,7 +881,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                               <Star 
                                 className={`w-5 h-5 ${
                                   isFavorite(menu.category) 
-                                    ? "fill-[#008FED] text-[#008FED]" 
+                                    ? "fill-[#253396] text-[#253396]" 
                                     : "text-gray-300"
                                 }`} 
                               />
@@ -900,7 +906,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                                 <Star 
                                   className={`w-4 h-4 ${
                                     isFavorite(item) 
-                                      ? "fill-[#008FED] text-[#008FED]" 
+                                      ? "fill-[#253396] text-[#253396]" 
                                       : "text-gray-300"
                                   }`} 
                                 />
