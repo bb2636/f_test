@@ -1635,6 +1635,7 @@ export default function FieldDocuments() {
             className="p-4 rounded-lg"
             style={{
               background: "white",
+              border: "1px solid rgba(12, 12, 12, 0.2)",
             }}
           >
             {/* 첫 번째 줄: 보험사명 + 사고번호 */}
