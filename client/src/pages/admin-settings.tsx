@@ -1629,7 +1629,7 @@ export default function AdminSettings() {
                         이메일 주소
                       </th>
                       <th
-                        className="px-4 py-4 text-left"
+                        className="px-4 py-4 text-center"
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "14px",
@@ -1641,7 +1641,7 @@ export default function AdminSettings() {
                         답변여부
                       </th>
                       <th
-                        className="px-4 py-4 text-left"
+                        className="px-4 py-4 text-center"
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "14px",
@@ -1788,7 +1788,7 @@ export default function AdminSettings() {
                               {inquiryUser?.email || "-"}
                             </td>
                             <td
-                              className="px-4 py-4"
+                              className="px-4 py-4 text-center"
                               style={{
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
@@ -1798,21 +1798,23 @@ export default function AdminSettings() {
                             >
                               {inquiry.status}
                             </td>
-                            <td className="px-4 py-4">
+                            <td className="px-4 py-4 text-center">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedInquiry(inquiry as any);
                                 }}
-                                className="px-4 py-2"
                                 style={{
-                                  background: "rgba(0, 143, 237, 0.1)",
-                                  borderRadius: "6px",
+                                  padding: "6px 14px",
+                                  background: "#e7e7f5",
+                                  border: "none",
+                                  borderRadius: "9999px",
                                   fontFamily: "Pretendard",
-                                  fontSize: "13px",
+                                  fontSize: "12px",
                                   fontWeight: 500,
-                                  letterSpacing: "-0.01em",
-                                  color: "#008FED",
+                                  color: "#253396",
+                                  cursor: "pointer",
+                                  whiteSpace: "nowrap",
                                 }}
                                 data-testid={`button-inquiry-detail-${inquiry.id}`}
                               >
@@ -2400,11 +2402,11 @@ export default function AdminSettings() {
                       style={{
                         background:
                           roleFilter === filter
-                            ? "rgba(0, 143, 237, 0.1)"
+                            ? "#e7e7f5"
                             : "transparent",
                         border:
                           roleFilter === filter
-                            ? "2px solid rgba(255, 255, 255, 0.04)"
+                            ? "1px solid var(--color-button-primary)"
                             : "1px solid rgba(12, 12, 12, 0.2)",
                         fontFamily: "Pretendard",
                         fontSize: "14px",
@@ -2412,7 +2414,7 @@ export default function AdminSettings() {
                         letterSpacing: "-0.02em",
                         color:
                           roleFilter === filter
-                            ? "#008FED"
+                            ? "#253396"
                             : "rgba(12, 12, 12, 0.9)",
                       }}
                       data-testid={`filter-${filter}`}

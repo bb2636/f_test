@@ -503,17 +503,15 @@ export function AccessControlPanel() {
                   className="flex justify-center items-center gap-2"
                   style={{
                     padding: "12px 16px",
-                    background: "rgba(0, 143, 237, 0.1)",
-                    border: "2px solid rgba(255, 255, 255, 0.04)",
-                    boxShadow: "inset 0px -2px 4px rgba(0, 0, 0, 0.05), inset 0px 2px 4px rgba(0, 0, 0, 0.05)",
-                    backdropFilter: "blur(7px)",
+                    background: "transparent",
+                    border: "1px solid var(--color-button-primary)",
                     borderRadius: "6px",
                     fontFamily: "Pretendard",
                     fontSize: "16px",
                     fontWeight: 600,
                     lineHeight: "128%",
                     letterSpacing: "-0.02em",
-                    color: "#008FED",
+                    color: "var(--color-button-primary)",
                   }}
                   data-testid="button-allow-all"
                 >
@@ -525,10 +523,8 @@ export function AccessControlPanel() {
                   className="flex justify-center items-center gap-2"
                   style={{
                     padding: "12px 16px",
-                    background: (savePermissionMutation.isPending || isLoading) ? "#CCCCCC" : "#008FED",
-                    border: "2px solid rgba(255, 255, 255, 0.04)",
-                    boxShadow: "inset 0px -2px 4px rgba(0, 0, 0, 0.05), inset 0px 2px 4px rgba(0, 0, 0, 0.05)",
-                    backdropFilter: "blur(7px)",
+                    background: (savePermissionMutation.isPending || isLoading) ? "#CCCCCC" : "var(--color-button-primary)",
+                    border: "none",
                     borderRadius: "6px",
                     fontFamily: "Pretendard",
                     fontSize: "16px",
