@@ -7,12 +7,20 @@ import logoIcon from "@assets/logo-frame.svg";
 import { usePermissions } from "@/hooks/use-permissions";
 import { MyPageDialog } from "./my-page-dialog";
 
+interface MenuChild {
+  title: string;
+  url: string;
+  testId: string;
+  requireSuperAdmin?: boolean;
+  permissionItem?: string;
+}
+
 interface MenuItem {
   title: string;
   url?: string;
   testId: string;
   permissionItem?: string;
-  children?: { title: string; url: string; testId: string }[];
+  children?: MenuChild[];
 }
 
 const allMenuItems: MenuItem[] = [
@@ -57,6 +65,17 @@ const allMenuItems: MenuItem[] = [
   },
 ];
 
+// 관리자 설정 하위 메뉴 (정산 및 통계와 동일한 패턴)
+const adminMenuChildren: MenuChild[] = [
+  { title: "사용자 계정 관리", url: "/admin-settings/users", testId: "submenu-admin-users", permissionItem: "계정관리" },
+  { title: "접근 권한 관리", url: "/admin-settings/access", testId: "submenu-admin-access", requireSuperAdmin: true },
+  { title: "1:1 문의 관리", url: "/admin-settings/inquiry", testId: "submenu-admin-inquiry" },
+  { title: "공지사항 관리", url: "/admin-settings/notice", testId: "submenu-admin-notice" },
+  { title: "DB 관리", url: "/admin-settings/db", testId: "submenu-admin-db", permissionItem: "DB관리" },
+  { title: "기준정보 관리", url: "/admin-settings/master-data", testId: "submenu-admin-master-data", permissionItem: "기준정보 관리" },
+  { title: "변경 로그 관리", url: "/admin-settings/changelog", testId: "submenu-admin-changelog" },
+];
+
 // GlobalHeader 상단 메뉴 (구조/이름/카테고리 그대로 유지)
 const topLevelMenu = [
   { name: "홈", category: "홈" },
@@ -83,6 +102,14 @@ export function AppSidebarStatistics() {
     });
   }, [permissions, hasItem]);
 
+  const adminChildren = useMemo(() => {
+    return adminMenuChildren.filter((child) => {
+      if (child.requireSuperAdmin && !user?.isSuperAdmin) return false;
+      if (child.permissionItem && !hasItem("관리자 설정", child.permissionItem)) return false;
+      return true;
+    });
+  }, [permissions, hasItem, user?.isSuperAdmin]);
+
   // GlobalHeader 와 동일한 권한 필터
   const topMenu = topLevelMenu.filter((item) => {
     if (permissionsLoading) return false;
@@ -99,7 +126,7 @@ export function AppSidebarStatistics() {
       location.startsWith("/settlements")
     )
       return "정산 및 통계";
-    if (location === "/admin-settings") return "관리자 설정";
+    if (location.startsWith("/admin-settings")) return "관리자 설정";
     return "";
   };
   const activeMenu = getActiveMenu();
@@ -114,7 +141,8 @@ export function AppSidebarStatistics() {
     } else if (name === "종합진행관리") {
       setLocation("/comprehensive-progress");
     } else if (name === "관리자 설정") {
-      setLocation("/admin-settings");
+      const first = adminChildren[0];
+      setLocation(first ? first.url : "/admin-settings");
     } else if (name === "정산 및 통계") {
       if (hasItem("정산 및 통계", "정산조회")) {
         setLocation("/settlements/claim");
@@ -183,6 +211,35 @@ export function AppSidebarStatistics() {
                 >
                   {item.name}
                 </button>
+
+                {/* '관리자 설정' 활성일 때 하위 메뉴 표시 (정산 및 통계 패턴과 동일) */}
+                {item.name === "관리자 설정" && isActive && adminChildren.length > 0 && (
+                  <div className="flex flex-col gap-0.5 ml-4 mt-1 mr-2">
+                    {adminChildren.map((child) => {
+                      const childActive = location === child.url || (child.url === "/admin-settings/users" && location === "/admin-settings");
+                      return (
+                        <button
+                          key={child.title}
+                          onClick={() => setLocation(child.url)}
+                          className="flex items-center px-4 py-2.5 rounded-lg transition-colors text-left self-start"
+                          style={{
+                            background: childActive ? "#253297" : "transparent",
+                            borderRadius: childActive ? "12px" : undefined,
+                            fontFamily: "Pretendard",
+                            fontSize: "14px",
+                            fontWeight: childActive ? 700 : 400,
+                            letterSpacing: "-0.02em",
+                            color: childActive ? "#FFFFFF" : "#57677d",
+                          }}
+                          data-testid={child.testId}
+                        >
+                          <span style={{ marginRight: "6px", color: childActive ? "#FFFFFF" : "#57677d" }}>•</span>
+                          {child.title}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* '정산 및 통계' 활성일 때만 그 아래에 서브메뉴(정산 조회/통계) 중첩 표시 */}
                 {item.name === "정산 및 통계" && isActive && (

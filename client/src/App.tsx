@@ -74,6 +74,76 @@ function Router() {
             </ProtectedRoute>
           )}
         </Route>
+
+        <Route path="/admin-settings/users">
+          {() => (
+            <ProtectedRoute category="관리자 설정">
+              <StatisticsLayout>
+                <AdminSettings />
+              </StatisticsLayout>
+            </ProtectedRoute>
+          )}
+        </Route>
+
+        <Route path="/admin-settings/access">
+          {() => (
+            <ProtectedRoute category="관리자 설정">
+              <StatisticsLayout>
+                <AdminSettings />
+              </StatisticsLayout>
+            </ProtectedRoute>
+          )}
+        </Route>
+
+        <Route path="/admin-settings/inquiry">
+          {() => (
+            <ProtectedRoute category="관리자 설정">
+              <StatisticsLayout>
+                <AdminSettings />
+              </StatisticsLayout>
+            </ProtectedRoute>
+          )}
+        </Route>
+
+        <Route path="/admin-settings/notice">
+          {() => (
+            <ProtectedRoute category="관리자 설정">
+              <StatisticsLayout>
+                <AdminSettings />
+              </StatisticsLayout>
+            </ProtectedRoute>
+          )}
+        </Route>
+
+        <Route path="/admin-settings/db">
+          {() => (
+            <ProtectedRoute category="관리자 설정">
+              <StatisticsLayout>
+                <AdminSettings />
+              </StatisticsLayout>
+            </ProtectedRoute>
+          )}
+        </Route>
+
+        <Route path="/admin-settings/master-data">
+          {() => (
+            <ProtectedRoute category="관리자 설정">
+              <StatisticsLayout>
+                <AdminSettings />
+              </StatisticsLayout>
+            </ProtectedRoute>
+          )}
+        </Route>
+
+        <Route path="/admin-settings/changelog">
+          {() => (
+            <ProtectedRoute category="관리자 설정">
+              <StatisticsLayout>
+                <AdminSettings />
+              </StatisticsLayout>
+            </ProtectedRoute>
+          )}
+        </Route>
         
         <Route path="/intake">
           {() => (

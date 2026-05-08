@@ -370,10 +370,30 @@ const KOREA_REGIONS: Record<string, string[]> = {
 };
 
 export default function AdminSettings() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const { hasItem: hasPermItem, isLoading: permissionsLoading } = usePermissions();
-  const [activeMenu, setActiveMenu] = useState("사용자 계정 관리");
+
+  const pathToMenu: Record<string, string> = {
+    "/admin-settings": "사용자 계정 관리",
+    "/admin-settings/users": "사용자 계정 관리",
+    "/admin-settings/access": "접근 권한 관리",
+    "/admin-settings/inquiry": "1:1 문의 관리",
+    "/admin-settings/notice": "공지사항 관리",
+    "/admin-settings/db": "DB 관리",
+    "/admin-settings/master-data": "기준정보 관리",
+    "/admin-settings/changelog": "변경 로그 관리",
+  };
+  const menuToPath: Record<string, string> = {
+    "사용자 계정 관리": "/admin-settings/users",
+    "접근 권한 관리": "/admin-settings/access",
+    "1:1 문의 관리": "/admin-settings/inquiry",
+    "공지사항 관리": "/admin-settings/notice",
+    "DB 관리": "/admin-settings/db",
+    "기준정보 관리": "/admin-settings/master-data",
+    "변경 로그 관리": "/admin-settings/changelog",
+  };
+  const [activeMenu, setActiveMenu] = useState(pathToMenu[location] ?? "사용자 계정 관리");
   const [roleFilter, setRoleFilter] = useState("전체");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -958,11 +978,38 @@ export default function AdminSettings() {
 
   useEffect(() => {
     if (permissionsLoading) return;
-    const isCurrentMenuVisible = sidebarMenus.some((m) => m.name === activeMenu);
-    if (!isCurrentMenuVisible && sidebarMenus.length > 0) {
-      setActiveMenu(sidebarMenus[0].name);
+    if (sidebarMenus.length === 0) return;
+
+    const allowedNames = sidebarMenus.map((m) => m.name);
+    const fromPath = pathToMenu[location];
+
+    // 1) bare /admin-settings 직접 진입 → 첫 허용 메뉴로 redirect
+    if (location === "/admin-settings") {
+      const firstMenu = allowedNames[0];
+      const targetPath = menuToPath[firstMenu];
+      if (targetPath) {
+        setActiveMenu(firstMenu);
+        setLocation(targetPath);
+      }
+      return;
     }
-  }, [permissionsLoading, sidebarMenus.map(m => m.name).join(",")]);
+
+    // 2) URL이 가리키는 메뉴가 권한 없으면 첫 허용 메뉴로 강제 이동(broken access control 차단)
+    if (fromPath && !allowedNames.includes(fromPath)) {
+      const firstMenu = allowedNames[0];
+      const targetPath = menuToPath[firstMenu];
+      if (targetPath) {
+        setActiveMenu(firstMenu);
+        setLocation(targetPath);
+      }
+      return;
+    }
+
+    // 3) URL ↔ activeMenu 동기화
+    if (fromPath && fromPath !== activeMenu) {
+      setActiveMenu(fromPath);
+    }
+  }, [permissionsLoading, location, activeMenu, sidebarMenus.map((m) => m.name).join(",")]);
 
   // Excel data mutations
   const saveExcelDataMutation = useMutation({
@@ -1395,45 +1442,7 @@ export default function AdminSettings() {
     <div className="relative flex flex-col h-full overflow-hidden bg-white">
       {/* Main Content */}
       <div className="relative flex flex-1 overflow-hidden">
-        {/* Left Sidebar */}
-        <div
-          className="flex flex-col bg-white"
-          style={{
-            width: "260px",
-            borderRight: "1px solid #E5E7EB",
-          }}
-        >
-          {/* Section Header */}
-          {/* Menu Items */}
-          <div className="flex flex-col px-3 gap-2">
-            {sidebarMenus.map((menu) => (
-              <button
-                key={menu.name}
-                onClick={() => setActiveMenu(menu.name)}
-                className="flex items-center px-5 py-3 rounded-lg transition-colors"
-                style={{
-                  background:
-                    activeMenu === menu.name
-                      ? "rgba(12, 12, 12, 0.08)"
-                      : "transparent",
-                  fontFamily: "Pretendard",
-                  fontSize: "16px",
-                  fontWeight: activeMenu === menu.name ? 700 : 500,
-                  letterSpacing: "-0.02em",
-                  color:
-                    activeMenu === menu.name
-                      ? "#008FED"
-                      : "rgba(12, 12, 12, 0.8)",
-                }}
-                data-testid={`sidebar-${menu.name}`}
-              >
-                {menu.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Main Section */}
+        {/* Main Section (좌측 사이드바는 외부 사이드바로 이전됨) */}
         <div className="flex-1 px-8 py-6 h-full overflow-y-auto">
           {activeMenu === "접근 권한 관리" ? (
             <AccessControlPanel />
