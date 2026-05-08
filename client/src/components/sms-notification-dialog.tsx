@@ -375,8 +375,8 @@ export function SmsNotificationDialog({
           <div
             style={{
               padding: "20px 24px",
-              borderBottom: "1px solid #E5E7EB",
-              background: "#FFFFFF",
+              borderBottom: "1px solid var(--color-table-border)",
+              background: "var(--color-table-header)",
             }}
           >
             <DialogTitle
@@ -384,7 +384,7 @@ export function SmsNotificationDialog({
                 fontFamily: "Pretendard",
                 fontSize: "18px",
                 fontWeight: 700,
-                color: "#0C0C0C",
+                color: "#56687f",
                 margin: 0,
               }}
             >
@@ -446,11 +446,11 @@ export function SmsNotificationDialog({
                   <td
                     style={{
                       padding: "10px 12px",
-                      background: "rgba(0, 143, 237, 0.1)",
+                      background: "#e7e7f5",
                       fontWeight: 500,
-                      color: "#0C0C0C",
+                      color: "#253396",
                       width: "40%",
-                      border: "1px solid #E5E7EB",
+                      border: "1px solid var(--color-table-border)",
                     }}
                   >
                     사고번호(증권번호)
@@ -459,7 +459,7 @@ export function SmsNotificationDialog({
                     style={{
                       padding: "10px 12px",
                       background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
+                      border: "1px solid var(--color-table-border)",
                     }}
                   >
                     {caseData.insuranceAccidentNo || "-"} (
@@ -470,10 +470,10 @@ export function SmsNotificationDialog({
                   <td
                     style={{
                       padding: "10px 12px",
-                      background: "rgba(0, 143, 237, 0.1)",
+                      background: "#e7e7f5",
                       fontWeight: 500,
-                      color: "#0C0C0C",
-                      border: "1px solid #E5E7EB",
+                      color: "#253396",
+                      border: "1px solid var(--color-table-border)",
                     }}
                   >
                     접수번호
@@ -482,7 +482,7 @@ export function SmsNotificationDialog({
                     style={{
                       padding: "10px 12px",
                       background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
+                      border: "1px solid var(--color-table-border)",
                     }}
                   >
                     {caseData.caseNumber || "-"}
@@ -492,10 +492,10 @@ export function SmsNotificationDialog({
                   <td
                     style={{
                       padding: "10px 12px",
-                      background: "rgba(0, 143, 237, 0.1)",
+                      background: "#e7e7f5",
                       fontWeight: 500,
-                      color: "#0C0C0C",
-                      border: "1px solid #E5E7EB",
+                      color: "#253396",
+                      border: "1px solid var(--color-table-border)",
                     }}
                   >
                     피보험자명
@@ -504,7 +504,7 @@ export function SmsNotificationDialog({
                     style={{
                       padding: "10px 12px",
                       background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
+                      border: "1px solid var(--color-table-border)",
                     }}
                   >
                     {caseData.insuredName || "-"}
@@ -658,8 +658,8 @@ export function SmsNotificationDialog({
               justifyContent: "flex-end",
               gap: "8px",
               padding: "16px 24px",
-              borderTop: "1px solid #E5E7EB",
-              background: "#FAFAFA",
+              borderTop: "1px solid var(--color-table-border)",
+              background: "var(--color-table-header)",
             }}
           >
             <Button
@@ -687,7 +687,7 @@ export function SmsNotificationDialog({
               data-testid="button-send-notification"
               style={{
                 minWidth: "100px",
-                background: "#008FED",
+                background: "var(--color-button-primary)",
               }}
             >
               {sendCancellationEmailMutation.isPending ? (
@@ -829,6 +829,7 @@ export function SmsNotificationDialog({
             onClick={handleSend}
             disabled={sendNotificationMutation.isPending}
             data-testid="button-send-notification"
+            style={{ background: "var(--color-button-primary)" }}
           >
             {sendNotificationMutation.isPending ? (
               <>
