@@ -42,9 +42,10 @@ export function FieldSurveyLayout({ children }: FieldSurveyLayoutProps) {
 
   return (
     <div 
-      className="bg-white relative overflow-x-hidden"
+      className="relative overflow-x-hidden"
       style={{
         minHeight: 'calc(var(--vh, 1vh) * 100)', // 모바일 대응, fallback은 CSS에서
+        background: 'var(--color-bg)',
       }}
     >
       <GlobalHeader />
