@@ -2494,7 +2494,7 @@ export default function AdminSettings() {
           {/* User List Section */}
           <div>
             {/* Header with Count */}
-            <div className="flex items-center justify-between px-5 py-6">
+            <div className="flex items-center justify-between px-5 py-2 mb-2">
               <div className="flex items-center gap-4">
                 <span
                   style={{
@@ -2626,7 +2626,7 @@ export default function AdminSettings() {
               <div
                 className="flex items-stretch px-3 rounded-lg data-table-header"
                 style={{
-                  height: "54px",
+                  height: "40px",
                   background: "var(--color-table-header)",
                   borderBottom: "1px solid var(--color-table-border)",
                 }}
