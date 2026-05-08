@@ -1442,10 +1442,11 @@ export default function Dashboard() {
           <aside className="col-span-12 lg:col-span-3 space-y-6">
             <div className="rounded-2xl bg-white/70 p-5 shadow-sm ring-1 ring-[#D1DBF0]">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold">내 프로필</h3>
+                <h3 className="font-bold" style={{ color: "#56687f" }}>내 프로필</h3>
                 <button
                   onClick={() => logoutMutation.mutate()}
-                  className="text-sm font-semibold text-[#0B6BFF]"
+                  className="text-sm font-semibold"
+                  style={{ color: "var(--color-button-primary)" }}
                   data-testid="button-logout"
                 >
                   로그아웃
@@ -1453,8 +1454,8 @@ export default function Dashboard() {
               </div>
 
               <div className="mt-5 grid place-items-center">
-                <div className="h-20 w-20 rounded-full bg-[#C5D6F5] flex items-center justify-center">
-                  <span className="text-2xl font-semibold text-[#0B6BFF]">
+                <div className="h-20 w-20 rounded-full flex items-center justify-center" style={{ background: "#e7e7f5" }}>
+                  <span className="text-2xl font-semibold" style={{ color: "#253396" }}>
                     {user.name?.charAt(0) || user.username?.charAt(0) || "U"}
                   </span>
                 </div>
@@ -1474,14 +1475,15 @@ export default function Dashboard() {
 
             <div className="rounded-2xl bg-white/70 p-5 shadow-sm ring-1 ring-[#DDE3F3]">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold">
+                <h3 className="font-bold" style={{ color: "#56687f" }}>
                   공지사항{" "}
                   <span className="ml-1 text-xs font-bold text-[#EF4444]">
                     필독
                   </span>
                 </h3>
                 <button
-                  className="rounded-lg bg-[#EAF2FF] px-3 py-2 text-sm font-semibold text-[#0B6BFF] hover:bg-[#DDEBFF]"
+                  className="rounded-lg px-3 py-2 text-sm font-semibold"
+                  style={{ background: "#e7e7f5", color: "#253396" }}
                   type="button"
                   onClick={() => setIsNoticesSheetOpen(true)}
                   data-testid="button-notices-more"
@@ -1513,9 +1515,10 @@ export default function Dashboard() {
 
             <div className="rounded-2xl bg-white/70 p-5 shadow-sm ring-1 ring-[#DDE3F3]">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold">1:1 문의</h3>
+                <h3 className="font-bold" style={{ color: "#56687f" }}>1:1 문의</h3>
                 <button
-                  className="rounded-lg bg-[#EAF2FF] px-3 py-2 text-sm font-semibold text-[#0B6BFF] hover:bg-[#DDEBFF]"
+                  className="rounded-lg px-3 py-2 text-sm font-semibold"
+                  style={{ background: "#e7e7f5", color: "#253396" }}
                   type="button"
                   onClick={() => setShowNewInquiryModal(true)}
                   data-testid="button-new-inquiry"
@@ -1555,7 +1558,7 @@ export default function Dashboard() {
 
             {user.role !== "협력사" && (
               <div className="rounded-2xl bg-white/70 p-5 shadow-sm ring-1 ring-[#DDE3F3]">
-                <h3 className="font-bold mb-4">즐겨찾기</h3>
+                <h3 className="font-bold mb-4" style={{ color: "#56687f" }}>즐겨찾기</h3>
 
                 <div className="space-y-2">
                   {userFavorites.length === 0 ? (
