@@ -207,10 +207,10 @@ export function FloatingIntakeButton() {
             justifyContent: 'center',
             gap: '8px',
             padding: '14px 20px',
-            background: '#858EC9',
+            background: '#c6caeb',
             borderRadius: '40px',
             border: 'none',
-            boxShadow: '0px 4px 20px rgba(133, 142, 201, 0.4)',
+            boxShadow: '0px 4px 20px rgba(198, 202, 235, 0.5)',
             cursor: 'pointer',
           }}
           data-testid="button-floating-sms"
