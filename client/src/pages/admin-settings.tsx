@@ -2398,8 +2398,10 @@ export default function AdminSettings() {
                     <button
                       key={filter}
                       onClick={() => setRoleFilter(filter)}
-                      className="px-4 py-2 rounded-md"
                       style={{
+                        height: "52px",
+                        padding: "0 20px",
+                        borderRadius: "8px",
                         background:
                           roleFilter === filter
                             ? "#e7e7f5"
@@ -2407,7 +2409,7 @@ export default function AdminSettings() {
                         border:
                           roleFilter === filter
                             ? "1px solid var(--color-button-primary)"
-                            : "1px solid rgba(12, 12, 12, 0.2)",
+                            : "1px solid var(--color-table-border)",
                         fontFamily: "Pretendard",
                         fontSize: "14px",
                         fontWeight: roleFilter === filter ? 600 : 400,
@@ -2416,6 +2418,7 @@ export default function AdminSettings() {
                           roleFilter === filter
                             ? "#253396"
                             : "rgba(12, 12, 12, 0.9)",
+                        cursor: "pointer",
                       }}
                       data-testid={`filter-${filter}`}
                     >
