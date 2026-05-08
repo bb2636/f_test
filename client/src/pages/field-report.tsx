@@ -1161,9 +1161,10 @@ export default function FieldReport() {
 
   return (
     <div
-      className="relative min-h-screen bg-white"
+      className="relative min-h-screen"
       style={{
         padding: "32px",
+        background: "var(--color-bg)",
       }}
     >
       {/* 페이지 타이틀 및 버튼 */}
@@ -1426,8 +1427,10 @@ export default function FieldReport() {
                 <PopoverTrigger asChild>
                   <Button
                     data-testid="button-related-cases-review"
-                    className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 border-yellow-500"
                     style={{
+                      background: "#253396",
+                      color: "#FFFFFF",
+                      border: "1px solid #253396",
                       fontFamily: "Pretendard",
                       fontSize: "14px",
                       fontWeight: "500",

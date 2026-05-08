@@ -54,8 +54,8 @@ export function AppSidebarFieldSurvey() {
       className="flex flex-col"
       style={{
         width: "260px",
-        background: "rgba(255, 255, 255, 0.06)",
-        borderRight: "1px solid rgba(0, 143, 237, 0.2)",
+        background: "var(--color-table-header)",
+        borderRight: "1px solid var(--color-table-border)",
       }}
     >
       <div className="px-8 py-4">
@@ -82,7 +82,7 @@ export function AppSidebarFieldSurvey() {
             style={{
               background:
                 location === item.url
-                  ? "rgba(12, 12, 12, 0.08)"
+                  ? "#253396"
                   : "transparent",
               fontFamily: "Pretendard",
               fontSize: "16px",
@@ -90,7 +90,7 @@ export function AppSidebarFieldSurvey() {
               letterSpacing: "-0.02em",
               color:
                 location === item.url
-                  ? "#008FED"
+                  ? "#FFFFFF"
                   : "rgba(12, 12, 12, 0.8)",
             }}
             data-testid={item.testId}
@@ -104,8 +104,8 @@ export function AppSidebarFieldSurvey() {
         <div
           className="mx-3 mt-4 rounded-lg p-4"
           style={{
-            background: "rgba(0, 143, 237, 0.06)",
-            border: "1px solid rgba(0, 143, 237, 0.2)",
+            background: "#e7e7f5",
+            border: "1px solid var(--color-table-border)",
           }}
         >
           <p
@@ -113,7 +113,7 @@ export function AppSidebarFieldSurvey() {
               fontFamily: "Pretendard",
               fontSize: "12px",
               fontWeight: 700,
-              color: "#008FED",
+              color: "#253396",
               marginBottom: "6px",
               letterSpacing: "-0.01em",
             }}
@@ -142,7 +142,7 @@ export function AppSidebarFieldSurvey() {
 
           <div
             style={{
-              borderTop: "1px solid rgba(0, 143, 237, 0.2)",
+              borderTop: "1px solid var(--color-table-border)",
               marginTop: "10px",
               paddingTop: "10px",
             }}
@@ -152,7 +152,7 @@ export function AppSidebarFieldSurvey() {
                 fontFamily: "Pretendard",
                 fontSize: "12px",
                 fontWeight: 700,
-                color: "#008FED",
+                color: "#253396",
                 marginBottom: "6px",
                 letterSpacing: "-0.01em",
               }}
