@@ -1060,7 +1060,7 @@ export default function FieldReport() {
   if (!selectedCaseId) {
     return (
       <div className="p-8">
-        <Card>
+        <Card className="bg-white">
           <CardContent className="p-6 text-center">
             <p className="text-muted-foreground">케이스를 먼저 선택해주세요.</p>
           </CardContent>
@@ -1078,7 +1078,7 @@ export default function FieldReport() {
   if (isInitialLoading) {
     return (
       <div className="p-8">
-        <Card>
+        <Card className="bg-white">
           <CardContent className="p-6 text-center">
             <div className="flex flex-col items-center gap-2">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -1096,7 +1096,7 @@ export default function FieldReport() {
   if (isError) {
     return (
       <div className="p-8">
-        <Card>
+        <Card className="bg-white">
           <CardContent className="p-6 text-center">
             <div className="flex flex-col items-center gap-4">
               <p className="text-destructive">
@@ -1124,7 +1124,7 @@ export default function FieldReport() {
   if (!reportData || (status === "success" && !reportData?.case)) {
     return (
       <div className="p-8">
-        <Card>
+        <Card className="bg-white">
           <CardContent className="p-6 text-center">
             <div className="flex flex-col items-center gap-4">
               <p className="text-muted-foreground">
@@ -3483,7 +3483,7 @@ export default function FieldReport() {
               </h2>
 
               {/* 현장정보 */}
-              <Card className="mb-6">
+              <Card className="bg-white mb-6">
                 <CardHeader>
                   <CardTitle
                     style={{
@@ -3596,7 +3596,7 @@ export default function FieldReport() {
               </Card>
 
               {/* 사고 원인(누수원천) */}
-              <Card className="mb-6">
+              <Card className="bg-white mb-6">
                 <CardHeader>
                   <CardTitle
                     style={{
@@ -3686,7 +3686,7 @@ export default function FieldReport() {
               </Card>
 
               {/* VOC(고객의 소리) - 협력사가 현장입력시 작성한 VOC */}
-              <Card className="mb-6">
+              <Card className="bg-white mb-6">
                 <CardHeader>
                   <CardTitle
                     style={{
@@ -3743,7 +3743,7 @@ export default function FieldReport() {
                 }
 
                 return (
-                  <Card className="mb-6">
+                  <Card className="bg-white mb-6">
                     <CardHeader>
                       <CardTitle
                         style={{
@@ -3861,7 +3861,7 @@ export default function FieldReport() {
               })()}
 
               {/* 처리 유형 및 복구 방식 */}
-              <Card>
+              <Card className="bg-white">
                 <CardHeader>
                   <CardTitle
                     style={{
@@ -4015,7 +4015,7 @@ export default function FieldReport() {
               </h2>
 
               {/* 도면 작성 */}
-              <Card className="mb-6">
+              <Card className="bg-white mb-6">
                 <CardHeader>
                   <CardTitle
                     style={{
@@ -4884,7 +4884,7 @@ export default function FieldReport() {
 
                   {/* 복구면적 산출표 - 손해방지 케이스는 숨김 */}
                   {!isLossPreventionCase && (
-                    <Card className="mb-6 min-w-0">
+                    <Card className="bg-white mb-6 min-w-0">
                       <CardHeader>
                         <CardTitle
                           style={{
@@ -5191,7 +5191,7 @@ export default function FieldReport() {
                   )}
 
                   {/* 노무비 */}
-                  <Card className="mb-6 min-w-0">
+                  <Card className="bg-white mb-6 min-w-0">
                     <CardHeader>
                       <CardTitle
                         style={{
@@ -5617,7 +5617,7 @@ export default function FieldReport() {
                   </Card>
 
                   {/* 자재비 */}
-                  <Card className="mb-6 min-w-0">
+                  <Card className="bg-white mb-6 min-w-0">
                     <CardHeader>
                       <CardTitle
                         style={{
@@ -5884,7 +5884,7 @@ export default function FieldReport() {
                   </Card>
 
                   {/* 합계 섹션 */}
-                  <Card>
+                  <Card className="bg-white">
                     <CardContent className="p-6">
                       <div style={{ maxWidth: "400px", marginLeft: "auto" }}>
                         <div className="space-y-2">
@@ -6061,7 +6061,7 @@ export default function FieldReport() {
                   </Card>
                 </>
               ) : (
-                <Card>
+                <Card className="bg-white">
                   <CardContent className="p-6">
                     <p
                       style={{
@@ -6086,7 +6086,7 @@ export default function FieldReport() {
             className="px-6-relative"
             id="pdf-section-기타사항"
           >
-            <Card>
+            <Card className="bg-white">
               <CardContent className="p-6 space-y-4">
                 <div>
                   <label
