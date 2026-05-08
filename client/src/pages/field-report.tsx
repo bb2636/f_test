@@ -4497,6 +4497,7 @@ export default function FieldReport() {
                           background: "white",
                           borderRadius: "12px",
                           padding: "8px 16px 16px",
+                          border: "1px solid rgba(12, 12, 12, 0.2)",
                         }}
                       >
                         {/* 카테고리 헤더 - 가운데 정렬 */}
