@@ -1540,23 +1540,27 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       <td style={{ ...cellStyle, borderRight: (isPartner || (!canManageSettlement && !(filterMode === "closed" && canViewReport))) ? "none" : cellStyle.borderRight }}>{row.settlementInvoiceDate}</td>
                       {!isPartner && canManageSettlement && (
                         <td style={{ ...cellStyle, borderRight: filterMode === "closed" ? "1px solid rgba(12, 12, 12, 0.08)" : "none" }}>
-                          <Button
-                            variant="outline"
-                            size="sm"
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleOpenManagement(row);
                             }}
                             data-testid={`button-management-${row.id}`}
                             style={{
-                              padding: "4px 12px",
-                              height: "28px",
-                              fontSize: "12px",
+                              padding: "6px 14px",
+                              background: "#e7e7f5",
+                              border: "none",
+                              borderRadius: "9999px",
                               fontFamily: "Pretendard",
+                              fontSize: "12px",
+                              fontWeight: 500,
+                              color: "#253396",
+                              cursor: "pointer",
+                              whiteSpace: "nowrap",
                             }}
                           >
                             관리
-                          </Button>
+                          </button>
                         </td>
                       )}
                       {filterMode === "closed" && !isPartner && canViewReport && (
@@ -1568,23 +1572,24 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                             }
                           >
                             <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
+                              <button
                                 onClick={(e) => e.stopPropagation()}
                                 data-testid={`button-report-${row.id}`}
                                 style={{
-                                  padding: "4px 12px",
-                                  height: "28px",
-                                  fontSize: "12px",
+                                  padding: "6px 14px",
+                                  background: "#e7e7f5",
+                                  border: "none",
+                                  borderRadius: "9999px",
                                   fontFamily: "Pretendard",
-                                  background: "#E8F5E9",
-                                  borderColor: "#4CAF50",
-                                  color: "#2E7D32",
+                                  fontSize: "12px",
+                                  fontWeight: 500,
+                                  color: "#253396",
+                                  cursor: "pointer",
+                                  whiteSpace: "nowrap",
                                 }}
                               >
                                 보고서열람
-                              </Button>
+                              </button>
                             </PopoverTrigger>
                             <PopoverContent
                               className="w-64 p-1"

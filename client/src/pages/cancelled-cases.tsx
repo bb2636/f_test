@@ -849,12 +849,13 @@ export default function CancelledCases() {
                         <DropdownMenuTrigger asChild disabled={updateStatusMutation.isPending}>
                           <div
                             style={{
-                              padding: "6px 12px",
-                              background: "rgba(12, 12, 12, 0.05)",
-                              borderRadius: "6px",
+                              padding: "6px 14px",
+                              background: "#e7e7f5",
+                              border: "none",
+                              borderRadius: "9999px",
                               fontFamily: "Pretendard",
                               fontSize: "12px",
-                              fontWeight: 600,
+                              fontWeight: 500,
                               color: getStatusColor(caseItem.status),
                               textAlign: "center",
                               lineHeight: "1.4",
@@ -862,6 +863,7 @@ export default function CancelledCases() {
                               wordBreak: "keep-all",
                               cursor: updateStatusMutation.isPending ? "not-allowed" : "pointer",
                               opacity: updateStatusMutation.isPending ? 0.6 : 1,
+                              whiteSpace: "nowrap",
                             }}
                           >
                             {getStatusDisplayText(caseItem.status)}
@@ -917,17 +919,19 @@ export default function CancelledCases() {
                     ) : (
                       <div
                         style={{
-                          padding: "6px 12px",
-                          background: "rgba(12, 12, 12, 0.05)",
-                          borderRadius: "6px",
+                          padding: "6px 14px",
+                          background: "#e7e7f5",
+                          border: "none",
+                          borderRadius: "9999px",
                           fontFamily: "Pretendard",
                           fontSize: "12px",
-                          fontWeight: 600,
+                          fontWeight: 500,
                           color: getStatusColor(caseItem.status),
                           textAlign: "center",
                           lineHeight: "1.4",
                           maxWidth: "140px",
                           wordBreak: "keep-all",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {getStatusDisplayText(caseItem.status)}

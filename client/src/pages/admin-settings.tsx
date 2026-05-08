@@ -2627,8 +2627,8 @@ export default function AdminSettings() {
                 className="flex items-stretch px-3 rounded-lg data-table-header"
                 style={{
                   height: "54px",
-                  background: "rgba(12, 12, 12, 0.04)",
-                  borderBottom: "1px solid rgba(12, 12, 12, 0.12)",
+                  background: "var(--color-table-header)",
+                  borderBottom: "1px solid var(--color-table-border)",
                 }}
               >
                 {[
@@ -2686,7 +2686,7 @@ export default function AdminSettings() {
                   className="flex items-stretch px-3 hover:bg-black/5 transition-colors data-table-row"
                   style={{
                     minHeight: "44px",
-                    borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
+                    borderBottom: "1px solid var(--color-table-border)",
                   }}
                   data-testid={`user-row-${user.id}`}
                 >
