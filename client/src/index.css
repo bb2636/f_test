@@ -427,4 +427,29 @@
   .table-card .data-table-row:hover {
     background-color: rgba(0, 0, 0, 0.035);
   }
+
+  /* ===== 정산/통계 페이지 통합 디자인 (STEP 5) =====
+   * .flxn-page : 페이지 루트에 추가하면 내부의 모든 <table> 헤더/테두리에
+   *              종합진행관리와 동일한 토큰을 적용한다.
+   * .flxn-search-card : 검색 카드 div 에 추가하면 내부 input / Select 가
+   *              종합진행관리와 동일한 인풋 토큰을 받는다.
+   * 인라인 style 을 덮어쓰기 위해 !important 사용 (산식/로직은 무관).
+   */
+  .flxn-page table thead th {
+    background-color: var(--color-table-header) !important;
+    border-color: var(--color-table-border) !important;
+  }
+  .flxn-page table tbody td {
+    border-color: var(--color-table-border) !important;
+  }
+  .flxn-page table tbody tr:hover td {
+    background-color: rgba(0, 0, 0, 0.025);
+  }
+  .flxn-search-card input[type="text"],
+  .flxn-search-card input[type="search"],
+  .flxn-search-card input:not([type]),
+  .flxn-search-card [role="combobox"] {
+    background-color: var(--color-input-bg) !important;
+    border: 1px solid var(--color-table-border) !important;
+  }
 }

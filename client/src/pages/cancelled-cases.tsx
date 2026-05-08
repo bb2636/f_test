@@ -303,7 +303,7 @@ export default function CancelledCases() {
   const gridTemplateColumns = "120px 110px 120px 100px 80px 1fr 80px 100px 90px 60px 140px 100px 50px 50px";
 
   return (
-    <div className="p-8" style={{ background: "var(--color-bg)", minHeight: "100%" }}>
+    <div className="p-8 flxn-page" style={{ background: "var(--color-bg)", minHeight: "100%" }}>
       <div className="flex items-center gap-2 mb-6">
         <h1
           style={{
@@ -326,6 +326,7 @@ export default function CancelledCases() {
       </div>
 
       <div
+        className="flxn-search-card"
         style={{
           background: "#FFFFFF",
           boxShadow: "0px 0px 20px #DBE9F5",
@@ -544,7 +545,7 @@ export default function CancelledCases() {
             style={{
               height: "40px",
               padding: "0 20px",
-              background: "#008FED",
+              background: "var(--color-button-primary)",
               borderRadius: "8px",
               fontFamily: "Pretendard",
               fontSize: "14px",
@@ -585,7 +586,7 @@ export default function CancelledCases() {
             style={{
               height: "40px",
               padding: "0 24px",
-              background: "#008FED",
+              background: "var(--color-button-primary)",
               borderRadius: "8px",
               fontFamily: "Pretendard",
               fontSize: "14px",
@@ -652,8 +653,8 @@ export default function CancelledCases() {
               display: "grid",
               gridTemplateColumns,
               padding: "0 20px",
-              background: "#F5F5F6",
-              borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
+              background: "var(--color-table-header)",
+              borderBottom: "1px solid var(--color-table-border)",
               position: "sticky",
               top: 0,
               zIndex: 10,

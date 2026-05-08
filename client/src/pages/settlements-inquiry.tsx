@@ -988,7 +988,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
   };
 
   return (
-    <div className="p-8" style={{ background: "var(--color-bg)", minHeight: "100%" }}>
+    <div className="p-8 flxn-page" style={{ background: "var(--color-bg)", minHeight: "100%" }}>
       {/* Page title */}
       <div className="flex items-center gap-2 mb-6">
         <h1
@@ -1012,6 +1012,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
       </div>
       {/* Search and Filter Section */}
       <div
+        className="flxn-search-card"
         style={{
           background: "#FFFFFF",
           boxShadow: "0px 0px 20px #DBE9F5",
@@ -1287,7 +1288,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
             style={{
               height: "40px",
               padding: "0 20px",
-              background: "#008FED",
+              background: "var(--color-button-primary)",
               borderRadius: "8px",
               fontFamily: "Pretendard",
               fontSize: "14px",
@@ -1330,7 +1331,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
             style={{
               height: "40px",
               padding: "0 24px",
-              background: "#008FED",
+              background: "var(--color-button-primary)",
               borderRadius: "8px",
               fontFamily: "Pretendard",
               fontSize: "14px",

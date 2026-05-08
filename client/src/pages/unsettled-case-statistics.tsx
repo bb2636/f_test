@@ -963,7 +963,7 @@ export default function UnsettledCaseStatistics() {
   };
 
   return (
-    <div style={{ padding: "32px", fontFamily: "Pretendard", background: "var(--color-bg)", minHeight: "100%" }}>
+    <div className="flxn-page" style={{ padding: "32px", fontFamily: "Pretendard", background: "var(--color-bg)", minHeight: "100%" }}>
       <div className="flex items-center gap-2 mb-6">
         <h1
           style={{
@@ -979,46 +979,55 @@ export default function UnsettledCaseStatistics() {
         </h1>
         <Star size={16} stroke="rgba(12, 12, 12, 0.3)" strokeWidth={2} fill="none" />
       </div>
-      <div className="flex items-center gap-2 mb-3" style={{ maxWidth: "540px" }}>
-        <div className="relative flex-1">
-          <Search size={16} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.3)" }} />
-          <Input
-            placeholder="증권번호, 사고번호 또는 접수번호를 입력해주세요"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-              }
-            }}
-            className="w-full"
+      <div
+        className="flxn-search-card"
+        style={{
+          background: "#FFFFFF",
+          boxShadow: "0px 0px 20px #DBE9F5",
+          borderRadius: "12px",
+          padding: "24px",
+          marginBottom: "16px",
+        }}
+      >
+        <div className="flex items-center gap-3" style={{ maxWidth: "640px" }}>
+          <div className="relative flex-1">
+            <Search size={20} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.4)" }} />
+            <Input
+              placeholder="증권번호, 사고번호 또는 접수번호를 입력해주세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                }
+              }}
+              className="w-full"
+              style={{
+                paddingLeft: "48px",
+                height: "52px",
+                borderRadius: "8px",
+                fontFamily: "Pretendard",
+                fontSize: "14px",
+              }}
+              data-testid="input-unsettled-search"
+            />
+          </div>
+          <Button
             style={{
-              paddingLeft: "40px",
-              height: "48px",
-              borderRadius: "10px",
-              border: "1px solid rgba(12, 12, 12, 0.1)",
+              width: "100px",
+              height: "52px",
+              background: "var(--color-button-primary)",
+              color: "#FFFFFF",
+              borderRadius: "8px",
               fontFamily: "Pretendard",
-              fontSize: "15px",
-              background: "#FFFFFF",
+              fontSize: "16px",
+              fontWeight: 600,
             }}
-            data-testid="input-unsettled-search"
-          />
+            data-testid="button-unsettled-search"
+          >
+            검색
+          </Button>
         </div>
-        <Button
-          style={{
-            height: "48px",
-            padding: "0 28px",
-            background: "#008FED",
-            color: "#FFFFFF",
-            borderRadius: "10px",
-            fontFamily: "Pretendard",
-            fontSize: "15px",
-            fontWeight: 600,
-          }}
-          data-testid="button-unsettled-search"
-        >
-          검색
-        </Button>
       </div>
       <div className="flex flex-wrap items-center gap-3 mb-4">
         {historicalMode && (
@@ -1077,7 +1086,7 @@ export default function UnsettledCaseStatistics() {
             style={{
               height: "36px",
               padding: "0 16px",
-              background: searchType === "사고번호" ? "#008FED" : "#FFFFFF",
+              background: searchType === "사고번호" ? "var(--color-button-primary)" : "#FFFFFF",
               color: searchType === "사고번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
               fontSize: "13px",
               fontWeight: 600,
@@ -1095,7 +1104,7 @@ export default function UnsettledCaseStatistics() {
             style={{
               height: "36px",
               padding: "0 16px",
-              background: searchType === "접수번호" ? "#008FED" : "#FFFFFF",
+              background: searchType === "접수번호" ? "var(--color-button-primary)" : "#FFFFFF",
               color: searchType === "접수번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
               fontSize: "13px",
               fontWeight: 600,
