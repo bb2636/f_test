@@ -215,14 +215,14 @@ export function FloatingIntakeButton() {
           }}
           data-testid="button-floating-sms"
         >
-          <MessageSquare size={18} color="#FFFFFF" />
+          <MessageSquare size={18} color="#4a5397" />
           <span style={{
             fontFamily: 'Pretendard',
             fontWeight: 600,
             fontSize: '14px',
             lineHeight: '128%',
             letterSpacing: '-0.02em',
-            color: '#FFFFFF',
+            color: '#4a5397',
           }}>
             문자발송
           </span>
