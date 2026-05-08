@@ -523,7 +523,7 @@ export function AccessControlPanel() {
                   className="flex justify-center items-center gap-2"
                   style={{
                     padding: "12px 16px",
-                    background: (savePermissionMutation.isPending || isLoading) ? "#CCCCCC" : "var(--color-button-primary)",
+                    background: (savePermissionMutation.isPending || isLoading) ? "#CCCCCC" : "#253396",
                     border: "none",
                     borderRadius: "6px",
                     fontFamily: "Pretendard",
@@ -636,6 +636,7 @@ export function AccessControlPanel() {
                         onCheckedChange={(checked) =>
                           toggleCategoryPermission(category, checked as boolean)
                         }
+                        className="border-[#253396] data-[state=checked]:bg-[#253396] data-[state=checked]:border-[#253396] data-[state=checked]:text-white"
                         style={{
                           width: "20px",
                           height: "20px",
@@ -689,6 +690,7 @@ export function AccessControlPanel() {
                                 checked as boolean
                               )
                             }
+                            className="border-[#253396] data-[state=checked]:bg-[#253396] data-[state=checked]:border-[#253396] data-[state=checked]:text-white"
                             style={{
                               width: "18px",
                               height: "18px",
