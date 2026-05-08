@@ -339,7 +339,7 @@ export function FloatingIntakeButton() {
                       lineHeight: '1.6',
                       resize: 'vertical',
                       outline: 'none',
-                      background: '#e7e7f5',
+                      background: 'var(--color-bg)',
                     }}
                     data-testid="textarea-sms-content"
                   />
