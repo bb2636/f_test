@@ -72,13 +72,13 @@ export function AppSidebarFieldSurvey() {
         </span>
       </div>
 
-      <div className="flex flex-col px-3 gap-2">
+      <div className="flex flex-col">
         {visibleItems.map((item) => (
           <button
             type="button"
             key={item.title}
             onClick={() => setLocation(item.url)}
-            className="flex items-center px-5 py-3 rounded-lg transition-colors"
+            className="flex items-center px-8 py-3 transition-colors"
             style={{
               background:
                 location === item.url
