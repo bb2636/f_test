@@ -207,22 +207,22 @@ export function FloatingIntakeButton() {
             justifyContent: 'center',
             gap: '8px',
             padding: '14px 20px',
-            background: '#6B5CE7',
+            background: '#e7e7f5',
             borderRadius: '40px',
             border: 'none',
-            boxShadow: '0px 4px 20px rgba(107, 92, 231, 0.4)',
+            boxShadow: '0px 4px 20px rgba(37, 51, 150, 0.15)',
             cursor: 'pointer',
           }}
           data-testid="button-floating-sms"
         >
-          <MessageSquare size={18} color="#FFFFFF" />
+          <MessageSquare size={18} color="#253396" />
           <span style={{
             fontFamily: 'Pretendard',
             fontWeight: 600,
             fontSize: '14px',
             lineHeight: '128%',
             letterSpacing: '-0.02em',
-            color: '#FFFFFF',
+            color: '#253396',
           }}>
             문자발송
           </span>
@@ -237,10 +237,10 @@ export function FloatingIntakeButton() {
             justifyContent: 'center',
             gap: '8px',
             padding: '16px 24px',
-            background: '#008FED',
+            background: '#253396',
             borderRadius: '40px',
             border: 'none',
-            boxShadow: '0px 4px 20px rgba(0, 143, 237, 0.4)',
+            boxShadow: '0px 4px 20px rgba(37, 51, 150, 0.4)',
             cursor: 'pointer',
           }}
           data-testid="button-floating-intake"
