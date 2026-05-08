@@ -963,12 +963,21 @@ export default function UnsettledCaseStatistics() {
   };
 
   return (
-    <div style={{ padding: "24px", fontFamily: "Pretendard" }}>
-      <div className="flex items-center gap-2 mb-6" style={{ fontSize: "18px", fontWeight: 600, color: "rgba(12, 12, 12, 0.8)" }}>
-        <span style={{ color: "rgba(12, 12, 12, 0.5)" }}>통계</span>
-        <ChevronRight size={16} style={{ color: "rgba(12, 12, 12, 0.3)" }} />
-        <span>미결건 통계</span>
-        <Star size={16} style={{ color: "rgba(12, 12, 12, 0.2)", marginLeft: "8px" }} />
+    <div style={{ padding: "32px", fontFamily: "Pretendard", background: "var(--color-bg)", minHeight: "100%" }}>
+      <div className="flex items-center gap-2 mb-6">
+        <h1
+          style={{
+            fontFamily: "Pretendard",
+            fontWeight: 600,
+            fontSize: "28px",
+            lineHeight: "128%",
+            letterSpacing: "-0.02em",
+            color: "#56687f",
+          }}
+        >
+          미결건 통계
+        </h1>
+        <Star size={16} stroke="rgba(12, 12, 12, 0.3)" strokeWidth={2} fill="none" />
       </div>
       <div className="flex items-center gap-2 mb-3" style={{ maxWidth: "540px" }}>
         <div className="relative flex-1">
@@ -1150,10 +1159,11 @@ export default function UnsettledCaseStatistics() {
       )}
 
       <div className="flex items-center justify-between mb-3">
-        <div style={{ fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", fontFamily: "Pretendard" }}>
-          총 <span style={{ fontWeight: 700, color: "rgba(12, 12, 12, 0.8)" }}>{displayCount}</span>개의 통계
+        <div style={{ display: "flex", alignItems: "center", gap: "4px", fontFamily: "Pretendard" }}>
+          <span style={{ fontWeight: 700, fontSize: "20px", lineHeight: "128%", letterSpacing: "-0.02em", color: "#56687f" }}>전체건</span>
+          <span style={{ fontWeight: 700, fontSize: "20px", lineHeight: "128%", letterSpacing: "-0.02em", color: "#253396" }}>{displayCount}</span>
           {historicalMode && (
-            <span style={{ marginLeft: "8px", color: "#D97706", fontWeight: 600 }}>
+            <span style={{ marginLeft: "8px", color: "#D97706", fontWeight: 600, fontSize: "14px" }}>
               ({format(historicalDate, "yyyy.MM.dd")} 기준)
             </span>
           )}

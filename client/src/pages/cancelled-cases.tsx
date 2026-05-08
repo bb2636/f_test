@@ -7,7 +7,7 @@ import {
   User,
   CaseWithLatestProgress,
 } from "@shared/schema";
-import { Search, Cloud, Calendar as CalendarIcon } from "lucide-react";
+import { Search, Cloud, Calendar as CalendarIcon, Star } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -303,36 +303,35 @@ export default function CancelledCases() {
   const gridTemplateColumns = "120px 110px 120px 100px 80px 1fr 80px 100px 90px 60px 140px 100px 50px 50px";
 
   return (
-    <div className="p-8 bg-white min-h-full">
+    <div className="p-8" style={{ background: "var(--color-bg)", minHeight: "100%" }}>
       <div className="flex items-center gap-2 mb-6">
         <h1
           style={{
             fontFamily: "Pretendard",
-            fontSize: "26px",
             fontWeight: 600,
+            fontSize: "28px",
+            lineHeight: "128%",
             letterSpacing: "-0.02em",
-            color: "#0C0C0C",
+            color: "#56687f",
           }}
         >
           접수취소
         </h1>
-        <div
-          style={{
-            width: "8px",
-            height: "8px",
-            borderRadius: "50%",
-            background: "rgba(12, 12, 12, 0.2)",
-          }}
+        <Star
+          size={16}
+          stroke="rgba(12, 12, 12, 0.3)"
+          strokeWidth={2}
+          fill="none"
         />
       </div>
 
       <div
-        className="mb-6"
         style={{
-          background: "rgba(255, 255, 255, 0.7)",
+          background: "#FFFFFF",
+          boxShadow: "0px 0px 20px #DBE9F5",
           borderRadius: "12px",
-          padding: "16px 24px",
-          border: "1px solid rgba(12, 12, 12, 0.08)",
+          padding: "24px",
+          marginBottom: "16px",
         }}
       >
         <div className="flex items-end gap-3 flex-wrap">
@@ -616,7 +615,7 @@ export default function CancelledCases() {
               fontSize: "20px",
               lineHeight: "128%",
               letterSpacing: "-0.02em",
-              color: "rgba(12, 12, 12, 0.7)",
+              color: "#56687f",
             }}
           >
             전체건
@@ -628,7 +627,7 @@ export default function CancelledCases() {
               fontSize: "20px",
               lineHeight: "128%",
               letterSpacing: "-0.02em",
-              color: "#008FED",
+              color: "#253396",
             }}
           >
             {filteredData.length}

@@ -10,7 +10,7 @@ import {
   Estimate,
   Settlement,
 } from "@shared/schema";
-import { Search, Calendar as CalendarIcon, X, HelpCircle } from "lucide-react";
+import { Search, Calendar as CalendarIcon, X, HelpCircle, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -988,37 +988,36 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
   };
 
   return (
-    <div className="p-8 bg-white min-h-full">
+    <div className="p-8" style={{ background: "var(--color-bg)", minHeight: "100%" }}>
       {/* Page title */}
       <div className="flex items-center gap-2 mb-6">
         <h1
           style={{
             fontFamily: "Pretendard",
-            fontSize: "26px",
             fontWeight: 600,
+            fontSize: "28px",
+            lineHeight: "128%",
             letterSpacing: "-0.02em",
-            color: "#0C0C0C",
+            color: "#56687f",
           }}
         >
           {filterMode === "closed" ? "정산 종결" : "정산 청구"}
         </h1>
-        <div
-          style={{
-            width: "8px",
-            height: "8px",
-            borderRadius: "50%",
-            background: "rgba(12, 12, 12, 0.2)",
-          }}
+        <Star
+          size={16}
+          stroke="rgba(12, 12, 12, 0.3)"
+          strokeWidth={2}
+          fill="none"
         />
       </div>
       {/* Search and Filter Section */}
       <div
-        className="mb-6"
         style={{
-          background: "rgba(255, 255, 255, 0.7)",
+          background: "#FFFFFF",
+          boxShadow: "0px 0px 20px #DBE9F5",
           borderRadius: "12px",
-          padding: "16px 24px",
-          border: "1px solid rgba(12, 12, 12, 0.08)",
+          padding: "24px",
+          marginBottom: "16px",
         }}
       >
         {/* Filters + Search - All in one row */}
@@ -1345,23 +1344,27 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         </div>
       </div>
       {/* Results Count */}
-      <div className="mb-4 flex items-center gap-2">
+      <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "16px" }}>
         <span
           style={{
             fontFamily: "Pretendard",
-            fontSize: "16px",
-            fontWeight: 500,
-            color: "rgba(12, 12, 12, 0.7)",
+            fontWeight: 700,
+            fontSize: "20px",
+            lineHeight: "128%",
+            letterSpacing: "-0.02em",
+            color: "#56687f",
           }}
         >
-          결과
+          전체건
         </span>
         <span
           style={{
             fontFamily: "Pretendard",
-            fontSize: "16px",
-            fontWeight: 600,
-            color: "#008FED",
+            fontWeight: 700,
+            fontSize: "20px",
+            lineHeight: "128%",
+            letterSpacing: "-0.02em",
+            color: "#253396",
           }}
           data-testid="text-results-count"
         >
