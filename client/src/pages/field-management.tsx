@@ -1025,6 +1025,9 @@ export default function FieldManagement() {
                             setAccidentDate(date);
                             setDatePickerOpen(false);
                           }}
+                          classNames={{
+                            day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -1082,6 +1085,9 @@ export default function FieldManagement() {
                             setVisitDate(date);
                             setVisitDatePickerOpen(false);
                           }}
+                          classNames={{
+                            day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -1122,10 +1128,10 @@ export default function FieldManagement() {
                           checked={leakTypes.has(type)}
                           onChange={() => toggleLeakType(type)}
                           disabled={isReadOnly}
-                          className="h-4 w-4 accent-[#008FED]"
+                          className="h-4 w-4 accent-[#253396]"
                           data-testid={`checkbox-leak-type-${type}`}
                         />
-                        <span className={leakTypes.has(type) ? "text-[#008FED]" : "text-[#0C0C0C]"}>
+                        <span className={leakTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
                           {type}
                         </span>
                       </label>
@@ -1168,10 +1174,10 @@ export default function FieldManagement() {
                           checked={processingTypes.has(type)}
                           onChange={() => toggleProcessingType(type)}
                           disabled={isReadOnly}
-                          className="h-4 w-4 accent-[#008FED]"
+                          className="h-4 w-4 accent-[#253396]"
                           data-testid={`checkbox-processing-type-${type}`}
                         />
-                        <span className={processingTypes.has(type) ? "text-[#008FED]" : "text-[#0C0C0C]"}>
+                        <span className={processingTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
                           {type}
                         </span>
                       </label>
@@ -1202,10 +1208,10 @@ export default function FieldManagement() {
                           checked={recoveryMethodType === method}
                           onChange={() => setRecoveryMethodType(method)}
                           disabled={isReadOnly}
-                          className="h-4 w-4 accent-[#008FED]"
+                          className="h-4 w-4 accent-[#253396]"
                           data-testid={`checkbox-recovery-method-${method}`}
                         />
-                        <span className={recoveryMethodType === method ? "text-[#008FED]" : "text-[#0C0C0C]"}>
+                        <span className={recoveryMethodType === method ? "text-[#253396]" : "text-[#0C0C0C]"}>
                           {method}
                         </span>
                       </label>
@@ -1453,7 +1459,7 @@ export default function FieldManagement() {
                     type="button"
                     onClick={handleSave}
                     disabled={isReadOnly}
-                    className="h-10 rounded-md bg-[#008FED] px-7 text-[14px] font-semibold text-white hover:bg-[#0077CC] disabled:opacity-50"
+                    className="h-10 rounded-md bg-[#253396] px-7 text-[14px] font-semibold text-white hover:bg-[#1d2878] disabled:opacity-50"
                     data-testid="button-save"
                   >
                     저장
@@ -1572,7 +1578,7 @@ export default function FieldManagement() {
               onClick={handleSaveEditVictim}
               disabled={isEditingVictim}
               data-testid="button-save-edit-victim"
-              className="text-[14px] font-medium bg-[#008FED] text-white hover:bg-[#0077CC]"
+              className="text-[14px] font-medium bg-[#253396] text-white hover:bg-[#1d2878]"
             >
               {isEditingVictim ? "저장 중..." : "저장"}
             </Button>
