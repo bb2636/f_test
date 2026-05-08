@@ -27,10 +27,11 @@ export function ChangeLogTab({
         <h1
           style={{
             fontFamily: "Pretendard",
-            fontSize: "26px",
+            fontSize: "28px",
             fontWeight: 600,
+            lineHeight: "128%",
             letterSpacing: "-0.02em",
-            color: "#0C0C0C",
+            color: "#56687f",
           }}
         >
           변경 로그 관리
@@ -38,7 +39,7 @@ export function ChangeLogTab({
       </div>
 
       <div
-        className="rounded-xl p-6 mb-6"
+        className="rounded-xl p-6 mb-6 flxn-search-card"
         style={{
           background: "#FFFFFF",
           boxShadow: "0px 0px 20px #DBE9F5",

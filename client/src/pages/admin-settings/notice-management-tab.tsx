@@ -30,10 +30,11 @@ export function NoticeManagementTab({
           <h1
             style={{
               fontFamily: "Pretendard",
-              fontSize: "26px",
+              fontSize: "28px",
               fontWeight: 600,
+              lineHeight: "128%",
               letterSpacing: "-0.02em",
-              color: "#0C0C0C",
+              color: "#56687f",
             }}
           >
             공지사항 관리
@@ -56,7 +57,7 @@ export function NoticeManagementTab({
           onClick={() => setShowAddNoticeModal(true)}
           className="px-6 py-3"
           style={{
-            background: "#008FED",
+            background: "var(--color-button-primary)",
             borderRadius: "8px",
             fontFamily: "Pretendard",
             fontSize: "14px",
@@ -70,14 +71,15 @@ export function NoticeManagementTab({
         </button>
       </div>
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-1 mb-4">
         <span
           style={{
             fontFamily: "Pretendard",
-            fontSize: "16px",
-            fontWeight: 500,
-            letterSpacing: "-0.01em",
-            color: "#686A6E",
+            fontSize: "20px",
+            fontWeight: 700,
+            lineHeight: "128%",
+            letterSpacing: "-0.02em",
+            color: "#56687f",
           }}
         >
           등록된 공지
@@ -85,10 +87,11 @@ export function NoticeManagementTab({
         <span
           style={{
             fontFamily: "Pretendard",
-            fontSize: "16px",
+            fontSize: "20px",
             fontWeight: 700,
+            lineHeight: "128%",
             letterSpacing: "-0.02em",
-            color: "#008FED",
+            color: "#253396",
           }}
         >
           {notices.length}

@@ -1439,7 +1439,7 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="relative flex flex-col h-full overflow-hidden bg-white">
+    <div className="relative flex flex-col h-full overflow-hidden flxn-page" style={{ background: "var(--color-bg)" }}>
       {/* Main Content */}
       <div className="relative flex flex-1 overflow-hidden">
         {/* Main Section (좌측 사이드바는 외부 사이드바로 이전됨) */}
@@ -1454,10 +1454,11 @@ export default function AdminSettings() {
                   <h1
                     style={{
                       fontFamily: "Pretendard",
-                      fontSize: "26px",
+                      fontSize: "28px",
                       fontWeight: 600,
+                      lineHeight: "128%",
                       letterSpacing: "-0.02em",
-                      color: "#0C0C0C",
+                      color: "#56687f",
                     }}
                   >
                     1:1 문의 관리
@@ -1480,14 +1481,15 @@ export default function AdminSettings() {
 
               {/* Inquiry Count and Filter */}
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <span
                     style={{
                       fontFamily: "Pretendard",
-                      fontSize: "16px",
-                      fontWeight: 500,
-                      letterSpacing: "-0.01em",
-                      color: "#686A6E",
+                      fontSize: "20px",
+                      fontWeight: 700,
+                      lineHeight: "128%",
+                      letterSpacing: "-0.02em",
+                      color: "#56687f",
                     }}
                   >
                     문의 목록
@@ -1495,10 +1497,11 @@ export default function AdminSettings() {
                   <span
                     style={{
                       fontFamily: "Pretendard",
-                      fontSize: "16px",
+                      fontSize: "20px",
                       fontWeight: 700,
+                      lineHeight: "128%",
                       letterSpacing: "-0.02em",
-                      color: "#008FED",
+                      color: "#253396",
                     }}
                   >
                     {filteredInquiries.length}
@@ -2354,10 +2357,11 @@ export default function AdminSettings() {
                 <h1
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "26px",
+                    fontSize: "28px",
                     fontWeight: 600,
+                    lineHeight: "128%",
                     letterSpacing: "-0.02em",
-                    color: "#0C0C0C",
+                    color: "#56687f",
                   }}
                 >
                   사용자 계정 관리
@@ -2366,10 +2370,10 @@ export default function AdminSettings() {
 
           {/* Search & Role Filter */}
           <div
-            className="mb-6 rounded-xl px-6 py-5"
+            className="mb-6 rounded-xl px-6 py-5 flxn-search-card"
             style={{
               background: "#FFFFFF",
-              border: "1px solid rgba(12, 12, 12, 0.08)",
+              boxShadow: "0px 0px 20px #DBE9F5",
             }}
           >
             <div className="flex items-end gap-8 flex-wrap">
@@ -2467,7 +2471,7 @@ export default function AdminSettings() {
                     style={{
                       height: "42px",
                       padding: "0 20px",
-                      background: "#008FED",
+                      background: "var(--color-button-primary)",
                       border: "none",
                       borderRadius: "0 6px 6px 0",
                       fontFamily: "Pretendard",
@@ -2496,9 +2500,10 @@ export default function AdminSettings() {
                   style={{
                     fontFamily: "Pretendard",
                     fontSize: "20px",
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    lineHeight: "128%",
                     letterSpacing: "-0.02em",
-                    color: "#0C0C0C",
+                    color: "#56687f",
                   }}
                 >
                   계정
@@ -2507,9 +2512,10 @@ export default function AdminSettings() {
                   style={{
                     fontFamily: "Pretendard",
                     fontSize: "20px",
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    lineHeight: "128%",
                     letterSpacing: "-0.02em",
-                    color: "#008FED",
+                    color: "#253396",
                   }}
                   data-testid="text-user-count"
                 >
@@ -2521,7 +2527,7 @@ export default function AdminSettings() {
                   className="flex items-center justify-center px-6 hover-elevate active-elevate-2"
                   style={{
                     height: "48px",
-                    background: "#008FED",
+                    background: "var(--color-button-primary)",
                     borderRadius: "6px",
                   }}
                   onClick={() => setShowCreateAccountModal(true)}
@@ -2545,7 +2551,7 @@ export default function AdminSettings() {
                     style={{
                       height: "48px",
                       background: "#FFFFFF",
-                      border: "1.5px solid #008FED",
+                      border: "1.5px solid var(--color-button-primary)",
                       borderRadius: "6px",
                     }}
                     onClick={() => {
@@ -2554,14 +2560,14 @@ export default function AdminSettings() {
                     }}
                     data-testid="button-open-delegate"
                   >
-                    <Shield style={{ width: "16px", height: "16px", color: "#008FED", marginRight: "6px" }} />
+                    <Shield style={{ width: "16px", height: "16px", color: "var(--color-button-primary)", marginRight: "6px" }} />
                     <span
                       style={{
                         fontFamily: "Pretendard",
                         fontSize: "16px",
                         fontWeight: 600,
                         letterSpacing: "-0.02em",
-                        color: "#008FED",
+                        color: "var(--color-button-primary)",
                       }}
                     >
                       권한위임
@@ -2591,12 +2597,12 @@ export default function AdminSettings() {
                     onClick={() => handleSortClick(opt.field)}
                     className="px-3 py-1.5 rounded-md"
                     style={{
-                      background: sortField === opt.field ? "rgba(0, 143, 237, 0.1)" : "transparent",
-                      border: sortField === opt.field ? "1px solid rgba(0, 143, 237, 0.3)" : "1px solid rgba(12, 12, 12, 0.15)",
+                      background: sortField === opt.field ? "rgba(86, 104, 127, 0.12)" : "transparent",
+                      border: sortField === opt.field ? "1px solid rgba(86, 104, 127, 0.3)" : "1px solid rgba(12, 12, 12, 0.15)",
                       fontFamily: "Pretendard",
                       fontSize: "13px",
                       fontWeight: sortField === opt.field ? 600 : 400,
-                      color: sortField === opt.field ? "#008FED" : "rgba(12, 12, 12, 0.7)",
+                      color: sortField === opt.field ? "var(--color-button-primary)" : "rgba(12, 12, 12, 0.7)",
                       display: "flex",
                       alignItems: "center",
                       gap: "4px",
@@ -2654,7 +2660,7 @@ export default function AdminSettings() {
                         fontSize: "15px",
                         fontWeight: 600,
                         letterSpacing: "-0.02em",
-                        color: sortField === col.field && col.field ? "#008FED" : "rgba(12, 12, 12, 0.6)",
+                        color: sortField === col.field && col.field ? "var(--color-button-primary)" : "rgba(12, 12, 12, 0.6)",
                         display: "flex",
                         alignItems: "center",
                         gap: "4px",

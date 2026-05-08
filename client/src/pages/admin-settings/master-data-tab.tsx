@@ -64,10 +64,11 @@ export function MasterDataTab({
           <h1
             style={{
               fontFamily: "Pretendard",
-              fontSize: "26px",
+              fontSize: "28px",
               fontWeight: 600,
+              lineHeight: "128%",
               letterSpacing: "-0.02em",
-              color: "#0C0C0C",
+              color: "#56687f",
             }}
           >
             기준정보 관리
@@ -90,7 +91,7 @@ export function MasterDataTab({
 
       <div className="flex gap-6">
         <div
-          className="w-80 rounded-xl p-6"
+          className="w-80 rounded-xl p-6 flxn-search-card"
           style={{
             background: "#FFFFFF",
             boxShadow: "0px 0px 20px #DBE9F5",
@@ -139,7 +140,7 @@ export function MasterDataTab({
               <button
                 className="px-4 py-2"
                 style={{
-                  background: "#008FED",
+                  background: "var(--color-button-primary)",
                   borderRadius: "6px",
                   fontFamily: "Pretendard",
                   fontSize: "14px",
@@ -168,12 +169,12 @@ export function MasterDataTab({
                   }}
                   className="w-full text-left px-4 py-3 rounded-lg transition-colors"
                   style={{
-                    background: selectedCategory === category ? "rgba(0, 143, 237, 0.05)" : "transparent",
+                    background: selectedCategory === category ? "rgba(86, 104, 127, 0.08)" : "transparent",
                     fontFamily: "Pretendard",
                     fontSize: "15px",
                     fontWeight: selectedCategory === category ? 600 : 400,
-                    color: selectedCategory === category ? "#008FED" : "#0C0C0C",
-                    border: selectedCategory === category ? "1px solid rgba(0, 143, 237, 0.2)" : "1px solid transparent",
+                    color: selectedCategory === category ? "var(--color-button-primary)" : "#0C0C0C",
+                    border: selectedCategory === category ? "1px solid rgba(86, 104, 127, 0.25)" : "1px solid transparent",
                   }}
                   data-testid={`category-${category}`}
                 >
@@ -194,10 +195,10 @@ export function MasterDataTab({
                     <span
                       className="inline-block px-2 py-1 rounded"
                       style={{
-                        background: "rgba(0, 143, 237, 0.1)",
+                        background: "rgba(86, 104, 127, 0.12)",
                         fontSize: "11px",
                         fontWeight: 500,
-                        color: "#008FED",
+                        color: "var(--color-button-primary)",
                       }}
                     >
                       {["사고 유형", "사고 원인", "복구 유형", "타업체 견적 여부", "피해품목", "피해유형"].includes(category) ? "현장입력" : "복구면적 산출표"}
@@ -229,7 +230,7 @@ export function MasterDataTab({
           </h3>
 
           <div className="flex items-center gap-3 mb-6">
-            <span style={{ color: "#008FED", fontSize: "16px" }}>●</span>
+            <span style={{ color: "var(--color-button-primary)", fontSize: "16px" }}>●</span>
             <span
               style={{
                 fontFamily: "Pretendard",
@@ -243,10 +244,10 @@ export function MasterDataTab({
             <span
               className="px-2 py-1 rounded"
               style={{
-                background: "rgba(0, 143, 237, 0.1)",
+                background: "rgba(86, 104, 127, 0.12)",
                 fontSize: "12px",
                 fontWeight: 500,
-                color: "#008FED",
+                color: "var(--color-button-primary)",
               }}
             >
               {["사고 유형", "사고 원인", "복구 유형", "타업체 견적 여부", "피해품목", "피해유형"].includes(selectedCategory) ? "현장입력" : "복구면적 산출표"}
@@ -280,7 +281,7 @@ export function MasterDataTab({
               }}
               className="px-4 py-2"
               style={{
-                background: "#008FED",
+                background: "var(--color-button-primary)",
                 borderRadius: "6px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",

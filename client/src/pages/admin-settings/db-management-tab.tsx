@@ -102,10 +102,11 @@ export function DbManagementTab({
           <h1
             style={{
               fontFamily: "Pretendard",
-              fontSize: "26px",
+              fontSize: "28px",
               fontWeight: 600,
+              lineHeight: "128%",
               letterSpacing: "-0.02em",
-              color: "#0C0C0C",
+              color: "#56687f",
             }}
           >
             DB 관리
@@ -290,7 +291,7 @@ export function DbManagementTab({
           }}
           className="flex items-center gap-2 px-4 py-2"
           style={{
-            background: "#008FED",
+            background: "var(--color-button-primary)",
             borderRadius: "6px",
             fontFamily: "Pretendard",
             fontSize: "14px",
@@ -314,8 +315,8 @@ export function DbManagementTab({
             fontFamily: "Pretendard",
             fontSize: "16px",
             fontWeight: 600,
-            color: dbTab === "노무비" ? "#008FED" : "#686A6E",
-            borderBottom: dbTab === "노무비" ? "3px solid #008FED" : "none",
+            color: dbTab === "노무비" ? "var(--color-button-primary)" : "#686A6E",
+            borderBottom: dbTab === "노무비" ? "3px solid var(--color-button-primary)" : "none",
             marginBottom: dbTab === "노무비" ? "-2px" : "0",
           }}
           data-testid="tab-labor-cost"
@@ -329,8 +330,8 @@ export function DbManagementTab({
             fontFamily: "Pretendard",
             fontSize: "16px",
             fontWeight: 600,
-            color: dbTab === "자재비" ? "#008FED" : "#686A6E",
-            borderBottom: dbTab === "자재비" ? "3px solid #008FED" : "none",
+            color: dbTab === "자재비" ? "var(--color-button-primary)" : "#686A6E",
+            borderBottom: dbTab === "자재비" ? "3px solid var(--color-button-primary)" : "none",
             marginBottom: dbTab === "자재비" ? "-2px" : "0",
           }}
           data-testid="tab-material-cost"
@@ -344,8 +345,8 @@ export function DbManagementTab({
             fontFamily: "Pretendard",
             fontSize: "16px",
             fontWeight: 600,
-            color: dbTab === "일위대가" ? "#008FED" : "#686A6E",
-            borderBottom: dbTab === "일위대가" ? "3px solid #008FED" : "none",
+            color: dbTab === "일위대가" ? "var(--color-button-primary)" : "#686A6E",
+            borderBottom: dbTab === "일위대가" ? "3px solid var(--color-button-primary)" : "none",
             marginBottom: dbTab === "일위대가" ? "-2px" : "0",
           }}
           data-testid="tab-unit-price"
