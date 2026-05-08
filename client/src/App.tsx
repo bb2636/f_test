@@ -68,7 +68,9 @@ function Router() {
         <Route path="/admin-settings">
           {() => (
             <ProtectedRoute category="관리자 설정">
-              <AdminSettings />
+              <StatisticsLayout>
+                <AdminSettings />
+              </StatisticsLayout>
             </ProtectedRoute>
           )}
         </Route>

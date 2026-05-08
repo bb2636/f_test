@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GlobalHeader } from "@/components/global-header";
 import { AccessControlPanel } from "@/components/access-control-panel";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
@@ -1393,8 +1392,7 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="relative flex flex-col h-screen overflow-hidden bg-white">
-      <GlobalHeader />
+    <div className="relative flex flex-col h-full overflow-hidden bg-white">
       {/* Main Content */}
       <div className="relative flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
