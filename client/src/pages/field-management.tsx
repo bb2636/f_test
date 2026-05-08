@@ -929,9 +929,9 @@ export default function FieldManagement() {
           <>
             <div className="mt-4 text-[12px] font-semibold text-[#6B7280]">작성중인 접수건</div>
 
-            <div className="mt-2 rounded-lg bg-[#F3F6FA] px-4 py-3" data-testid="selected-case-info">
+            <div className="mt-2 rounded-lg bg-white px-4 py-3" style={{ border: "1px solid rgba(12, 12, 12, 0.2)" }} data-testid="selected-case-info">
               <div className="flex items-center gap-2 text-[13px] font-semibold">
-                <span className="inline-flex h-2 w-2 rounded-full bg-[#008FED]"></span>
+                <span className="inline-flex h-2 w-2 rounded-full bg-[#253396]"></span>
                 <span>{selectedCaseData.insuranceCompany || "보험사 미지정"}</span>
                 <span className="text-[#6B7280]">
                   {selectedCaseData.insuranceAccidentNo 
