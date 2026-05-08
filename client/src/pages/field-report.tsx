@@ -3133,6 +3133,7 @@ export default function FieldReport() {
             background: "white",
             backdropFilter: "blur(7px)",
             borderRadius: "12px",
+            border: "1px solid rgba(12, 12, 12, 0.2)",
           }}
         >
           {/* 왼쪽: 케이스 정보 */}
@@ -6110,6 +6111,7 @@ export default function FieldReport() {
                     rows={10}
                     readOnly={isAdmin || isPartnerReadOnly}
                     disabled={isPartnerReadOnly}
+                    className="bg-white"
                     style={{
                       fontFamily: "Pretendard",
                       fontSize: "14px",
