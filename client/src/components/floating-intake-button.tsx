@@ -277,7 +277,7 @@ export function FloatingIntakeButton() {
                 fontFamily: 'Pretendard',
                 fontSize: '20px',
                 fontWeight: 700,
-                color: '#0C0C0C',
+                color: '#56687f',
                 textAlign: 'center',
                 marginBottom: '24px',
               }}>
@@ -305,7 +305,7 @@ export function FloatingIntakeButton() {
                     style={{
                       flex: 1,
                       padding: '10px 14px',
-                      border: '1px solid rgba(12, 12, 12, 0.15)',
+                      border: '1px solid var(--color-table-border)',
                       borderRadius: '8px',
                       fontFamily: 'Pretendard',
                       fontSize: '14px',
@@ -320,7 +320,7 @@ export function FloatingIntakeButton() {
                     fontFamily: 'Pretendard',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: '#008FED',
+                    color: '#253396',
                   }}>
                     내용입력
                   </label>
@@ -332,14 +332,14 @@ export function FloatingIntakeButton() {
                       width: '100%',
                       minHeight: '220px',
                       padding: '14px',
-                      border: '1px solid #008FED',
+                      border: '1px solid var(--color-button-primary)',
                       borderRadius: '8px',
                       fontFamily: 'Pretendard',
                       fontSize: '14px',
                       lineHeight: '1.6',
                       resize: 'vertical',
                       outline: 'none',
-                      background: '#F0F7FF',
+                      background: '#e7e7f5',
                     }}
                     data-testid="textarea-sms-content"
                   />
@@ -355,7 +355,7 @@ export function FloatingIntakeButton() {
                     color: '#0C0C0C',
                     marginBottom: '8px',
                   }}>
-                    수신인 {recipients.length > 0 && <span style={{ color: '#008FED', fontWeight: 700 }}>({recipients.length}명)</span>}
+                    수신인 {recipients.length > 0 && <span style={{ color: '#253396', fontWeight: 700 }}>({recipients.length}명)</span>}
                   </div>
 
                   <div ref={searchRef} style={{ position: 'relative', marginBottom: '8px' }}>
@@ -364,7 +364,7 @@ export function FloatingIntakeButton() {
                       alignItems: 'center',
                       gap: '8px',
                       padding: '8px 12px',
-                      border: '1px solid rgba(12, 12, 12, 0.15)',
+                      border: '1px solid var(--color-table-border)',
                       borderRadius: '8px',
                       background: '#FFFFFF',
                     }}>
@@ -451,15 +451,15 @@ export function FloatingIntakeButton() {
                   </div>
 
                   <div style={{
-                    border: '1px solid rgba(12, 12, 12, 0.15)',
+                    border: '1px solid var(--color-table-border)',
                     borderRadius: '8px',
                     overflow: 'hidden',
                   }}>
                     <div style={{
                       display: 'grid',
                       gridTemplateColumns: '1fr 1fr 32px',
-                      background: '#F5F7FA',
-                      borderBottom: '1px solid rgba(12, 12, 12, 0.1)',
+                      background: 'var(--color-table-header)',
+                      borderBottom: '1px solid var(--color-table-border)',
                     }}>
                       <div style={{ padding: '8px 10px', fontFamily: 'Pretendard', fontSize: '12px', fontWeight: 600, color: 'rgba(12,12,12,0.6)' }}>이름(회사)</div>
                       <div style={{ padding: '8px 10px', fontFamily: 'Pretendard', fontSize: '12px', fontWeight: 600, color: 'rgba(12,12,12,0.6)' }}>휴대폰번호</div>
@@ -527,7 +527,7 @@ export function FloatingIntakeButton() {
                       style={{
                         flex: 1,
                         padding: '8px 10px',
-                        border: '1px solid rgba(12, 12, 12, 0.15)',
+                        border: '1px solid var(--color-table-border)',
                         borderRadius: '6px',
                         fontFamily: 'Pretendard',
                         fontSize: '13px',
@@ -655,7 +655,7 @@ export function FloatingIntakeButton() {
                   alignItems: 'center',
                   gap: '8px',
                   padding: '10px 24px',
-                  background: '#008FED',
+                  background: 'var(--color-button-primary)',
                   fontFamily: 'Pretendard',
                   fontWeight: 600,
                   fontSize: '14px',
