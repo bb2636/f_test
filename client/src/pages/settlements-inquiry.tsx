@@ -1,4 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useCompactPagination } from "@/lib/use-compact-pagination";
+import { CompactPagination } from "@/components/ui/compact-pagination";
 import ReactDOM from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -957,6 +959,18 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
     endDate,
   ]);
 
+  // [페이지네이션 2026-05-06] 한 페이지 15건. 산식/렌더 변경 없음 — 입력 배열만 슬라이스.
+  const {
+    page: settlementsPage,
+    setPage: setSettlementsPage,
+    totalPages: settlementsTotalPages,
+    pageItems: pagedRows,
+  } = useCompactPagination(filteredRows, 15);
+  useEffect(() => { setSettlementsPage(1); }, [
+    searchQuery, settlementStatus, insuranceCompany, assessor, manager,
+    startDate, endDate, filterMode, setSettlementsPage,
+  ]);
+
   const handleReset = () => {
     setSearchQuery("");
     setSettlementStatus("전체");
@@ -1363,10 +1377,11 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         const stickyColLefts = stickyColWidths.map((_, i) => stickyColWidths.slice(0, i).reduce((a, b) => a + b, 0));
         const totalStickyWidth = stickyColWidths.reduce((a, b) => a + b, 0);
         const thBaseStyle: React.CSSProperties = {
-          padding: "16px",
+          padding: "8px 16px",
           fontFamily: "Pretendard",
           fontSize: "14px",
           fontWeight: 600,
+          lineHeight: "115%",
           color: "rgba(12, 12, 12, 0.8)",
           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
           borderRight: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1454,12 +1469,13 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                   </td>
                 </tr>
               ) : (
-                filteredRows.map((row, index) => {
+                pagedRows.map((row, index) => {
                   const rowBg = index % 2 === 0 ? "rgba(255, 255, 255, 1)" : "rgba(248, 248, 248, 1)";
                   const cellStyle: React.CSSProperties = {
-                    padding: "14px 16px",
+                    padding: "2px 16px",
                     fontFamily: "Pretendard",
                     fontSize: "14px",
+                    lineHeight: "115%",
                     color: "rgba(12, 12, 12, 0.8)",
                     borderRight: "1px solid rgba(12, 12, 12, 0.05)",
                     textAlign: "center",
@@ -1486,7 +1502,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       key={row.id}
                       style={{
                         borderBottom:
-                          index < filteredRows.length - 1
+                          index < pagedRows.length - 1
                             ? "1px solid rgba(12, 12, 12, 0.05)"
                             : "none",
                         background: rowBg,
@@ -1623,23 +1639,13 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
           </table>
         </div>
 
-        {/* Pagination */}
-        <div
-          className="flex items-center justify-center p-6"
-          style={{
-            borderTop: "1px solid rgba(12, 12, 12, 0.05)",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: "Pretendard",
-              fontSize: "14px",
-              color: "rgba(12, 12, 12, 0.5)",
-            }}
-          >
-            합계
-          </span>
-        </div>
+        {/* Pagination: 한 페이지 15건. <<,>>는 페이지번호 그룹표시만 이동, < >는 데이터 ±1. */}
+        <CompactPagination
+          currentPage={settlementsPage}
+          totalPages={settlementsTotalPages}
+          onPageChange={setSettlementsPage}
+          testIdPrefix={`pagination-${filterMode}`}
+        />
       </div>
         );
       })()}

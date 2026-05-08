@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useCompactPagination } from "@/lib/use-compact-pagination";
+import { CompactPagination } from "@/components/ui/compact-pagination";
 import ReactDOM from "react-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -21,7 +23,7 @@ import {
 import logoIcon from "@assets/logo-frame.svg";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
-import { getStatusColor, getStatusDisplayText } from "@/lib/case-status";
+import { getStatusColor, getStatusDisplayText, STATUS_COLORS } from "@/lib/case-status";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";
 import { GlobalHeader } from "@/components/global-header";
@@ -1213,6 +1215,17 @@ export default function ComprehensiveProgress() {
     });
   }, [cases, selectedStatus, searchQuery, selectedManager, user?.role, user?.company]);
 
+  // [페이지네이션 2026-05-06] 한 페이지 15건. 산식/렌더 변경 없음 — 입력 배열만 슬라이스.
+  const {
+    page: progressPage,
+    setPage: setProgressPage,
+    totalPages: progressTotalPages,
+    pageItems: pagedCases,
+  } = useCompactPagination(filteredData, 15);
+  useEffect(() => { setProgressPage(1); }, [
+    selectedStatus, searchQuery, selectedManager, setProgressPage,
+  ]);
+
   const totalCount = filteredData.length;
 
   // 협력사가 변경 가능한 상태 목록
@@ -1434,8 +1447,7 @@ export default function ComprehensiveProgress() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <GlobalHeader />
+    <div style={{ background: "var(--color-bg)", minHeight: "100%" }}>
       {/* Main Content */}
       <div
         style={{
@@ -1462,7 +1474,7 @@ export default function ComprehensiveProgress() {
               fontSize: "28px",
               lineHeight: "128%",
               letterSpacing: "-0.02em",
-              color: "#0C0C0C",
+              color: "#56687f",
             }}
           >
             종합진행관리
@@ -1515,14 +1527,22 @@ export default function ComprehensiveProgress() {
                   fontSize: "14px",
                   fontWeight: 400,
                   letterSpacing: "-0.02em",
-                  border: "1px solid rgba(12, 12, 12, 0.1)",
+                  background: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
                   borderRadius: "6px",
                 }}
                 data-testid="select-status-filter"
               >
                 <SelectValue placeholder="진행상태 선택" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                style={{
+                  backgroundColor: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
+                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                  zIndex: 1000,
+                }}
+              >
                 {statusOptions.map((option) => (
                   <SelectItem
                     key={option.key}
@@ -1559,8 +1579,8 @@ export default function ComprehensiveProgress() {
                   width: "100%",
                   height: "52px",
                   padding: "0 20px 0 52px",
-                  background: "#FDFDFD",
-                  border: "1px solid rgba(12, 12, 12, 0.1)",
+                  background: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
                   fontSize: "14px",
@@ -1580,7 +1600,7 @@ export default function ComprehensiveProgress() {
               style={{
                 width: "100px",
                 height: "52px",
-                background: "#008FED",
+                background: "var(--color-button-primary)",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
@@ -1626,7 +1646,8 @@ export default function ComprehensiveProgress() {
                   fontSize: "14px",
                   fontWeight: 400,
                   letterSpacing: "-0.02em",
-                  border: "1px solid rgba(12, 12, 12, 0.1)",
+                  background: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
                   borderRadius: "6px",
                   flexShrink: 0,
                 }}
@@ -1634,7 +1655,14 @@ export default function ComprehensiveProgress() {
               >
                 <SelectValue placeholder="담당자 선택" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent
+                style={{
+                  backgroundColor: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
+                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                  zIndex: 1000,
+                }}
+              >
                 <SelectItem value="전체" data-testid="option-manager-all">
                   전체
                 </SelectItem>
@@ -1657,7 +1685,7 @@ export default function ComprehensiveProgress() {
               style={{
                 height: "52px",
                 padding: "0 20px",
-                background: "#008FED",
+                background: "var(--color-button-primary)",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
@@ -1694,7 +1722,7 @@ export default function ComprehensiveProgress() {
                 fontSize: "20px",
                 lineHeight: "128%",
                 letterSpacing: "-0.02em",
-                color: "rgba(12, 12, 12, 0.7)",
+                color: "#56687f",
               }}
             >
               전체건
@@ -1706,7 +1734,7 @@ export default function ComprehensiveProgress() {
                 fontSize: "20px",
                 lineHeight: "128%",
                 letterSpacing: "-0.02em",
-                color: "#008FED",
+                color: "#253396",
               }}
             >
               {totalCount}
@@ -1739,11 +1767,9 @@ export default function ComprehensiveProgress() {
 
         {/* Table */}
         <div
+          className="table-card"
           style={{
-            background: "#FFFFFF",
-            boxShadow: "0px 0px 20px #DBE9F5",
-            borderRadius: "12px",
-            overflow: "hidden",
+            boxShadow: "0px 2px 6px rgba(0,0,0,0.04)",
             display: "flex",
             flexDirection: "column",
             maxHeight: "calc(100vh - 260px)",
@@ -1777,8 +1803,8 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    paddingTop: "14px",
-                    paddingBottom: "14px",
+                    paddingTop: "0px",
+                    paddingBottom: "0px",
                   }}
                 >
                   <Checkbox
@@ -1826,10 +1852,11 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
-                    paddingRight: "4px",
-                    paddingLeft: "4px",
-                    paddingTop: "14px",
-                    paddingBottom: "14px",
+                    paddingRight: (col.label?.startsWith("경과") || col.label === "메모") ? "8px" : "4px",
+                    paddingLeft: (col.label?.startsWith("경과") || col.label === "메모") ? "8px" : "4px",
+                    paddingTop: "0px",
+                    paddingBottom: "0px",
+                    lineHeight: "115%",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -1950,7 +1977,7 @@ export default function ComprehensiveProgress() {
                 </div>
               </div>
             ) : (
-              filteredData.map((caseItem, index) => {
+              pagedCases.map((caseItem, index) => {
                 return (
                   <div
                     key={caseItem.id}
@@ -1978,8 +2005,8 @@ export default function ComprehensiveProgress() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          paddingTop: "14px",
-                          paddingBottom: "14px",
+                          paddingTop: "2px",
+                          paddingBottom: "2px",
                         }}
                       >
                         <Checkbox
@@ -2002,8 +2029,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2018,8 +2045,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2034,8 +2061,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2050,8 +2077,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2066,8 +2093,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2125,8 +2152,8 @@ export default function ComprehensiveProgress() {
                             whiteSpace: "normal",
                             paddingRight: "4px",
                             paddingLeft: "4px",
-                            paddingTop: "14px",
-                            paddingBottom: "14px",
+                            paddingTop: "2px",
+                            paddingBottom: "2px",
                             display: "flex",
                             alignItems: "center",
                           }}
@@ -2144,8 +2171,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2160,8 +2187,8 @@ export default function ComprehensiveProgress() {
                         color: "rgba(12, 12, 12, 0.8)",
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2177,8 +2204,8 @@ export default function ComprehensiveProgress() {
     
                         paddingRight: "4px",
                         paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "flex-end",
@@ -2192,10 +2219,10 @@ export default function ComprehensiveProgress() {
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
     
-                        paddingRight: "4px",
-                        paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingRight: "8px",
+                        paddingLeft: "8px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2208,10 +2235,10 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        paddingRight: "4px",
-                        paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingRight: "8px",
+                        paddingLeft: "8px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2224,10 +2251,10 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        paddingRight: "4px",
-                        paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingRight: "8px",
+                        paddingLeft: "8px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2235,7 +2262,7 @@ export default function ComprehensiveProgress() {
                     >
                       {calculateElapsed3(caseItem)}
                     </div>
-                    <div onClick={(e) => e.stopPropagation()} style={{ paddingRight: "4px", paddingLeft: "4px", paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div onClick={(e) => e.stopPropagation()} style={{ paddingRight: "4px", paddingLeft: "4px", paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {/* 관리자: 모든 상태에서 변경 가능, 협력사: 현장정보제출/복구요청(2차승인) 상태에서만 변경 가능 */}
                       {user?.role === "관리자" ||
                       (user?.role === "협력사" &&
@@ -2249,13 +2276,14 @@ export default function ComprehensiveProgress() {
                           >
                             <div
                               style={{
-                                padding: "6px 12px",
-                                background: "rgba(12, 12, 12, 0.05)",
-                                borderRadius: "6px",
+                                padding: "6px 14px",
+                                background: "#e7e7f5",
+                                border: "none",
+                                borderRadius: "9999px",
                                 fontFamily: "Pretendard",
                                 fontSize: "12px",
-                                fontWeight: 600,
-                                color: getStatusColor(caseItem.status),
+                                fontWeight: 400,
+                                color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#253396" : getStatusColor(caseItem.status),
                                 textAlign: "center",
                                 lineHeight: "1.4",
                                 maxWidth: "140px",
@@ -2326,13 +2354,14 @@ export default function ComprehensiveProgress() {
                       ) : (
                         <div
                           style={{
-                            padding: "6px 12px",
-                            background: "rgba(12, 12, 12, 0.05)",
-                            borderRadius: "6px",
+                            padding: "6px 14px",
+                            background: "#e7e7f5",
+                            border: "none",
+                            borderRadius: "9999px",
                             fontFamily: "Pretendard",
                             fontSize: "12px",
-                            fontWeight: 600,
-                            color: getStatusColor(caseItem.status),
+                            fontWeight: 400,
+                            color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#253396" : getStatusColor(caseItem.status),
                             textAlign: "center",
                             lineHeight: "1.4",
                             maxWidth: "140px",
@@ -2351,10 +2380,10 @@ export default function ComprehensiveProgress() {
                         alignItems: "center",
                         gap: "4px",
     
-                        paddingRight: "4px",
-                        paddingLeft: "4px",
-                        paddingTop: "14px",
-                        paddingBottom: "14px",
+                        paddingRight: "8px",
+                        paddingLeft: "8px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                       }}
                     >
                       {/* 협력사 특이사항 빨간색 점: 미확인=채움, 확인=테두리만 */}
@@ -2406,8 +2435,8 @@ export default function ComprehensiveProgress() {
                           textDecoration: "underline",
                           paddingRight: "4px",
                           paddingLeft: "4px",
-                          paddingTop: "14px",
-                          paddingBottom: "14px",
+                          paddingTop: "2px",
+                          paddingBottom: "2px",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -2437,7 +2466,7 @@ export default function ComprehensiveProgress() {
                             : "현장조사 입력"}
                       </div>
                     )}
-                    <div style={{ paddingTop: "14px", paddingBottom: "14px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "8px", overflow: "visible", minWidth: 0 }}>
+                    <div style={{ paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "8px", overflow: "visible", minWidth: 0 }}>
                       {caseItem.status === "배당대기" ? (
                         // 배당대기 상태 - 임시 저장 건이므로 이어서 작성하기 버튼
                         (<button
@@ -2505,14 +2534,14 @@ export default function ComprehensiveProgress() {
                                   setShowInvoiceDialog(true);
                                 }}
                                 style={{
-                                  padding: "6px 12px",
-                                  background: "#008FED",
+                                  padding: "6px 14px",
+                                  background: "#e7e7f5",
                                   border: "none",
-                                  borderRadius: "6px",
+                                  borderRadius: "9999px",
                                   fontFamily: "Pretendard",
                                   fontSize: "12px",
                                   fontWeight: 500,
-                                  color: "#FFFFFF",
+                                  color: "#253396",
                                   cursor: "pointer",
                                   whiteSpace: "nowrap",
                                 }}
@@ -2530,6 +2559,13 @@ export default function ComprehensiveProgress() {
             )}
           </div>
         </div>
+        {/* Pagination: 한 페이지 15건. <<,>>는 페이지번호 그룹표시만 이동, < >는 데이터 ±1. */}
+        <CompactPagination
+          currentPage={progressPage}
+          totalPages={progressTotalPages}
+          onPageChange={setProgressPage}
+          testIdPrefix="pagination-progress"
+        />
       </div>
       {/* 상세보기 Sheet */}
       <Sheet
