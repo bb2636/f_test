@@ -1902,7 +1902,8 @@ export default function Intake({
 
   return (
     <div
-      className={`relative ${isModal ? "bg-white" : "bg-white min-h-screen"}`}
+      className={`relative ${isModal ? "bg-white" : "min-h-screen"}`}
+      style={!isModal ? { background: "var(--color-bg)" } : undefined}
     >
       {!isModal && <GlobalHeader />}
       <main
@@ -1951,8 +1952,8 @@ export default function Intake({
         <form className="space-y-10" onSubmit={(e) => e.preventDefault()} autoComplete="off">
           {/* 기본 정보 */}
           <section>
-            <div className="mb-4 border-b-2 border-sky-500">
-              <h2 className="pb-2 text-sm font-semibold text-sky-600">
+            <div className="mb-4 border-b-2 border-[#57677e]">
+              <h2 className="pb-2 text-sm font-semibold text-[#56687f]">
                 기본 정보
               </h2>
             </div>
@@ -2073,8 +2074,8 @@ export default function Intake({
 
           {/* 보험 정보 */}
           <section>
-            <div className="mb-4 border-b-2 border-sky-500 flex items-center justify-between">
-              <h2 className="pb-2 text-sm font-semibold text-sky-600">
+            <div className="mb-4 border-b-2 border-[#57677e] flex items-center justify-between">
+              <h2 className="pb-2 text-sm font-semibold text-[#56687f]">
                 보험 정보
               </h2>
               {!readOnly && (
@@ -2587,8 +2588,8 @@ export default function Intake({
 
           {/* 배당사항 */}
           <section>
-            <div className="mb-4 border-b-2 border-sky-500 flex items-center justify-between">
-              <h2 className="pb-2 text-sm font-semibold text-sky-600">
+            <div className="mb-4 border-b-2 border-[#57677e] flex items-center justify-between">
+              <h2 className="pb-2 text-sm font-semibold text-[#56687f]">
                 배당사항
               </h2>
               {!readOnly && (
@@ -2802,8 +2803,8 @@ export default function Intake({
 
           {/* 배당 협력사 정보 */}
           <section>
-            <div className="mb-4 border-b-2 border-sky-500 flex items-center justify-between">
-              <h2 className="pb-2 text-sm font-semibold text-sky-600">
+            <div className="mb-4 border-b-2 border-[#57677e] flex items-center justify-between">
+              <h2 className="pb-2 text-sm font-semibold text-[#56687f]">
                 배당 협력사 정보
               </h2>
               {!readOnly && (
@@ -2883,9 +2884,9 @@ export default function Intake({
                           fontFamily: "Pretendard",
                           fontSize: "12px",
                           fontWeight: 500,
-                          color: "#008FED",
+                          color: "var(--color-button-primary)",
                           background: "none",
-                          border: "1px solid #008FED",
+                          border: "1px solid var(--color-button-primary)",
                           borderRadius: "4px",
                           padding: "4px 10px",
                           cursor: "pointer",
@@ -2955,7 +2956,8 @@ export default function Intake({
                   <button
                     onClick={handleUpdateCase}
                     disabled={updateMutation.isPending}
-                    className="inline-flex h-10 items-center justify-center rounded-md bg-sky-500 px-5 text-sm font-semibold text-white hover:bg-sky-600 disabled:opacity-50"
+                    className="inline-flex h-10 items-center justify-center rounded-md px-5 text-sm font-semibold text-white disabled:opacity-50"
+                    style={{ background: "var(--color-button-primary)" }}
                     type="button"
                     data-testid="button-update-case"
                   >
@@ -2986,7 +2988,13 @@ export default function Intake({
                     <button
                       onClick={handleSubmit}
                       disabled={submitMutation.isPending || !isFormValid}
-                      className="inline-flex h-10 items-center justify-center rounded-md bg-slate-300 px-5 text-sm font-semibold text-white disabled:bg-slate-300 enabled:bg-sky-500 enabled:hover:bg-sky-600"
+                      className="inline-flex h-10 items-center justify-center rounded-md px-5 text-sm font-semibold text-white"
+                      style={{
+                        background: (submitMutation.isPending || !isFormValid)
+                          ? "#cbd5e1"
+                          : "var(--color-button-primary)",
+                        cursor: (submitMutation.isPending || !isFormValid) ? "not-allowed" : "pointer",
+                      }}
                       type="button"
                       data-testid="button-submit"
                     >
@@ -3725,7 +3733,7 @@ export default function Intake({
                   padding: "8px 20px",
                   borderRadius: "8px",
                   border: "none",
-                  background: !selectedNewPartnerManager ? "rgba(0, 143, 237, 0.4)" : "#008FED",
+                  background: !selectedNewPartnerManager ? "rgba(87, 103, 126, 0.4)" : "var(--color-button-primary)",
                   color: "#fff",
                   cursor: !selectedNewPartnerManager ? "not-allowed" : "pointer",
                 }}

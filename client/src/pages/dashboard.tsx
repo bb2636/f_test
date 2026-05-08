@@ -948,7 +948,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen text-slate-900" style={{ background: "var(--color-bg)" }}>
       <GlobalHeader />
 
       <main
@@ -959,7 +959,7 @@ export default function Dashboard() {
           <section className="col-span-12 lg:col-span-9 space-y-6">
             <div className="col-span-12">
               <div className="mb-3 flex items-center">
-                <h2 className="text-base font-bold">현황 요약</h2>
+                <h2 className="text-base font-bold" style={{ color: "#56687f" }}>현황 요약</h2>
               </div>
 
               <div className="rounded-2xl bg-white/70 p-4 shadow-sm ring-1 ring-[#DDE3F3]">
@@ -1164,7 +1164,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-12 lg:col-span-8">
                 <div className="mb-3">
-                  <h2 className="text-base font-bold">진행건 요약</h2>
+                  <h2 className="text-base font-bold" style={{ color: "#56687f" }}>진행건 요약</h2>
                 </div>
 
                 <div className="rounded-2xl bg-white/70 p-5 shadow-sm ring-1 ring-[#DDE3F3]">
@@ -1323,7 +1323,7 @@ export default function Dashboard() {
 
               <div className="col-span-12 lg:col-span-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-base font-bold">내 작업</h2>
+                  <h2 className="text-base font-bold" style={{ color: "#56687f" }}>내 작업</h2>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
@@ -1879,7 +1879,7 @@ export default function Dashboard() {
                 style={{
                   background: createInquiryMutation.isPending
                     ? "#CCC"
-                    : "#008FED",
+                    : "var(--color-button-primary)",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
                   fontSize: "16px",
