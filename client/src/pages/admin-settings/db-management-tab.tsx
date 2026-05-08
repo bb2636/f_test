@@ -549,7 +549,7 @@ export function DbManagementTab({
               background: "rgba(248, 248, 248, 1)",
             }}
           >
-            <tr>
+            <tr className="compact-row">
               {(() => {
                 const currentHeaders = dbTab === "노무비" ? laborExcelHeaders : dbTab === "자재비" ? materialExcelHeaders : unitPriceExcelHeaders;
                 return currentHeaders.length > 0 ? (
@@ -595,7 +595,7 @@ export function DbManagementTab({
               const currentData = dbTab === "노무비" ? laborExcelData : dbTab === "자재비" ? materialExcelData : unitPriceExcelData;
               if (currentData.length === 0) {
                 return (
-                  <tr>
+                  <tr className="compact-row">
                     <td
                       colSpan={12}
                       className="px-4 py-8 text-center"
@@ -684,7 +684,7 @@ export function DbManagementTab({
                 const overrideKey = `${category}|${workName}|${laborItem}`;
                 
                 return (
-                  <tr key={rowIdx}>
+                  <tr key={rowIdx} className="compact-row">
                     {Array.isArray(row) && row.map((cell: any, cellIdx: number) => {
                       const cellMerge = mergeInfo[rowIdx]?.[cellIdx];
                       if (cellMerge?.skip) {

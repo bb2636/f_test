@@ -1526,7 +1526,7 @@ export default function AdminSettings() {
               >
                 <table className="w-full">
                   <thead>
-                    <tr
+                    <tr className="compact-row"
                       style={{
                         background: "#F8F9FA",
                         borderBottom: "2px solid rgba(12, 12, 12, 0.1)",
@@ -1657,13 +1657,13 @@ export default function AdminSettings() {
                   </thead>
                   <tbody>
                     {inquiriesLoading ? (
-                      <tr>
+                      <tr className="compact-row">
                         <td colSpan={9} className="px-4 py-8 text-center">
                           <div className="text-sm text-gray-500">로딩 중...</div>
                         </td>
                       </tr>
                     ) : filteredInquiries.length === 0 ? (
-                      <tr>
+                      <tr className="compact-row">
                         <td colSpan={9} className="px-4 py-8 text-center">
                           <div className="text-sm text-gray-500">
                             {inquiryStatusFilter === "전체" ? "등록된 문의가 없습니다" : 
@@ -1685,7 +1685,7 @@ export default function AdminSettings() {
                           <tr
                             key={inquiry.id}
                             onClick={() => setSelectedInquiry(inquiry as any)}
-                            className="cursor-pointer hover:bg-gray-50"
+                            className="compact-row cursor-pointer hover:bg-gray-50"
                             style={{
                               borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                             }}

@@ -104,7 +104,7 @@ export function NoticeManagementTab({
       >
         <table className="w-full">
           <thead>
-            <tr
+            <tr className="compact-row"
               style={{
                 background: "#F8F9FA",
                 borderBottom: "2px solid rgba(12, 12, 12, 0.1)",
@@ -154,13 +154,13 @@ export function NoticeManagementTab({
           </thead>
           <tbody>
             {noticesLoading ? (
-              <tr>
+              <tr className="compact-row">
                 <td colSpan={7} className="px-4 py-8 text-center">
                   <div className="text-sm text-gray-500">로딩 중...</div>
                 </td>
               </tr>
             ) : notices.length === 0 ? (
-              <tr>
+              <tr className="compact-row">
                 <td colSpan={7} className="px-4 py-8 text-center">
                   <div className="text-sm text-gray-500">등록된 공지사항이 없습니다</div>
                 </td>
@@ -185,7 +185,7 @@ export function NoticeManagementTab({
                 return (
                   <tr
                     key={notice.id}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className="compact-row hover:bg-gray-50 cursor-pointer"
                     style={{
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                     }}

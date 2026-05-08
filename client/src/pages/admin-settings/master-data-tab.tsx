@@ -316,7 +316,7 @@ export function MasterDataTab({
                   background: "rgba(248, 248, 248, 1)",
                 }}
               >
-                <tr>
+                <tr className="compact-row">
                   <th
                     className="px-4 py-3 text-left"
                     style={{
@@ -396,7 +396,7 @@ export function MasterDataTab({
                   
                   if (items.length === 0) {
                     return (
-                      <tr>
+                      <tr className="compact-row">
                         <td
                           colSpan={4}
                           className="px-4 py-8 text-center"
@@ -422,7 +422,7 @@ export function MasterDataTab({
                     const isDragOver = dragOverItemId === itemId;
                     
                     return (
-                      <tr
+                      <tr className="compact-row"
                         key={itemId}
                         draggable={isMasterCategory}
                         onDragStart={(e) => isMasterCategory && handleDragStart(e, itemId)}

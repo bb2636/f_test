@@ -159,7 +159,7 @@ export function ChangeLogTab({
         <div className="overflow-x-auto">
           <table className="w-full" style={{ tableLayout: "auto" }}>
             <thead>
-              <tr style={{ background: "rgba(12, 12, 12, 0.04)", borderBottom: "1px solid rgba(12, 12, 12, 0.12)" }}>
+              <tr className="compact-row" style={{ background: "rgba(12, 12, 12, 0.04)", borderBottom: "1px solid rgba(12, 12, 12, 0.12)" }}>
                 {["사고번호", "변경자", "변경일시", "변경 항목", "변경 내용"].map((label) => (
                   <th
                     key={label}
@@ -180,7 +180,7 @@ export function ChangeLogTab({
             </thead>
             <tbody>
               {changeLogsLoading ? (
-                <tr>
+                <tr className="compact-row">
                   <td
                     colSpan={5}
                     className="px-4 py-8 text-center"
@@ -195,7 +195,7 @@ export function ChangeLogTab({
                   </td>
                 </tr>
               ) : changeLogs.length === 0 ? (
-                <tr>
+                <tr className="compact-row">
                   <td
                     colSpan={5}
                     className="px-4 py-8 text-center"
@@ -213,7 +213,7 @@ export function ChangeLogTab({
                 changeLogs.map((log) => (
                   <tr
                     key={log.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="compact-row hover:bg-gray-50 transition-colors"
                     style={{ borderBottom: "1px solid rgba(12, 12, 12, 0.08)" }}
                     data-testid={`row-changelog-${log.id}`}
                   >
