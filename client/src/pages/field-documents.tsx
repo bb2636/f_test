@@ -504,7 +504,7 @@ export default function FieldDocuments() {
       toast({
         title: "파일이 업로드 되었습니다",
         description: "",
-        className: "bg-[#008FED] text-white border-0",
+        className: "bg-[#253396] text-white border-0",
       });
     },
   });
@@ -539,7 +539,7 @@ export default function FieldDocuments() {
       toast({
         title: "파일이 삭제되었습니다",
         description: "",
-        className: "bg-[#008FED] text-white border-0",
+        className: "bg-[#253396] text-white border-0",
       });
     },
     onError: (error, documentId: string, context: any) => {
@@ -607,7 +607,7 @@ export default function FieldDocuments() {
       toast({
         title: "청구자료가 제출되었습니다",
         description: data.message || "제출이 완료되었습니다.",
-        className: "bg-[#008FED] text-white border-0",
+        className: "bg-[#253396] text-white border-0",
       });
       setShowClaimSubmitDialog(false);
     },
@@ -662,7 +662,7 @@ export default function FieldDocuments() {
             fontWeight: 600,
             letterSpacing: "-0.02em",
             color: "#FFFFFF",
-            background: "#008FED",
+            background: "#253396",
             border: "none",
           }}
           data-testid="button-select-case-empty"
@@ -1021,7 +1021,7 @@ export default function FieldDocuments() {
       toast({
         title: "파일이 업로드 되었습니다",
         description: uploadingFile.file.name,
-        className: "bg-[#008FED] text-white border-0",
+        className: "bg-[#253396] text-white border-0",
       });
 
       setTimeout(() => {
@@ -1371,7 +1371,7 @@ export default function FieldDocuments() {
     const { dismiss } = toast({
       title: "증빙자료가 저장되었습니다",
       description: "",
-      className: "bg-[#008FED] text-white border-0",
+      className: "bg-[#253396] text-white border-0",
       action: (
         <button
           onClick={() => {
@@ -1380,7 +1380,7 @@ export default function FieldDocuments() {
           className="px-4 py-2 rounded"
           style={{
             background: "white",
-            color: "#008FED",
+            color: "#253396",
             fontFamily: "Pretendard",
             fontSize: "14px",
             fontWeight: 600,
@@ -1442,7 +1442,7 @@ export default function FieldDocuments() {
             onClick={handleSave}
             className="px-8 py-3 rounded-lg hover-elevate active-elevate-2"
             style={{
-              background: "#008FED",
+              background: "#253396",
               color: "white",
               fontFamily: "Pretendard",
               fontSize: "16px",
@@ -1641,7 +1641,7 @@ export default function FieldDocuments() {
             <div className="flex items-center gap-2 mb-2">
               <div
                 className="w-2 h-2 rounded-full"
-                style={{ background: "#008FED" }}
+                style={{ background: "#253396" }}
               />
               <span
                 style={{
@@ -1767,7 +1767,7 @@ export default function FieldDocuments() {
                   color: isDisabled
                     ? "rgba(12, 12, 12, 0.25)"
                     : selectedCategory === category
-                      ? "#008FED"
+                      ? "#253396"
                       : "rgba(12, 12, 12, 0.5)",
                   border: "none",
                   cursor: isDisabled ? "not-allowed" : "pointer",
@@ -1790,7 +1790,7 @@ export default function FieldDocuments() {
                         style={{
                           color:
                             selectedCategory === category
-                              ? "#008FED"
+                              ? "#253396"
                               : "rgba(12, 12, 12, 0.35)",
                         }}
                       />
@@ -1817,7 +1817,7 @@ export default function FieldDocuments() {
                     left: 0,
                     right: 0,
                     height: "2px",
-                    background: "#008FED",
+                    background: "#253396",
                   }}
                 />
               )}
@@ -2366,8 +2366,8 @@ export default function FieldDocuments() {
             className="mb-6 rounded-xl p-12 transition-all cursor-pointer"
             style={{
               background: isDragging
-                ? "rgba(0, 143, 237, 0.08)"
-                : "rgba(0, 143, 237, 0.03)",
+                ? "rgba(37, 51, 150, 0.08)"
+                : "rgba(37, 51, 150, 0.03)",
               border: "none",
             }}
             onDragOver={handleDragOver}
@@ -2379,9 +2379,9 @@ export default function FieldDocuments() {
             <div className="flex flex-col items-center gap-4">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(0, 143, 237, 0.1)" }}
+                style={{ background: "rgba(37, 51, 150, 0.1)" }}
               >
-                <Upload className="w-8 h-8" style={{ color: "#008FED" }} />
+                <Upload className="w-8 h-8" style={{ color: "#253396" }} />
               </div>
               <div className="text-center">
                 <div
@@ -2403,7 +2403,7 @@ export default function FieldDocuments() {
                     fontSize: "15px",
                     fontWeight: 500,
                     letterSpacing: "-0.02em",
-                    color: "#008FED",
+                    color: "#253396",
                     border: "none",
                     background: "transparent",
                     cursor: "pointer",
@@ -2508,7 +2508,7 @@ export default function FieldDocuments() {
                         fontSize: "12px",
                         fontWeight: 500,
                         letterSpacing: "-0.02em",
-                        color: "#008FED",
+                        color: "#253396",
                       }}
                     >
                       <Check className="w-3 h-3" />
@@ -2739,7 +2739,7 @@ export default function FieldDocuments() {
                               ? "rgba(12, 12, 12, 0.8)"
                               : "rgba(12, 12, 12, 0.4)",
                             background: isSelected
-                              ? "linear-gradient(0deg, rgba(0, 143, 237, 0.07), rgba(0, 143, 237, 0.07)), #FDFDFD"
+                              ? "linear-gradient(0deg, rgba(37, 51, 150, 0.07), rgba(37, 51, 150, 0.07)), #FDFDFD"
                               : "#FFFFFF",
                             paddingTop: "10px",
                             paddingBottom: "10px",
@@ -2803,7 +2803,7 @@ export default function FieldDocuments() {
                 style={{
                   background:
                     selectedCaseId === caseItem.id
-                      ? "rgba(0, 143, 237, 0.05)"
+                      ? "rgba(37, 51, 150, 0.05)"
                       : "rgba(12, 12, 12, 0.02)",
                   border: "1px solid rgba(12, 12, 12, 0.08)",
                 }}
@@ -2813,7 +2813,7 @@ export default function FieldDocuments() {
                   {/* 선택 표시 */}
                   {selectedCaseId === caseItem.id && (
                     <div className="flex-shrink-0">
-                      <Check className="w-5 h-5" style={{ color: "#008FED" }} />
+                      <Check className="w-5 h-5" style={{ color: "#253396" }} />
                     </div>
                   )}
 
@@ -2857,8 +2857,8 @@ export default function FieldDocuments() {
                       <span
                         className="px-2 py-0.5 rounded"
                         style={{
-                          background: "rgba(0, 143, 237, 0.1)",
-                          color: "#008FED",
+                          background: "rgba(37, 51, 150, 0.1)",
+                          color: "#253396",
                           fontSize: "12px",
                         }}
                       >

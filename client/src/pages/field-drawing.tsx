@@ -1178,7 +1178,7 @@ export default function FieldDrawing() {
               data-ui="case-info"
               style={{
                 background: "white",
-                border: "1px solid rgba(0, 143, 237, 0.15)",
+                border: "1px solid rgba(37, 51, 150, 0.15)",
               }}
             >
               <div
@@ -1196,7 +1196,7 @@ export default function FieldDrawing() {
               <div className="flex items-center gap-2">
                 <div
                   className="w-2 h-2 rounded-full"
-                  style={{ background: "#008FED" }}
+                  style={{ background: "#253396" }}
                 />
                 <span
                   style={{
@@ -1331,8 +1331,8 @@ export default function FieldDrawing() {
               className="px-6 py-2.5 rounded-lg font-medium transition-all hover-elevate active-elevate-2"
               style={{
                 background: "white",
-                color: "#008FED",
-                border: "1px solid #008FED",
+                color: "#253396",
+                border: "1px solid #253396",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
                 opacity: (!isSaveReady || saveDrawingMutation.isPending || isReadOnly) ? 0.6 : 1,
@@ -1346,7 +1346,7 @@ export default function FieldDrawing() {
               onClick={handleSavePNG}
               className="px-6 py-2.5 rounded-lg font-medium transition-all hover-elevate active-elevate-2"
               style={{
-                background: "#008FED",
+                background: "#253396",
                 color: "white",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1397,7 +1397,7 @@ export default function FieldDrawing() {
                       disabled={isReadOnly}
                       className="p-3 rounded-lg transition-all"
                       style={{
-                        background: selectedTool === tool.id ? "#008FED" : "transparent",
+                        background: selectedTool === tool.id ? "#253396" : "transparent",
                         color: isReadOnly ? "#CCCCCC" : (selectedTool === tool.id ? "white" : "#0C0C0C"),
                         cursor: isReadOnly ? "not-allowed" : "pointer",
                         opacity: isReadOnly ? 0.5 : 1,
@@ -1439,7 +1439,7 @@ export default function FieldDrawing() {
                     className="w-20 px-2 py-1 rounded text-white text-sm"
                     style={{
                       background: "#1C1C1C",
-                      border: "1px solid #008FED",
+                      border: "1px solid #253396",
                     }}
                     data-testid="input-rectangle-width"
                   />
@@ -1641,7 +1641,7 @@ export default function FieldDrawing() {
                       top: `${image.y * DISPLAY_SCALE}px`,
                       width: `${image.width * DISPLAY_SCALE}px`,
                       height: `${image.height * DISPLAY_SCALE}px`,
-                      border: selectedImageId === image.id ? "2px solid #008FED" : "none",
+                      border: selectedImageId === image.id ? "2px solid #253396" : "none",
                       cursor: selectedTool === "pointer" && !image.locked ? "move" : "pointer",
                       zIndex: selectedImageId === image.id ? 10 : 1,
                     }}
@@ -1662,15 +1662,15 @@ export default function FieldDrawing() {
                     {selectedImageId === image.id && !image.locked && (
                       <>
                         {/* 모서리 핸들 */}
-                        <div data-testid={`resize-handle-nw-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'nw', image, 'image')} style={{ position: 'absolute', top: -4, left: -4, width: 8, height: 8, background: '#008FED', cursor: 'nw-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-ne-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'ne', image, 'image')} style={{ position: 'absolute', top: -4, right: -4, width: 8, height: 8, background: '#008FED', cursor: 'ne-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-sw-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'sw', image, 'image')} style={{ position: 'absolute', bottom: -4, left: -4, width: 8, height: 8, background: '#008FED', cursor: 'sw-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-se-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'se', image, 'image')} style={{ position: 'absolute', bottom: -4, right: -4, width: 8, height: 8, background: '#008FED', cursor: 'se-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-nw-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'nw', image, 'image')} style={{ position: 'absolute', top: -4, left: -4, width: 8, height: 8, background: '#253396', cursor: 'nw-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-ne-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'ne', image, 'image')} style={{ position: 'absolute', top: -4, right: -4, width: 8, height: 8, background: '#253396', cursor: 'ne-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-sw-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'sw', image, 'image')} style={{ position: 'absolute', bottom: -4, left: -4, width: 8, height: 8, background: '#253396', cursor: 'sw-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-se-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'se', image, 'image')} style={{ position: 'absolute', bottom: -4, right: -4, width: 8, height: 8, background: '#253396', cursor: 'se-resize', zIndex: 10, pointerEvents: 'auto' }} />
                         {/* 엣지 핸들 */}
-                        <div data-testid={`resize-handle-n-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'n', image, 'image')} style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, background: '#008FED', cursor: 'n-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-s-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 's', image, 'image')} style={{ position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, background: '#008FED', cursor: 's-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-e-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'e', image, 'image')} style={{ position: 'absolute', top: '50%', right: -4, transform: 'translateY(-50%)', width: 8, height: 8, background: '#008FED', cursor: 'e-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-w-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'w', image, 'image')} style={{ position: 'absolute', top: '50%', left: -4, transform: 'translateY(-50%)', width: 8, height: 8, background: '#008FED', cursor: 'w-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-n-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'n', image, 'image')} style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, background: '#253396', cursor: 'n-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-s-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 's', image, 'image')} style={{ position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, background: '#253396', cursor: 's-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-e-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'e', image, 'image')} style={{ position: 'absolute', top: '50%', right: -4, transform: 'translateY(-50%)', width: 8, height: 8, background: '#253396', cursor: 'e-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-w-${image.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'w', image, 'image')} style={{ position: 'absolute', top: '50%', left: -4, transform: 'translateY(-50%)', width: 8, height: 8, background: '#253396', cursor: 'w-resize', zIndex: 10, pointerEvents: 'auto' }} />
                       </>
                     )}
                   </div>
@@ -1690,7 +1690,7 @@ export default function FieldDrawing() {
                       border: selectedRectangleId === rect.id 
                         ? `2px solid #0C0C0C` 
                         : `1px solid #0C0C0C`,
-                      boxShadow: selectedRectangleId === rect.id ? "0 0 0 2px #008FED" : "none",
+                      boxShadow: selectedRectangleId === rect.id ? "0 0 0 2px #253396" : "none",
                       background: rect.backgroundColor || "#FFFFFF",
                       cursor: selectedTool === "pointer" && !rect.locked ? "move" : "pointer",
                       zIndex: selectedRectangleId === rect.id ? 15 : 5,
@@ -1797,8 +1797,8 @@ export default function FieldDrawing() {
                         top: `${previewY}px`,
                         width: `${previewWidth}px`,
                         height: `${previewHeight}px`,
-                        border: "2px solid #008FED",
-                        background: "rgba(0, 143, 237, 0.1)",
+                        border: "2px solid #253396",
+                        background: "rgba(37, 51, 150, 0.1)",
                         pointerEvents: "none",
                         zIndex: 100,
                       }}
@@ -1811,7 +1811,7 @@ export default function FieldDrawing() {
                             top: "-22px",
                             left: "50%",
                             transform: "translateX(-50%)",
-                            background: "rgba(0, 143, 237, 0.9)",
+                            background: "rgba(37, 51, 150, 0.9)",
                             color: "white",
                             padding: "2px 6px",
                             borderRadius: "3px",
@@ -1831,7 +1831,7 @@ export default function FieldDrawing() {
                             top: "50%",
                             right: "-8px",
                             transform: "translateY(-50%) translateX(100%)",
-                            background: "rgba(0, 143, 237, 0.9)",
+                            background: "rgba(37, 51, 150, 0.9)",
                             color: "white",
                             padding: "2px 6px",
                             borderRadius: "3px",
@@ -1858,7 +1858,7 @@ export default function FieldDrawing() {
                       top: `${area.y * DISPLAY_SCALE}px`,
                       width: `${area.width * DISPLAY_SCALE}px`,
                       height: `${area.height * DISPLAY_SCALE}px`,
-                      border: selectedAccidentAreaId === area.id ? "2px dashed #008FED" : "2px dashed #9E9E9E",
+                      border: selectedAccidentAreaId === area.id ? "2px dashed #253396" : "2px dashed #9E9E9E",
                       background: "rgba(189, 189, 189, 0.3)",
                       cursor: selectedTool === "pointer" && !area.locked ? "move" : "pointer",
                       zIndex: selectedAccidentAreaId === area.id ? 60 : 50,
@@ -1869,15 +1869,15 @@ export default function FieldDrawing() {
                     {selectedAccidentAreaId === area.id && !area.locked && (
                       <>
                         {/* 모서리 핸들 */}
-                        <div data-testid={`resize-handle-nw-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'nw', area, 'accident-area')} style={{ position: 'absolute', top: -4, left: -4, width: 8, height: 8, background: '#008FED', cursor: 'nw-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-ne-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'ne', area, 'accident-area')} style={{ position: 'absolute', top: -4, right: -4, width: 8, height: 8, background: '#008FED', cursor: 'ne-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-sw-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'sw', area, 'accident-area')} style={{ position: 'absolute', bottom: -4, left: -4, width: 8, height: 8, background: '#008FED', cursor: 'sw-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-se-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'se', area, 'accident-area')} style={{ position: 'absolute', bottom: -4, right: -4, width: 8, height: 8, background: '#008FED', cursor: 'se-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-nw-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'nw', area, 'accident-area')} style={{ position: 'absolute', top: -4, left: -4, width: 8, height: 8, background: '#253396', cursor: 'nw-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-ne-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'ne', area, 'accident-area')} style={{ position: 'absolute', top: -4, right: -4, width: 8, height: 8, background: '#253396', cursor: 'ne-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-sw-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'sw', area, 'accident-area')} style={{ position: 'absolute', bottom: -4, left: -4, width: 8, height: 8, background: '#253396', cursor: 'sw-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-se-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'se', area, 'accident-area')} style={{ position: 'absolute', bottom: -4, right: -4, width: 8, height: 8, background: '#253396', cursor: 'se-resize', zIndex: 10, pointerEvents: 'auto' }} />
                         {/* 엣지 핸들 */}
-                        <div data-testid={`resize-handle-n-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'n', area, 'accident-area')} style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, background: '#008FED', cursor: 'n-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-s-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 's', area, 'accident-area')} style={{ position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, background: '#008FED', cursor: 's-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-e-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'e', area, 'accident-area')} style={{ position: 'absolute', top: '50%', right: -4, transform: 'translateY(-50%)', width: 8, height: 8, background: '#008FED', cursor: 'e-resize', zIndex: 10, pointerEvents: 'auto' }} />
-                        <div data-testid={`resize-handle-w-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'w', area, 'accident-area')} style={{ position: 'absolute', top: '50%', left: -4, transform: 'translateY(-50%)', width: 8, height: 8, background: '#008FED', cursor: 'w-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-n-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'n', area, 'accident-area')} style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, background: '#253396', cursor: 'n-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-s-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 's', area, 'accident-area')} style={{ position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, background: '#253396', cursor: 's-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-e-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'e', area, 'accident-area')} style={{ position: 'absolute', top: '50%', right: -4, transform: 'translateY(-50%)', width: 8, height: 8, background: '#253396', cursor: 'e-resize', zIndex: 10, pointerEvents: 'auto' }} />
+                        <div data-testid={`resize-handle-w-${area.id}`} onMouseDown={(e) => handleResizeHandleMouseDown(e, 'w', area, 'accident-area')} style={{ position: 'absolute', top: '50%', left: -4, transform: 'translateY(-50%)', width: 8, height: 8, background: '#253396', cursor: 'w-resize', zIndex: 10, pointerEvents: 'auto' }} />
                       </>
                     )}
                   </div>
@@ -1933,7 +1933,7 @@ export default function FieldDrawing() {
                         position: "absolute",
                         top: "5px",
                         left: "5px",
-                        border: selectedLeakId === marker.id ? "2px solid #008FED" : "none",
+                        border: selectedLeakId === marker.id ? "2px solid #253396" : "none",
                       }}
                     />
                     {/* 파란 삼각형 (하단) */}

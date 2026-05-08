@@ -6540,7 +6540,7 @@ export default function FieldEstimate() {
               fontSize: "24px",
               fontWeight: 700,
               letterSpacing: "-0.02em",
-              color: "#0C0C0C",
+              color: "#253396",
             }}
           >
             견적서 작성
@@ -6577,9 +6577,9 @@ export default function FieldEstimate() {
                 fontSize: "13px",
                 fontWeight: 500,
                 letterSpacing: "-0.02em",
-                color: "#008FED",
-                background: "rgba(0, 143, 237, 0.08)",
-                border: "1px solid rgba(0, 143, 237, 0.2)",
+                color: "#253396",
+                background: "rgba(37, 51, 150, 0.08)",
+                border: "1px solid rgba(37, 51, 150, 0.2)",
               }}
               data-testid="button-select-other-case"
             >
@@ -6597,7 +6597,7 @@ export default function FieldEstimate() {
             <div className="flex items-center gap-2 mb-2">
               <div
                 className="w-2 h-2 rounded-full"
-                style={{ background: "#008FED" }}
+                style={{ background: "#253396" }}
               />
               <span
                 style={{
@@ -6662,7 +6662,7 @@ export default function FieldEstimate() {
                 fontWeight: selectedCategory === category ? 600 : 400,
                 letterSpacing: "-0.02em",
                 background: "transparent",
-                color: selectedCategory === category ? "#008FED" : "rgba(12, 12, 12, 0.5)",
+                color: selectedCategory === category ? "#253396" : "rgba(12, 12, 12, 0.5)",
                 border: "none",
               }}
               data-testid={`tab-${category}`}
@@ -6676,7 +6676,7 @@ export default function FieldEstimate() {
                     left: 0,
                     right: 0,
                     height: "2px",
-                    background: "#008FED",
+                    background: "#253396",
                   }}
                 />
               )}
@@ -6716,8 +6716,8 @@ export default function FieldEstimate() {
                           fontSize: "13px",
                           fontWeight: 500,
                           background: isReadOnly ? "#f5f5f5" : "white",
-                          color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#008FED",
-                          border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #008FED",
+                          color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#253396",
+                          border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #253396",
                           cursor: isReadOnly ? "not-allowed" : "pointer",
                           opacity: isReadOnly ? 0.6 : 1,
                         }}
@@ -6739,8 +6739,8 @@ export default function FieldEstimate() {
                     fontSize: "14px",
                     fontWeight: 500,
                     background: (masterDataList.length === 0 || isReadOnly) ? "#f5f5f5" : "white",
-                    color: (masterDataList.length === 0 || isReadOnly) ? "rgba(12, 12, 12, 0.3)" : "#008FED",
-                    border: (masterDataList.length === 0 || isReadOnly) ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #008FED",
+                    color: (masterDataList.length === 0 || isReadOnly) ? "rgba(12, 12, 12, 0.3)" : "#253396",
+                    border: (masterDataList.length === 0 || isReadOnly) ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #253396",
                     cursor: (masterDataList.length === 0 || isReadOnly) ? "not-allowed" : "pointer",
                     opacity: (masterDataList.length === 0 || isReadOnly) ? 0.6 : 1,
                   }}
@@ -7155,7 +7155,7 @@ export default function FieldEstimate() {
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
-                                  background: isReadOnly ? "#f5f5f5" : "#008FED",
+                                  background: isReadOnly ? "#f5f5f5" : "#253396",
                                   color: "white",
                                   border: "none",
                                   borderRadius: "4px",
@@ -7486,7 +7486,7 @@ export default function FieldEstimate() {
                   fontFamily: "Pretendard",
                   fontSize: "14px",
                   fontWeight: 500,
-                  background: (isReadOnly || saveMutation.isPending) ? "#f5f5f5" : "#008FED",
+                  background: (isReadOnly || saveMutation.isPending) ? "#f5f5f5" : "#253396",
                   color: (isReadOnly || saveMutation.isPending) ? "rgba(12, 12, 12, 0.3)" : "white",
                   border: "none",
                   cursor: (isReadOnly || saveMutation.isPending) ? "not-allowed" : "pointer",
@@ -7729,7 +7729,7 @@ export default function FieldEstimate() {
                       alignItems: "center",
                       gap: "6px",
                       padding: "8px 16px",
-                      background: "#008FED",
+                      background: "#253396",
                       color: "white",
                       border: "none",
                       borderRadius: "6px",
@@ -8471,7 +8471,7 @@ export default function FieldEstimate() {
                           fontFamily: "Pretendard",
                           fontSize: "14px",
                           fontWeight: 500,
-                          color: vatIncluded ? "#008FED" : "#686A6E",
+                          color: vatIncluded ? "#253396" : "#686A6E",
                         }}
                       >
                         포함
@@ -8498,7 +8498,7 @@ export default function FieldEstimate() {
                           fontFamily: "Pretendard",
                           fontSize: "14px",
                           fontWeight: 500,
-                          color: !vatIncluded ? "#008FED" : "#686A6E",
+                          color: !vatIncluded ? "#253396" : "#686A6E",
                         }}
                       >
                         별도
@@ -8551,7 +8551,7 @@ export default function FieldEstimate() {
                     fontFamily: "Pretendard",
                     fontSize: "24px",
                     fontWeight: 700,
-                    color: "#008FED",
+                    color: "#253396",
                   }}
                   data-testid="text-total"
                 >
@@ -8626,7 +8626,7 @@ export default function FieldEstimate() {
                 disabled={saveMutation.isPending || isReadOnly}
                 style={{
                   padding: "12px 32px",
-                  background: (saveMutation.isPending || isReadOnly) ? "#ccc" : "#008FED",
+                  background: (saveMutation.isPending || isReadOnly) ? "#ccc" : "#253396",
                   border: "none",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
@@ -8634,7 +8634,7 @@ export default function FieldEstimate() {
                   fontWeight: 600,
                   color: "white",
                   cursor: (saveMutation.isPending || isReadOnly) ? "not-allowed" : "pointer",
-                  boxShadow: (saveMutation.isPending || isReadOnly) ? "none" : "0px 2px 8px rgba(0, 143, 237, 0.3)",
+                  boxShadow: (saveMutation.isPending || isReadOnly) ? "none" : "0px 2px 8px rgba(37, 51, 150, 0.3)",
                 }}
                 data-testid="button-save-estimate"
               >
@@ -8697,8 +8697,8 @@ export default function FieldEstimate() {
                             fontSize: "13px",
                             fontWeight: 500,
                             background: isReadOnly ? "#f5f5f5" : "white",
-                            color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#008FED",
-                            border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #008FED",
+                            color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#253396",
+                            border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #253396",
                             cursor: isReadOnly ? "not-allowed" : "pointer",
                             opacity: isReadOnly ? 0.6 : 1,
                           }}
@@ -8733,8 +8733,8 @@ export default function FieldEstimate() {
                     size="sm"
                     disabled={isLoadingLaborCatalog || isReadOnly}
                     style={{
-                      borderColor: "#008FED",
-                      color: "#008FED",
+                      borderColor: "#253396",
+                      color: "#253396",
                     }}
                     data-testid="button-add-labor-category"
                   >
@@ -9215,8 +9215,8 @@ export default function FieldEstimate() {
                           fontSize: "13px",
                           fontWeight: 500,
                           background: isReadOnly ? "#f5f5f5" : "white",
-                          color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#008FED",
-                          border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #008FED",
+                          color: isReadOnly ? "rgba(12, 12, 12, 0.3)" : "#253396",
+                          border: isReadOnly ? "1px solid rgba(12, 12, 12, 0.1)" : "1px solid #253396",
                           cursor: isReadOnly ? "not-allowed" : "pointer",
                           opacity: isReadOnly ? 0.6 : 1,
                         }}
@@ -9322,7 +9322,7 @@ export default function FieldEstimate() {
                   fontWeight: 600,
                   height: "52px",
                   padding: "12px 48px",
-                  background: isReadOnly ? "#ccc" : "#008FED",
+                  background: isReadOnly ? "#ccc" : "#253396",
                   color: "#FFFFFF",
                   border: "none",
                   borderRadius: "8px",
@@ -9373,7 +9373,7 @@ export default function FieldEstimate() {
                 fontWeight: 600,
                 height: "52px",
                 padding: "12px 48px",
-                background: isReadOnly ? "#ccc" : "#008FED",
+                background: isReadOnly ? "#ccc" : "#253396",
                 color: "#FFFFFF",
                 border: "none",
                 borderRadius: "8px",
@@ -9432,7 +9432,7 @@ export default function FieldEstimate() {
                   selectedCaseId === caseItem.id ? 'ring-2 ring-blue-500' : ''
                 }`}
                 style={{
-                  background: selectedCaseId === caseItem.id ? "rgba(0, 143, 237, 0.05)" : "rgba(12, 12, 12, 0.02)",
+                  background: selectedCaseId === caseItem.id ? "rgba(37, 51, 150, 0.05)" : "rgba(12, 12, 12, 0.02)",
                   border: "1px solid rgba(12, 12, 12, 0.08)",
                 }}
                 data-testid={`case-item-${caseItem.id}`}
@@ -9441,7 +9441,7 @@ export default function FieldEstimate() {
                   {/* 선택 표시 */}
                   {selectedCaseId === caseItem.id && (
                     <div className="flex-shrink-0">
-                      <Check className="w-5 h-5" style={{ color: "#008FED" }} />
+                      <Check className="w-5 h-5" style={{ color: "#253396" }} />
                     </div>
                   )}
                   
@@ -9475,8 +9475,8 @@ export default function FieldEstimate() {
                       <span>피보험자: {caseItem.insuredName || caseItem.policyHolderName || caseItem.clientName || "미정"}</span>
                       <span>피해자: {caseItem.victimName || "미정"}</span>
                       <span className="px-2 py-0.5 rounded" style={{
-                        background: "rgba(0, 143, 237, 0.1)",
-                        color: "#008FED",
+                        background: "rgba(37, 51, 150, 0.1)",
+                        color: "#253396",
                         fontSize: "12px",
                       }}>
                         {caseItem.status}
