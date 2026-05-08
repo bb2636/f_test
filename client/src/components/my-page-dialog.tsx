@@ -339,9 +339,10 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                     activeTab === item.id
-                      ? "bg-[#e7e7f5] text-[#253396] font-medium"
+                      ? "text-[#253396] font-semibold"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
+                  style={activeTab === item.id ? { background: 'var(--color-table-header)' } : undefined}
                   data-testid={`tab-${item.id}`}
                 >
                   {item.label}
