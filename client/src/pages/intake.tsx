@@ -1919,7 +1919,18 @@ export default function Intake({
               <X size={24} className="text-slate-600" />
             </button>
           )}
-          <h1 className="text-xl font-semibold text-slate-900">새로운 접수</h1>
+          <h1
+            style={{
+              fontFamily: "Pretendard",
+              fontSize: "28px",
+              fontWeight: 600,
+              lineHeight: "128%",
+              letterSpacing: "-0.02em",
+              color: "#56687f",
+            }}
+          >
+            새로운 접수
+          </h1>
           <button
             onClick={handleToggleFavorite}
             className="inline-flex h-8 items-center justify-center rounded-md border border-slate-200 px-3 text-sm text-slate-600 hover:bg-slate-50"
