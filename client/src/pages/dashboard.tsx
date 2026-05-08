@@ -1172,7 +1172,7 @@ export default function Dashboard() {
                         onClick={() => setActiveTab("reception")}
                         className={
                           activeTab === "reception"
-                            ? "rounded-lg bg-[#0B6BFF] px-5 py-2 text-sm font-bold text-white shadow-sm"
+                            ? "rounded-lg bg-[#253396] px-5 py-2 text-sm font-bold text-white shadow-sm"
                             : "rounded-lg bg-white px-5 py-2 text-sm font-semibold text-slate-600 ring-1 ring-[#E5E7EB] hover:bg-slate-50"
                         }
                         type="button"
@@ -1236,7 +1236,7 @@ export default function Dashboard() {
                       onClick={() => setActiveTab("pending")}
                       className={
                         activeTab === "pending"
-                          ? "rounded-lg bg-[#0B6BFF] px-5 py-2 text-sm font-bold text-white shadow-sm"
+                          ? "rounded-lg bg-[#253396] px-5 py-2 text-sm font-bold text-white shadow-sm"
                           : "rounded-lg bg-white px-5 py-2 text-sm font-semibold text-slate-600 ring-1 ring-[#E5E7EB] hover:bg-slate-50"
                       }
                       type="button"
@@ -1248,7 +1248,7 @@ export default function Dashboard() {
                       onClick={() => setActiveTab("insurance")}
                       className={
                         activeTab === "insurance"
-                          ? "rounded-lg bg-[#0B6BFF] px-5 py-2 text-sm font-bold text-white shadow-sm"
+                          ? "rounded-lg bg-[#253396] px-5 py-2 text-sm font-bold text-white shadow-sm"
                           : "rounded-lg bg-white px-5 py-2 text-sm font-semibold text-slate-600 ring-1 ring-[#E5E7EB] hover:bg-slate-50"
                       }
                       type="button"
@@ -1260,7 +1260,7 @@ export default function Dashboard() {
                       onClick={() => setActiveTab("partner")}
                       className={
                         activeTab === "partner"
-                          ? "rounded-lg bg-[#0B6BFF] px-5 py-2 text-sm font-bold text-white shadow-sm"
+                          ? "rounded-lg bg-[#253396] px-5 py-2 text-sm font-bold text-white shadow-sm"
                           : "rounded-lg bg-white px-5 py-2 text-sm font-semibold text-slate-600 ring-1 ring-[#E5E7EB] hover:bg-slate-50"
                       }
                       type="button"
