@@ -3282,7 +3282,7 @@ export default function ComprehensiveProgress() {
                               style={{
                                 width: "100%",
                                 padding: "14px",
-                                background: "var(--color-button-primary)",
+                                background: "#253396",
                                 borderRadius: "8px",
                                 border: "none",
                                 fontFamily: "Pretendard",
