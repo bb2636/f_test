@@ -373,7 +373,7 @@ export function MaterialCostSection({
   };
 
   return (
-    <div style={{ overflowX: "auto" }}>
+    <div style={{ overflowX: "auto", border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
       <table
         style={{
           width: "100%",
@@ -385,7 +385,7 @@ export function MaterialCostSection({
         <thead>
           <tr
             style={{
-              background: "rgba(12, 12, 12, 0.02)",
+              background: "#f4f5fa",
               height: "40px",
             }}
           >

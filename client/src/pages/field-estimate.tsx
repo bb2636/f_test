@@ -6777,6 +6777,7 @@ export default function FieldEstimate() {
                 background: "white",
                 borderRadius: "8px",
                 overflow: "auto",
+                border: "1px solid rgba(12, 12, 12, 0.2)",
               }}
             >
               <table
@@ -6889,7 +6890,6 @@ export default function FieldEstimate() {
                             fontWeight: 600, 
                             color: "rgba(12, 12, 12, 0.6)", 
                             textAlign: "center",
-                            background: "white",
                             height: "43px",
                             display: "flex",
                             alignItems: "center",
@@ -6970,7 +6970,6 @@ export default function FieldEstimate() {
                             fontWeight: 600, 
                             color: "rgba(12, 12, 12, 0.6)", 
                             textAlign: "center",
-                            background: "white",
                             height: "43px",
                             display: "flex",
                             alignItems: "center",

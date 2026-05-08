@@ -1823,7 +1823,7 @@ export function LaborCostSection({
   }
 
   return (
-    <div style={{ overflowX: "auto" }}>
+    <div style={{ overflowX: "auto", border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
       <table
         style={{
           width: "100%",
@@ -1835,7 +1835,7 @@ export function LaborCostSection({
         <thead>
           <tr
             style={{
-              background: "rgba(12, 12, 12, 0.04)",
+              background: "#f4f5fa",
               height: "48px",
             }}
           >
@@ -2041,7 +2041,7 @@ export function LaborCostSection({
                         padding: "8px",
                         verticalAlign: "middle",
                         borderRight: "1px solid rgba(12, 12, 12, 0.06)",
-                        background: "rgba(12, 12, 12, 0.02)",
+                        background: "#f4f5fa",
                         textAlign: "center",
                       }}
                     >
@@ -2442,7 +2442,7 @@ export function LaborCostSection({
                         <td
                           style={{
                             padding: "0 8px",
-                            background: "rgba(12, 12, 12, 0.02)",
+                            background: "#f4f5fa",
                             verticalAlign: "middle",
                           }}
                         >
@@ -2763,7 +2763,7 @@ export function LaborCostSection({
           <tr
             style={{
               height: "48px",
-              background: "rgba(12, 12, 12, 0.04)",
+              background: "#f4f5fa",
               borderTop: "2px solid rgba(12, 12, 12, 0.2)",
             }}
           >

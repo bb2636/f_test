@@ -4903,7 +4903,7 @@ export default function FieldReport() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
                           <table
                             style={{
                               minWidth: "1100px",
@@ -5207,7 +5207,7 @@ export default function FieldReport() {
                     </CardHeader>
                     <CardContent>
                       {parsedLaborCosts.length > 0 ? (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
                           <table
                             style={{
                               minWidth: "1100px",
@@ -5631,7 +5631,7 @@ export default function FieldReport() {
                     </CardHeader>
                     <CardContent>
                       {parsedMaterialCosts.length > 0 ? (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
                           <table
                             style={{
                               minWidth: "950px",
