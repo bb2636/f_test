@@ -1025,6 +1025,9 @@ export default function ClosedCaseStatistics() {
                       }
                     }}
                     locale={ko}
+                    classNames={{
+                      day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
+                    }}
                   />
                 </div>
                 <div style={{ borderLeft: "1px solid rgba(12,12,12,0.06)" }}>
@@ -1040,6 +1043,9 @@ export default function ClosedCaseStatistics() {
                       }
                     }}
                     locale={ko}
+                    classNames={{
+                      day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
+                    }}
                   />
                 </div>
               </div>

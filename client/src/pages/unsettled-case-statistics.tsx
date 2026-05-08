@@ -1072,6 +1072,9 @@ export default function UnsettledCaseStatistics() {
                   }}
                   locale={ko}
                   disabled={(date) => date > new Date()}
+                  classNames={{
+                    day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
+                  }}
                 />
               </PopoverContent>
             </Popover>
