@@ -6894,6 +6894,7 @@ export default function FieldEstimate() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            borderBottom: "1px solid rgba(12, 12, 12, 0.1)",
                           }}
                         >
                           피해면적
@@ -6974,6 +6975,7 @@ export default function FieldEstimate() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            borderBottom: "1px solid rgba(12, 12, 12, 0.1)",
                           }}
                         >
                           복구면적
