@@ -138,7 +138,7 @@ function getCaseNumberPrefix(caseNumber: string | null | undefined): string {
 }
 
 const SECTION_HEADER_STYLE: React.CSSProperties = {
-  background: "#4A90D9",
+  background: "#253396",
   color: "#FFFFFF",
   fontWeight: 700,
   fontSize: "16px",
@@ -1915,7 +1915,7 @@ export function InvoiceManagementPopup({
                           fontSize: "14px",
                           padding: "4px 8px",
                           height: "32px",
-                          border: "2px dashed #4A90D9",
+                          border: "2px dashed #253396",
                           borderRadius: "4px",
                           background: "#FFFFFF",
                         }}
@@ -1946,7 +1946,7 @@ export function InvoiceManagementPopup({
                         width: "24px",
                         height: "24px",
                         borderRadius: "4px",
-                        background: "#3B82F6",
+                        background: "#253396",
                         color: "#FFFFFF",
                         border: "none",
                         cursor: "pointer",
@@ -2341,7 +2341,7 @@ export function InvoiceManagementPopup({
                         data-testid="button-save-deposits"
                         style={{
                           height: "32px",
-                          background: "#4A90D9",
+                          background: "#253396",
                           color: "#FFFFFF",
                           fontWeight: 600,
                           fontSize: "13px",
@@ -2373,7 +2373,7 @@ export function InvoiceManagementPopup({
                         width: "24px",
                         height: "24px",
                         borderRadius: "4px",
-                        background: "#3B82F6",
+                        background: "#253396",
                         color: "#FFFFFF",
                         border: "none",
                         cursor: "pointer",
@@ -2807,7 +2807,7 @@ export function InvoiceManagementPopup({
                         data-testid="button-save-payments"
                         style={{
                           height: "32px",
-                          background: "#4A90D9",
+                          background: "#253396",
                           color: "#FFFFFF",
                           fontWeight: 600,
                           fontSize: "13px",
@@ -2919,7 +2919,7 @@ export function InvoiceManagementPopup({
                 style={{
                   padding: "10px 20px",
                   height: "40px",
-                  background: "#008FED",
+                  background: "#253396",
                   borderRadius: "6px",
                   fontWeight: 600,
                   fontSize: "14px",
@@ -2984,7 +2984,7 @@ export function InvoiceManagementPopup({
                 borderRadius: "6px",
                 fontWeight: 500,
                 fontSize: "16px",
-                color: "#008FED",
+                color: "#253396",
                 background: "transparent",
                 border: "none",
               }}
@@ -3000,7 +3000,7 @@ export function InvoiceManagementPopup({
               style={{
                 padding: "10px 32px",
                 height: "44px",
-                background: "#008FED",
+                background: "#253396",
                 borderRadius: "6px",
                 fontWeight: 600,
                 fontSize: "16px",
@@ -3060,7 +3060,7 @@ export function InvoiceManagementPopup({
                 borderRadius: "6px",
                 fontWeight: 500,
                 fontSize: "16px",
-                color: "#008FED",
+                color: "#253396",
                 background: "transparent",
                 border: "none",
               }}
@@ -3076,7 +3076,7 @@ export function InvoiceManagementPopup({
               style={{
                 padding: "10px 32px",
                 height: "44px",
-                background: "#008FED",
+                background: "#253396",
                 borderRadius: "6px",
                 fontWeight: 600,
                 fontSize: "16px",
@@ -3132,7 +3132,7 @@ export function InvoiceManagementPopup({
               style={{
                 padding: "10px 32px",
                 height: "44px",
-                background: "#008FED",
+                background: "#253396",
                 borderRadius: "6px",
                 fontWeight: 600,
                 fontSize: "14px",
