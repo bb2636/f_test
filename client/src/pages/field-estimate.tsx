@@ -4330,16 +4330,14 @@ export default function FieldEstimate() {
   }, [rows, laborCostRows, mergedIlwidaegaCatalog, deletedLinkedLaborKeys, exclusionsLoaded, laborRateTiers, isAutoSyncEligibleCase, isPartner, currentUser]); // laborCostRows, 노임단가 비율, exclusionsLoaded 포함 + cutoff 적용 대상 변화 감지 + 협력업체 가드
 
   // 최신 견적 가져오기
-  // [원본보존] 협력업체는 관리자가 저장한 최신값을 항상 보도록 매 진입마다 새로 fetch + 30초 폴링.
-  // 관리자/그 외 사용자는 입력 중 화면이 출렁이지 않도록 기본 캐시 정책 유지.
+  // [핑퐁 차단 2026-05-11] 협력업체 30초 폴링 제거.
+  //   관리자/협력업체가 동시에 화면을 열고 있을 때 협력업체 측이 30초마다 DB를 다시 읽고
+  //   sync 분기가 다시 돌아 자동저장 → 관리자 변경분이 즉시 협력업체 sync 결과로 덮어써지는
+  //   "DB 차원 핑퐁"의 핵심 원인. 양측 모두 케이스당 1회 hydrate로 통일.
+  //   상대편 변경 반영은 새로고침/재진입 시점에만 발생.
   const { data: latestEstimate, isLoading: isLoadingEstimate } = useQuery<{ estimate: any; rows: any[] }>({
     queryKey: ["/api/estimates", selectedCaseId, "latest"],
     enabled: !!selectedCaseId,
-    ...(isPartner ? {
-      staleTime: 0,
-      refetchOnMount: "always" as const,
-      refetchInterval: 30_000,
-    } : {}),
   });
 
   // 제출 조건 상태 계산 (견적 완료 상태)
