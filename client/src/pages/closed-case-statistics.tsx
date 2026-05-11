@@ -957,7 +957,7 @@ export default function ClosedCaseStatistics() {
                   e.preventDefault();
                 }
               }}
-              className="w-full focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#253396]"
+              className="w-full focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#0C0C0C]"
               style={{
                 paddingLeft: "48px",
                 height: "52px",

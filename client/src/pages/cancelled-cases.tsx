@@ -578,6 +578,7 @@ export default function CancelledCases() {
                 fontFamily: "Pretendard",
                 fontSize: "14px",
               }}
+              className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#0C0C0C]"
               data-testid="input-search-cancelled"
             />
           </div>
