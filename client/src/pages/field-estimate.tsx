@@ -7514,7 +7514,11 @@ export default function FieldEstimate() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel data-testid="button-sample-cancel">취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleSampleConfirm} data-testid="button-sample-confirm">
+                  <AlertDialogAction
+                    onClick={handleSampleConfirm}
+                    data-testid="button-sample-confirm"
+                    className="bg-[#253396] text-white hover:bg-[#253396]/90"
+                  >
                     확인
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -8775,7 +8779,11 @@ export default function FieldEstimate() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel data-testid="button-loss-sample-cancel">취소</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleLossSampleConfirm} data-testid="button-loss-sample-confirm">
+                    <AlertDialogAction
+                      onClick={handleLossSampleConfirm}
+                      data-testid="button-loss-sample-confirm"
+                      className="bg-[#253396] text-white hover:bg-[#253396]/90"
+                    >
                       확인
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -9285,7 +9293,11 @@ export default function FieldEstimate() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel data-testid="button-loss-sample-cancel-material">취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleLossSampleConfirm} data-testid="button-loss-sample-confirm-material">
+                  <AlertDialogAction
+                    onClick={handleLossSampleConfirm}
+                    data-testid="button-loss-sample-confirm-material"
+                    className="bg-[#253396] text-white hover:bg-[#253396]/90"
+                  >
                     확인
                   </AlertDialogAction>
                 </AlertDialogFooter>
