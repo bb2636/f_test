@@ -2805,13 +2805,16 @@ export default function FieldEstimate() {
             laborRow.amount === newAmount
           ) return laborRow;
           mutated = true;
+          // [핑퐁 차단 2026-05-11] lockedAtSave를 풀지 않음.
+          //   값 자체는 산식대로 재계산해서 정확히 갱신했으므로, lock을 풀어 다른 sync가
+          //   끼어들 윈도우(1.5초 자동저장 디바운스 동안)를 만들 필요가 없다.
+          //   자동저장 onSuccess(L6307)가 어차피 다시 lockedAtSave=true로 박는다.
           return {
             ...laborRow,
             damageArea: singleArea,
             quantity: fixedQty,
             amount: newAmount,
             pricePerSqm: E,
-            lockedAtSave: false,
           };
         }
 
@@ -2840,18 +2843,21 @@ export default function FieldEstimate() {
           laborRow.damageArea === C &&
           laborRow.quantity === newQuantity &&
           laborRow.amount === newAmount &&
-          laborRow.pricePerSqm === newPricePerSqm &&
-          !laborRow.lockedAtSave
+          laborRow.pricePerSqm === newPricePerSqm
         ) return laborRow;
 
         mutated = true;
+        // [핑퐁 차단 2026-05-11] lockedAtSave를 풀지 않음 (FIXED 분기와 동일 정책).
+        //   - 산식 결과로 면적/금액/수량/단가는 정확히 갱신됨.
+        //   - lock을 풀면 reconcile/demolitionReconcile/addNewRows useEffect가
+        //     1.5초 자동저장 디바운스 사이에 끼어들어 같은 행을 다시 손댈 수 있음.
+        //   - 자동저장 onSuccess(L6307)가 다시 lockedAtSave=true로 박으므로 lock 유지가 안전.
         return {
           ...laborRow,
           damageArea: C,
           quantity: newQuantity,
           amount: newAmount,
           pricePerSqm: newPricePerSqm,
-          lockedAtSave: false,
         };
       });
 
@@ -3245,6 +3251,12 @@ export default function FieldEstimate() {
     });
     if (staleBatangRemoveIds.size > 0) {
       console.log('[자동연동] stale 바탕만들기 동반행 제거 마킹:', staleBatangRemoveIds.size, '개 (부모 공사명 변경)');
+      // [원복 2026-05-11] hard return 시도했으나 회귀 위험으로 원복.
+      //   이 useEffect의 deps는 [rows, mergedIlwidaegaCatalog, laborRateTiers, isAutoSyncEligibleCase,
+      //   isPartner, currentUser, deletedLinkedLaborKeys]로 laborCostRows 미포함.
+      //   hard return으로 사이클 종료 시 stale 제거만 적용되고 신규 companion 재생성이
+      //   다음 rows/catalog 변경 전까지 트리거되지 않아 견적 누락 가능.
+      //   기존대로 마킹만 하고 같은 사이클의 setLaborCostRows에서 일괄 처리(L3537 근방).
     }
 
     // 이미 연동된 철거공사 행 마이그레이션: workName 매핑이 변경된 경우(예: '석고보드' → '석고') 갱신
