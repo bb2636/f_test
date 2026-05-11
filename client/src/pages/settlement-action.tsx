@@ -399,6 +399,7 @@ export default function SettlementAction() {
                 fontFamily: "Pretendard",
                 fontSize: "14px",
               }}
+              className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#253396]"
               data-testid="input-search-settlement"
             />
           </div>
