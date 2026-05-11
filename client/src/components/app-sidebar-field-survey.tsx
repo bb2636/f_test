@@ -157,7 +157,7 @@ export function AppSidebarFieldSurvey() {
                   fontSize: "15px",
                   fontWeight: 700,
                   letterSpacing: "-0.02em",
-                  color: "#0C0C0C",
+                  color: "#253396",
                   background: "transparent",
                 }}
                 data-testid="group-home-toggle"
@@ -165,7 +165,7 @@ export function AppSidebarFieldSurvey() {
                 <span>홈</span>
                 <ChevronDown
                   className={`h-4 w-4 transition-transform ${homeExpanded ? "rotate-180" : ""}`}
-                  style={{ color: "rgba(12, 12, 12, 0.5)" }}
+                  style={{ color: "#253396" }}
                 />
               </button>
               {homeExpanded && (
@@ -209,7 +209,7 @@ export function AppSidebarFieldSurvey() {
                   fontSize: "15px",
                   fontWeight: 700,
                   letterSpacing: "-0.02em",
-                  color: "#0C0C0C",
+                  color: "#253396",
                   background: "transparent",
                 }}
                 data-testid="group-report-toggle"
@@ -217,7 +217,7 @@ export function AppSidebarFieldSurvey() {
                 <span>보고서</span>
                 <ChevronDown
                   className={`h-4 w-4 transition-transform ${reportExpanded ? "rotate-180" : ""}`}
-                  style={{ color: "rgba(12, 12, 12, 0.5)" }}
+                  style={{ color: "#253396" }}
                 />
               </button>
               {reportExpanded && (
