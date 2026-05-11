@@ -1849,6 +1849,7 @@ export function LaborCostSection({
               }}
             >
               <Checkbox
+                className="data-[state=checked]:bg-[#253396] data-[state=checked]:border-[#253396] data-[state=checked]:text-white border-[#253396]"
                 checked={selectedRows.size === rows.length && rows.length > 0}
                 onCheckedChange={onSelectAll}
                 data-testid="checkbox-select-all-labor"
@@ -2047,6 +2048,7 @@ export function LaborCostSection({
                     >
                       <input
                         type="checkbox"
+                        style={{ accentColor: "#253396" }}
                         disabled={isPartner && group.rows.every((r) => r.isLinkedFromRecovery)}
                         checked={group.rows.every((r) => {
                           // 병합된 행인 경우 모든 원본 ID 확인

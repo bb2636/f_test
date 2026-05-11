@@ -392,6 +392,7 @@ export function MaterialCostSection({
             <th style={{ width: "50px", padding: "0 12px", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
               <input 
                 type="checkbox"
+                style={{ accentColor: "#253396" }}
                 checked={selectedRows.size === rows.length && rows.length > 0}
                 onChange={onSelectAll}
                 data-testid="checkbox-select-all-material"
@@ -468,6 +469,7 @@ export function MaterialCostSection({
                   <td style={{ padding: "0 12px", textAlign: "center", borderBottom: groupBorderBottom, borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
                     <input
                       type="checkbox"
+                      style={{ accentColor: "#253396" }}
                       checked={selectedRows.has(row.id)}
                       onChange={() => onSelectRow(row.id)}
                       disabled={isPartner && isLinkedRow}

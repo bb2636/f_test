@@ -7079,6 +7079,7 @@ export default function FieldEstimate() {
                             >
                               <input
                                 type="checkbox"
+                                style={{ accentColor: "#253396" }}
                                 checked={group.rows.every(r => selectedRows.has(r.id))}
                                 onChange={() => {
                                   const allSelected = group.rows.every(r => selectedRows.has(r.id));
@@ -7979,6 +7980,7 @@ export default function FieldEstimate() {
                           <td style={{ padding: "8px", textAlign: "center" }}>
                             <input
                               type="checkbox"
+                              style={{ accentColor: "#253396" }}
                               checked={selectedRows.has(row.id)}
                               onChange={() => toggleRowSelection(row.id)}
                               data-testid={`checkbox-estimate-area-row-${index}`}
@@ -8847,7 +8849,10 @@ export default function FieldEstimate() {
                         }}
                       >
                         <th style={{ width: "50px", padding: "0 12px", textAlign: "center", borderBottom: "1px solid #E5E7EB" }}>
-                          <Checkbox data-testid="checkbox-select-all-labor" />
+                          <Checkbox
+                            data-testid="checkbox-select-all-labor"
+                            className="data-[state=checked]:bg-[#253396] data-[state=checked]:border-[#253396] data-[state=checked]:text-white border-[#253396]"
+                          />
                         </th>
                         <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB" }}>공종</th>
                         <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB" }}>공사명</th>
@@ -8871,6 +8876,7 @@ export default function FieldEstimate() {
                           {/* 체크박스 */}
                           <td style={{ padding: "0 12px", textAlign: "center" }}>
                             <Checkbox 
+                              className="data-[state=checked]:bg-[#253396] data-[state=checked]:border-[#253396] data-[state=checked]:text-white border-[#253396]"
                               checked={selectedLaborRows.has(row.id)}
                               onCheckedChange={(checked) => {
                                 const newSet = new Set(selectedLaborRows);
