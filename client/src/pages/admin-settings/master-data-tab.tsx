@@ -343,7 +343,7 @@ export function MasterDataTab({
                     <input
                       type="checkbox"
                       className="w-4 h-4"
-                      style={{ accentColor: "#008FED" }}
+                      style={{ accentColor: "#253396" }}
                       checked={(() => {
                         const items = getCategoryItems(selectedCategory);
                         if (items.length === 0) return false;
@@ -453,7 +453,7 @@ export function MasterDataTab({
                           <input
                             type="checkbox"
                             className="w-4 h-4"
-                            style={{ accentColor: "#008FED" }}
+                            style={{ accentColor: "#253396" }}
                             checked={selectedMasterDataIds.has(itemId)}
                             onChange={(e) => {
                               const newIds = new Set(selectedMasterDataIds);
@@ -495,7 +495,7 @@ export function MasterDataTab({
                               className="w-full px-3 py-2 outline-none"
                               style={{
                                 background: "#FFFFFF",
-                                border: "1px solid #008FED",
+                                border: "1px solid #253396",
                                 borderRadius: "4px",
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
