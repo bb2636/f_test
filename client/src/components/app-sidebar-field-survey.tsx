@@ -164,7 +164,7 @@ export function AppSidebarFieldSurvey() {
               >
                 <span>홈</span>
                 <ChevronDown
-                  className={`h-4 w-4 transition-transform ${homeExpanded ? "rotate-180" : ""}`}
+                  className={`h-4 w-4 transition-transform ${homeExpanded ? "" : "rotate-180"}`}
                   style={{ color: "#253396" }}
                 />
               </button>
@@ -216,7 +216,7 @@ export function AppSidebarFieldSurvey() {
               >
                 <span>보고서</span>
                 <ChevronDown
-                  className={`h-4 w-4 transition-transform ${reportExpanded ? "rotate-180" : ""}`}
+                  className={`h-4 w-4 transition-transform ${reportExpanded ? "" : "rotate-180"}`}
                   style={{ color: "#253396" }}
                 />
               </button>
