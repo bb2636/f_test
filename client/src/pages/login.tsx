@@ -361,7 +361,7 @@ export default function Login() {
                     height: "34px",
                     paddingLeft: "20px",
                     paddingRight: "20px",
-                    background: "#008FED",
+                    background: "#253396",
                     borderRadius: "8px",
                     color: "#FDFDFD",
                     fontSize: "18px",

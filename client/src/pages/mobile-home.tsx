@@ -378,7 +378,7 @@ export default function MobileHome() {
                   fontSize: '13px',
                   lineHeight: '128%',
                   letterSpacing: '-0.01em',
-                  color: '#008FED',
+                  color: '#253396',
                 }}
                 data-testid="text-user-company"
               >
@@ -636,7 +636,7 @@ export default function MobileHome() {
                 className="flex-1 flex justify-center items-center"
                 style={{
                   height: '40px',
-                  borderBottom: activeTab === tab ? '2px solid #008FED' : 'none',
+                  borderBottom: activeTab === tab ? '2px solid #253396' : 'none',
                   fontFamily: 'Pretendard',
                   fontWeight: activeTab === tab ? 600 : 400,
                   fontSize: '14px',
@@ -813,8 +813,8 @@ export default function MobileHome() {
                   </span>
                   {dateFilter === option && (
                     <CheckCircle2 
-                      style={{ width: '22px', height: '22px', color: '#008FED' }}
-                      fill="#008FED"
+                      style={{ width: '22px', height: '22px', color: '#253396' }}
+                      fill="#253396"
                       stroke="white"
                     />
                   )}
@@ -931,7 +931,7 @@ export default function MobileHome() {
                             width: '38px',
                             height: '38px',
                             borderRadius: isStart ? '4px 0 0 4px' : isEnd ? '0 4px 4px 0' : isInRange ? '0' : '4px',
-                            background: isSelected ? '#008FED' : isInRange ? '#E8F4FD' : 'transparent',
+                            background: isSelected ? '#253396' : isInRange ? '#E7E7F5' : 'transparent',
                             fontFamily: 'Pretendard',
                             fontWeight: 400,
                             fontSize: '14px',
@@ -1012,7 +1012,7 @@ export default function MobileHome() {
                             width: '38px',
                             height: '38px',
                             borderRadius: isStart ? '4px 0 0 4px' : isEnd ? '0 4px 4px 0' : isInRange ? '0' : '4px',
-                            background: isSelected ? '#008FED' : isInRange ? '#E8F4FD' : 'transparent',
+                            background: isSelected ? '#253396' : isInRange ? '#E7E7F5' : 'transparent',
                             fontFamily: 'Pretendard',
                             fontWeight: 400,
                             fontSize: '14px',
@@ -1084,7 +1084,7 @@ export default function MobileHome() {
                   className="flex-1 flex justify-center items-center"
                   style={{
                     height: '48px',
-                    background: tempDateRange.from && tempDateRange.to ? '#008FED' : 'rgba(0, 143, 237, 0.5)',
+                    background: tempDateRange.from && tempDateRange.to ? '#253396' : 'rgba(37, 51, 150, 0.5)',
                     borderRadius: '8px',
                     fontFamily: 'Pretendard',
                     fontWeight: 500,

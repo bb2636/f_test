@@ -62,7 +62,7 @@ export default function Forbidden() {
             onClick={() => setLocation("/dashboard")}
             className="w-full py-3 px-6 rounded-lg"
             style={{
-              background: "#008FED",
+              background: "#253396",
               fontFamily: "Pretendard",
               fontSize: "16px",
               fontWeight: 600,

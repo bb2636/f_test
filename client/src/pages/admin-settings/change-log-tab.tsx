@@ -224,7 +224,7 @@ export function ChangeLogTab({
                         fontFamily: "Pretendard",
                         fontSize: "14px",
                         fontWeight: 500,
-                        color: "#008FED",
+                        color: "#253396",
                         borderRight: "1px solid rgba(12, 12, 12, 0.08)",
                         verticalAlign: "top",
                         whiteSpace: "nowrap",

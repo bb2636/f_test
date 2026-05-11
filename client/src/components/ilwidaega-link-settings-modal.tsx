@@ -258,8 +258,8 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
               size="sm"
               onClick={addRow}
               style={{
-                borderColor: "#008FED",
-                color: "#008FED",
+                borderColor: "#253396",
+                color: "#253396",
                 gap: "4px",
               }}
             >
@@ -354,7 +354,7 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
                     <tr key={row.id} style={{
                       height: "48px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.06)",
-                      background: selectedIds.has(row.id) ? "rgba(0, 143, 237, 0.04)" : "transparent",
+                      background: selectedIds.has(row.id) ? "rgba(37, 51, 150, 0.04)" : "transparent",
                     }}>
                       <td style={{
                         textAlign: "center",
@@ -443,7 +443,7 @@ export function IlwidaegaLinkSettingsModal({ open, onOpenChange }: IlwidaegaLink
             onClick={handleSave}
             disabled={saveMutation.isPending}
             style={{
-              backgroundColor: "#008FED",
+              backgroundColor: "#253396",
               color: "white",
             }}
           >

@@ -1281,7 +1281,7 @@ export default function AdminSettings() {
         ),
         className: "border-none shadow-lg",
         style: {
-          background: "#008FED",
+          background: "#253396",
           color: "#FDFDFD",
           fontFamily: "Pretendard",
           fontSize: "14px",
@@ -1318,7 +1318,7 @@ export default function AdminSettings() {
         ),
         className: "border-none shadow-lg",
         style: {
-          background: "#008FED",
+          background: "#253396",
           color: "#FDFDFD",
           fontFamily: "Pretendard",
           fontSize: "14px",
@@ -1424,7 +1424,7 @@ export default function AdminSettings() {
         </div>
         <button
           className="px-6 py-2 text-white rounded-md hover-elevate active-elevate-2"
-          style={{ background: "#008FED" }}
+          style={{ background: "#253396" }}
           onClick={() => {
             queryClient.removeQueries({ queryKey: ["/api/users"] });
             queryClient.invalidateQueries({ queryKey: ["/api/user"] });
@@ -2809,10 +2809,10 @@ export default function AdminSettings() {
                     width: "44px",
                     height: "44px",
                     borderRadius: "50%",
-                    background: "rgba(0, 143, 237, 0.1)",
+                    background: "rgba(37, 51, 150, 0.1)",
                   }}
                 >
-                  <Shield style={{ width: "22px", height: "22px", color: "#008FED" }} />
+                  <Shield style={{ width: "22px", height: "22px", color: "#253396" }} />
                 </div>
                 <span
                   style={{
@@ -2859,7 +2859,7 @@ export default function AdminSettings() {
                           name="delegate-target"
                           checked={delegateTargetUser?.id === adminUser.id}
                           onChange={() => setDelegateTargetUser(adminUser as User)}
-                          style={{ width: "18px", height: "18px", accentColor: "#008FED" }}
+                          style={{ width: "18px", height: "18px", accentColor: "#253396" }}
                         />
                         <div className="flex flex-col gap-1">
                           <span style={{ fontFamily: "Pretendard", fontSize: "15px", fontWeight: 600, color: "#0C0C0C" }}>
@@ -2877,7 +2877,7 @@ export default function AdminSettings() {
                 className="flex items-center justify-center hover-elevate active-elevate-2"
                 style={{
                   height: "44px",
-                  background: delegateTargetUser ? "#008FED" : "rgba(0, 143, 237, 0.3)",
+                  background: delegateTargetUser ? "#253396" : "rgba(37, 51, 150, 0.3)",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
                   fontSize: "15px",
@@ -2931,10 +2931,10 @@ export default function AdminSettings() {
                   width: "56px",
                   height: "56px",
                   borderRadius: "50%",
-                  background: "rgba(0, 143, 237, 0.1)",
+                  background: "rgba(37, 51, 150, 0.1)",
                 }}
               >
-                <Shield style={{ width: "28px", height: "28px", color: "#008FED" }} />
+                <Shield style={{ width: "28px", height: "28px", color: "#253396" }} />
               </div>
               <div className="flex flex-col items-center gap-2">
                 <span
@@ -2957,7 +2957,7 @@ export default function AdminSettings() {
                     lineHeight: "1.6",
                   }}
                 >
-                  <strong style={{ color: "#008FED" }}>{delegateTargetUser.name || delegateTargetUser.username}</strong>님에게
+                  <strong style={{ color: "#253396" }}>{delegateTargetUser.name || delegateTargetUser.username}</strong>님에게
                   SuperUser권한을 위임하시겠습니까?
                   <br />
                   위임 후 본인은 일반관리자로 변경됩니다.
@@ -2988,7 +2988,7 @@ export default function AdminSettings() {
                   className="flex-1 flex items-center justify-center hover-elevate active-elevate-2"
                   style={{
                     height: "44px",
-                    background: "#008FED",
+                    background: "#253396",
                     borderRadius: "8px",
                     fontFamily: "Pretendard",
                     fontSize: "15px",
@@ -3096,7 +3096,7 @@ export default function AdminSettings() {
                     }}
                     className="px-4 py-2 rounded-lg"
                     style={{
-                      background: "#008FED",
+                      background: "#253396",
                       color: "#FDFDFD",
                       fontFamily: "Pretendard",
                       fontSize: "14px",
@@ -3148,7 +3148,7 @@ export default function AdminSettings() {
                 </span>
                 <div
                   className="w-1 h-1 rounded-full"
-                  style={{ background: "rgba(0, 143, 237, 0.9)" }}
+                  style={{ background: "rgba(37, 51, 150, 0.9)" }}
                 />
                 <span
                   style={{
@@ -3187,8 +3187,8 @@ export default function AdminSettings() {
                         fontWeight: 500,
                         padding: "2px 8px",
                         borderRadius: "4px",
-                        background: selectedUser.accountType === "회사" ? "rgba(0, 143, 237, 0.1)" : "rgba(12, 12, 12, 0.06)",
-                        color: selectedUser.accountType === "회사" ? "#008FED" : "rgba(12, 12, 12, 0.6)",
+                        background: selectedUser.accountType === "회사" ? "rgba(37, 51, 150, 0.1)" : "rgba(12, 12, 12, 0.06)",
+                        color: selectedUser.accountType === "회사" ? "#253396" : "rgba(12, 12, 12, 0.6)",
                       }}
                       data-testid="badge-account-type"
                     >
@@ -3500,7 +3500,7 @@ export default function AdminSettings() {
                             fontSize: "16px",
                             fontWeight: 400,
                             letterSpacing: "-0.02em",
-                            color: selectedUser.isSuperAdmin ? "#008FED" : "rgba(12, 12, 12, 0.9)",
+                            color: selectedUser.isSuperAdmin ? "#253396" : "rgba(12, 12, 12, 0.9)",
                           }}
                         >
                           {selectedUser.isSuperAdmin ? "최고관리자" : "일반관리자"}
@@ -3526,7 +3526,7 @@ export default function AdminSettings() {
                               name="editAccountType"
                               checked={(editedUserData.accountType || selectedUser.accountType || "개인") === "개인"}
                               onChange={() => setEditedUserData({ ...editedUserData, accountType: "개인" })}
-                              style={{ accentColor: "#008FED", width: "16px", height: "16px" }}
+                              style={{ accentColor: "#253396", width: "16px", height: "16px" }}
                               data-testid="radio-edit-account-type-individual"
                             />
                             <span style={{ fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.8)" }}>개인</span>
@@ -3537,7 +3537,7 @@ export default function AdminSettings() {
                               name="editAccountType"
                               checked={(editedUserData.accountType || selectedUser.accountType || "개인") === "회사"}
                               onChange={() => setEditedUserData({ ...editedUserData, accountType: "회사" })}
-                              style={{ accentColor: "#008FED", width: "16px", height: "16px" }}
+                              style={{ accentColor: "#253396", width: "16px", height: "16px" }}
                               data-testid="radio-edit-account-type-company"
                             />
                             <span style={{ fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.8)" }}>회사</span>
@@ -4083,7 +4083,7 @@ export default function AdminSettings() {
                                               fontFamily: "Pretendard",
                                               fontSize: "13px",
                                               fontWeight: 400,
-                                              color: "#008FED",
+                                              color: "#253396",
                                             }}
                                           >
                                             {region}
@@ -4111,7 +4111,7 @@ export default function AdminSettings() {
                                             fontFamily: "Pretendard",
                                             fontSize: "13px",
                                             fontWeight: 400,
-                                            color: "#008FED",
+                                            color: "#253396",
                                           }}
                                         >
                                           {region}
@@ -4144,7 +4144,7 @@ export default function AdminSettings() {
                                 <div
                                   className="flex flex-col items-center justify-center gap-2"
                                   style={{
-                                    border: "2px dashed rgba(0, 143, 237, 0.3)",
+                                    border: "2px dashed rgba(37, 51, 150, 0.3)",
                                     borderRadius: "8px",
                                     padding: "16px",
                                     background: "#F8FCFF",
@@ -4223,7 +4223,7 @@ export default function AdminSettings() {
                                   }}
                                   data-testid="edit-file-upload-area"
                                 >
-                                  <Upload size={20} style={{ color: "#008FED" }} />
+                                  <Upload size={20} style={{ color: "#253396" }} />
                                   <span
                                     style={{
                                       fontFamily: "Pretendard",
@@ -4290,7 +4290,7 @@ export default function AdminSettings() {
                                             }
                                             setSelectedAttachmentIndices(newSet);
                                           }}
-                                          style={{ accentColor: "#008FED", cursor: "pointer" }}
+                                          style={{ accentColor: "#253396", cursor: "pointer" }}
                                           data-testid={`checkbox-attachment-${index}`}
                                         />
                                       )}
@@ -4299,7 +4299,7 @@ export default function AdminSettings() {
                                           fontFamily: "Pretendard",
                                           fontSize: "14px",
                                           fontWeight: 400,
-                                          color: "#008FED",
+                                          color: "#253396",
                                         }}
                                         data-testid={`detail-attachment-${index}`}
                                       >
@@ -4334,7 +4334,7 @@ export default function AdminSettings() {
                                           style={{ cursor: "pointer", flexShrink: 0 }}
                                           data-testid={`button-preview-attachment-${index}`}
                                         >
-                                          <ZoomIn size={16} style={{ color: "#008FED" }} />
+                                          <ZoomIn size={16} style={{ color: "#253396" }} />
                                         </button>
                                       )}
                                     </div>
@@ -4392,7 +4392,7 @@ export default function AdminSettings() {
                     className="flex-1 flex items-center justify-center rounded-xl"
                     style={{
                       height: "64px",
-                      background: "#008FED",
+                      background: "#253396",
                       boxShadow: "2px 4px 30px #BDD1F0",
                     }}
                     onClick={() => {
@@ -4581,7 +4581,7 @@ export default function AdminSettings() {
                       fontFamily: "Pretendard",
                       fontSize: "14px",
                       fontWeight: 500,
-                      color: "#008FED",
+                      color: "#253396",
                       textDecoration: "underline",
                     }}
                     data-testid="link-download-attachment"
@@ -4821,7 +4821,7 @@ export default function AdminSettings() {
                             style={{
                               width: "4px",
                               height: "4px",
-                              background: "rgba(0, 143, 237, 0.9)",
+                              background: "rgba(37, 51, 150, 0.9)",
                               borderRadius: "50%",
                             }}
                           />
@@ -5060,7 +5060,7 @@ export default function AdminSettings() {
                     width: "353.5px",
                     height: "48px",
                     padding: "10px",
-                    background: "#008FED",
+                    background: "#253396",
                     borderRadius: "6px",
                     gap: "10px",
                   }}
@@ -5248,7 +5248,7 @@ export default function AdminSettings() {
                           style={{
                             width: "4px",
                             height: "4px",
-                            background: "rgba(0, 143, 237, 0.9)",
+                            background: "rgba(37, 51, 150, 0.9)",
                             borderRadius: "50%",
                           }}
                         />
@@ -5594,7 +5594,7 @@ export default function AdminSettings() {
                             accountType: "개인",
                           })
                         }
-                        style={{ accentColor: "#008FED", width: "16px", height: "16px" }}
+                        style={{ accentColor: "#253396", width: "16px", height: "16px" }}
                         data-testid="radio-account-type-individual"
                       />
                       <span
@@ -5622,7 +5622,7 @@ export default function AdminSettings() {
                             accountType: "회사",
                           })
                         }
-                        style={{ accentColor: "#008FED", width: "16px", height: "16px" }}
+                        style={{ accentColor: "#253396", width: "16px", height: "16px" }}
                         data-testid="radio-account-type-company"
                       />
                       <span
@@ -6419,7 +6419,7 @@ export default function AdminSettings() {
                                     fontFamily: "Pretendard",
                                     fontSize: "13px",
                                     fontWeight: 400,
-                                    color: "#008FED",
+                                    color: "#253396",
                                   }}
                                 >
                                   {region} ×
@@ -6482,7 +6482,7 @@ export default function AdminSettings() {
                           width: "100%",
                           minHeight: "120px",
                           background: "#F8FCFF",
-                          border: "2px dashed rgba(0, 143, 237, 0.3)",
+                          border: "2px dashed rgba(37, 51, 150, 0.3)",
                           borderRadius: "8px",
                         }}
                         onClick={() => {
@@ -6492,7 +6492,7 @@ export default function AdminSettings() {
                           e.preventDefault();
                           e.stopPropagation();
                           e.currentTarget.style.background =
-                            "rgba(0, 143, 237, 0.05)";
+                            "rgba(37, 51, 150, 0.05)";
                         }}
                         onDragLeave={(e) => {
                           e.preventDefault();
@@ -6535,11 +6535,11 @@ export default function AdminSettings() {
                               style={{
                                 width: "48px",
                                 height: "48px",
-                                background: "rgba(0, 143, 237, 0.1)",
+                                background: "rgba(37, 51, 150, 0.1)",
                                 borderRadius: "50%",
                               }}
                             >
-                              <Upload size={24} style={{ color: "#008FED" }} />
+                              <Upload size={24} style={{ color: "#253396" }} />
                             </div>
                             <span
                               style={{
@@ -6564,7 +6564,7 @@ export default function AdminSettings() {
                                     className="flex items-center justify-between px-3 py-2"
                                     style={{
                                       background: "#FFFFFF",
-                                      border: "1px solid rgba(0, 143, 237, 0.2)",
+                                      border: "1px solid rgba(37, 51, 150, 0.2)",
                                       borderRadius: "6px",
                                     }}
                                     onClick={(e) => e.stopPropagation()}
@@ -6845,7 +6845,7 @@ export default function AdminSettings() {
                 style={{
                   height: "48px",
                   padding: "0 32px",
-                  background: "#008FED",
+                  background: "#253396",
                   borderRadius: "6px",
                 }}
                 onClick={() => {
@@ -7021,7 +7021,7 @@ export default function AdminSettings() {
                           style={{
                             width: "4px",
                             height: "4px",
-                            background: "rgba(0, 143, 237, 0.9)",
+                            background: "rgba(37, 51, 150, 0.9)",
                             borderRadius: "50%",
                           }}
                         />
@@ -7176,7 +7176,7 @@ export default function AdminSettings() {
                           border: "2px solid rgba(12, 12, 12, 0.24)",
                           borderRadius: "4px",
                           background: sendEmailNotification
-                            ? "#008FED"
+                            ? "#253396"
                             : "transparent",
                           display: "flex",
                           alignItems: "center",
@@ -7217,7 +7217,7 @@ export default function AdminSettings() {
                           border: "2px solid rgba(12, 12, 12, 0.24)",
                           borderRadius: "4px",
                           background: sendSmsNotification
-                            ? "#008FED"
+                            ? "#253396"
                             : "transparent",
                           display: "flex",
                           alignItems: "center",
@@ -7298,7 +7298,7 @@ export default function AdminSettings() {
                   className="flex-1 flex items-center justify-center"
                   style={{
                     height: "48px",
-                    background: "#008FED",
+                    background: "#253396",
                     borderRadius: "6px",
                   }}
                   onClick={async () => {
@@ -7552,7 +7552,7 @@ export default function AdminSettings() {
                   className="flex-1 flex items-center justify-center"
                   style={{
                     height: "48px",
-                    background: "#008FED",
+                    background: "#253396",
                     borderRadius: "6px",
                   }}
                   onClick={() => {
@@ -7737,7 +7737,7 @@ export default function AdminSettings() {
                       height: "44px",
                       background:
                         selectedProvince === province
-                          ? "rgba(0, 143, 237, 0.1)"
+                          ? "rgba(37, 51, 150, 0.1)"
                           : "transparent",
                     }}
                     onClick={() => setSelectedProvince(province)}
@@ -7751,13 +7751,13 @@ export default function AdminSettings() {
                         letterSpacing:
                           selectedProvince === province ? "-0.02em" : "-0.01em",
                         color:
-                          selectedProvince === province ? "#008FED" : "#686A6E",
+                          selectedProvince === province ? "#253396" : "#686A6E",
                       }}
                     >
                       {province}
                     </span>
                     {selectedProvince === province && (
-                      <ChevronRight size={20} style={{ color: "#008FED" }} />
+                      <ChevronRight size={20} style={{ color: "#253396" }} />
                     )}
                   </button>
                 ))}
@@ -7776,7 +7776,7 @@ export default function AdminSettings() {
                       style={{
                         height: "44px",
                         background: isSelected
-                          ? "rgba(0, 143, 237, 0.1)"
+                          ? "rgba(37, 51, 150, 0.1)"
                           : "transparent",
                       }}
                       onClick={() => {
@@ -7799,7 +7799,7 @@ export default function AdminSettings() {
                           fontSize: "15px",
                           fontWeight: isSelected ? 600 : 500,
                           letterSpacing: isSelected ? "-0.02em" : "-0.01em",
-                          color: isSelected ? "#008FED" : "#686A6E",
+                          color: isSelected ? "#253396" : "#686A6E",
                         }}
                       >
                         {district}
@@ -7833,7 +7833,7 @@ export default function AdminSettings() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         fontWeight: 400,
-                        color: "#008FED",
+                        color: "#253396",
                       }}
                     >
                       {region}
@@ -7846,7 +7846,7 @@ export default function AdminSettings() {
                       }}
                       className="ml-1"
                       style={{
-                        color: "#008FED",
+                        color: "#253396",
                         cursor: "pointer",
                       }}
                     >
@@ -7868,7 +7868,7 @@ export default function AdminSettings() {
                 className="w-full flex items-center justify-center"
                 style={{
                   height: "48px",
-                  background: "#008FED",
+                  background: "#253396",
                   borderRadius: "6px",
                 }}
                 onClick={() => {
@@ -8061,7 +8061,7 @@ export default function AdminSettings() {
               <div
                 className="rounded-xl p-6 transition-all cursor-pointer"
                 style={{
-                  background: noticeImageDragging ? "rgba(0, 143, 237, 0.08)" : "rgba(0, 143, 237, 0.03)",
+                  background: noticeImageDragging ? "rgba(37, 51, 150, 0.08)" : "rgba(37, 51, 150, 0.03)",
                   border: "none",
                 }}
                 onDragOver={(e) => { e.preventDefault(); setNoticeImageDragging(true); }}
@@ -8079,9 +8079,9 @@ export default function AdminSettings() {
                 <div className="flex flex-col items-center gap-3">
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center"
-                    style={{ background: "rgba(0, 143, 237, 0.1)" }}
+                    style={{ background: "rgba(37, 51, 150, 0.1)" }}
                   >
-                    <Upload className="w-6 h-6" style={{ color: "#008FED" }} />
+                    <Upload className="w-6 h-6" style={{ color: "#253396" }} />
                   </div>
                   <div className="text-center">
                     <div
@@ -8102,7 +8102,7 @@ export default function AdminSettings() {
                         fontSize: "13px",
                         fontWeight: 500,
                         letterSpacing: "-0.02em",
-                        color: "#008FED",
+                        color: "#253396",
                       }}
                     >
                       파일 찾기
@@ -8125,8 +8125,8 @@ export default function AdminSettings() {
                           className="w-12 h-12 rounded object-cover"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded flex items-center justify-center" style={{ background: "rgba(0, 143, 237, 0.1)" }}>
-                          <FileText className="w-6 h-6" style={{ color: "#008FED" }} />
+                        <div className="w-12 h-12 rounded flex items-center justify-center" style={{ background: "rgba(37, 51, 150, 0.1)" }}>
+                          <FileText className="w-6 h-6" style={{ color: "#253396" }} />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -8207,7 +8207,7 @@ export default function AdminSettings() {
                 }}
                 className="flex-1 py-3"
                 style={{
-                  background: "#008FED",
+                  background: "#253396",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
                   fontSize: "16px",
@@ -8300,7 +8300,7 @@ export default function AdminSettings() {
                 disabled={createNoticeMutation.isPending}
                 className="flex-1 py-3"
                 style={{
-                  background: createNoticeMutation.isPending ? "#CCC" : "#008FED",
+                  background: createNoticeMutation.isPending ? "#CCC" : "#253396",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
                   fontSize: "16px",
@@ -8394,7 +8394,7 @@ export default function AdminSettings() {
                 }}
                 className="flex-1 py-3"
                 style={{
-                  background: "#008FED",
+                  background: "#253396",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
                   fontSize: "16px",
@@ -8587,8 +8587,8 @@ export default function AdminSettings() {
                                 }
                               }}
                             >
-                              <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: "rgba(0, 143, 237, 0.1)" }}>
-                                <FileText className="w-5 h-5" style={{ color: "#008FED" }} />
+                              <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: "rgba(37, 51, 150, 0.1)" }}>
+                                <FileText className="w-5 h-5" style={{ color: "#253396" }} />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="truncate" style={{ fontFamily: "Pretendard", fontSize: "13px", fontWeight: 500, color: "#0C0C0C" }}>
@@ -8618,7 +8618,7 @@ export default function AdminSettings() {
                 onClick={() => setViewingNotice(null)}
                 className="px-8 py-3"
                 style={{
-                  background: "#008FED",
+                  background: "#253396",
                   borderRadius: "8px",
                   fontFamily: "Pretendard",
                   fontSize: "16px",

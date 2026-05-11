@@ -407,7 +407,7 @@ export default function SettlementAction() {
             style={{
               height: "48px",
               padding: "0 32px",
-              background: "#008FED",
+              background: "#253396",
               borderRadius: "8px",
               fontFamily: "Pretendard",
               fontSize: "14px",
@@ -635,7 +635,7 @@ export default function SettlementAction() {
                       key={row.id}
                       className="compact-row"
                       style={{
-                        background: selectedCaseId === row.id ? "rgba(0, 143, 237, 0.05)" : "#FFFFFF",
+                        background: selectedCaseId === row.id ? "rgba(37, 51, 150, 0.05)" : "#FFFFFF",
                         cursor: "pointer",
                       }}
                       onClick={() => setSelectedCaseId(row.id)}
@@ -772,7 +772,7 @@ export default function SettlementAction() {
                             width: "24px",
                             height: "24px",
                             borderRadius: "50%",
-                            background: selectedCaseId === row.id ? "#008FED" : "rgba(12, 12, 12, 0.1)",
+                            background: selectedCaseId === row.id ? "#253396" : "rgba(12, 12, 12, 0.1)",
                             margin: "0 auto",
                           }}
                         />
@@ -810,7 +810,7 @@ export default function SettlementAction() {
                   width: "8px",
                   height: "8px",
                   borderRadius: "50%",
-                  background: "#008FED",
+                  background: "#253396",
                 }}
               />
               <div className="flex items-center gap-2">
@@ -1007,9 +1007,9 @@ export default function SettlementAction() {
                       fontSize: "18px",
                       fontWeight: 600,
                       color: selectedCase.caseData.status === "정산완료" 
-                        ? "#008FED" 
+                        ? "#253396" 
                         : selectedCase.caseData.status === "입금완료"
-                        ? "#008FED"
+                        ? "#253396"
                         : "rgba(12, 12, 12, 0.9)",
                     }}
                   >
@@ -1048,7 +1048,7 @@ export default function SettlementAction() {
                       fontSize: "18px",
                       fontWeight: 600,
                       color: selectedCase.caseData.status === "정산완료" || selectedCase.caseData.status === "입금완료"
-                        ? "#008FED"
+                        ? "#253396"
                         : "#D02B20",
                     }}
                   >
@@ -1325,7 +1325,7 @@ export default function SettlementAction() {
                   fontFamily: "Pretendard",
                   fontSize: "16px",
                   fontWeight: 600,
-                  color: "#008FED",
+                  color: "#253396",
                 }}
               >
                 미정산액 {selectedCase.caseData.status === "정산완료" || selectedCase.caseData.status === "입금완료"
@@ -1582,7 +1582,7 @@ export default function SettlementAction() {
                   style={{
                     height: "44px",
                     padding: "0 32px",
-                    background: isFormComplete ? "#008FED" : "#6B7280",
+                    background: isFormComplete ? "#253396" : "#6B7280",
                     borderRadius: "8px",
                     fontFamily: "Pretendard",
                     fontSize: "14px",
@@ -1626,7 +1626,7 @@ export default function SettlementAction() {
                   접수건
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", background: "#F8F9FA", borderRadius: "8px" }}>
-                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#008FED" }} />
+                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#253396" }} />
                   <div>
                     <div style={{ fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "#0C0C0C" }}>
                       {selectedCase.insuranceCompany} {selectedCase.insuranceAccidentNo}
@@ -1693,7 +1693,7 @@ export default function SettlementAction() {
               style={{
                 flex: 1,
                 height: "44px",
-                background: isSubmitting ? "#6B7280" : "#008FED",
+                background: isSubmitting ? "#6B7280" : "#253396",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
                 fontWeight: 600,

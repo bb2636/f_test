@@ -257,13 +257,13 @@ export function NoticeManagementTab({
                       <button
                         className="px-4 py-2"
                         style={{
-                          background: "rgba(0, 143, 237, 0.1)",
+                          background: "rgba(37, 51, 150, 0.1)",
                           borderRadius: "6px",
                           fontFamily: "Pretendard",
                           fontSize: "13px",
                           fontWeight: 500,
                           letterSpacing: "-0.01em",
-                          color: "#008FED",
+                          color: "#253396",
                         }}
                         onClick={() => setViewingNotice(notice)}
                         data-testid={`button-notice-view-${index}`}

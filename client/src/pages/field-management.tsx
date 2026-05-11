@@ -1409,7 +1409,7 @@ export default function FieldManagement() {
                                 setNewVictimAddressDetail("");
                               }
                             }}
-                            className="h-4 w-4 accent-[#008FED]"
+                            className="h-4 w-4 accent-[#253396]"
                             data-testid="checkbox-same-as-insured"
                           />
                           주소지 동일

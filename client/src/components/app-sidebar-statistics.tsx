@@ -335,8 +335,8 @@ export function AppSidebarStatistics() {
             data-testid="button-open-mypage"
           >
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-[#008FED]"
-              style={{ background: "rgba(0, 143, 237, 0.2)" }}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-[#253396]"
+              style={{ background: "rgba(37, 51, 150, 0.2)" }}
             >
               {user.name ? user.name.charAt(0) : "U"}
             </div>

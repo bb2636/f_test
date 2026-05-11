@@ -277,7 +277,7 @@ export default function MobileLogin() {
                 gap: '8px',
                 width: '100%',
                 height: '54px',
-                background: '#008FED',
+                background: '#253396',
                 borderRadius: '8px',
                 border: 'none',
                 cursor: loginMutation.isPending ? 'not-allowed' : 'pointer',

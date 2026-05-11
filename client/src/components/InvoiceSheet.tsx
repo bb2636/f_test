@@ -1355,7 +1355,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
               <span style={{
                 fontFamily: "'Pretendard'",
                 fontSize: "12px",
-                color: "#008FED",
+                color: "#253396",
                 fontWeight: 500,
               }}>
                 {caseSelectedCount}/{caseDocs.length}개 선택
@@ -1385,7 +1385,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                         alignItems: "center",
                         padding: "6px 12px",
                         gap: "4px",
-                        background: isSelected ? "#008FED" : "rgba(12, 12, 12, 0.04)",
+                        background: isSelected ? "#253396" : "rgba(12, 12, 12, 0.04)",
                         borderRadius: "16px",
                         border: "none",
                         cursor: "pointer",
@@ -1447,9 +1447,9 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                           alignItems: "center",
                           padding: "4px 10px",
                           gap: "4px",
-                          background: isSubSelected ? "rgba(0, 143, 237, 0.1)" : "transparent",
+                          background: isSubSelected ? "rgba(37, 51, 150, 0.1)" : "transparent",
                           borderRadius: "4px",
-                          border: isSubSelected ? "1px solid #008FED" : "1px solid transparent",
+                          border: isSubSelected ? "1px solid #253396" : "1px solid transparent",
                           cursor: "pointer",
                           transition: "all 0.2s",
                         }}
@@ -1462,7 +1462,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                           fontSize: "11px",
                           lineHeight: "128%",
                           letterSpacing: "-0.01em",
-                          color: isSubSelected ? "#008FED" : "rgba(12, 12, 12, 0.6)",
+                          color: isSubSelected ? "#253396" : "rgba(12, 12, 12, 0.6)",
                         }}>
                           {subCat}
                         </span>
@@ -1471,7 +1471,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                             fontFamily: "'Pretendard'",
                             fontWeight: 400,
                             fontSize: "10px",
-                            color: isSubSelected ? "#008FED" : "rgba(12, 12, 12, 0.4)",
+                            color: isSubSelected ? "#253396" : "rgba(12, 12, 12, 0.4)",
                           }}>
                             {subCatCount}
                           </span>
@@ -1543,8 +1543,8 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                     <div style={{
                       width: "32px",
                       height: "32px",
-                      border: "3px solid rgba(0, 143, 237, 0.2)",
-                      borderTopColor: "#008FED",
+                      border: "3px solid rgba(37, 51, 150, 0.2)",
+                      borderTopColor: "#253396",
                       borderRadius: "50%",
                       animation: "spin 1s linear infinite",
                     }} />
@@ -1604,7 +1604,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                             aspectRatio: "1",
                             borderRadius: "8px",
                             overflow: "hidden",
-                            border: isSelected ? "2px solid #008FED" : "1px solid rgba(12, 12, 12, 0.1)",
+                            border: isSelected ? "2px solid #253396" : "1px solid rgba(12, 12, 12, 0.1)",
                             position: "relative",
                             background: "rgba(12, 12, 12, 0.04)",
                           }}>
@@ -1624,7 +1624,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                               width: "20px",
                               height: "20px",
                               borderRadius: "4px",
-                              background: isSelected ? "#008FED" : "rgba(255, 255, 255, 0.9)",
+                              background: isSelected ? "#253396" : "rgba(255, 255, 255, 0.9)",
                               border: isSelected ? "none" : "1px solid rgba(12, 12, 12, 0.2)",
                               display: "flex",
                               alignItems: "center",
@@ -1872,7 +1872,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                 fontSize: "16px",
                 lineHeight: "128%",
                 letterSpacing: "-0.02em",
-                color: "#008FED",
+                color: "#253396",
                 whiteSpace: "nowrap",
               }}>
                 {isSendingPdf ? "발송 중..." : "PDF 발송"}

@@ -722,12 +722,12 @@ export function DbManagementTab({
                               fontFamily: "Pretendard",
                               fontSize: "14px",
                               fontWeight: 400,
-                              color: hasOverride ? "#008FED" : "#0C0C0C",
+                              color: hasOverride ? "#253396" : "#0C0C0C",
                               whiteSpace: "nowrap",
                               verticalAlign: rowspan > 1 ? "middle" : undefined,
                               borderRight: "1px solid rgba(12, 12, 12, 0.08)",
                               borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
-                              background: hasOverride ? "rgba(0, 143, 237, 0.05)" : (rowspan > 1 ? "rgba(248, 248, 248, 0.5)" : undefined),
+                              background: hasOverride ? "rgba(37, 51, 150, 0.05)" : (rowspan > 1 ? "rgba(248, 248, 248, 0.5)" : undefined),
                             }}
                           >
                             {calculatedUnitPrice.toLocaleString()}
@@ -756,7 +756,7 @@ export function DbManagementTab({
                               verticalAlign: rowspan > 1 ? "middle" : undefined,
                               borderRight: "1px solid rgba(12, 12, 12, 0.08)",
                               borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
-                              background: hasOverride ? "rgba(0, 143, 237, 0.1)" : "rgba(255, 255, 255, 1)",
+                              background: hasOverride ? "rgba(37, 51, 150, 0.1)" : "rgba(255, 255, 255, 1)",
                             }}
                           >
                             <div className="flex items-center gap-1">
@@ -797,7 +797,7 @@ export function DbManagementTab({
                                   borderRadius: "4px",
                                   fontFamily: "Pretendard",
                                   fontSize: "13px",
-                                  background: hasOverride ? "rgba(0, 143, 237, 0.05)" : "#FFFFFF",
+                                  background: hasOverride ? "rgba(37, 51, 150, 0.05)" : "#FFFFFF",
                                 }}
                                 data-testid={`input-d-value-${rowIdx}`}
                               />
@@ -811,7 +811,7 @@ export function DbManagementTab({
                                     width: "16px",
                                     height: "16px",
                                     borderRadius: "50%",
-                                    background: "#008FED",
+                                    background: "#253396",
                                     color: "#FFFFFF",
                                     fontSize: "10px",
                                     fontWeight: 700,

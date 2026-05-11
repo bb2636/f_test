@@ -251,7 +251,7 @@ export function LaborRateTiersModal({ open, onOpenChange }: LaborRateTiersModalP
             onClick={handleSave}
             disabled={updateMutation.isPending}
             style={{ 
-              backgroundColor: "#008FED",
+              backgroundColor: "#253396",
               color: "white",
             }}
             data-testid="button-save-tiers"

@@ -711,10 +711,10 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <td style={{ ...cellStyle, fontWeight: 600 }}>{format(startDate, "yyyy.MM", { locale: ko })}</td>
             <td style={cellStyle}>{statistics.이월.직접복구}</td>
             <td style={cellStyle}>{statistics.이월.선견적요청}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(0, 143, 237, 0.05)" }}>{statistics.이월.계}</td>
+            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(37, 51, 150, 0.05)" }}>{statistics.이월.계}</td>
             <td style={cellStyle}>{statistics.수임.직접복구}</td>
             <td style={cellStyle}>{statistics.수임.선견적요청}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(0, 143, 237, 0.05)" }}>{statistics.수임.계}</td>
+            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(37, 51, 150, 0.05)" }}>{statistics.수임.계}</td>
             <td style={cellStyle}>{statistics.종결.직접복구.직접복구}</td>
             <td style={cellStyle}>{statistics.종결.직접복구.선견적요청}</td>
             <td style={cellStyle}>{statistics.종결.직접복구.접수취소}</td>
@@ -726,8 +726,8 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <td style={cellStyle}>{statistics.종결.합계.직접복구}</td>
             <td style={cellStyle}>{statistics.종결.합계.선견적요청}</td>
             <td style={cellStyle}>{statistics.종결.합계.접수취소}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(0, 143, 237, 0.05)" }}>{statistics.종결.합계.소계}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, color: "#008FED" }}>{statistics.처리율}%</td>
+            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(37, 51, 150, 0.05)" }}>{statistics.종결.합계.소계}</td>
+            <td style={{ ...cellStyle, fontWeight: 600, color: "#253396" }}>{statistics.처리율}%</td>
             <td style={cellStyle}>{statistics.미결.직접복구}</td>
             <td style={cellStyle}>{statistics.미결.선견적요청}</td>
             <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(255, 77, 79, 0.05)", color: "#FF4D4F" }}>{statistics.미결.계}</td>
@@ -757,11 +757,11 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <th style={headerStyle}>출동비청구</th>
             <th style={headerStyle}>청구</th>
             <th style={headerStyle}>접수취소</th>
-            <th style={{ ...headerStyle, background: "rgba(0, 143, 237, 0.08)" }}>계</th>
+            <th style={{ ...headerStyle, background: "rgba(37, 51, 150, 0.08)" }}>계</th>
             <th style={headerStyle}>접수완료</th>
             <th style={headerStyle}>현장방문</th>
             <th style={headerStyle}>현장정보입력</th>
-            <th style={{ ...headerStyle, background: "rgba(0, 143, 237, 0.08)" }}>계</th>
+            <th style={{ ...headerStyle, background: "rgba(37, 51, 150, 0.08)" }}>계</th>
           </tr>
         </thead>
         <tbody>
@@ -776,11 +776,11 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <td style={cellStyle}>{progressStatistics.직접복구.출동비청구}</td>
             <td style={cellStyle}>{progressStatistics.직접복구.청구}</td>
             <td style={cellStyle}>{progressStatistics.직접복구.접수취소}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(0, 143, 237, 0.05)" }}>{progressStatistics.직접복구.계}</td>
+            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(37, 51, 150, 0.05)" }}>{progressStatistics.직접복구.계}</td>
             <td style={cellStyle}>{progressStatistics.선견적요청.접수완료}</td>
             <td style={cellStyle}>{progressStatistics.선견적요청.현장방문}</td>
             <td style={cellStyle}>{progressStatistics.선견적요청.현장정보입력}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(0, 143, 237, 0.05)" }}>{progressStatistics.선견적요청.계}</td>
+            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(37, 51, 150, 0.05)" }}>{progressStatistics.선견적요청.계}</td>
           </tr>
           <tr style={{ background: "rgba(12, 12, 12, 0.02)" }}>
             <td style={{ ...cellStyle, fontWeight: 600 }}>합계</td>
@@ -793,11 +793,11 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <td style={{ ...cellStyle, fontWeight: 600 }}>{progressStatistics.합계.출동비청구}</td>
             <td style={{ ...cellStyle, fontWeight: 600 }}>{progressStatistics.합계.청구}</td>
             <td style={{ ...cellStyle, fontWeight: 600 }}>{progressStatistics.합계.접수취소}</td>
-            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(0, 143, 237, 0.08)", color: "#008FED" }}>{progressStatistics.합계.계}</td>
+            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(37, 51, 150, 0.08)", color: "#253396" }}>{progressStatistics.합계.계}</td>
             <td style={{ ...cellStyle, fontWeight: 600 }}>{progressStatistics.선견적요청.접수완료}</td>
             <td style={{ ...cellStyle, fontWeight: 600 }}>{progressStatistics.선견적요청.현장방문}</td>
             <td style={{ ...cellStyle, fontWeight: 600 }}>{progressStatistics.선견적요청.현장정보입력}</td>
-            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(0, 143, 237, 0.08)", color: "#008FED" }}>{progressStatistics.선견적요청.계}</td>
+            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(37, 51, 150, 0.08)", color: "#253396" }}>{progressStatistics.선견적요청.계}</td>
           </tr>
         </tbody>
       </table>
@@ -817,7 +817,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <th colSpan={2} style={headerStyle}>5백만 미만</th>
             <th colSpan={2} style={headerStyle}>1천만 미만</th>
             <th colSpan={2} style={headerStyle}>1천만 초과</th>
-            <th rowSpan={2} style={{ ...headerStyle, width: "80px", verticalAlign: "middle", background: "rgba(0, 143, 237, 0.08)" }}>계</th>
+            <th rowSpan={2} style={{ ...headerStyle, width: "80px", verticalAlign: "middle", background: "rgba(37, 51, 150, 0.08)" }}>계</th>
           </tr>
           <tr>
             <th style={headerStyle}>건수</th>
@@ -849,7 +849,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <td style={cellStyle}>{repairCostStatistics["1천만미만"]?.퍼센트 || 0}%</td>
             <td style={cellStyle}>{repairCostStatistics["1천만초과"]?.건수 || 0}</td>
             <td style={cellStyle}>{repairCostStatistics["1천만초과"]?.퍼센트 || 0}%</td>
-            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(0, 143, 237, 0.08)", color: "#008FED" }}>{repairCostStatistics.계}</td>
+            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(37, 51, 150, 0.08)", color: "#253396" }}>{repairCostStatistics.계}</td>
           </tr>
         </tbody>
       </table>
@@ -868,7 +868,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <th colSpan={2} style={headerStyle}>~6개월</th>
             <th colSpan={2} style={headerStyle}>~1년</th>
             <th colSpan={2} style={headerStyle}>1년~</th>
-            <th rowSpan={2} style={{ ...headerStyle, width: "80px", verticalAlign: "middle", background: "rgba(0, 143, 237, 0.08)" }}>계</th>
+            <th rowSpan={2} style={{ ...headerStyle, width: "80px", verticalAlign: "middle", background: "rgba(37, 51, 150, 0.08)" }}>계</th>
           </tr>
           <tr>
             <th style={headerStyle}>건수</th>
@@ -896,7 +896,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <td style={cellStyle}>{periodStatistics["~1년"]?.퍼센트 || 0}%</td>
             <td style={cellStyle}>{periodStatistics["1년~"]?.건수 || 0}</td>
             <td style={cellStyle}>{periodStatistics["1년~"]?.퍼센트 || 0}%</td>
-            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(0, 143, 237, 0.08)", color: "#008FED" }}>{periodStatistics.계}</td>
+            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(37, 51, 150, 0.08)", color: "#253396" }}>{periodStatistics.계}</td>
           </tr>
         </tbody>
       </table>
@@ -919,7 +919,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
               <th colSpan={2} style={headerStyle}>~10,000,000</th>
               <th colSpan={2} style={headerStyle}>10,000,000~</th>
               <th rowSpan={2} style={{ ...headerStyle, width: "80px", verticalAlign: "middle" }}>건수</th>
-              <th rowSpan={2} style={{ ...headerStyle, width: "120px", verticalAlign: "middle", background: "rgba(0, 143, 237, 0.08)" }}>평균수리비</th>
+              <th rowSpan={2} style={{ ...headerStyle, width: "120px", verticalAlign: "middle", background: "rgba(37, 51, 150, 0.08)" }}>평균수리비</th>
             </tr>
             <tr>
               <th style={headerStyle}>건수</th>
@@ -952,7 +952,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
               <td style={cellStyle}>{completedCostStatistics["10,000,000~"]?.건수 || 0}</td>
               <td style={cellStyle}>{completedCostStatistics["10,000,000~"]?.퍼센트 || 0}%</td>
               <td style={{ ...cellStyle, fontWeight: 600 }}>{completedCostStatistics.총건수}</td>
-              <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(0, 143, 237, 0.08)", color: "#008FED" }}>{formatNumber(completedCostStatistics.평균수리비)}</td>
+              <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(37, 51, 150, 0.08)", color: "#253396" }}>{formatNumber(completedCostStatistics.평균수리비)}</td>
             </tr>
           </tbody>
         </table>
@@ -978,7 +978,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
               <th rowSpan={2} style={{ ...headerStyle, width: "80px", verticalAlign: "middle" }}>구분값</th>
               <th colSpan={6} style={headerStyle}>손해정지비용</th>
               <th colSpan={10} style={headerStyle}>대물수리비용</th>
-              <th rowSpan={2} style={{ ...headerStyle, width: "100px", verticalAlign: "middle", background: "rgba(0, 143, 237, 0.08)" }}>계</th>
+              <th rowSpan={2} style={{ ...headerStyle, width: "100px", verticalAlign: "middle", background: "rgba(37, 51, 150, 0.08)" }}>계</th>
             </tr>
             <tr>
               <th style={headerStyle}>누수탐지비</th>
@@ -1018,7 +1018,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
               <td style={cellStyle}>{formatNumber(data.대물수리비용.철거공사 || 0)}</td>
               <td style={cellStyle}>{formatNumber(data.대물수리비용.기타공사 || 0)}</td>
               <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(12, 12, 12, 0.03)" }}>{formatNumber(data.대물수리비용.계 || 0)}</td>
-              <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(0, 143, 237, 0.08)", color: "#008FED" }}>{formatNumber(data.총계 || 0)}</td>
+              <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(37, 51, 150, 0.08)", color: "#253396" }}>{formatNumber(data.총계 || 0)}</td>
             </tr>
           </tbody>
         </table>
@@ -1034,7 +1034,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
           <tr>
             <th rowSpan={2} style={{ ...headerStyle, width: "100px", verticalAlign: "middle" }}>구분값</th>
             <th colSpan={5} style={headerStyle}>사고원인</th>
-            <th rowSpan={2} style={{ ...headerStyle, width: "100px", verticalAlign: "middle", background: "rgba(0, 143, 237, 0.08)" }}>합계</th>
+            <th rowSpan={2} style={{ ...headerStyle, width: "100px", verticalAlign: "middle", background: "rgba(37, 51, 150, 0.08)" }}>합계</th>
           </tr>
           <tr>
             <th style={headerStyle}>배관</th>
@@ -1052,7 +1052,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <td style={cellStyle}>{accidentCauseStatistics.코킹}</td>
             <td style={cellStyle}>{accidentCauseStatistics.공용부}</td>
             <td style={cellStyle}>{accidentCauseStatistics.복합}</td>
-            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(0, 143, 237, 0.08)", color: "#008FED" }}>{accidentCauseStatistics.합계}</td>
+            <td style={{ ...cellStyle, fontWeight: 700, background: "rgba(37, 51, 150, 0.08)", color: "#253396" }}>{accidentCauseStatistics.합계}</td>
           </tr>
         </tbody>
       </table>
@@ -1073,11 +1073,11 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <th style={headerStyle}>현장방문</th>
             <th style={headerStyle}>현장정보입력</th>
             <th style={headerStyle}>청구</th>
-            <th style={{ ...headerStyle, background: "rgba(0, 143, 237, 0.08)" }}>입금완료</th>
+            <th style={{ ...headerStyle, background: "rgba(37, 51, 150, 0.08)" }}>입금완료</th>
             <th style={headerStyle}>현장방문</th>
             <th style={headerStyle}>현장정보입력</th>
             <th style={headerStyle}>청구</th>
-            <th style={{ ...headerStyle, background: "rgba(0, 143, 237, 0.08)" }}>입금완료</th>
+            <th style={{ ...headerStyle, background: "rgba(37, 51, 150, 0.08)" }}>입금완료</th>
           </tr>
         </thead>
         <tbody>
@@ -1086,11 +1086,11 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <td style={cellStyle}>{dispatchFeeStatistics.직접복구진행항목.현장방문}</td>
             <td style={cellStyle}>{dispatchFeeStatistics.직접복구진행항목.현장정보입력}</td>
             <td style={cellStyle}>{dispatchFeeStatistics.직접복구진행항목.청구}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(0, 143, 237, 0.05)" }}>{dispatchFeeStatistics.직접복구진행항목.입금완료}</td>
+            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(37, 51, 150, 0.05)" }}>{dispatchFeeStatistics.직접복구진행항목.입금완료}</td>
             <td style={cellStyle}>{dispatchFeeStatistics.선견적의뢰건진행항목.현장방문}</td>
             <td style={cellStyle}>{dispatchFeeStatistics.선견적의뢰건진행항목.현장정보입력}</td>
             <td style={cellStyle}>{dispatchFeeStatistics.선견적의뢰건진행항목.청구}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(0, 143, 237, 0.05)" }}>{dispatchFeeStatistics.선견적의뢰건진행항목.입금완료}</td>
+            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(37, 51, 150, 0.05)" }}>{dispatchFeeStatistics.선견적의뢰건진행항목.입금완료}</td>
           </tr>
         </tbody>
       </table>
@@ -1113,13 +1113,13 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <th style={headerStyle}>직접복구</th>
             <th style={headerStyle}>청구자료제출</th>
             <th style={headerStyle}>청구</th>
-            <th style={{ ...headerStyle, background: "rgba(0, 143, 237, 0.08)" }}>입금완료</th>
+            <th style={{ ...headerStyle, background: "rgba(37, 51, 150, 0.08)" }}>입금완료</th>
             <th style={headerStyle}>현장방문</th>
             <th style={headerStyle}>현장정보입력</th>
             <th style={headerStyle}>직접복구</th>
             <th style={headerStyle}>청구자료제출</th>
             <th style={headerStyle}>청구</th>
-            <th style={{ ...headerStyle, background: "rgba(0, 143, 237, 0.08)" }}>입금완료</th>
+            <th style={{ ...headerStyle, background: "rgba(37, 51, 150, 0.08)" }}>입금완료</th>
           </tr>
         </thead>
         <tbody>
@@ -1130,13 +1130,13 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             <td style={cellStyle}>{closedProgressStatistics.직접복구의뢰건.직접복구}</td>
             <td style={cellStyle}>{closedProgressStatistics.직접복구의뢰건.청구자료제출}</td>
             <td style={cellStyle}>{closedProgressStatistics.직접복구의뢰건.청구}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(0, 143, 237, 0.05)" }}>{closedProgressStatistics.직접복구의뢰건.입금완료}</td>
+            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(37, 51, 150, 0.05)" }}>{closedProgressStatistics.직접복구의뢰건.입금완료}</td>
             <td style={cellStyle}>{closedProgressStatistics.선견적의뢰건.현장방문}</td>
             <td style={cellStyle}>{closedProgressStatistics.선견적의뢰건.현장정보입력}</td>
             <td style={cellStyle}>{closedProgressStatistics.선견적의뢰건.직접복구}</td>
             <td style={cellStyle}>{closedProgressStatistics.선견적의뢰건.청구자료제출}</td>
             <td style={cellStyle}>{closedProgressStatistics.선견적의뢰건.청구}</td>
-            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(0, 143, 237, 0.05)" }}>{closedProgressStatistics.선견적의뢰건.입금완료}</td>
+            <td style={{ ...cellStyle, fontWeight: 600, background: "rgba(37, 51, 150, 0.05)" }}>{closedProgressStatistics.선견적의뢰건.입금완료}</td>
           </tr>
         </tbody>
       </table>
@@ -1238,7 +1238,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
             style={{
               height: "48px",
               padding: "0 32px",
-              background: "#008FED",
+              background: "#253396",
               borderRadius: "8px",
               fontFamily: "Pretendard",
               fontSize: "14px",
@@ -1331,7 +1331,7 @@ export default function StatisticsOverview({ mode = "closed" }: StatisticsOvervi
                     fontFamily: "Pretendard",
                     fontSize: "14px",
                     fontWeight: 500,
-                    color: isActive ? "#008FED" : "rgba(12, 12, 12, 0.5)",
+                    color: isActive ? "#253396" : "rgba(12, 12, 12, 0.5)",
                     cursor: "pointer",
                     transition: "all 0.2s",
                   }}
