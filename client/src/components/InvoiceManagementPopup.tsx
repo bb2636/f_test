@@ -2846,6 +2846,7 @@ export function InvoiceManagementPopup({
                     setTaxInvoiceDate(undefined);
                   }
                 }}
+                className="data-[state=checked]:bg-[#253396] data-[state=checked]:border-[#253396] data-[state=checked]:text-white"
                 data-testid="checkbox-invoice-issued"
               />
               <Label
