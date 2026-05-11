@@ -4602,6 +4602,19 @@ export class DbStorage implements IStorage {
     if (updateData.accidentCause) {
       updateData.accidentCause = updateData.accidentCause.trim();
     }
+    // [사고원인 보호 2026-05-11] 한 번 입력된 사고원인은 빈 값으로 덮어쓰기 금지.
+    //   다른 값으로의 변경(실제 수정)은 허용. null/""/공백만 차단.
+    //   접수/현장조사/정산 등 어느 화면에서 호출하든 단일 chokepoint에서 차단.
+    if (existingCase && existingCase.accidentCause && existingCase.accidentCause.trim() !== '' &&
+        'accidentCause' in updateData) {
+      const incoming = updateData.accidentCause;
+      const isClear = incoming === null || incoming === undefined ||
+        (typeof incoming === 'string' && incoming.trim() === '');
+      if (isClear) {
+        console.log(`[updateCase] ⚠️ Blocked accidentCause clear: keeping "${existingCase.accidentCause}" (caseId: ${caseId})`);
+        delete updateData.accidentCause;
+      }
+    }
     if (updateData.restorationMethod) {
       updateData.restorationMethod = updateData.restorationMethod.trim();
     }
@@ -5071,6 +5084,20 @@ export class DbStorage implements IStorage {
     // receptionDate 보호: 현장입력에서 절대 접수일자를 변경하지 않음
     const safeFieldData = { ...fieldData };
     delete (safeFieldData as any).receptionDate;
+
+    // [사고원인 보호 2026-05-11] 한 번 입력된 사고원인은 빈 값으로 덮어쓰기 금지.
+    //   현장입력 폼이 useState("")로 시작해 케이스 전환/로드 race 시 ""가 박히는 것 차단.
+    //   다른 값으로의 실제 수정은 허용.
+    if (existingCase && existingCase.accidentCause && existingCase.accidentCause.trim() !== '' &&
+        'accidentCause' in safeFieldData) {
+      const incoming = (safeFieldData as any).accidentCause;
+      const isClear = incoming === null || incoming === undefined ||
+        (typeof incoming === 'string' && incoming.trim() === '');
+      if (isClear) {
+        console.log(`[updateCaseFieldSurvey] ⚠️ Blocked accidentCause clear: keeping "${existingCase.accidentCause}" (caseId: ${caseId})`);
+        delete (safeFieldData as any).accidentCause;
+      }
+    }
 
     const mergedData = { ...safeFieldData, ...additionalUpdates, updatedAt: getKSTTimestamp() };
     const encryptedData = encryptCaseFields(mergedData as Record<string, any>);
@@ -6716,11 +6743,26 @@ export class DbStorage implements IStorage {
     const safeFieldData = { ...fieldData };
     delete (safeFieldData as any).receptionDate;
 
+    // [사고원인 보호 2026-05-11] 동기화 시에도 빈 값으로 기존 사고원인 덮어쓰기 금지.
+    //   소스 케이스의 accidentCause가 빈 값이면 동기화 payload에서 제외하여
+    //   연관 케이스의 기존 값을 보존.
+    const sourceClearAccidentCause = 'accidentCause' in safeFieldData && (
+      (safeFieldData as any).accidentCause === null ||
+      (safeFieldData as any).accidentCause === undefined ||
+      (typeof (safeFieldData as any).accidentCause === 'string' && (safeFieldData as any).accidentCause.trim() === '')
+    );
+
     // Update all related cases with the field survey data
     let updatedCount = 0;
     for (const relatedCase of relatedCases) {
       try {
-        const encryptedFieldData = encryptCaseFields(safeFieldData as Record<string, any>);
+        const perCaseData = { ...safeFieldData };
+        // 연관 케이스에 이미 사고원인이 있고, 들어오는 값이 빈 값이면 해당 필드 제외
+        if (sourceClearAccidentCause && relatedCase.accidentCause && relatedCase.accidentCause.trim() !== '') {
+          console.log(`[Field Survey Sync] ⚠️ Blocked accidentCause clear on ${relatedCase.caseNumber}: keeping "${relatedCase.accidentCause}"`);
+          delete (perCaseData as any).accidentCause;
+        }
+        const encryptedFieldData = encryptCaseFields(perCaseData as Record<string, any>);
         await db
           .update(cases)
           .set(encryptedFieldData)
