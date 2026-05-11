@@ -715,7 +715,7 @@ export default function CancelledCases() {
                 style={{
                   width: "80px",
                   height: "80px",
-                  color: "#008FED",
+                  color: "#253396",
                   opacity: 0.3,
                 }}
               />
@@ -1060,14 +1060,14 @@ export default function CancelledCases() {
                           border: "none",
                           borderBottom:
                             detailTab === tab
-                              ? "2px solid #008FED"
+                              ? "2px solid #253396"
                               : "2px solid transparent",
                           fontFamily: "Pretendard",
                           fontSize: "16px",
                           fontWeight: detailTab === tab ? 600 : 400,
                           color:
                             detailTab === tab
-                              ? "#008FED"
+                              ? "#253396"
                               : "rgba(12, 12, 12, 0.6)",
                           cursor: "pointer",
                           transition: "all 0.2s",
@@ -1100,7 +1100,7 @@ export default function CancelledCases() {
                           >
                             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
                               <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>진행상태</div>
-                              <div style={{ padding: "6px 16px", background: getStatusColor(selectedCase.status) || "#008FED", borderRadius: "4px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "#FFFFFF" }}>
+                              <div style={{ padding: "6px 16px", background: getStatusColor(selectedCase.status) || "#253396", borderRadius: "4px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "#FFFFFF" }}>
                                 {selectedCase.status || "접수완료"}
                               </div>
                             </div>
@@ -1162,7 +1162,7 @@ export default function CancelledCases() {
                                   }
                                 }}
                                 style={{
-                                  width: "100%", padding: "14px", background: "#008FED", borderRadius: "8px",
+                                  width: "100%", padding: "14px", background: "#253396", borderRadius: "8px",
                                   border: "none", fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px",
                                   color: "#FFFFFF", cursor: "pointer",
                                 }}
@@ -1178,7 +1178,7 @@ export default function CancelledCases() {
                                 setLocation("/field-survey/report");
                               }}
                               style={{
-                                width: "100%", padding: "14px", background: "#008FED", borderRadius: "8px",
+                                width: "100%", padding: "14px", background: "#253396", borderRadius: "8px",
                                 border: "none", fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px",
                                 color: "#FFFFFF", cursor: "pointer", marginTop: "16px",
                               }}
@@ -1331,7 +1331,7 @@ export default function CancelledCases() {
 
                           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <div style={{ width: "10px", height: "10px", borderRadius: "50%", boxSizing: "border-box" as const, ...(selectedCase.adminNotesAckedByPartner === "true" ? { border: "2.5px solid #008FED", background: "transparent" } : { background: "#008FED" }) }} />
+                              <div style={{ width: "10px", height: "10px", borderRadius: "50%", boxSizing: "border-box" as const, ...(selectedCase.adminNotesAckedByPartner === "true" ? { border: "2.5px solid #253396", background: "transparent" } : { background: "#253396" }) }} />
                               <div style={{ fontFamily: "Pretendard", fontWeight: 600, fontSize: "16px", letterSpacing: "-0.02em", color: "rgba(12, 12, 12, 0.9)" }}>관리자 진행메모</div>
                             </div>
                             <div
@@ -1375,7 +1375,7 @@ export default function CancelledCases() {
                                   }}
                                   disabled={addNotesHistoryMutation.isPending || !newNoteContent.trim()}
                                   style={{
-                                    padding: "12px 20px", background: "#008FED", border: "none", borderRadius: "8px",
+                                    padding: "12px 20px", background: "#253396", border: "none", borderRadius: "8px",
                                     fontFamily: "Pretendard", fontWeight: 600, fontSize: "14px", color: "#FFFFFF",
                                     cursor: addNotesHistoryMutation.isPending || !newNoteContent.trim() ? "not-allowed" : "pointer",
                                     opacity: addNotesHistoryMutation.isPending || !newNoteContent.trim() ? 0.6 : 1,
@@ -1394,9 +1394,9 @@ export default function CancelledCases() {
                                     onClick={() => { if (selectedCase.id) ackNotesMutation.mutate(selectedCase.id); }}
                                     disabled={ackNotesMutation.isPending}
                                     style={{
-                                      padding: "8px 16px", background: "transparent", border: "1px solid #008FED",
+                                      padding: "8px 16px", background: "transparent", border: "1px solid #253396",
                                       borderRadius: "8px", fontFamily: "Pretendard", fontWeight: 600, fontSize: "13px",
-                                      color: "#008FED", cursor: ackNotesMutation.isPending ? "not-allowed" : "pointer",
+                                      color: "#253396", cursor: ackNotesMutation.isPending ? "not-allowed" : "pointer",
                                       opacity: ackNotesMutation.isPending ? 0.6 : 1,
                                     }}
                                   >
