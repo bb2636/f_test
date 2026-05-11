@@ -1937,7 +1937,7 @@ export default function AdminSettings() {
                               fontFamily: "Pretendard",
                               fontSize: "14px",
                               fontWeight: 500,
-                              color: "#008FED",
+                              color: "#253396",
                             }}
                           >
                             {inquiryUser?.role || "-"}
@@ -2083,9 +2083,9 @@ export default function AdminSettings() {
                             <div
                               className="p-4"
                               style={{
-                                background: "rgba(0, 143, 237, 0.04)",
+                                background: "rgba(37, 51, 150, 0.04)",
                                 borderRadius: "8px",
-                                border: "1px solid rgba(0, 143, 237, 0.2)",
+                                border: "1px solid rgba(37, 51, 150, 0.2)",
                                 whiteSpace: "pre-wrap",
                                 wordBreak: "break-all",
                                 overflowWrap: "break-word",
@@ -2202,12 +2202,13 @@ export default function AdminSettings() {
                                 }}
                                 className="flex-1 py-3"
                                 style={{
-                                  background: "rgba(12, 12, 12, 0.08)",
+                                  background: "#FFFFFF",
+                                  border: "1px solid #253396",
                                   borderRadius: "8px",
                                   fontFamily: "Pretendard",
                                   fontSize: "16px",
                                   fontWeight: 600,
-                                  color: "#686A6E",
+                                  color: "#253396",
                                 }}
                                 data-testid="button-reset-reply"
                               >
@@ -2250,7 +2251,7 @@ export default function AdminSettings() {
                                 }}
                                 className="flex-1 py-3"
                                 style={{
-                                  background: "#008FED",
+                                  background: "#253396",
                                   borderRadius: "8px",
                                   fontFamily: "Pretendard",
                                   fontSize: "16px",
