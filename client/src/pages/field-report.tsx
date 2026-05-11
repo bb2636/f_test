@@ -3361,12 +3361,16 @@ export default function FieldReport() {
                   data-testid="button-save-notes-header"
                   onClick={() => saveNotesMutation.mutate(additionalNotes)}
                   disabled={saveNotesMutation.isPending}
-                  className="px-6 py-3"
+                  className="px-6 py-3 hover-elevate active-elevate-2"
                   style={{
                     fontFamily: "Pretendard",
                     fontSize: "16px",
                     fontWeight: "600",
                     minWidth: "100px",
+                    background: saveNotesMutation.isPending ? "#ccc" : "#253396",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
                   }}
                 >
                   {saveNotesMutation.isPending ? "저장 중..." : "저장"}
@@ -4336,12 +4340,16 @@ export default function FieldReport() {
                     data-testid="button-save-notes-documents"
                     onClick={() => saveNotesMutation.mutate(additionalNotes)}
                     disabled={saveNotesMutation.isPending}
-                    className="px-6 py-3"
+                    className="px-6 py-3 hover-elevate active-elevate-2"
                     style={{
                       fontFamily: "Pretendard",
                       fontSize: "16px",
                       fontWeight: "600",
                       minWidth: "100px",
+                      background: saveNotesMutation.isPending ? "#ccc" : "#253396",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "8px",
                     }}
                   >
                     {saveNotesMutation.isPending ? "저장 중..." : "저장"}
