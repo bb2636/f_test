@@ -1829,8 +1829,9 @@ export function LaborCostSection({
           width: "100%",
           borderCollapse: "collapse",
           borderSpacing: 0,
-          /* [정책 2026-05-12] 견적서 탭(isReadOnly) — 체크박스/+- 컬럼 제거로 minWidth 축소, 비고 컬럼이 빈 공간을 채우도록 */
+          /* [정책 2026-05-12] 견적서 탭(isReadOnly) — 9개 컬럼을 균등 분배(tableLayout fixed + 컬럼별 11.11% 폭) */
           minWidth: isReadOnly ? "1000px" : "1200px",
+          tableLayout: isReadOnly ? "fixed" : "auto",
         }}
       >
         <thead>
@@ -1861,7 +1862,8 @@ export function LaborCostSection({
             )}
             <th
               style={{
-                width: "120px",
+                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
+                width: isReadOnly ? "11.11%" : "120px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1894,7 +1896,8 @@ export function LaborCostSection({
             )}
             <th
               style={{
-                width: "120px",
+                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
+                width: isReadOnly ? "11.11%" : "120px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1909,7 +1912,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                width: "120px",
+                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
+                width: isReadOnly ? "11.11%" : "120px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1924,7 +1928,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                width: "100px",
+                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
+                width: isReadOnly ? "11.11%" : "100px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1939,7 +1944,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                width: "100px",
+                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
+                width: isReadOnly ? "11.11%" : "100px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1954,7 +1960,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                width: "120px",
+                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
+                width: isReadOnly ? "11.11%" : "120px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1969,7 +1976,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                width: "100px",
+                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
+                width: isReadOnly ? "11.11%" : "100px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1984,7 +1992,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                width: "80px",
+                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
+                width: isReadOnly ? "11.11%" : "80px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1999,8 +2008,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                /* [정책 2026-05-12] 견적서 탭(isReadOnly)에서는 비고 컬럼이 남은 공간을 모두 흡수하도록 width 미지정 */
-                width: isReadOnly ? "auto" : "150px",
+                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
+                width: isReadOnly ? "11.12%" : "150px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
