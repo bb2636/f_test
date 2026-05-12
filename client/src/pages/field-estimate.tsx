@@ -7930,43 +7930,7 @@ export default function FieldEstimate() {
                     {getCurrentDate()}
                   </span>
                 </div>
-                <div style={{ display: "flex", gap: "6px" }}>
-                  <button
-                    onClick={addRow}
-                    disabled={isReadOnly}
-                    style={{
-                      padding: "6px 12px",
-                      background: isReadOnly ? "#f5f5f5" : "white",
-                      border: "1px solid rgba(12, 12, 12, 0.1)",
-                      borderRadius: "4px",
-                      fontFamily: "Pretendard",
-                      fontSize: "14px",
-                      cursor: isReadOnly ? "not-allowed" : "pointer",
-                      opacity: isReadOnly ? 0.5 : 1,
-                    }}
-                    data-testid="button-add-row-area"
-                  >
-                    행 추가
-                  </button>
-                  <button
-                    onClick={deleteSelectedRows}
-                    disabled={isReadOnly}
-                    style={{
-                      padding: "6px 12px",
-                      background: isReadOnly ? "#f5f5f5" : "white",
-                      border: "1px solid rgba(12, 12, 12, 0.1)",
-                      borderRadius: "4px",
-                      fontFamily: "Pretendard",
-                      fontSize: "14px",
-                      color: isReadOnly ? "#ccc" : "#D02B20",
-                      cursor: isReadOnly ? "not-allowed" : "pointer",
-                      opacity: isReadOnly ? 0.5 : 1,
-                    }}
-                    data-testid="button-delete-row-area"
-                  >
-                    행 삭제
-                  </button>
-                </div>
+                {/* [정책 2026-05-12] 견적서 탭의 복구면적 산출표는 결과 조회 전용 → 행 추가/삭제 버튼 제거 */}
               </div>
               
               {/* 복구면적 산출표 테이블 */}
@@ -7993,7 +7957,7 @@ export default function FieldEstimate() {
                           borderBottom: "1px solid rgba(12, 12, 12, 0.06)",
                         }}
                       >
-                        <th style={{ width: "40px", padding: "12px", textAlign: "center" }}></th>
+                        {/* [정책 2026-05-12] 견적서 탭은 조회 전용 → 행별 체크박스 컬럼 제거 */}
                         <th style={{ padding: "12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)" }}>장소</th>
                         <th style={{ padding: "12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)" }}>위치</th>
                         <th style={{ padding: "12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)" }}>공종</th>
@@ -8010,20 +7974,12 @@ export default function FieldEstimate() {
                     <tbody>
                       {rows.map((row, index) => (
                         <tr key={row.id} style={{ borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>
-                          <td style={{ padding: "8px", textAlign: "center" }}>
-                            <input
-                              type="checkbox"
-                              style={{ accentColor: "#253396" }}
-                              checked={selectedRows.has(row.id)}
-                              onChange={() => toggleRowSelection(row.id)}
-                              data-testid={`checkbox-estimate-area-row-${index}`}
-                            />
-                          </td>
+                          {/* [정책 2026-05-12] 견적서 탭은 조회 전용 → 행별 체크박스 셀 제거 */}
                           <td style={{ padding: "8px" }}>
                             <select
                               value={row.category || ""}
                               onChange={(e) => updateRow(row.id, 'category', e.target.value)}
-                              disabled={isReadOnly}
+                              disabled={true}
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8045,7 +8001,7 @@ export default function FieldEstimate() {
                             <select
                               value={row.location || ""}
                               onChange={(e) => updateRow(row.id, 'location', e.target.value)}
-                              disabled={isReadOnly}
+                              disabled={true}
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8070,7 +8026,7 @@ export default function FieldEstimate() {
                                 updateRow(row.id, 'workType', e.target.value);
                                 updateRow(row.id, 'workName', '');
                               }}
-                              disabled={isReadOnly || !row.location}
+                              disabled={true}
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8092,7 +8048,7 @@ export default function FieldEstimate() {
                             <select
                               value={row.workName || ""}
                               onChange={(e) => updateRow(row.id, 'workName', e.target.value)}
-                              disabled={isReadOnly || !row.workType}
+                              disabled={true}
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8115,7 +8071,7 @@ export default function FieldEstimate() {
                               type="text"
                               value={row.damageWidth}
                               onChange={(e) => updateRow(row.id, 'damageWidth', e.target.value)}
-                              disabled={isReadOnly}
+                              disabled={true}
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8133,7 +8089,7 @@ export default function FieldEstimate() {
                               type="text"
                               value={row.damageHeight}
                               onChange={(e) => updateRow(row.id, 'damageHeight', e.target.value)}
-                              disabled={isReadOnly}
+                              disabled={true}
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8152,7 +8108,7 @@ export default function FieldEstimate() {
                               type="text"
                               value={row.repairWidth}
                               onChange={(e) => updateRow(row.id, 'repairWidth', e.target.value)}
-                              disabled={isReadOnly}
+                              disabled={true}
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8170,7 +8126,7 @@ export default function FieldEstimate() {
                               type="text"
                               value={row.repairHeight}
                               onChange={(e) => updateRow(row.id, 'repairHeight', e.target.value)}
-                              disabled={isReadOnly}
+                              disabled={true}
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8189,7 +8145,7 @@ export default function FieldEstimate() {
                               type="text"
                               value={row.note}
                               onChange={(e) => updateRow(row.id, 'note', e.target.value)}
-                              disabled={isReadOnly}
+                              disabled={true}
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
