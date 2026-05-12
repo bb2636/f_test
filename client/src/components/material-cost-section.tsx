@@ -402,7 +402,10 @@ export function MaterialCostSection({
             </th>
             )}
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "120px" }}>공종</th>
+            {/* [정책 2026-05-12] 견적서 탭(isReadOnly=true)은 조회 전용 → +/- 컬럼 헤더 제거 */}
+            {!isReadOnly && (
             <th style={{ width: "70px", padding: "0 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>+/-</th>
+            )}
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "100px" }}>공사명</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "150px" }}>자재항목</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "80px" }}>단가</th>
@@ -566,12 +569,9 @@ export function MaterialCostSection({
                     </td>
                   ) : null}
                   
-                  {/* +/- 버튼 컬럼 (각 행마다) */}
-                  {/* [Bug 5 fix 2026-05-04] 협력업체 화면에서도 +/- 버튼 항상 표시.
-                      isReadOnly(제출 후 미반려) 상태에서는 disabled로 비활성화만 적용. */}
+                  {/* +/- 버튼 컬럼 (각 행마다) - 견적서 탭(isReadOnly)은 조회 전용 → 셀 자체 제거 */}
+                  {!isReadOnly && (
                   <td style={{ padding: "0 8px", textAlign: "center", borderBottom: groupBorderBottom, borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
-                    {/* [정책 2026-05-12] 견적서탭(isReadOnly=true)은 결과 조회 전용 → +/- 버튼 숨김.
-                        자재비 작성 탭은 복구면적산출표 버튼과 동일 톤(흰 배경/회색 테두리/검정·빨강 텍스트)으로 통일. */}
                     {!isReadOnly && (
                       <div style={{ display: "flex", gap: "4px", justifyContent: "center" }}>
                         <button
@@ -623,6 +623,7 @@ export function MaterialCostSection({
                       </div>
                     )}
                   </td>
+                  )}
                   
                   {/* 공사명 - 자재비는 연동 행도 수정 가능 */}
                   <td style={{ padding: "0 8px", borderBottom: groupBorderBottom, borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>

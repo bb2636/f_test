@@ -1873,6 +1873,8 @@ export function LaborCostSection({
             >
               공종
             </th>
+            {/* [정책 2026-05-12] 견적서 탭(isReadOnly=true)은 조회 전용 → +/- 컬럼 헤더 제거 */}
+            {!isReadOnly && (
             <th
               style={{
                 width: "60px",
@@ -1888,6 +1890,7 @@ export function LaborCostSection({
             >
               +/-
             </th>
+            )}
             <th
               style={{
                 width: "120px",
@@ -2197,9 +2200,8 @@ export function LaborCostSection({
                     </td>
                   )}
 
-                  {/* +/- 버튼 컬럼 */}
-                  {/* [Bug 5 fix 2026-05-04] 협력업체 화면에서도 +/- 버튼 항상 표시.
-                      isReadOnly(제출 후 미반려) 상태에서는 disabled로 비활성화만 적용. */}
+                  {/* +/- 버튼 컬럼 - 견적서 탭(isReadOnly)은 조회 전용 → 셀 자체 제거 */}
+                  {!isReadOnly && (
                   <td
                     style={{
                       padding: "4px",
@@ -2207,8 +2209,6 @@ export function LaborCostSection({
                       width: "60px",
                     }}
                   >
-                    {/* [정책 2026-05-12] 견적서탭(isReadOnly=true)은 결과 조회 전용 → +/- 버튼 숨김.
-                        노무비 작성 탭은 복구면적산출표 버튼과 동일 톤(흰 배경/회색 테두리/검정·빨강 텍스트)으로 통일. */}
                     {!isReadOnly && (
                       <div
                         style={{
@@ -2266,6 +2266,7 @@ export function LaborCostSection({
                       </div>
                     )}
                   </td>
+                  )}
 
                   {/* 공사명 - 각 행마다 별도 셀 (연동 행은 잠금 표시) */}
                   <td style={{ padding: "0 8px" }}>
