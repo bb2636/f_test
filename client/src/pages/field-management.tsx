@@ -997,35 +997,85 @@ export default function FieldManagement() {
               <div className="text-[14px] font-bold">기본 정보</div>
               <div className="mt-2 border-t border-[#E5E7EB]"></div>
 
+              {/* [정책 2026-05-12] 자동연동 필드 — 입력 가능한 인풋과 동일한 박스 외형(border 또렷, bg-white).
+                  readOnly 인풋으로 변경하여 사용자 직접 입력 차단(자동연동 동작 보존). */}
               <div className="mt-10 space-y-10">
                 <div className="flex items-center flex-wrap gap-y-4">
                   <div className="text-[12px] text-[#6B7280] w-[100px]">협력사</div>
-                  <div className="text-[13px] font-semibold text-[#0C0C0C] min-w-[120px]" data-testid="text-partner">{selectedCaseData.assignedPartner || "-"}</div>
+                  <input
+                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default"
+                    value={selectedCaseData.assignedPartner || ""}
+                    readOnly
+                    placeholder="-"
+                    data-testid="text-partner"
+                  />
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[80px]">담당자명</div>
-                  <div className="text-[13px] font-semibold text-[#0C0C0C] min-w-[100px]" data-testid="text-manager-name">{selectedCaseData.assignedPartnerManager || "-"}</div>
+                  <input
+                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default"
+                    value={selectedCaseData.assignedPartnerManager || ""}
+                    readOnly
+                    placeholder="-"
+                    data-testid="text-manager-name"
+                  />
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[100px]">담당자 연락처</div>
-                  <div className="text-[13px] font-semibold text-[#0C0C0C]" data-testid="text-manager-contact">{selectedCaseData.assignedPartnerContact || "-"}</div>
+                  <input
+                    className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default"
+                    value={selectedCaseData.assignedPartnerContact || ""}
+                    readOnly
+                    placeholder="-"
+                    data-testid="text-manager-contact"
+                  />
                 </div>
 
                 <div className="flex items-center flex-wrap gap-y-4">
                   <div className="text-[12px] text-[#6B7280] w-[100px]">보험사 사고번호</div>
-                  <div className="text-[13px] font-semibold text-[#0C0C0C] min-w-[120px]" data-testid="text-accident-no">{selectedCaseData.insuranceAccidentNo || "-"}</div>
+                  <input
+                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default"
+                    value={selectedCaseData.insuranceAccidentNo || ""}
+                    readOnly
+                    placeholder="-"
+                    data-testid="text-accident-no"
+                  />
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[80px]">보험사</div>
-                  <div className="text-[13px] font-semibold text-[#0C0C0C]" data-testid="text-insurance-company">{selectedCaseData.insuranceCompany || "-"}</div>
+                  <input
+                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default"
+                    value={selectedCaseData.insuranceCompany || ""}
+                    readOnly
+                    placeholder="-"
+                    data-testid="text-insurance-company"
+                  />
                 </div>
 
                 <div className="flex items-center flex-wrap gap-y-4">
                   <div className="text-[12px] text-[#6B7280] w-[100px]">보험계약자</div>
-                  <div className="text-[13px] font-semibold text-[#0C0C0C] min-w-[120px]" data-testid="text-policyholder">{selectedCaseData.policyHolderName || "-"}</div>
+                  <input
+                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default"
+                    value={selectedCaseData.policyHolderName || ""}
+                    readOnly
+                    placeholder="-"
+                    data-testid="text-policyholder"
+                  />
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[80px]">피보험자</div>
-                  <div className="text-[13px] font-semibold text-[#0C0C0C] min-w-[100px]" data-testid="text-insured-name">{selectedCaseData.insuredName || "-"}</div>
+                  <input
+                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default"
+                    value={selectedCaseData.insuredName || ""}
+                    readOnly
+                    placeholder="-"
+                    data-testid="text-insured-name"
+                  />
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[60px]">연락처</div>
-                  <div className="text-[13px] font-semibold text-[#0C0C0C]" data-testid="text-insured-contact">{selectedCaseData.insuredContact || "-"}</div>
+                  <input
+                    className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default"
+                    value={selectedCaseData.insuredContact || ""}
+                    readOnly
+                    placeholder="-"
+                    data-testid="text-insured-contact"
+                  />
                 </div>
 
                 <div className="flex items-center gap-x-8">
