@@ -1992,8 +1992,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
-                width: isReadOnly ? "11.11%" : "80px",
+                /* [정책 2026-05-12] 견적서 탭 — 경비여부는 좁게(7%), 남는 폭은 비고로 이전 */
+                width: isReadOnly ? "7%" : "80px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -2008,8 +2008,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                /* [정책 2026-05-12] 견적서 탭 균등 분배 */
-                width: isReadOnly ? "11.12%" : "150px",
+                /* [정책 2026-05-12] 견적서 탭 — 경비여부에서 줄인 폭을 비고로 이전 */
+                width: isReadOnly ? "15.23%" : "150px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
