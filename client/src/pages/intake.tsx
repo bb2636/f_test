@@ -219,6 +219,10 @@ const inputClasses =
   "h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
 const disabledInputClasses =
   "h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-400 outline-none";
+// [정책 2026-05-12] 자동연동 필드 — 입력 가능한 인풋과 동일한 박스 외형(border 또렷, text 진한색).
+// readOnly 유지로 사용자 직접 입력은 차단(자동연동 동작 보존). focus ring은 미적용.
+const autoFilledInputClasses =
+  "h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none cursor-default";
 const selectTriggerClasses =
   "h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 [&>span]:text-left";
 
@@ -2209,7 +2213,7 @@ export default function Intake({
                     <RequiredMark />
                   </label>
                   <input
-                    className={disabledInputClasses}
+                    className={autoFilledInputClasses}
                     value={formData.clientResidence}
                     readOnly
                     placeholder="의뢰자 검색 시 자동입력"
@@ -2223,7 +2227,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>소속부서명</label>
                   <input
-                    className={disabledInputClasses}
+                    className={autoFilledInputClasses}
                     value={formData.clientDepartment}
                     readOnly
                     placeholder="소속부서명"
@@ -2262,7 +2266,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>의뢰자 연락처</label>
                   <input
-                    className={disabledInputClasses}
+                    className={autoFilledInputClasses}
                     value={clientOfficePhone || formData.clientContact}
                     readOnly
                     placeholder="의뢰사 담당자 연락처"
@@ -2277,7 +2281,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>심사사</label>
                   <input
-                    className={disabledInputClasses}
+                    className={autoFilledInputClasses}
                     value={formData.assessorId}
                     readOnly
                     placeholder="심사자 검색 시 자동입력"
@@ -2291,7 +2295,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>소속부서명</label>
                   <input
-                    className={disabledInputClasses}
+                    className={autoFilledInputClasses}
                     value={formData.assessorDepartment}
                     readOnly
                     placeholder="심사자 검색 시 자동입력"
@@ -2327,7 +2331,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>심사자 연락처</label>
                   <input
-                    className={disabledInputClasses}
+                    className={autoFilledInputClasses}
                     value={assessorOfficePhone || formData.assessorContact}
                     readOnly
                     placeholder="심사자 연락처"
@@ -2342,7 +2346,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>조사사</label>
                   <input
-                    className={disabledInputClasses}
+                    className={autoFilledInputClasses}
                     value={formData.investigatorTeam}
                     readOnly
                     placeholder="조사자 검색 시 자동입력"
@@ -2356,7 +2360,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>소속부서명</label>
                   <input
-                    className={disabledInputClasses}
+                    className={autoFilledInputClasses}
                     value={formData.investigatorDepartment}
                     readOnly
                     placeholder="조사자 검색 시 자동입력"
@@ -2392,7 +2396,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>조사자 연락처</label>
                   <input
-                    className={disabledInputClasses}
+                    className={autoFilledInputClasses}
                     value={formData.investigatorContact}
                     readOnly
                     placeholder="조사자 연락처"
