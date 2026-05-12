@@ -2741,8 +2741,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             if (existingVictimCases.length > 0) {
               // 기존 피해세대 케이스가 있으면 업데이트
+              // [케이스별 독립 정책 2026-05-12] accidentCause, vocContent는 형제 케이스로 전파하지 않음
+              //   (현재 -0 케이스에는 그대로 저장, 형제 -1/-2…는 각자 독립적으로 관리)
               const updateDataWithoutId = { ...updateData };
               delete (updateDataWithoutId as any).id;
+              delete (updateDataWithoutId as any).accidentCause;
+              delete (updateDataWithoutId as any).vocContent;
 
               for (const victimCase of existingVictimCases) {
                 const updatedVictim = await storage.updateCase(victimCase.id, {
@@ -2862,8 +2866,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             if (existingPreventionCase) {
               // 기존 손해방지 케이스가 있으면 업데이트
+              // [케이스별 독립 정책 2026-05-12] accidentCause, vocContent는 형제 케이스로 전파하지 않음
+              //   (현재 -1 등 피해세대에는 그대로 저장, 형제 -0은 각자 독립적으로 관리)
               const updateDataWithoutId = { ...updateData };
               delete (updateDataWithoutId as any).id;
+              delete (updateDataWithoutId as any).accidentCause;
+              delete (updateDataWithoutId as any).vocContent;
 
               const updatedPrevention = await storage.updateCase(
                 existingPreventionCase.id,

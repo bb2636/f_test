@@ -456,18 +456,34 @@ export default function FieldManagement() {
   };
 
   useEffect(() => {
-    if (isUserTypingRef.current) {
-      console.log(`[Load Skip] 사용자 입력 중 - 데이터 로드 스킵: ${selectedCase}`);
-      return;
-    }
-
     if (!selectedCaseData || !selectedCase) {
       lastLoadedCaseIdRef.current = null;
       return;
     }
 
-    if (lastLoadedCaseIdRef.current === selectedCase) {
+    // [케이스 전환 보호 2026-05-12]
+    //   같은 케이스에서 사용자 입력 중인 경우에만 로드 스킵.
+    //   다른 케이스로 전환된 경우(lastLoadedCaseIdRef !== selectedCase)에는
+    //   타이핑 플래그를 무시하고 강제로 새 케이스 데이터를 로드해야 함.
+    //   (그렇지 않으면 -2의 입력 내용이 -1로 새고, 이후 저장 시 케이스 간 데이터가 오염됨)
+    const isCaseSwitch = lastLoadedCaseIdRef.current !== selectedCase;
+
+    if (!isCaseSwitch) {
+      // 같은 케이스 내 재호출: 타이핑 중이면 스킵, 아니면 이미 로드 완료이므로 스킵
+      if (isUserTypingRef.current) {
+        console.log(`[Load Skip] 사용자 입력 중 - 데이터 로드 스킵: ${selectedCase}`);
+      }
       return;
+    }
+
+    // 케이스 전환: 타이핑 플래그 강제 해제 후 새 케이스 데이터 로드
+    if (isUserTypingRef.current) {
+      console.log(`[Load Force] 케이스 전환 감지 - 타이핑 플래그 무시하고 강제 로드: ${selectedCase}`);
+      isUserTypingRef.current = false;
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
     }
 
     lastLoadedCaseIdRef.current = selectedCase;
