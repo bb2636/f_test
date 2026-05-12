@@ -3493,26 +3493,27 @@ export default function FieldReport() {
 
               {/* [정책 2026-05-12] 현장조사 정보 — 내용 길이에 맞게 동적 그리드(짧은 항목 3-col, 중간 2-col, 긴 항목 full).
                   여백 압축 + 한 페이지 내 표시. CardContent space-y → grid + gap으로 변경. */}
-              {/* 현장정보 */}
-              <Card className="bg-white mb-4">
-                <CardHeader className="pb-3">
-                  <CardTitle
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "rgba(12, 12, 12, 0.8)",
-                    }}
-                  >
-                    현장정보
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {/* 짧은 항목 3-col: 방문일시, 출동담당자, 출동업장지 */}
-                  <div className="grid grid-cols-3 gap-x-6 gap-y-3">
-                    <div className="flex items-center">
+              {/* [정책 2026-05-12] 현장정보 + 사고원인을 카드 형식으로 한 줄에 2열 배치(grid-cols-2).
+                  카드 내부는 세로 정렬, VOC는 아래 full-width 유지. */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                {/* 현장정보 */}
+                <Card className="bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "16px",
+                        fontWeight: 600,
+                        color: "rgba(12, 12, 12, 0.8)",
+                      }}
+                    >
+                      현장정보
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 space-y-2.5">
+                    <div className="flex items-start">
                       <span
-                        className="w-24"
+                        className="w-24 shrink-0"
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "13px",
@@ -3534,9 +3535,9 @@ export default function FieldReport() {
                           : caseData.visitDate || "-"}
                       </span>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                       <span
-                        className="w-24"
+                        className="w-24 shrink-0"
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "13px",
@@ -3556,9 +3557,9 @@ export default function FieldReport() {
                         {caseData.assignedPartnerManager || "-"}
                       </span>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                       <span
-                        className="w-24"
+                        className="w-24 shrink-0"
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "13px",
@@ -3578,58 +3579,54 @@ export default function FieldReport() {
                         {caseData.assignedPartner || "-"}
                       </span>
                     </div>
-                  </div>
-                  {/* 긴 항목 full row: 피보험자 주소 */}
-                  <div className="mt-3 flex items-center">
-                    <span
-                      className="w-24"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        color: "rgba(12, 12, 12, 0.6)",
-                      }}
-                    >
-                      피보험자 주소
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        color: "#0C0C0C",
-                      }}
-                    >
-                      {[
-                        caseData.insuredAddress,
-                        (caseData as any).insuredAddressDetail,
-                      ]
-                        .filter(Boolean)
-                        .join(" ") || "-"}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 사고 원인(누수원천) */}
-              <Card className="bg-white mb-4">
-                <CardHeader className="pb-3">
-                  <CardTitle
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "rgba(12, 12, 12, 0.8)",
-                    }}
-                  >
-                    사고 원인(누수원천)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {/* 중간 길이 2-col: 사고발생일시, 카테고리 */}
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                       <span
-                        className="w-24"
+                        className="w-24 shrink-0"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "rgba(12, 12, 12, 0.6)",
+                        }}
+                      >
+                        피보험자 주소
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          color: "#0C0C0C",
+                        }}
+                      >
+                        {[
+                          caseData.insuredAddress,
+                          (caseData as any).insuredAddressDetail,
+                        ]
+                          .filter(Boolean)
+                          .join(" ") || "-"}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 사고 원인(누수원천) */}
+                <Card className="bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "16px",
+                        fontWeight: 600,
+                        color: "rgba(12, 12, 12, 0.8)",
+                      }}
+                    >
+                      사고 원인(누수원천)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 space-y-2.5">
+                    <div className="flex items-start">
+                      <span
+                        className="w-24 shrink-0"
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "13px",
@@ -3649,9 +3646,9 @@ export default function FieldReport() {
                         {caseData.accidentDate || "-"}
                       </span>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-start">
                       <span
-                        className="w-24"
+                        className="w-24 shrink-0"
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "13px",
@@ -3673,36 +3670,35 @@ export default function FieldReport() {
                         {caseData.accidentCategory || "-"}
                       </div>
                     </div>
-                  </div>
-                  {/* 긴 항목 full row: 사고원인 */}
-                  <div className="mt-3">
-                    <span
-                      className="block mb-1.5"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        color: "rgba(12, 12, 12, 0.6)",
-                      }}
-                    >
-                      사고원인
-                    </span>
-                    <div
-                      className="p-3 rounded border border-[#E5E7EB]"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "13px",
-                        color: "#0C0C0C",
-                        background: "white",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {caseData.accidentCause ||
-                        "이 안에는 사고원인이 적성됩니다."}
+                    <div>
+                      <span
+                        className="block mb-1.5"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "rgba(12, 12, 12, 0.6)",
+                        }}
+                      >
+                        사고원인
+                      </span>
+                      <div
+                        className="p-3 rounded border border-[#E5E7EB]"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          color: "#0C0C0C",
+                          background: "white",
+                          whiteSpace: "pre-wrap",
+                        }}
+                      >
+                        {caseData.accidentCause ||
+                          "이 안에는 사고원인이 적성됩니다."}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
 
               {/* VOC(고객의 소리) - 협력사가 현장입력시 작성한 VOC */}
               <Card className="bg-white mb-6">
