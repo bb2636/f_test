@@ -3988,6 +3988,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Sync field survey data to related cases (same accident number, different receipt)
       // Create a new object excluding status fields and victim info - each case has its own victim
+      // [사고원인 독립 정책 2026-05-11] accidentCause는 동기화에서 제외.
+      //   각 케이스(-0/-1/-2…)가 사고원인을 독립적으로 작성/저장하도록 허용.
+      //   신규 케이스 생성 시 초기 복사는 copyFieldSurveyFromRelatedCase에서 1회 수행됨.
       const {
         status,
         fieldSurveyStatus,
@@ -3996,6 +3999,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         victimAddress,
         victimAddressDetail,
         additionalVictims,
+        accidentCause,
         ...syncData
       } = fieldData;
 
