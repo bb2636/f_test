@@ -7386,6 +7386,7 @@ export default function FieldEstimate() {
                         />
                       </td>
                       <td style={{ padding: "8px" }}>
+                        {/* [정책 2026-05-12] 자동계산 면적 — 인접 입력 셀과 동일 외형(radius 8px)으로 통일 */}
                         <input
                           type="text"
                           value={row.damageArea}
@@ -7396,9 +7397,10 @@ export default function FieldEstimate() {
                             fontFamily: "Pretendard",
                             fontSize: "14px",
                             border: "1px solid rgba(12, 12, 12, 0.1)",
-                            borderRadius: "4px",
+                            borderRadius: "8px",
                             textAlign: "center",
                             background: "white",
+                            cursor: "default",
                           }}
                           data-testid={`input-damage-area-${globalIndex}`}
                         />
@@ -7467,6 +7469,7 @@ export default function FieldEstimate() {
                         />
                       </td>
                       <td style={{ padding: "8px" }}>
+                        {/* [정책 2026-05-12] 자동계산 면적 — 인접 입력 셀과 동일 외형(radius 8px)으로 통일 */}
                         <input
                           type="text"
                           value={row.repairArea}
@@ -7477,9 +7480,10 @@ export default function FieldEstimate() {
                             fontFamily: "Pretendard",
                             fontSize: "14px",
                             border: "1px solid rgba(12, 12, 12, 0.1)",
-                            borderRadius: "4px",
+                            borderRadius: "8px",
                             textAlign: "center",
                             background: "white",
+                            cursor: "default",
                           }}
                           data-testid={`input-repair-area-${globalIndex}`}
                         />
@@ -8102,7 +8106,21 @@ export default function FieldEstimate() {
                               }}
                             />
                           </td>
-                          <td style={{ padding: "8px", fontFamily: "Pretendard", fontSize: "14px", textAlign: "right", background: "white" }}>{row.damageArea}</td>
+                          {/* [정책 2026-05-12] 견적서 탭 자동계산 면적 — 인접 disabled 입력과 동일 외형(border + radius 4px)으로 통일 */}
+                          <td style={{ padding: "8px" }}>
+                            <div
+                              style={{
+                                width: "100%",
+                                padding: "6px 8px",
+                                border: "1px solid rgba(12, 12, 12, 0.1)",
+                                borderRadius: "4px",
+                                fontFamily: "Pretendard",
+                                fontSize: "14px",
+                                textAlign: "right",
+                                background: "white",
+                              }}
+                            >{row.damageArea}</div>
+                          </td>
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
@@ -8139,7 +8157,21 @@ export default function FieldEstimate() {
                               }}
                             />
                           </td>
-                          <td style={{ padding: "8px", fontFamily: "Pretendard", fontSize: "14px", textAlign: "right", background: "white" }}>{row.repairArea}</td>
+                          {/* [정책 2026-05-12] 견적서 탭 자동계산 면적 — 인접 disabled 입력과 동일 외형(border + radius 4px)으로 통일 */}
+                          <td style={{ padding: "8px" }}>
+                            <div
+                              style={{
+                                width: "100%",
+                                padding: "6px 8px",
+                                border: "1px solid rgba(12, 12, 12, 0.1)",
+                                borderRadius: "4px",
+                                fontFamily: "Pretendard",
+                                fontSize: "14px",
+                                textAlign: "right",
+                                background: "white",
+                              }}
+                            >{row.repairArea}</div>
+                          </td>
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
