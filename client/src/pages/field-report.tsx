@@ -1602,7 +1602,11 @@ export default function FieldReport() {
               style={{
                 fontFamily: "Pretendard",
                 fontSize: "14px",
+                backgroundColor: "#253396",
+                color: "#ffffff",
+                border: "none",
               }}
+              className="hover:opacity-90"
             >
               제출
             </AlertDialogAction>
