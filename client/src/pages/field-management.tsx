@@ -138,7 +138,9 @@ export default function FieldManagement() {
   }, [isPartner, allCases, user.company]);
 
   const selectedCaseData = useMemo(() => {
-    if (selectedCaseDetail) return selectedCaseDetail;
+    // [정합성 가드 2026-05-12] selectedCaseDetail의 id가 현재 selectedCase와 일치할 때만 사용.
+    //   불일치 시(케이스 전환 직후 이전 케이스의 detail이 잠시 남아있는 경우) availableCases로 fallback.
+    if (selectedCaseDetail && selectedCaseDetail.id === selectedCase) return selectedCaseDetail;
     if (!selectedCase || !availableCases) return null;
     return availableCases.find(c => c.id === selectedCase) || null;
   }, [selectedCase, availableCases, selectedCaseDetail]);
@@ -295,7 +297,13 @@ export default function FieldManagement() {
   useEffect(() => {
     const autoUpdateToVisit = async () => {
       if (!selectedCaseData || !selectedCase) return;
-      
+
+      // [정합성 가드 2026-05-12] 케이스 전환 직후 이전 케이스의 local state(visitDate/visitTime)가
+      //   새 케이스에 PATCH되지 않도록 차단. selectedCaseData가 새 케이스로 정합되고,
+      //   load effect로 폼이 새 케이스 데이터로 재로드된 이후에만 자동 PATCH 허용.
+      if (selectedCaseData.id !== selectedCase) return;
+      if (lastLoadedCaseIdRef.current !== selectedCase) return;
+
       if (isReadOnly) return;
       
       if (visitStatusUpdated.has(selectedCase)) return;
@@ -461,6 +469,13 @@ export default function FieldManagement() {
       return;
     }
 
+    // [정합성 가드 2026-05-12] selectedCaseData.id !== selectedCase면 데이터 도착 대기 (로드 스킵).
+    //   selectedCase가 -1로 바뀌었지만 selectedCaseData가 아직 -2의 stale 데이터인 순간을 방지.
+    if (selectedCaseData.id !== selectedCase) {
+      console.log(`[Load Wait] selectedCaseData.id(${selectedCaseData.id}) !== selectedCase(${selectedCase}) — 데이터 동기화 대기`);
+      return;
+    }
+
     // [케이스 전환 보호 2026-05-12]
     //   같은 케이스에서 사용자 입력 중인 경우에만 로드 스킵.
     //   다른 케이스로 전환된 경우(lastLoadedCaseIdRef !== selectedCase)에는
@@ -584,7 +599,9 @@ export default function FieldManagement() {
       setLeakTypeOther("");
     }
 
-  }, [selectedCase]);
+    // [정합성 가드 2026-05-12] selectedCaseData?.id를 dep에 추가:
+    //   selectedCase 변경 직후 selectedCaseData가 늦게 도착해 일시 stale인 경우, 데이터 도착 시 effect 재발화 필요.
+  }, [selectedCase, selectedCaseData?.id]);
 
   const handleReset = () => {
     if (!selectedCaseData) return;
