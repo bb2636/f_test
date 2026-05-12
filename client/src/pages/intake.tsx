@@ -221,7 +221,8 @@ const disabledInputClasses =
   "h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-400 outline-none";
 // [정책 2026-05-12] 자동연동 필드 — 보험계약자 인풋(`${inputClasses} bg-white`)과 동일한 박스 외형.
 // border-slate-200 + bg-white로 통일, readOnly 유지로 직접 입력 차단(자동연동 동작 보존).
-const autoFilledInputClasses = `${inputClasses} bg-white cursor-default`;
+// keep-border: 전역 `input[readonly]{border:none}` 룰의 예외 클래스(index.css 참조).
+const autoFilledInputClasses = `${inputClasses} bg-white cursor-default keep-border`;
 const selectTriggerClasses =
   "h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 [&>span]:text-left";
 

@@ -261,8 +261,8 @@
     @apply hidden;
   }
 
-  /* Remove border from readonly input fields */
-  input[readonly] {
+  /* Remove border from readonly input fields — except those opting in via .keep-border */
+  input[readonly]:not(.keep-border) {
     border: none !important;
   }
 
