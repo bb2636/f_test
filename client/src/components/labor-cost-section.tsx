@@ -1829,7 +1829,8 @@ export function LaborCostSection({
           width: "100%",
           borderCollapse: "collapse",
           borderSpacing: 0,
-          minWidth: "1200px",
+          /* [정책 2026-05-12] 견적서 탭(isReadOnly) — 체크박스/+- 컬럼 제거로 minWidth 축소, 비고 컬럼이 빈 공간을 채우도록 */
+          minWidth: isReadOnly ? "1000px" : "1200px",
         }}
       >
         <thead>
@@ -1998,7 +1999,8 @@ export function LaborCostSection({
             </th>
             <th
               style={{
-                width: "150px",
+                /* [정책 2026-05-12] 견적서 탭(isReadOnly)에서는 비고 컬럼이 남은 공간을 모두 흡수하도록 width 미지정 */
+                width: isReadOnly ? "auto" : "150px",
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
