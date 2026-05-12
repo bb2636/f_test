@@ -1049,7 +1049,8 @@ export function MaterialCostSection({
             background: "rgba(12, 12, 12, 0.04)",
             borderTop: "2px solid rgba(12, 12, 12, 0.2)"
           }}>
-            <td colSpan={8} style={{ 
+            {/* [정책 2026-05-12] 총합계 라벨 colSpan — 작성 모드: 8(체크박스+공종+/-+공사명+자재항목+단가+수량+단위) / 견적서 모드: 6(공종+공사명+자재항목+단가+수량+단위) — 합계 컬럼 바로 왼쪽까지만 차지 */}
+            <td colSpan={isReadOnly ? 6 : 8} style={{ 
               padding: "0 12px", 
               textAlign: "right",
               fontFamily: "Pretendard",
@@ -1070,9 +1071,10 @@ export function MaterialCostSection({
             }} data-testid="text-material-total-in-table">
               {rows.reduce((sum, row) => sum + (row.합계 || 0), 0).toLocaleString()}
             </td>
+            {/* [정책 2026-05-12] 합계 우측 잔여 셀 — 경비여부 1칸 + 비고(관리자 자재비 구성비) 1칸 */}
             <td></td>
-            {isAdmin && (
-              <td colSpan={2} style={{
+            {isAdmin ? (
+              <td style={{
                 padding: "0 12px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
@@ -1088,6 +1090,8 @@ export function MaterialCostSection({
                   return `자재비 구성비 : ${ratio.toFixed(1).padStart(4, '0')}%`;
                 })()}
               </td>
+            ) : (
+              <td></td>
             )}
           </tr>
         </tfoot>
