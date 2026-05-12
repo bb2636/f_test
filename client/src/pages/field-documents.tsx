@@ -318,8 +318,12 @@ export default function FieldDocuments() {
   const isSubmitted = selectedCase?.fieldSurveyStatus === "submitted";
   const isCategoryReadOnly = false; // 증빙자료는 항상 수정 가능
 
-  // 청구자료 탭 활성화 조건: 케이스 상태가 직접복구 또는 이후 단계일 때
-  const claimDocumentStatuses = [
+  // [정책 2026-05-12] 청구자료 탭은 처음부터 활성화 (단계 제한 제거).
+  const isClaimDocumentEnabled = true;
+
+  // 청구자료 필수서류 검증은 실제 청구 단계(직접복구 이후)에서만 트리거.
+  // 탭 활성화는 항상 true이지만, 저장 시 청구 필수 검증은 단계 도달 후에만 적용.
+  const claimValidationStatuses = [
     "직접복구",
     "청구자료제출(복구)",
     "출동비청구(선견적)",
@@ -331,7 +335,7 @@ export default function FieldDocuments() {
     "부분입금",
     "정산완료",
   ];
-  const isClaimDocumentEnabled = claimDocumentStatuses.includes(
+  const isClaimValidationRequired = claimValidationStatuses.includes(
     selectedCase?.status || "",
   );
 
@@ -1355,8 +1359,8 @@ export default function FieldDocuments() {
     console.log("청구자료 단계:", isClaimDocumentEnabled);
     console.log("====================================");
 
-    // 청구자료 단계일 때만 필수 서류 검증
-    if (isClaimDocumentEnabled) {
+    // 청구자료 단계일 때만 필수 서류 검증 (탭 활성화와 분리)
+    if (isClaimValidationRequired) {
       const validation = validateClaimDocuments();
       if (!validation.valid) {
         toast({

@@ -565,52 +565,58 @@ export function MaterialCostSection({
                   {/* [Bug 5 fix 2026-05-04] 협력업체 화면에서도 +/- 버튼 항상 표시.
                       isReadOnly(제출 후 미반려) 상태에서는 disabled로 비활성화만 적용. */}
                   <td style={{ padding: "0 8px", textAlign: "center", borderBottom: groupBorderBottom, borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
-                    <div style={{ display: "flex", gap: "4px", justifyContent: "center" }}>
-                      <button
-                        type="button"
-                        onClick={() => addRowInGroup(row.공종, row.id)}
-                        disabled={isReadOnly}
-                        style={{
-                          width: "24px",
-                          height: "24px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          background: isReadOnly ? "#f5f5f5" : "#3B82F6",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: isReadOnly ? "not-allowed" : "pointer",
-                          fontSize: "16px",
-                          fontWeight: "bold",
-                        }}
-                        data-testid={`button-add-material-row-${currentGlobalIndex}`}
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteRowById(row.id)}
-                        disabled={isReadOnly}
-                        style={{
-                          width: "24px",
-                          height: "24px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          background: isReadOnly ? "#f5f5f5" : "#FF4D4F",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: isReadOnly ? "not-allowed" : "pointer",
-                          fontSize: "16px",
-                          fontWeight: "bold",
-                        }}
-                        data-testid={`button-delete-material-row-${currentGlobalIndex}`}
-                      >
-                        −
-                      </button>
-                    </div>
+                    {/* [정책 2026-05-12] 견적서탭(isReadOnly=true)은 결과 조회 전용 → +/- 버튼 숨김.
+                        자재비 작성 탭은 복구면적산출표 버튼과 동일 톤(흰 배경/회색 테두리/검정·빨강 텍스트)으로 통일. */}
+                    {!isReadOnly && (
+                      <div style={{ display: "flex", gap: "4px", justifyContent: "center" }}>
+                        <button
+                          type="button"
+                          onClick={() => addRowInGroup(row.공종, row.id)}
+                          style={{
+                            width: "24px",
+                            height: "24px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: "white",
+                            color: "#0C0C0C",
+                            border: "1px solid rgba(12, 12, 12, 0.1)",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontFamily: "Pretendard",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            lineHeight: 1,
+                          }}
+                          data-testid={`button-add-material-row-${currentGlobalIndex}`}
+                        >
+                          +
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteRowById(row.id)}
+                          style={{
+                            width: "24px",
+                            height: "24px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: "white",
+                            color: "#D02B20",
+                            border: "1px solid rgba(12, 12, 12, 0.1)",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontFamily: "Pretendard",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            lineHeight: 1,
+                          }}
+                          data-testid={`button-delete-material-row-${currentGlobalIndex}`}
+                        >
+                          −
+                        </button>
+                      </div>
+                    )}
                   </td>
                   
                   {/* 공사명 - 자재비는 연동 행도 수정 가능 */}

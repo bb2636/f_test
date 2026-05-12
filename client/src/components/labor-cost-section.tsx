@@ -2160,6 +2160,7 @@ export function LaborCostSection({
                               updateRow(r.id, "category", value),
                             );
                           }}
+                          disabled={isReadOnly}
                         >
                           <SelectTrigger
                             className="border focus:ring-0"
@@ -2202,58 +2203,64 @@ export function LaborCostSection({
                       width: "60px",
                     }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "2px",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => addRowInCategory(row.category, row.id)}
-                        disabled={isReadOnly}
+                    {/* [정책 2026-05-12] 견적서탭(isReadOnly=true)은 결과 조회 전용 → +/- 버튼 숨김.
+                        노무비 작성 탭은 복구면적산출표 버튼과 동일 톤(흰 배경/회색 테두리/검정·빨강 텍스트)으로 통일. */}
+                    {!isReadOnly && (
+                      <div
                         style={{
-                          width: "24px",
-                          height: "24px",
                           display: "flex",
-                          alignItems: "center",
+                          gap: "4px",
                           justifyContent: "center",
-                          background: isReadOnly ? "#f5f5f5" : "#008FED",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: isReadOnly ? "not-allowed" : "pointer",
-                          fontSize: "16px",
-                          fontWeight: "bold",
                         }}
-                        data-testid={`button-add-labor-row-${globalIndex}`}
                       >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteRowById(row.id)}
-                        disabled={isReadOnly}
-                        style={{
-                          width: "24px",
-                          height: "24px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          background: isReadOnly ? "#f5f5f5" : "#FF4D4F",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: isReadOnly ? "not-allowed" : "pointer",
-                          fontSize: "16px",
-                          fontWeight: "bold",
-                        }}
-                        data-testid={`button-delete-labor-row-${globalIndex}`}
-                      >
-                        −
-                      </button>
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => addRowInCategory(row.category, row.id)}
+                          style={{
+                            width: "24px",
+                            height: "24px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: "white",
+                            color: "#0C0C0C",
+                            border: "1px solid rgba(12, 12, 12, 0.1)",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontFamily: "Pretendard",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            lineHeight: 1,
+                          }}
+                          data-testid={`button-add-labor-row-${globalIndex}`}
+                        >
+                          +
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteRowById(row.id)}
+                          style={{
+                            width: "24px",
+                            height: "24px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            background: "white",
+                            color: "#D02B20",
+                            border: "1px solid rgba(12, 12, 12, 0.1)",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontFamily: "Pretendard",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            lineHeight: 1,
+                          }}
+                          data-testid={`button-delete-labor-row-${globalIndex}`}
+                        >
+                          −
+                        </button>
+                      </div>
+                    )}
                   </td>
 
                   {/* 공사명 - 각 행마다 별도 셀 (연동 행은 잠금 표시) */}
@@ -2292,16 +2299,19 @@ export function LaborCostSection({
                           className="h-9 border-0 flex-1"
                           style={{ fontFamily: "Pretendard", fontSize: "14px" }}
                           placeholder="공사명 직접 입력"
+                          disabled={isReadOnly}
                           data-testid={`input-workName-labor-${globalIndex}`}
                         />
                         {!row.category?.includes("기타") && (
                           <button
                             type="button"
                             onClick={() => {
+                              if (isReadOnly) return;
                               setWorkNameInputMode(prev => { const next = new Set(prev); next.delete(row.id); return next; });
                               onRowsChange(rows.map(r => r.id === row.id ? { ...r, workName: "", detailWork: "", detailItem: "", unit: "", standardPrice: 0, pricePerSqm: 0 } : r));
                             }}
-                            style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", color: "rgba(12,12,12,0.4)", fontSize: "14px" }}
+                            disabled={isReadOnly}
+                            style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: isReadOnly ? "not-allowed" : "pointer", color: "rgba(12,12,12,0.4)", fontSize: "14px", opacity: isReadOnly ? 0.5 : 1 }}
                             title="목록 선택으로 돌아가기"
                           >×</button>
                         )}
@@ -2310,6 +2320,7 @@ export function LaborCostSection({
                       <Select
                         value={row.workName || undefined}
                         onValueChange={(value) => {
+                          if (isReadOnly) return;
                           if (value === "__직접입력__") {
                             setWorkNameInputMode(prev => new Set(prev).add(row.id));
                             onRowsChange(rows.map(r => r.id === row.id ? { ...r, workName: "", detailWork: "", detailItem: "", unit: "", standardPrice: 0, pricePerSqm: 0 } : r));
@@ -2317,7 +2328,7 @@ export function LaborCostSection({
                             handleWorkNameChange(row.id, value);
                           }
                         }}
-                        disabled={!row.category}
+                        disabled={!row.category || isReadOnly}
                       >
                         <SelectTrigger
                           className="h-9 border-0"
@@ -2377,20 +2388,24 @@ export function LaborCostSection({
                         <Input
                           value={row.detailItem || ""}
                           onChange={(e) => {
+                            if (isReadOnly) return;
                             onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: e.target.value, isDetailItemDirectInput: true } : r));
                           }}
                           className="h-9 border-0 flex-1"
                           style={{ fontFamily: "Pretendard", fontSize: "14px" }}
                           placeholder="직접 입력"
+                          disabled={isReadOnly}
                           data-testid={`input-laborItem-${globalIndex}`}
                         />
                         <button
                           type="button"
                           onClick={() => {
+                            if (isReadOnly) return;
                             setDirectInputMode(prev => { const next = new Set(prev); next.delete(row.id); return next; });
                             onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: "", isDetailItemDirectInput: false } : r));
                           }}
-                          style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", color: "rgba(12,12,12,0.4)", fontSize: "14px" }}
+                          disabled={isReadOnly}
+                          style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: isReadOnly ? "not-allowed" : "pointer", color: "rgba(12,12,12,0.4)", fontSize: "14px", opacity: isReadOnly ? 0.5 : 1 }}
                           title="목록 선택으로 돌아가기"
                           data-testid={`button-laborItem-back-${globalIndex}`}
                         >×</button>
@@ -2399,6 +2414,7 @@ export function LaborCostSection({
                       <Select
                         value={row.detailItem || undefined}
                         onValueChange={(value) => {
+                          if (isReadOnly) return;
                           if (value === "__직접입력__") {
                             setDirectInputMode(prev => new Set(prev).add(row.id));
                             onRowsChange(rows.map(r => r.id === row.id ? { ...r, detailItem: "", isDetailItemDirectInput: true } : r));
@@ -2406,7 +2422,7 @@ export function LaborCostSection({
                             updateRow(row.id, "detailItem", value);
                           }
                         }}
-                        disabled={!row.workName}
+                        disabled={!row.workName || isReadOnly}
                       >
                         <SelectTrigger
                           className="h-9 border-0"
@@ -2723,6 +2739,7 @@ export function LaborCostSection({
                     <Checkbox
                       checked={!row.includeInEstimate}
                       onCheckedChange={(checked) => {
+                        if (isReadOnly) return;
                         // 연동 행이어도 경비 여부는 수정 가능
                         onRowsChange(
                           rows.map((r) =>
@@ -2732,6 +2749,7 @@ export function LaborCostSection({
                           ),
                         );
                       }}
+                      disabled={isReadOnly}
                       data-testid={`checkbox-expense-labor-${globalIndex}`}
                     />
                   </td>
@@ -2741,6 +2759,7 @@ export function LaborCostSection({
                     <Input
                       value={row.request}
                       onChange={(e) => {
+                        if (isReadOnly) return;
                         // 연동 행이어도 비고는 수정 가능
                         onRowsChange(
                           rows.map((r) =>
@@ -2753,6 +2772,7 @@ export function LaborCostSection({
                       className="h-9 border"
                       style={{ fontFamily: "Pretendard", fontSize: "14px" }}
                       placeholder=""
+                      disabled={isReadOnly}
                       data-testid={`input-note-labor-${globalIndex}`}
                     />
                   </td>

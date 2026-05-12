@@ -8274,7 +8274,7 @@ export default function FieldEstimate() {
                   height: r.repairHeight,
                 }))}
                 filteredWorkTypes={workTypes}
-                isReadOnly={isReadOnly}
+                isReadOnly={true}
                 onAreaImportToMaterial={handleAreaImportToMaterial}
                 enableAreaImport={!isLossPreventionCase}
                 isHydrated={isHydratedState}
@@ -8320,7 +8320,7 @@ export default function FieldEstimate() {
                 </div>
               </div>
               
-              {/* 자재비 테이블 - 자재비 탭과 동일한 MaterialCostSection 사용 */}
+              {/* 자재비 테이블 - 자재비 탭과 동일한 MaterialCostSection 사용 (견적서 탭은 결과 조회 전용) */}
               <MaterialCostSection
                 rows={materialRows}
                 onRowsChange={setMaterialRows}
@@ -8330,7 +8330,7 @@ export default function FieldEstimate() {
                 onSelectRow={toggleSelectMaterialRow}
                 onSelectAll={toggleSelectAllMaterialRows}
                 isLoading={isLoadingMaterialCatalog}
-                isReadOnly={isReadOnly}
+                isReadOnly={true}
                 caseNumber={selectedCase?.caseNumber || ''}
                 isPartner={isPartner}
               />
