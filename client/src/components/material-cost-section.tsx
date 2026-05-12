@@ -389,6 +389,8 @@ export function MaterialCostSection({
               height: "40px",
             }}
           >
+            {/* [정책 2026-05-12] 견적서 탭(isReadOnly=true)은 조회 전용 → 체크박스 컬럼 제거 */}
+            {!isReadOnly && (
             <th style={{ width: "50px", padding: "0 12px", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
               <input 
                 type="checkbox"
@@ -398,6 +400,7 @@ export function MaterialCostSection({
                 data-testid="checkbox-select-all-material"
               />
             </th>
+            )}
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "120px" }}>공종</th>
             <th style={{ width: "70px", padding: "0 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>+/-</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "100px" }}>공사명</th>
@@ -465,7 +468,8 @@ export function MaterialCostSection({
                   }}
                   title={isLinkedRow ? "복구면적에서 자동 생성된 행 (수량/단가 수정 가능)" : undefined}
                 >
-                  {/* 체크박스 */}
+                  {/* 체크박스 - 견적서 탭(isReadOnly)은 조회 전용 → 컬럼 제거 */}
+                  {!isReadOnly && (
                   <td style={{ padding: "0 12px", textAlign: "center", borderBottom: groupBorderBottom, borderRight: "1px solid rgba(12, 12, 12, 0.06)" }}>
                     <input
                       type="checkbox"
@@ -476,6 +480,7 @@ export function MaterialCostSection({
                       data-testid={`checkbox-material-${currentGlobalIndex}`}
                     />
                   </td>
+                  )}
                   
                   {/* 공종 - 첫 번째 행에만 rowspan으로 표시, +/- 버튼 포함 */}
                   {rowIndex === 0 ? (

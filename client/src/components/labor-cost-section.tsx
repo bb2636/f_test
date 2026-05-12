@@ -1839,6 +1839,8 @@ export function LaborCostSection({
               height: "48px",
             }}
           >
+            {/* [정책 2026-05-12] 견적서 탭(isReadOnly=true)은 조회 전용 → 체크박스 컬럼 제거 */}
+            {!isReadOnly && (
             <th
               style={{
                 width: "40px",
@@ -1855,6 +1857,7 @@ export function LaborCostSection({
                 data-testid="checkbox-select-all-labor"
               />
             </th>
+            )}
             <th
               style={{
                 width: "120px",
@@ -2044,6 +2047,7 @@ export function LaborCostSection({
                         borderRight: "1px solid rgba(12, 12, 12, 0.06)",
                         background: "#f4f5fa",
                         textAlign: "center",
+                        display: isReadOnly ? "none" : undefined,
                       }}
                     >
                       <input
