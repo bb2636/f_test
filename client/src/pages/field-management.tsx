@@ -1078,19 +1078,20 @@ export default function FieldManagement() {
                   />
                 </div>
 
+                {/* [정책 2026-05-12] 날짜/시간 단독 표시 박스 — 내용 길이에 맞게 축소(h-9, 각 130px). */}
                 <div className="flex items-center gap-x-8">
                   <div className="text-[12px] text-[#6B7280]">사고 발생 일시</div>
-                  <div className="flex w-full max-w-[440px]">
+                  <div className="flex">
                     <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen} modal={false}>
                       <PopoverTrigger asChild>
                         <button
                           ref={accidentDateTriggerRef}
                           type="button"
-                          className="flex h-11 w-1/2 items-center justify-between rounded-l-md border border-[#E5E7EB] bg-white px-5"
+                          className="flex h-9 w-[140px] items-center justify-between rounded-l-md border border-[#E5E7EB] bg-white px-3"
                           disabled={isReadOnly}
                           data-testid="button-accident-date"
                         >
-                          <span className={`text-[13px] ${accidentDate ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}`}>
+                          <span className={`text-[12px] ${accidentDate ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}`}>
                             {accidentDate ? format(accidentDate, "yyyy.MM.dd", { locale: ko }) : "날짜 선택"}
                           </span>
                           <CalendarIcon className="h-4 w-4 text-[#9CA3AF]" />
@@ -1115,12 +1116,12 @@ export default function FieldManagement() {
                       </PopoverContent>
                     </Popover>
 
-                    <div className="flex h-11 w-1/2 items-center justify-between rounded-r-md border border-l-0 border-[#E5E7EB] bg-white px-5">
+                    <div className="flex h-9 w-[110px] items-center justify-between rounded-r-md border border-l-0 border-[#E5E7EB] bg-white px-3">
                       <input
                         type="time"
                         value={accidentTime}
                         onChange={(e) => { handleUserInput(); setAccidentTime(e.target.value); }}
-                        className="w-full text-[13px] bg-transparent outline-none"
+                        className="w-full text-[12px] bg-transparent outline-none"
                         disabled={isReadOnly}
                         data-testid="input-accident-time"
                         placeholder="시간 선택"
@@ -1140,13 +1141,14 @@ export default function FieldManagement() {
                 <div className="flex items-center gap-4">
                   <div className="w-[120px] text-[12px] text-[#6B7280]">방문 일시</div>
 
+                  {/* [정책 2026-05-12] 날짜/시간 단독 표시 박스 — 내용 길이에 맞게 축소(140px/110px). */}
                   <div className="flex items-center gap-2">
                     <Popover open={visitDatePickerOpen} onOpenChange={setVisitDatePickerOpen} modal={false}>
                       <PopoverTrigger asChild>
                         <button
                           ref={visitDateTriggerRef}
                           type="button"
-                          className="flex h-9 w-[180px] items-center justify-between rounded-md border border-[#E5E7EB] bg-white px-3"
+                          className="flex h-9 w-[140px] items-center justify-between rounded-md border border-[#E5E7EB] bg-white px-3"
                           disabled={isReadOnly}
                           data-testid="button-visit-date"
                         >
@@ -1175,7 +1177,7 @@ export default function FieldManagement() {
                       </PopoverContent>
                     </Popover>
 
-                    <div className="flex h-9 w-[180px] items-center justify-between rounded-md border border-[#E5E7EB] bg-white px-3">
+                    <div className="flex h-9 w-[110px] items-center justify-between rounded-md border border-[#E5E7EB] bg-white px-3">
                       <input
                         type="time"
                         value={visitTime}

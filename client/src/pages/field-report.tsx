@@ -3491,9 +3491,11 @@ export default function FieldReport() {
                 현장조사 정보
               </h2>
 
+              {/* [정책 2026-05-12] 현장조사 정보 — 내용 길이에 맞게 동적 그리드(짧은 항목 3-col, 중간 2-col, 긴 항목 full).
+                  여백 압축 + 한 페이지 내 표시. CardContent space-y → grid + gap으로 변경. */}
               {/* 현장정보 */}
-              <Card className="bg-white mb-6">
-                <CardHeader>
+              <Card className="bg-white mb-4">
+                <CardHeader className="pb-3">
                   <CardTitle
                     style={{
                       fontFamily: "Pretendard",
@@ -3505,81 +3507,85 @@ export default function FieldReport() {
                     현장정보
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center">
-                    <span
-                      className="w-32"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        color: "rgba(12, 12, 12, 0.6)",
-                      }}
-                    >
-                      방문일시
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        color: "#0C0C0C",
-                      }}
-                    >
-                      {caseData.visitDate && caseData.visitTime
-                        ? `${caseData.visitDate} ${caseData.visitTime}`
-                        : caseData.visitDate || "-"}
-                    </span>
+                <CardContent className="pt-0">
+                  {/* 짧은 항목 3-col: 방문일시, 출동담당자, 출동업장지 */}
+                  <div className="grid grid-cols-3 gap-x-6 gap-y-3">
+                    <div className="flex items-center">
+                      <span
+                        className="w-24"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "rgba(12, 12, 12, 0.6)",
+                        }}
+                      >
+                        방문일시
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          color: "#0C0C0C",
+                        }}
+                      >
+                        {caseData.visitDate && caseData.visitTime
+                          ? `${caseData.visitDate} ${caseData.visitTime}`
+                          : caseData.visitDate || "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span
+                        className="w-24"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "rgba(12, 12, 12, 0.6)",
+                        }}
+                      >
+                        출동 담당자
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          color: "#0C0C0C",
+                        }}
+                      >
+                        {caseData.assignedPartnerManager || "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span
+                        className="w-24"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "rgba(12, 12, 12, 0.6)",
+                        }}
+                      >
+                        출동 업장지
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          color: "#0C0C0C",
+                        }}
+                      >
+                        {caseData.assignedPartner || "-"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center">
+                  {/* 긴 항목 full row: 피보험자 주소 */}
+                  <div className="mt-3 flex items-center">
                     <span
-                      className="w-32"
+                      className="w-24"
                       style={{
                         fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        color: "rgba(12, 12, 12, 0.6)",
-                      }}
-                    >
-                      출동 담당자
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        color: "#0C0C0C",
-                      }}
-                    >
-                      {caseData.assignedPartnerManager || "-"}
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <span
-                      className="w-32"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        color: "rgba(12, 12, 12, 0.6)",
-                      }}
-                    >
-                      출동 업장지
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        color: "#0C0C0C",
-                      }}
-                    >
-                      {caseData.assignedPartner || "-"}
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <span
-                      className="w-32"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
+                        fontSize: "13px",
                         fontWeight: 500,
                         color: "rgba(12, 12, 12, 0.6)",
                       }}
@@ -3589,7 +3595,7 @@ export default function FieldReport() {
                     <span
                       style={{
                         fontFamily: "Pretendard",
-                        fontSize: "14px",
+                        fontSize: "13px",
                         color: "#0C0C0C",
                       }}
                     >
@@ -3605,8 +3611,8 @@ export default function FieldReport() {
               </Card>
 
               {/* 사고 원인(누수원천) */}
-              <Card className="bg-white mb-6">
-                <CardHeader>
+              <Card className="bg-white mb-4">
+                <CardHeader className="pb-3">
                   <CardTitle
                     style={{
                       fontFamily: "Pretendard",
@@ -3618,59 +3624,63 @@ export default function FieldReport() {
                     사고 원인(누수원천)
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center">
-                    <span
-                      className="w-32"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        color: "rgba(12, 12, 12, 0.6)",
-                      }}
-                    >
-                      사고 발생일시
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        color: "#0C0C0C",
-                      }}
-                    >
-                      {caseData.accidentDate || "-"}
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <span
-                      className="w-32"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        color: "rgba(12, 12, 12, 0.6)",
-                      }}
-                    >
-                      카테고리
-                    </span>
-                    <div
-                      className="px-3 py-1 rounded"
-                      style={{
-                        fontFamily: "Pretendard",
-                        fontSize: "14px",
-                        color: "#253396",
-                        background: "rgba(37, 51, 150, 0.1)",
-                      }}
-                    >
-                      {caseData.accidentCategory || "-"}
+                <CardContent className="pt-0">
+                  {/* 중간 길이 2-col: 사고발생일시, 카테고리 */}
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                    <div className="flex items-center">
+                      <span
+                        className="w-24"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "rgba(12, 12, 12, 0.6)",
+                        }}
+                      >
+                        사고 발생일시
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          color: "#0C0C0C",
+                        }}
+                      >
+                        {caseData.accidentDate || "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span
+                        className="w-24"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "rgba(12, 12, 12, 0.6)",
+                        }}
+                      >
+                        카테고리
+                      </span>
+                      <div
+                        className="px-2 py-0.5 rounded"
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          color: "#253396",
+                          background: "rgba(37, 51, 150, 0.1)",
+                        }}
+                      >
+                        {caseData.accidentCategory || "-"}
+                      </div>
                     </div>
                   </div>
-                  <div>
+                  {/* 긴 항목 full row: 사고원인 */}
+                  <div className="mt-3">
                     <span
-                      className="block mb-2"
+                      className="block mb-1.5"
                       style={{
                         fontFamily: "Pretendard",
-                        fontSize: "14px",
+                        fontSize: "13px",
                         fontWeight: 500,
                         color: "rgba(12, 12, 12, 0.6)",
                       }}
@@ -3678,10 +3688,10 @@ export default function FieldReport() {
                       사고원인
                     </span>
                     <div
-                      className="p-4 rounded"
+                      className="p-3 rounded border border-[#E5E7EB]"
                       style={{
                         fontFamily: "Pretendard",
-                        fontSize: "14px",
+                        fontSize: "13px",
                         color: "#0C0C0C",
                         background: "white",
                         whiteSpace: "pre-wrap",
