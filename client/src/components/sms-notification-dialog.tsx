@@ -829,7 +829,8 @@ export function SmsNotificationDialog({
             onClick={handleSend}
             disabled={sendNotificationMutation.isPending}
             data-testid="button-send-notification"
-            style={{ background: "var(--color-button-primary)" }}
+            style={{ backgroundColor: "#253396", color: "white" }}
+            className="hover:opacity-90"
           >
             {sendNotificationMutation.isPending ? (
               <>

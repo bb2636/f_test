@@ -320,6 +320,8 @@ export function PdfDownloadModal({ open, onOpenChange, caseId, caseNumber }: Pdf
             onClick={() => downloadMutation.mutate()}
             disabled={downloadMutation.isPending || !hasAnySectionSelected}
             data-testid="button-download-pdf"
+            style={{ backgroundColor: "#253396", color: "white" }}
+            className="hover:opacity-90"
           >
             {downloadMutation.isPending ? (
               <>
