@@ -3059,7 +3059,7 @@ export default function Intake({
                         data-testid="input-partner-search"
                       />
                       <button
-                        className="flex items-center justify-center px-4 h-10 bg-sky-500 rounded-r-md text-white font-semibold text-sm hover:bg-sky-600"
+                        className="flex items-center justify-center px-4 h-10 bg-[#253396] rounded-r-md text-white font-semibold text-sm hover:bg-[#1d2878]"
                         data-testid="button-partner-search"
                       >
                         검색
@@ -3096,12 +3096,12 @@ export default function Intake({
                           {filteredPartners.map((partner) => (
                             <div
                               key={partner.name}
-                              className={`flex flex-row items-stretch w-full min-h-20 cursor-pointer border-b border-slate-100 ${tempSelectedPartner?.name === partner.name ? "bg-sky-50" : "hover:bg-slate-50"}`}
+                              className={`flex flex-row items-stretch w-full min-h-20 cursor-pointer border-b border-slate-100 ${tempSelectedPartner?.name === partner.name ? "bg-[#253396]/10" : "hover:bg-slate-50"}`}
                               onClick={() => setTempSelectedPartner(partner)}
                               data-testid={`row-partner-${partner.name}`}
                             >
                               <div
-                                className={`px-3 py-3 w-[155px] text-sm flex items-center ${tempSelectedPartner?.name === partner.name ? "text-sky-600 font-medium" : "text-slate-600"}`}
+                                className={`px-3 py-3 w-[155px] text-sm flex items-center ${tempSelectedPartner?.name === partner.name ? "text-[#253396] font-medium" : "text-slate-600"}`}
                               >
                                 {partner.name}
                               </div>
@@ -3125,7 +3125,7 @@ export default function Intake({
                               </div>
                               <div className="px-3 py-3 w-[49px] flex justify-center items-center">
                                 <div
-                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tempSelectedPartner?.name === partner.name ? "bg-sky-500 border-sky-500" : "border-slate-300"}`}
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tempSelectedPartner?.name === partner.name ? "bg-[#253396] border-[#253396]" : "border-slate-300"}`}
                                 >
                                   {tempSelectedPartner?.name ===
                                     partner.name && (
@@ -3142,7 +3142,7 @@ export default function Intake({
                   {tempSelectedPartner && (
                     <div className="w-full flex flex-col gap-3">
                       <div className="p-4 bg-slate-100 rounded-lg flex items-center gap-4">
-                        <div className="w-2 h-2 bg-sky-500 rounded-full" />
+                        <div className="w-2 h-2 bg-[#253396] rounded-full" />
                         <span className="font-semibold text-slate-900">
                           {tempSelectedPartner.name}
                         </span>
@@ -3168,7 +3168,7 @@ export default function Intake({
                             setTempSelectedPartner(null);
                             setPartnerSearchQuery("");
                           }}
-                          className="px-4 py-2 bg-sky-500 text-white text-sm font-semibold rounded-md hover:bg-sky-600"
+                          className="px-4 py-2 bg-[#253396] text-white text-sm font-semibold rounded-md hover:bg-[#1d2878]"
                           data-testid="button-apply-partner"
                         >
                           적용
@@ -3231,7 +3231,7 @@ export default function Intake({
                       data-testid="input-client-search"
                     />
                     <button
-                      className="flex items-center justify-center px-4 h-10 bg-sky-500 rounded-r-md text-white font-semibold text-sm hover:bg-sky-600"
+                      className="flex items-center justify-center px-4 h-10 bg-[#253396] rounded-r-md text-white font-semibold text-sm hover:bg-[#1d2878]"
                       data-testid="button-client-search-submit"
                     >
                       검색
@@ -3263,22 +3263,22 @@ export default function Intake({
                       {filteredClientUsers.map((user) => (
                         <div
                           key={user.id}
-                          className={`flex flex-row items-center w-full h-12 cursor-pointer border-b border-slate-100 ${tempSelectedClient?.id === user.id ? "bg-sky-50" : "hover:bg-slate-50"}`}
+                          className={`flex flex-row items-center w-full h-12 cursor-pointer border-b border-slate-100 ${tempSelectedClient?.id === user.id ? "bg-[#253396]/10" : "hover:bg-slate-50"}`}
                           onClick={() => setTempSelectedClient(user)}
                           data-testid={`row-client-user-${user.id}`}
                         >
-                          <div className={`px-3 w-[120px] text-sm ${tempSelectedClient?.id === user.id ? "text-sky-600 font-medium" : "text-slate-900"}`}>
+                          <div className={`px-3 w-[120px] text-sm ${tempSelectedClient?.id === user.id ? "text-[#253396] font-medium" : "text-slate-900"}`}>
                             {user.name}
                           </div>
-                          <div className={`px-3 flex-1 text-sm ${tempSelectedClient?.id === user.id ? "text-sky-600" : "text-slate-600"}`}>
+                          <div className={`px-3 flex-1 text-sm ${tempSelectedClient?.id === user.id ? "text-[#253396]" : "text-slate-600"}`}>
                             {user.company || "-"}
                           </div>
-                          <div className={`px-3 w-[120px] text-sm ${tempSelectedClient?.id === user.id ? "text-sky-600" : "text-slate-600"}`}>
+                          <div className={`px-3 w-[120px] text-sm ${tempSelectedClient?.id === user.id ? "text-[#253396]" : "text-slate-600"}`}>
                             {user.department || "-"}
                           </div>
                           <div className="px-3 w-[60px] flex justify-center">
                             <div
-                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tempSelectedClient?.id === user.id ? "bg-sky-500 border-sky-500" : "border-slate-300"}`}
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tempSelectedClient?.id === user.id ? "bg-[#253396] border-[#253396]" : "border-slate-300"}`}
                             >
                               {tempSelectedClient?.id === user.id && (
                                 <div className="w-2 h-2 bg-white rounded-full" />
@@ -3294,7 +3294,7 @@ export default function Intake({
               {tempSelectedClient && (
                 <div className="w-full px-5 pb-5 flex flex-col gap-3">
                   <div className="p-4 bg-slate-100 rounded-lg flex items-center gap-4">
-                    <div className="w-2 h-2 bg-sky-500 rounded-full" />
+                    <div className="w-2 h-2 bg-[#253396] rounded-full" />
                     <span className="font-semibold text-slate-900">
                       {tempSelectedClient.name}
                     </span>
@@ -3324,7 +3324,7 @@ export default function Intake({
                         setTempSelectedClient(null);
                         setClientSearchQuery("");
                       }}
-                      className="px-4 py-2 bg-sky-500 text-white text-sm font-semibold rounded-md hover:bg-sky-600"
+                      className="px-4 py-2 bg-[#253396] text-white text-sm font-semibold rounded-md hover:bg-[#1d2878]"
                       data-testid="button-apply-client"
                     >
                       적용
@@ -3384,7 +3384,7 @@ export default function Intake({
                       data-testid="input-assessor-search"
                     />
                     <button
-                      className="flex items-center justify-center px-4 h-10 bg-sky-500 rounded-r-md text-white font-semibold text-sm hover:bg-sky-600"
+                      className="flex items-center justify-center px-4 h-10 bg-[#253396] rounded-r-md text-white font-semibold text-sm hover:bg-[#1d2878]"
                       data-testid="button-assessor-search-submit"
                     >
                       검색
@@ -3416,22 +3416,22 @@ export default function Intake({
                       {filteredAssessorUsers.map((user) => (
                         <div
                           key={user.id}
-                          className={`flex flex-row items-center w-full h-12 cursor-pointer border-b border-slate-100 ${tempSelectedAssessor?.id === user.id ? "bg-sky-50" : "hover:bg-slate-50"}`}
+                          className={`flex flex-row items-center w-full h-12 cursor-pointer border-b border-slate-100 ${tempSelectedAssessor?.id === user.id ? "bg-[#253396]/10" : "hover:bg-slate-50"}`}
                           onClick={() => setTempSelectedAssessor(user)}
                           data-testid={`row-assessor-user-${user.id}`}
                         >
-                          <div className={`px-3 w-[120px] text-sm ${tempSelectedAssessor?.id === user.id ? "text-sky-600 font-medium" : "text-slate-900"}`}>
+                          <div className={`px-3 w-[120px] text-sm ${tempSelectedAssessor?.id === user.id ? "text-[#253396] font-medium" : "text-slate-900"}`}>
                             {user.name}
                           </div>
-                          <div className={`px-3 flex-1 text-sm ${tempSelectedAssessor?.id === user.id ? "text-sky-600" : "text-slate-600"}`}>
+                          <div className={`px-3 flex-1 text-sm ${tempSelectedAssessor?.id === user.id ? "text-[#253396]" : "text-slate-600"}`}>
                             {user.company || "-"}
                           </div>
-                          <div className={`px-3 w-[120px] text-sm ${tempSelectedAssessor?.id === user.id ? "text-sky-600" : "text-slate-600"}`}>
+                          <div className={`px-3 w-[120px] text-sm ${tempSelectedAssessor?.id === user.id ? "text-[#253396]" : "text-slate-600"}`}>
                             {user.department || "-"}
                           </div>
                           <div className="px-3 w-[60px] flex justify-center">
                             <div
-                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tempSelectedAssessor?.id === user.id ? "bg-sky-500 border-sky-500" : "border-slate-300"}`}
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tempSelectedAssessor?.id === user.id ? "bg-[#253396] border-[#253396]" : "border-slate-300"}`}
                             >
                               {tempSelectedAssessor?.id === user.id && (
                                 <div className="w-2 h-2 bg-white rounded-full" />
@@ -3447,7 +3447,7 @@ export default function Intake({
               {tempSelectedAssessor && (
                 <div className="w-full px-5 pb-5 flex flex-col gap-3">
                   <div className="p-4 bg-slate-100 rounded-lg flex items-center gap-4">
-                    <div className="w-2 h-2 bg-sky-500 rounded-full" />
+                    <div className="w-2 h-2 bg-[#253396] rounded-full" />
                     <span className="font-semibold text-slate-900">
                       {tempSelectedAssessor.name}
                     </span>
@@ -3478,7 +3478,7 @@ export default function Intake({
                         setTempSelectedAssessor(null);
                         setAssessorSearchQuery("");
                       }}
-                      className="px-4 py-2 bg-sky-500 text-white text-sm font-semibold rounded-md hover:bg-sky-600"
+                      className="px-4 py-2 bg-[#253396] text-white text-sm font-semibold rounded-md hover:bg-[#1d2878]"
                       data-testid="button-apply-assessor"
                     >
                       적용
@@ -3540,7 +3540,7 @@ export default function Intake({
                       data-testid="input-investigator-search"
                     />
                     <button
-                      className="flex items-center justify-center px-4 h-10 bg-sky-500 rounded-r-md text-white font-semibold text-sm hover:bg-sky-600"
+                      className="flex items-center justify-center px-4 h-10 bg-[#253396] rounded-r-md text-white font-semibold text-sm hover:bg-[#1d2878]"
                       data-testid="button-investigator-search-submit"
                     >
                       검색
@@ -3572,22 +3572,22 @@ export default function Intake({
                       {filteredInvestigatorUsers.map((user) => (
                         <div
                           key={user.id}
-                          className={`flex flex-row items-center w-full h-12 cursor-pointer border-b border-slate-100 ${tempSelectedInvestigator?.id === user.id ? "bg-sky-50" : "hover:bg-slate-50"}`}
+                          className={`flex flex-row items-center w-full h-12 cursor-pointer border-b border-slate-100 ${tempSelectedInvestigator?.id === user.id ? "bg-[#253396]/10" : "hover:bg-slate-50"}`}
                           onClick={() => setTempSelectedInvestigator(user)}
                           data-testid={`row-investigator-user-${user.id}`}
                         >
-                          <div className={`px-3 w-[120px] text-sm ${tempSelectedInvestigator?.id === user.id ? "text-sky-600 font-medium" : "text-slate-900"}`}>
+                          <div className={`px-3 w-[120px] text-sm ${tempSelectedInvestigator?.id === user.id ? "text-[#253396] font-medium" : "text-slate-900"}`}>
                             {user.name}
                           </div>
-                          <div className={`px-3 flex-1 text-sm ${tempSelectedInvestigator?.id === user.id ? "text-sky-600" : "text-slate-600"}`}>
+                          <div className={`px-3 flex-1 text-sm ${tempSelectedInvestigator?.id === user.id ? "text-[#253396]" : "text-slate-600"}`}>
                             {user.company || "-"}
                           </div>
-                          <div className={`px-3 w-[120px] text-sm ${tempSelectedInvestigator?.id === user.id ? "text-sky-600" : "text-slate-600"}`}>
+                          <div className={`px-3 w-[120px] text-sm ${tempSelectedInvestigator?.id === user.id ? "text-[#253396]" : "text-slate-600"}`}>
                             {user.department || "-"}
                           </div>
                           <div className="px-3 w-[60px] flex justify-center">
                             <div
-                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tempSelectedInvestigator?.id === user.id ? "bg-sky-500 border-sky-500" : "border-slate-300"}`}
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${tempSelectedInvestigator?.id === user.id ? "bg-[#253396] border-[#253396]" : "border-slate-300"}`}
                             >
                               {tempSelectedInvestigator?.id === user.id && (
                                 <div className="w-2 h-2 bg-white rounded-full" />
@@ -3603,7 +3603,7 @@ export default function Intake({
               {tempSelectedInvestigator && (
                 <div className="w-full px-5 pb-5 flex flex-col gap-3">
                   <div className="p-4 bg-slate-100 rounded-lg flex items-center gap-4">
-                    <div className="w-2 h-2 bg-sky-500 rounded-full" />
+                    <div className="w-2 h-2 bg-[#253396] rounded-full" />
                     <span className="font-semibold text-slate-900">
                       {tempSelectedInvestigator.name}
                     </span>
@@ -3633,7 +3633,7 @@ export default function Intake({
                         setTempSelectedInvestigator(null);
                         setInvestigatorSearchQuery("");
                       }}
-                      className="px-4 py-2 bg-sky-500 text-white text-sm font-semibold rounded-md hover:bg-sky-600"
+                      className="px-4 py-2 bg-[#253396] text-white text-sm font-semibold rounded-md hover:bg-[#1d2878]"
                       data-testid="button-apply-investigator"
                     >
                       적용
