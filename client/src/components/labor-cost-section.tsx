@@ -2805,8 +2805,9 @@ export function LaborCostSection({
               borderTop: "2px solid rgba(12, 12, 12, 0.2)",
             }}
           >
+            {/* [정책 2026-05-12] 총합계 라벨 colSpan — 작성 모드: 8(체크박스+공종+/-+공사명+노임항목+복구면적+적용단가+수량) / 견적서 모드: 6(공종+공사명+노임항목+복구면적+적용단가+수량) — 합계 컬럼 바로 왼쪽까지만 차지하도록 */}
             <td
-              colSpan={8}
+              colSpan={isReadOnly ? 6 : 8}
               style={{
                 padding: "0 12px",
                 textAlign: "right",
