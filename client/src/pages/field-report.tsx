@@ -3493,9 +3493,9 @@ export default function FieldReport() {
 
               {/* [정책 2026-05-12] 현장조사 정보 — 내용 길이에 맞게 동적 그리드(짧은 항목 3-col, 중간 2-col, 긴 항목 full).
                   여백 압축 + 한 페이지 내 표시. CardContent space-y → grid + gap으로 변경. */}
-              {/* [정책 2026-05-12] 현장정보 + 사고원인을 카드 형식으로 한 줄에 2열 배치(grid-cols-2).
-                  카드 내부는 세로 정렬, VOC는 아래 full-width 유지. */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              {/* [정책 2026-05-12] 현장정보 + 사고원인 + VOC를 한 줄 3열 카드 배치(grid-cols-3).
+                  카드 내부는 세로 정렬. */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                 {/* 현장정보 */}
                 <Card className="bg-white">
                   <CardHeader className="pb-3">
@@ -3698,37 +3698,37 @@ export default function FieldReport() {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
 
-              {/* VOC(고객의 소리) - 협력사가 현장입력시 작성한 VOC */}
-              <Card className="bg-white mb-6">
-                <CardHeader>
-                  <CardTitle
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "rgba(12, 12, 12, 0.8)",
-                    }}
-                  >
-                    VOC(고객의 소리)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div
-                    className="p-4 rounded"
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "14px",
-                      color: "#0C0C0C",
-                      background: "white",
-                      whiteSpace: "pre-wrap",
-                    }}
-                  >
-                    {(caseData as any).vocContent || "-"}
-                  </div>
-                </CardContent>
-              </Card>
+                {/* VOC(고객의 소리) - 협력사가 현장입력시 작성한 VOC */}
+                <Card className="bg-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "16px",
+                        fontWeight: 600,
+                        color: "rgba(12, 12, 12, 0.8)",
+                      }}
+                    >
+                      VOC(고객의 소리)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div
+                      className="p-4 rounded"
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "14px",
+                        color: "#0C0C0C",
+                        background: "white",
+                        whiteSpace: "pre-wrap",
+                      }}
+                    >
+                      {(caseData as any).vocContent || "-"}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
             {/* 피해 복구방식 및 처리 유형 섹션 */}
@@ -3746,6 +3746,15 @@ export default function FieldReport() {
                 피해 복구방식 및 처리 유형
               </h2>
 
+              {/* [정책 2026-05-12] 피해자 정보 + 처리 유형/복구 방식을 한 줄 2열 카드 배치(grid-cols-2).
+                  보험 케이스(-0)는 피해자 정보가 없어 처리 유형 카드가 1열 풀폭으로 표시. */}
+              <div
+                className={
+                  parseInt(caseData.caseNumber?.match(/-(\d+)$/)?.[1] || "0") === 0
+                    ? "grid grid-cols-1 gap-4"
+                    : "grid grid-cols-1 lg:grid-cols-2 gap-4"
+                }
+              >
               {/* 피해자 정보 - -1 이상 케이스에서만 표시 */}
               {(() => {
                 const caseNumberSuffix =
@@ -3758,7 +3767,7 @@ export default function FieldReport() {
                 }
 
                 return (
-                  <Card className="bg-white mb-6">
+                  <Card className="bg-white">
                     <CardHeader>
                       <CardTitle
                         style={{
@@ -4010,6 +4019,7 @@ export default function FieldReport() {
                   </div>
                 </CardContent>
               </Card>
+              </div>
             </div>
           </TabsContent>
 
