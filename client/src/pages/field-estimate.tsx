@@ -524,8 +524,19 @@ export default function FieldEstimate() {
     const keyCount: Record<string, number> = {};
     let hasDuplicates = false;
     
+    // [정책 2026-05-12] 다중 매칭 공사명(도배=실크/합지 등)은 dedup 키에 자재항목 포함 →
+    //   사용자가 선택한 합지/실크가 같은 키로 묶여 한쪽이 제거되는 회귀 차단.
+    //   단일 매칭(보양재 등)은 기존 키(공종|공사명) 유지하여 누적 중복 자동 제거 회귀 방지.
+    const MULTI_MATERIAL_WORK_NAMES = ['도배'];
+    const buildMaterialDedupKey = (row: MaterialRow): string => {
+      const baseName = normalizeMaterialWorkName(row.공종 || '', row.공사명 || '');
+      const isMultiMaterial = MULTI_MATERIAL_WORK_NAMES.includes(row.공사명 || '');
+      const itemPart = isMultiMaterial ? `|${(row.자재항목 || '').trim()}` : '';
+      return `${row.공종}|${baseName}${itemPart}`;
+    };
+    
     for (const row of linkedRows) {
-      const key = `${row.공종}|${normalizeMaterialWorkName(row.공종 || '', row.공사명 || '')}`;
+      const key = buildMaterialDedupKey(row);
       keyCount[key] = (keyCount[key] || 0) + 1;
       if (keyCount[key] > 1) {
         hasDuplicates = true;
@@ -562,7 +573,7 @@ export default function FieldEstimate() {
         keepIds.add(row.id);
         return;
       }
-      const key = `${row.공종}|${normalizeMaterialWorkName(row.공종 || '', row.공사명 || '')}`;
+      const key = buildMaterialDedupKey(row);
       if (seen.has(key)) {
         console.log('[자재비 중복 제거] 제거:', row.공종, row.공사명, '자재항목:', row.자재항목);
         return;
@@ -2052,18 +2063,22 @@ export default function FieldEstimate() {
           const existingRow = existingAutoRowsMap.get(autoKey) || existingAutoRowsMap.get(fallbackKey);
           
           if (existingRow && existingRow.isOverridden) {
-            // 사용자 수정 행: 사용자 입력값 보존, autoQuantity만 업데이트
-            // 단, FIXED 항목(욕실/가구공사)의 수량은 자동 계산값이므로 항상 갱신
-            // 자재항목/자재/규격/공사명은 카탈로그를 진실의 원천으로 강제 갱신 (autoKey와 일치 보장)
-            // [DB 명칭 연동 2026-05-05] 공사명도 카탈로그 명칭으로 강제 갱신 — DB에서 명칭 변경 시 화면도 즉시 반영.
-            const isFixedAutoQty = isFixedMaterial && (data.공종 === '욕실공사' || data.공종 === '가구공사');
+            // [정책 2026-05-12] 사용자 수정값 절대 우선 — FIXED라도 isOverridden=true면 수량 강제 갱신 금지.
+            //   기존엔 욕실/가구 FIXED는 사용자 수정 표식이 있어도 자동 카운트로 강제 덮어썼음(증상 4·5 root cause).
+            //   isOverridden=true는 사용자가 의도적으로 수량/단가를 수정한 표식이므로 절대 산식값으로 회귀시키지 않는다.
+            const isFixedAutoQty = false;
             const preservedPriceForOverride = existingRow.단가 || existingRow.기준단가 || 0;
+            // [정책 2026-05-12] 자재항목 보존 — 사용자가 선택한 값(예: 합지벽지) 절대 강제 갱신 금지.
+            //   기존엔 카탈로그 자재항목으로 강제 덮어써서 합지/실크 선택값이 다음 sync에 소실됐음.
+            const preservedItemName = (existingRow.자재항목 && (existingRow.자재항목 || '').trim() !== '')
+              ? existingRow.자재항목
+              : material.자재항목;
             resultRowsMap.set(autoKey, {
               ...existingRow,
               autoKey,
               공사명: material.공사명 || data.공사명,
-              자재항목: material.자재항목,
-              자재: material.자재항목,
+              자재항목: preservedItemName,
+              자재: preservedItemName,
               규격: material.규격 || existingRow.규격 || '',
               autoQuantity: calculatedQty,
               sourceAreaRowIds: data.sourceAreaRowIds,
@@ -2088,12 +2103,17 @@ export default function FieldEstimate() {
             const preservedPrice = existingPrice > 0 ? existingPrice : unitPrice;
             // 사용자가 단가를 입력한 경우 isManualPriceEntry 유지 (isOverridden도 설정)
             const shouldPreserveManualFlag = existingRow.isManualPriceEntry && existingPrice > 0;
+            // [정책 2026-05-12] 자재항목 보존 — 기존 행이 비어있을 때만 카탈로그 값 채움.
+            //   사용자가 명시적으로 합지/실크를 선택한 경우 그 값을 유지하여 다음 sync에 소실되지 않도록.
+            const preservedItemName2 = (existingRow.자재항목 && (existingRow.자재항목 || '').trim() !== '')
+              ? existingRow.자재항목
+              : material.자재항목;
             resultRowsMap.set(autoKey, {
               ...existingRow,
               autoKey,
               공사명: material.공사명 || data.공사명,
-              자재항목: material.자재항목,
-              자재: material.자재항목,
+              자재항목: preservedItemName2,
+              자재: preservedItemName2,
               규격: material.규격 || existingRow.규격 || '',
               단위: calculatedUnit,
               단가: preservedPrice,
@@ -2628,41 +2648,35 @@ export default function FieldEstimate() {
       return;
     }
     
-    // 협력업체(readOnly)도 동일 화면값을 보도록 가드 제거 (저장은 별도 차단)
-    
+    // [정책 2026-05-12] source-guard — 사용자 명시 면적 편집(updateRow)에서만 자동 sync 발동.
+    //   hydration/외부 polling/케이스 전환으로 들어온 recoverySignature 변화는 SKIP.
+    //   (사용자 저장값을 진입만으로 덮어쓰지 않기 위함. 수동은 "복구면적 가져오기" 버튼 L8745.)
+    if (!userEditedAreaRef.current && materialRows.length > 0) {
+      console.log('[SYNC SKIP] recoverySignature 변화이지만 사용자 편집 없음 — 진입 자동 덮어쓰기 차단');
+      return;
+    }
     console.log("[SYNC CALL] syncMaterialFromRecoveryArea triggered", {
       time: Date.now(),
-      recoveryCount: rows.length,
-      recoverySnapshot: rows.map(r => ({
-        id: r.id,
-        workType: r.workType,
-        work: r.workName,
-        area: r.repairArea
-      }))
+      userEdited: userEditedAreaRef.current,
+      materialRowsCount: materialRows.length,
     });
     
     syncMaterialFromRecoveryArea();
-    // 싱크 결과를 DB에 자동 저장 → PDF/저장본이 항상 화면과 일치하도록 보정
     triggerAutoSaveAfterSync("material:recoverySignature");
   }, [recoverySignature, isLossPreventionCase, isReadOnly, isAutoSyncEligibleCase, isPartner, currentUser]);
 
   useEffect(() => {
     if (selectedCategory !== "자재비") return;
-    // [정책 변경 2026-05-04] 협력업체 화면에서도 자재비 탭 진입 시 자동 동기화 발동.
-    // 자동저장은 별도 가드(L6150)로 여전히 차단되므로 화면 갱신만 일어나며,
-    // DB 반영은 협력업체가 명시적으로 저장할 때만 함께 들어간다.
-    if (!currentUser) {
-      console.log("[자동연동 SKIP] 자재비 탭 진입: 사용자 미로드");
-      return;
-    }
+    // [정책 2026-05-12] 화면 진입 자동 덮어쓰기 차단 — 사용자 저장값을 진입만으로 변경하지 않는다.
+    //   1) 기존 자재비 행이 하나라도 있으면 자동 sync/autosave 모두 SKIP
+    //   2) 진짜 빈 상태(초기 진입)일 때만 자동 카운트 기반 연동 1회 수행
+    //   3) 이후 갱신은 사용자가 "복구면적 가져오기" 버튼(L8745)으로 명시 실행
+    if (!currentUser) return;
     if (!isHydratedRef.current) return;
     if (isLossPreventionCase) return;
-    // cutoff 이전에 생성된 기존 접수건은 자동 동기화 차단 (수동 버튼은 별개)
-    if (!isAutoSyncEligibleCase) {
-      console.log("[자동연동 SKIP] 자재비 탭 진입: 기존 케이스(cutoff 이전 생성)", {
-        cutoff: AUTO_SYNC_CUTOFF_KST,
-        caseCreatedAt: (estimateCase as any)?.createdAt,
-      });
+    if (!isAutoSyncEligibleCase) return;
+    if (materialRows.length > 0) {
+      console.log("[자동연동 SKIP] 자재비 탭 진입: 기존 행 존재 — 수동 버튼 사용");
       return;
     }
     syncMaterialFromRecoveryArea();
@@ -2698,16 +2712,16 @@ export default function FieldEstimate() {
       });
       return;
     }
-    console.log("[자동연동] 노무비 탭 진입 → syncLaborFromRecoveryArea 호출", {
-      isReadOnly,
-      catalogLen: mergedIlwidaegaCatalog.length,
-      rowsLen: rows.length,
-    });
-    // [Task #10] 자동 호출 — 메모리 삭제 키는 클리어하지 않음 (부활 윈도우 차단).
+    // [정책 2026-05-12] 화면 진입 자동 덮어쓰기 차단.
+    //   기존 노무비 행이 있으면 자동 sync 발동 금지 — "복구면적 가져오기"(L8745) 수동 버튼으로만 갱신.
+    if (laborCostRows.length > 0) {
+      console.log('[자동연동 SKIP] 노무비 탭 진입: 기존 행 존재 — 수동 버튼 사용');
+      return;
+    }
+    console.log("[자동연동] 노무비 탭 진입(초기) → syncLaborFromRecoveryArea 호출");
     syncLaborFromRecoveryArea();
-    // 노무비 싱크 결과를 DB에 자동 저장 → 보고서/PDF가 항상 화면과 일치
     triggerAutoSaveAfterSync("labor:tabEnter");
-  }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length, isAutoSyncEligibleCase, isPartner, currentUser]);
+  }, [selectedCategory, mergedIlwidaegaCatalog.length, rows.length, isAutoSyncEligibleCase, isPartner, currentUser, laborCostRows.length]);
 
   // [복구면적 변경 → 노무비 자동 반영] 협력업체 포함, 모든 사용자 대상.
   // - 기존 "노무비 탭 진입 sync"는 협력업체 SKIP되고, 저장된 행은 lockedAtSave로 잠겨
@@ -3071,6 +3085,15 @@ export default function FieldEstimate() {
 
     if (syncGuardRef.current) {
       console.log('[자동동기화] syncGuard 활성 — 건너뛰기');
+      return;
+    }
+
+    // [정책 2026-05-12] 화면 진입 자동 덮어쓰기 차단 (관리자/협력사 비대칭 해소).
+    //   이미 노무비에 연동행이 있고 사용자가 면적을 직접 수정한 흔적이 없으면 SKIP.
+    //   진입 시 자동 산식 재계산으로 사용자 수정값(철거공사 수량 등)이 회귀하는 경로를 차단.
+    const hasLinkedLabor = laborCostRows.some(r => r.isLinkedFromRecovery);
+    if (hasLinkedLabor && !userEditedAreaRef.current) {
+      console.log('[자동동기화 SKIP] 복구면적→노무비: 연동행 존재 + 사용자 면적 편집 없음 — 수동 버튼 사용');
       return;
     }
 

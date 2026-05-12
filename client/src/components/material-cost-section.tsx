@@ -913,10 +913,11 @@ export function MaterialCostSection({
                                       return { ...r, 수량m2: val, 수량EA: 0, 수량: val, 합계: newTotal, 금액: newTotal, isOverridden: true };
                                     }
                                     const newTotal = Math.round((r.단가 || r.기준단가 || 0) * val);
+                                    // [정책 2026-05-12] 연동 행 수량 수정 시 isOverridden=true 세팅 — 자동 sync 회귀 방지.
                                     if (isEABased) {
-                                      return { ...r, 수량EA: val, 수량m2: 0, 수량: val, 합계: newTotal, 금액: newTotal };
+                                      return { ...r, 수량EA: val, 수량m2: 0, 수량: val, 합계: newTotal, 금액: newTotal, isOverridden: true };
                                     } else {
-                                      return { ...r, 수량m2: val, 수량EA: 0, 수량: val, 합계: newTotal, 금액: newTotal };
+                                      return { ...r, 수량m2: val, 수량EA: 0, 수량: val, 합계: newTotal, 금액: newTotal, isOverridden: true };
                                     }
                                   }
                                   return r;
@@ -951,7 +952,7 @@ export function MaterialCostSection({
                           onRowsChange(rows.map(r => {
                             if (r.id === row.id) {
                               const newTotal = Math.round((r.단가 || r.기준단가 || 0) * val);
-                              return { ...r, 수량m2: val, 수량EA: 0, 수량: val, 합계: newTotal, 금액: newTotal };
+                              return { ...r, 수량m2: val, 수량EA: 0, 수량: val, 합계: newTotal, 금액: newTotal, isOverridden: true };
                             }
                             return r;
                           }));
