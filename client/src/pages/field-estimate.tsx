@@ -4131,15 +4131,10 @@ export default function FieldEstimate() {
         if (!existing.isLinkedFromRecovery) return; // 수동 행 보호
         const currentRow = laborCostRows.find(r => r.id === existing.id);
         if (!currentRow) return;
-        // [LOCK] 저장 시점에 확정된 행은 stale 갱신 대상에서 제외 (표준값 보존).
-        // 단, 피해면적(C)이 0인 빈 lock 행은 산출표 면적으로 자동 채움 허용
-        //  → 단가는 카탈로그 매칭됐지만 면적이 0으로 저장된 행 보강용.
-        // 추가: 합계(amount)가 0인 잠금은 잘못 박힌 빈 lock으로 간주 → 자동 갱신 허용.
-        const isEffectiveLockStale = currentRow.lockedAtSave &&
-          (Number(currentRow.damageArea) || 0) > 0 &&
-          (Number(currentRow.amount) || 0) > 0;
-        if (isEffectiveLockStale) return;
-
+        // [2026-05-13] lockedAtSave 가드 완화.
+        //   다중 영역행 합산이 lock된 옛값을 못 덮어써서 합계 불일치(철거 도배 보통인부 등)
+        //   가 발생함. 합산 면적(C)이 현재 damageArea와 동일하면 자연 skip,
+        //   다르면 lock을 무시하고 정합 갱신 (아래 areaDiff/amtDiff 체크가 가드 역할).
         const D = entry.catalogItem.기준작업량 || 0;
         const E = entry.catalogItem.노임단가 || 0;
         const C = entry.totalRepairArea;
@@ -4166,7 +4161,13 @@ export default function FieldEstimate() {
         const stdPriceDiff = (currentRow.standardPrice || 0) !== E;
         const stdQtyDiff = (currentRow.standardWorkQuantity || 0) !== D;
 
-        if (areaDiff || amtDiff || ppsqmDiff || qtyDiff || stdPriceDiff || stdQtyDiff) {
+        // [2026-05-13] lock 행은 areaDiff(또는 표준값 D/E 변경)일 때만 갱신.
+        //   수동 편집된 amount/qty/ppsqm는 보존.
+        const shouldUpdate = currentRow.lockedAtSave
+          ? (areaDiff || stdPriceDiff || stdQtyDiff)
+          : (areaDiff || amtDiff || ppsqmDiff || qtyDiff || stdPriceDiff || stdQtyDiff);
+
+        if (shouldUpdate) {
           staleEntries.push({ rowId: existing.id, D, E, C, amount: amt, ppsqm, quantity: qty });
         }
         return;
@@ -4429,7 +4430,11 @@ export default function FieldEstimate() {
 
     laborCostRows.forEach(laborRow => {
       if (!laborRow.isLinkedFromRecovery) return;
-      if (laborRow.lockedAtSave) return;
+      // [2026-05-13] lockedAtSave 가드 제거.
+      //   합산 면적(C)이 현재 row.damageArea와 다를 때만 staleUpdates에 push되므로
+      //   수동 편집된 lock 행도 영역행 합산 결과와 동일하면 자연 skip된다(아래 areaDiff 체크).
+      //   다중 영역행이 단일 노무비에 합산되어야 하는데 lock 때문에 옛값이 그대로 남는
+      //   문제(반자틀/도배공 합계 불일치) 해결.
       if (laborRow.category === '철거공사') return;
       if (!laborRow.sourceAreaRowId) return;
       if (laborRow.sourceAreaRowId.startsWith('demolition-')) return;
@@ -4463,7 +4468,13 @@ export default function FieldEstimate() {
       const ppsqmDiff = Math.abs((laborRow.pricePerSqm || 0) - newPpsqm) > 0.5;
       const qtyDiff = Math.abs((laborRow.quantity || 0) - newQty) > 0.01;
 
-      if (areaDiff || amtDiff || ppsqmDiff || qtyDiff) {
+      // [2026-05-13] lock 행은 areaDiff일 때만 갱신 (수동 편집된 amount/qty/ppsqm 보존).
+      //   비-lock 행은 산식 정합 위해 어떤 차이라도 갱신.
+      const shouldUpdate = laborRow.lockedAtSave
+        ? areaDiff
+        : (areaDiff || amtDiff || ppsqmDiff || qtyDiff);
+
+      if (shouldUpdate) {
         staleUpdates.push({ rowId: laborRow.id, C, amount: newAmount, pricePerSqm: newPpsqm, quantity: newQty });
       }
     });
