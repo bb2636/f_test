@@ -8344,8 +8344,9 @@ export default function FieldEstimate() {
               {/* [2026-05-13] 합계 섹션 — 현장출동보고서 견적서 탭과 동일하게 가로 폭 좁히고 행간/폰트 축소
                   · 소계~VAT: fontSize 16→14, marginBottom 16→0(부모 gap 8px), VAT 라디오 라벨 14→13
                   · 구분선 margin 20→12, borderTopWidth 2px
-                  · 총 합계: 라벨 18/600 #0C0C0C → 16/700 #253396, 금액 24/700 → 18/700 (#253396 유지) */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  · 총 합계: 라벨 18/600 #0C0C0C → 16/700 #253396, 금액 24/700 → 18/700 (#253396 유지)
+                  · [2026-05-13 추가] maxWidth 400px + marginLeft auto → 우측 정렬해서 라벨↔금액 사이 빈공간 축소 (현장출동보고서와 동일) */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxWidth: "400px", marginLeft: "auto" }}>
               {/* 소계 */}
               <div
                 style={{
