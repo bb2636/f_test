@@ -855,7 +855,12 @@ export function MaterialCostSection({
                         onRowsChange(rows.map(r => {
                           if (r.id === row.id) {
                             const isPaint = r.공종 === '도장공사' && ['수성페인트', '무늬코트', '탄성코트'].includes(r.공사명 || '');
-                            const qty = (r.수량m2 || 0) + (r.수량EA || 0);
+                            // [2026-05-13] 단가 입력 시 합계 = 단가 × 화면 표시 수량(r.수량).
+                            //   기존: qty = 수량m2 + 수량EA → 욕실 FIXED 행(수량m2=면적합, 수량EA=위치카운트)
+                            //   에서 두 값이 동시에 보존되어 합계가 (면적+카운트)배로 부풀려짐.
+                            //   리빙보드 단가 2000 → 합계 32,000 회귀 차단. r.수량은 sync/입력 핸들러에서
+                            //   항상 표시수량으로 set되므로 정합. 옛 데이터 호환 위해 fallback 유지.
+                            const qty = (r.수량 && r.수량 > 0) ? r.수량 : ((r.수량m2 || 0) + (r.수량EA || 0));
                             const newTotal = Math.round(val * qty);
                             if (isPaint) {
                               // 페인트 행: 단가 입력 시 수량 그대로 유지, 합계만 단가×수량으로 갱신
