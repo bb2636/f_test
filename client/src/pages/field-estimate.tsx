@@ -8114,13 +8114,14 @@ export default function FieldEstimate() {
                               }}
                             />
                           </td>
-                          {/* [정책 2026-05-12] 견적서 탭 자동계산 면적 — 인접 disabled 입력과 동일 외형(border + radius 4px)으로 통일 */}
+                          {/* [정책 2026-05-12] 견적서 탭 자동계산 면적 — 인접 disabled 입력과 동일 외형(border + radius 4px)으로 통일
+                              [2026-05-13] plain div는 disabled input보다 테두리가 옅게 렌더링되어 시각적으로 사라지는 문제 → border rgba 0.1 → 0.2로 진하게 */}
                           <td style={{ padding: "8px" }}>
                             <div
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
-                                border: "1px solid rgba(12, 12, 12, 0.1)",
+                                border: "1px solid rgba(12, 12, 12, 0.2)",
                                 borderRadius: "4px",
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
@@ -8165,13 +8166,14 @@ export default function FieldEstimate() {
                               }}
                             />
                           </td>
-                          {/* [정책 2026-05-12] 견적서 탭 자동계산 면적 — 인접 disabled 입력과 동일 외형(border + radius 4px)으로 통일 */}
+                          {/* [정책 2026-05-12] 견적서 탭 자동계산 면적 — 인접 disabled 입력과 동일 외형(border + radius 4px)으로 통일
+                              [2026-05-13] plain div는 disabled input보다 테두리가 옅게 렌더링되어 시각적으로 사라지는 문제 → border rgba 0.1 → 0.2로 진하게 */}
                           <td style={{ padding: "8px" }}>
                             <div
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
-                                border: "1px solid rgba(12, 12, 12, 0.1)",
+                                border: "1px solid rgba(12, 12, 12, 0.2)",
                                 borderRadius: "4px",
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
