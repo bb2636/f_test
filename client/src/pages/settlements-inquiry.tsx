@@ -10,7 +10,7 @@ import {
   Estimate,
   Settlement,
 } from "@shared/schema";
-import { Search, Calendar as CalendarIcon, X, HelpCircle, Star } from "lucide-react";
+import { Search, Calendar as CalendarIcon, X, HelpCircle, Star, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -971,6 +971,43 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
     startDate, endDate, filterMode, setSettlementsPage,
   ]);
 
+  const handleExcelDownload = () => {
+    const isClosed = filterMode === "closed";
+    const headers = [
+      "보험사","사고번호","피보험자","담당자(플록슨)","심사자","접수번호","협력업체",
+      "청구일","경과","청구액","자기부담금","입금일","입금액","협력업체 지급액","수수료","계산서 발행일",
+    ];
+    const fmtAmt = (v: number) => (v == null || v <= 0 ? "-" : Number(v).toLocaleString());
+    const fmtDate = (v: string | null | undefined) => (!v || v === "-") ? "-" : v;
+    const rows = filteredRows.map((r: any) => [
+      r.insuranceCompany || "-",
+      r.accidentNumber || "-",
+      r.insuredName || "-",
+      r.admin || "-",
+      r.assessorName || "-",
+      formatCaseNumber(r.caseNumber) || r.caseNumber || "-",
+      r.assignedPartner || "-",
+      fmtDate(r.claimDate),
+      r.claimElapsed || "-",
+      fmtAmt(r.claimAmount),
+      fmtAmt(r.settlementDeductible),
+      fmtDate(r.settlementDate),
+      fmtAmt(r.settlementDeposit),
+      fmtAmt(r.partnerPaymentAmount),
+      fmtAmt(r.settlementCommission),
+      fmtDate(r.settlementInvoiceDate),
+    ]);
+    const csvContent = [headers.join(","), ...rows.map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${isClosed ? "정산종결" : "정산청구"}_${format(new Date(), "yyyyMMdd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleReset = () => {
     setSearchQuery("");
     setSettlementStatus("전체");
@@ -1346,32 +1383,52 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         </div>
       </div>
       {/* Results Count */}
-      <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "16px" }}>
-        <span
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <span
+            style={{
+              fontFamily: "Pretendard",
+              fontWeight: 700,
+              fontSize: "20px",
+              lineHeight: "128%",
+              letterSpacing: "-0.02em",
+              color: "#56687f",
+            }}
+          >
+            전체건
+          </span>
+          <span
+            style={{
+              fontFamily: "Pretendard",
+              fontWeight: 700,
+              fontSize: "20px",
+              lineHeight: "128%",
+              letterSpacing: "-0.02em",
+              color: "#253396",
+            }}
+            data-testid="text-results-count"
+          >
+            {filteredRows.length}
+          </span>
+        </div>
+        <Button
+          variant="outline"
+          onClick={handleExcelDownload}
+          className="flex items-center gap-2"
           style={{
+            height: "36px",
+            borderRadius: "8px",
+            fontSize: "13px",
             fontFamily: "Pretendard",
-            fontWeight: 700,
-            fontSize: "20px",
-            lineHeight: "128%",
-            letterSpacing: "-0.02em",
-            color: "#56687f",
+            fontWeight: 500,
+            color: "rgba(12, 12, 12, 0.7)",
+            border: "1px solid rgba(12, 12, 12, 0.12)",
           }}
+          data-testid={`button-${filterMode === "closed" ? "settlements-closed" : "settlements-claim"}-excel-download`}
         >
-          전체건
-        </span>
-        <span
-          style={{
-            fontFamily: "Pretendard",
-            fontWeight: 700,
-            fontSize: "20px",
-            lineHeight: "128%",
-            letterSpacing: "-0.02em",
-            color: "#253396",
-          }}
-          data-testid="text-results-count"
-        >
-          {filteredRows.length}
-        </span>
+          <Download size={14} />
+          엑셀 다운로드
+        </Button>
       </div>
       {/* Wide Table with Horizontal Scroll and Sticky Header/Columns */}
       {(() => {

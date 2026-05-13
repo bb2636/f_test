@@ -7,7 +7,7 @@ import {
   User,
   CaseWithLatestProgress,
 } from "@shared/schema";
-import { Search, Cloud, Calendar as CalendarIcon, Star } from "lucide-react";
+import { Search, Cloud, Calendar as CalendarIcon, Star, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -272,6 +272,53 @@ export default function CancelledCases() {
   useEffect(() => { setCancelledPage(1); }, [
     searchQuery, insuranceCompany, assessor, manager, startDate, endDate, setCancelledPage,
   ]);
+
+  const handleExcelDownload = () => {
+    const headers = [
+      "증권번호","사고번호","접수번호","보험사","피보험자","주소",
+      "담당자","협력사","승인금액","경과일","진행상태","취소일자","취소사유",
+    ];
+    const rows = filteredData.map((c) => {
+      const suffixNum = parseInt(c.caseNumber?.match(/-(\d+)$/)?.[1] || "0");
+      const isInsuredCase = suffixNum === 0;
+      const insuredAddr = [c.insuredAddress, (c as any).insuredAddressDetail].filter(Boolean).join(" ");
+      const victimAddr = [(c as any).victimAddress, (c as any).victimAddressDetail].filter(Boolean).join(" ");
+      const addressText = isInsuredCase ? (insuredAddr || "-") : (victimAddr || insuredAddr || "-");
+      let latestNote = "";
+      try {
+        const history = (c as any).specialNotesHistory;
+        if (history) {
+          const parsed = JSON.parse(history);
+          if (Array.isArray(parsed) && parsed.length > 0) latestNote = parsed[parsed.length - 1].content || "";
+          else latestNote = (c as any).specialNotes || "";
+        } else latestNote = (c as any).specialNotes || "";
+      } catch { latestNote = (c as any).specialNotes || ""; }
+      return [
+        c.insurancePolicyNo || "",
+        c.insuranceAccidentNo || "",
+        formatCaseNumber(c.caseNumber) || "",
+        c.insuranceCompany || "",
+        c.insuredName || "",
+        addressText,
+        c.managerName || "",
+        c.assignedPartner || "",
+        formatAmount(c.approvedAmount).replace(/^₩/, ""),
+        String(calculateDays(c.createdAt)),
+        getStatusDisplayText(c.status) || c.status || "",
+        formatDate(c.cancellationDate),
+        (latestNote || "").replace(/[\r\n]+/g, " "),
+      ];
+    });
+    const csvContent = [headers.join(","), ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `접수취소_${format(new Date(), "yyyyMMdd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleReset = () => {
     setSearchQuery("");
@@ -635,6 +682,24 @@ export default function CancelledCases() {
             {filteredData.length}
           </span>
         </div>
+        <Button
+          variant="outline"
+          onClick={handleExcelDownload}
+          className="flex items-center gap-2"
+          style={{
+            height: "36px",
+            borderRadius: "8px",
+            fontSize: "13px",
+            fontFamily: "Pretendard",
+            fontWeight: 500,
+            color: "rgba(12, 12, 12, 0.7)",
+            border: "1px solid rgba(12, 12, 12, 0.12)",
+          }}
+          data-testid="button-cancelled-excel-download"
+        >
+          <Download size={14} />
+          엑셀 다운로드
+        </Button>
       </div>
 
       <div

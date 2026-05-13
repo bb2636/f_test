@@ -11,7 +11,7 @@ import {
   type Invoice,
   type Settlement,
 } from "@shared/schema";
-import { Search, Cloud, Star, Plus, CalendarIcon, X, Trash2, HelpCircle } from "lucide-react";
+import { Search, Cloud, Star, Plus, CalendarIcon, X, Trash2, HelpCircle, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -1424,6 +1424,44 @@ export default function ComprehensiveProgress() {
   };
 
   // 날짜 포맷팅 (YYYY-MM-DD)
+  const handleExcelDownload = () => {
+    const headers = [
+      "증권번호","사고번호","접수번호","보험사","피보험자","주소",
+      "담당자","협력사","승인금액","경과1","경과2","경과3","진행상태",
+    ];
+    const rows = filteredData.map((c: any) => {
+      const suffixNum = parseInt(c.caseNumber?.match(/-(\d+)$/)?.[1] || "0");
+      const isInsuredCase = suffixNum === 0;
+      const insuredAddr = [c.insuredAddress, c.insuredAddressDetail].filter(Boolean).join(" ");
+      const victimAddr = [c.victimAddress, c.victimAddressDetail].filter(Boolean).join(" ");
+      const addressText = isInsuredCase ? (insuredAddr || "-") : (victimAddr || insuredAddr || "-");
+      return [
+        c.insurancePolicyNo || "",
+        c.insuranceAccidentNo || "",
+        formatCaseNumber(c.caseNumber) || "",
+        c.insuranceCompany || "",
+        c.insuredName || "",
+        addressText,
+        c.managerName || "",
+        c.assignedPartner || "",
+        getDisplayApprovedAmount(c).replace(/^₩/, ""),
+        String(calculateDays(c.createdAt)),
+        calculateElapsed2(c),
+        calculateElapsed3(c),
+        getStatusDisplayText(c.status) || c.status || "",
+      ];
+    });
+    const csvContent = [headers.join(","), ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `종합진행관리_${format(new Date(), "yyyyMMdd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
@@ -1740,29 +1778,49 @@ export default function ComprehensiveProgress() {
               {totalCount}
             </span>
           </div>
-          {canDeleteCases && selectedCaseIds.length > 0 && (
-            <button
-              onClick={() => setShowBulkDeleteDialog(true)}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {canDeleteCases && selectedCaseIds.length > 0 && (
+              <button
+                onClick={() => setShowBulkDeleteDialog(true)}
+                style={{
+                  fontFamily: "Pretendard",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  color: "#DC2626",
+                  border: "1px solid #DC2626",
+                  borderRadius: "8px",
+                  padding: "6px 16px",
+                  background: "#FFFFFF",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                }}
+                data-testid="button-bulk-delete"
+              >
+                <Trash2 style={{ width: "14px", height: "14px" }} />
+                삭제
+              </button>
+            )}
+            <Button
+              variant="outline"
+              onClick={handleExcelDownload}
+              className="flex items-center gap-2"
               style={{
-                fontFamily: "Pretendard",
-                fontWeight: 600,
-                fontSize: "14px",
-                color: "#DC2626",
-                border: "1px solid #DC2626",
+                height: "36px",
                 borderRadius: "8px",
-                padding: "6px 16px",
-                background: "#FFFFFF",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
+                fontSize: "13px",
+                fontFamily: "Pretendard",
+                fontWeight: 500,
+                color: "rgba(12, 12, 12, 0.7)",
+                border: "1px solid rgba(12, 12, 12, 0.12)",
               }}
-              data-testid="button-bulk-delete"
+              data-testid="button-comprehensive-progress-excel-download"
             >
-              <Trash2 style={{ width: "14px", height: "14px" }} />
-              삭제
-            </button>
-          )}
+              <Download size={14} />
+              엑셀 다운로드
+            </Button>
+          </div>
         </div>
 
         {/* Table */}
