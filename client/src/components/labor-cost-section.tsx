@@ -2825,9 +2825,9 @@ export function LaborCostSection({
                 fontFamily: "Pretendard",
                 fontSize: "18px",
                 fontWeight: 700,
-                color: "#008FED",
+                color: isReadOnly ? "#253396" : "#008FED",
                 textAlign: "center",
-                background: "rgba(0, 143, 237, 0.05)",
+                background: isReadOnly ? "rgba(37, 51, 150, 0.06)" : "rgba(0, 143, 237, 0.05)",
               }}
               data-testid="text-labor-total-in-table"
             >
