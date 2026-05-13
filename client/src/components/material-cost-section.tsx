@@ -1070,9 +1070,9 @@ export function MaterialCostSection({
               fontFamily: "Pretendard", 
               fontSize: "18px", 
               fontWeight: 700, 
-              color: isReadOnly ? "#253396" : "#008FED", 
+              color: "#253396", 
               textAlign: "right",
-              background: isReadOnly ? "rgba(37, 51, 150, 0.06)" : "rgba(0, 143, 237, 0.05)",
+              background: "rgba(37, 51, 150, 0.06)",
             }} data-testid="text-material-total-in-table">
               {rows.reduce((sum, row) => sum + (row.합계 || 0), 0).toLocaleString()}
             </td>
