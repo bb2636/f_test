@@ -1598,7 +1598,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       </td>
                       <td style={stickyCellStyle(4)}>{row.assessorName}</td>
                       <td style={{ ...stickyCellStyle(5), padding: "8px 12px" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                           {row.caseNumber
                             ?.split(", ")
                             .map((num, idx) => (
