@@ -1058,6 +1058,40 @@ async function renderCoverPage(
     size: 11,
   });
 
+  y -= 25;
+
+  drawText(page, {
+    x: infoX,
+    y,
+    text: "플 록 슨 :",
+    font: fonts.bold,
+    size: 11,
+  });
+  drawText(page, {
+    x: valueX,
+    y,
+    text: "백진화",
+    font: fonts.regular,
+    size: 11,
+  });
+
+  y -= 25;
+
+  drawText(page, {
+    x: infoX,
+    y,
+    text: "연 락 처 :",
+    font: fonts.bold,
+    size: 11,
+  });
+  drawText(page, {
+    x: valueX,
+    y,
+    text: "070-8853-0925",
+    font: fonts.regular,
+    size: 11,
+  });
+
   // FLOXN logo at bottom center (using image file)
   const logoY = MARGIN + 20;
   const centerX = A4_WIDTH / 2;
