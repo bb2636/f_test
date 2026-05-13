@@ -1088,7 +1088,7 @@ async function renderCoverPage(
   drawText(page, {
     x: valueX,
     y,
-    text: managerData?.phone || "-",
+    text: "070-8853-0925",
     font: fonts.regular,
     size: 11,
   });
