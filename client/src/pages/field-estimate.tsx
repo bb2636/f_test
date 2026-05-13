@@ -4364,6 +4364,144 @@ export default function FieldEstimate() {
     });
   }, [rows, laborCostRows, mergedIlwidaegaCatalog, deletedLinkedLaborKeys, exclusionsLoaded, laborRateTiers, isAutoSyncEligibleCase, isPartner, currentUser]); // laborCostRows, 노임단가 비율, exclusionsLoaded 포함 + cutoff 적용 대상 변화 감지 + 협력업체 가드
 
+  // ========== 일반 노무비(비-철거) 면적 집계 Reconcile useEffect ==========
+  // 같은 workType+workName 의 복구면적 산출표 행들이 여러 개일 때,
+  // 자동연동된 단일 노무비 행에 면적 합계를 반영(C 갱신)하고 산식으로 합계 재계산.
+  // 산식 자체는 그대로(shared/labor-rate-tiers-utils.ts 미수정), C 입력값만 보정.
+  const laborAggregationRef = useRef<string>('');
+  const laborAggregationPendingRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (!isAutoSyncEligibleCase) return;
+    if (!exclusionsLoaded) return;
+    if (!mergedIlwidaegaCatalog || mergedIlwidaegaCatalog.length === 0) return;
+    if (syncGuardRef.current) return;
+    if (!laborCostRows || laborCostRows.length === 0) return;
+
+    // 1. 비-철거 영역행을 (laborCategory|workName)별로 합산
+    type AggregatedAreaEntry = {
+      workType: string;
+      workName: string;
+      laborCategory: string;
+      totalArea: number;
+      sourceRowIds: string[];
+    };
+    const areaMap = new Map<string, AggregatedAreaEntry>();
+
+    rows.forEach(areaRow => {
+      if (!areaRow.workType || !areaRow.workName) return;
+      if (areaRow.workType === '철거공사') return; // 철거는 별도 reconcile에서 합산 처리
+      if (isFixedIlwidaegaWorkName(areaRow.workName)) return; // FIXED는 위치별 행 유지
+      if (AREA_DISPLAY_ONLY_WORK_TYPES.includes(areaRow.workType) && !isItemInLinkSettings(areaRow.workType, areaRow.workName)) return;
+      if (AREA_DISPLAY_ONLY_WORK_NAMES.includes(areaRow.workName) && !isItemInLinkSettings(areaRow.workType, areaRow.workName)) return;
+
+      const rawArea = Number(areaRow.repairArea) || 0;
+      if (rawArea <= 0) return;
+      const ceilingMult = getCeilingMultiplier(areaRow.workType, areaRow.location || '');
+      const adjArea = rawArea * ceilingMult;
+      const laborCategory = getLaborCategory(areaRow.workType, areaRow.workName);
+      const key = `${laborCategory}|${areaRow.workName}`;
+
+      const existing = areaMap.get(key);
+      if (existing) {
+        existing.totalArea = Math.round((existing.totalArea + adjArea) * 10) / 10;
+        existing.sourceRowIds.push(areaRow.id);
+      } else {
+        areaMap.set(key, {
+          workType: areaRow.workType,
+          workName: areaRow.workName,
+          laborCategory,
+          totalArea: Math.round(adjArea * 10) / 10,
+          sourceRowIds: [areaRow.id],
+        });
+      }
+    });
+
+    // 2. 갱신 대상 노무비 행 수집
+    type LaborStaleUpdate = {
+      rowId: string;
+      C: number;
+      amount: number;
+      pricePerSqm: number;
+      quantity: number;
+    };
+    const staleUpdates: LaborStaleUpdate[] = [];
+
+    laborCostRows.forEach(laborRow => {
+      if (!laborRow.isLinkedFromRecovery) return;
+      if (laborRow.lockedAtSave) return;
+      if (laborRow.category === '철거공사') return;
+      if (!laborRow.sourceAreaRowId) return;
+      if (laborRow.sourceAreaRowId.startsWith('demolition-')) return;
+      if (isFixedIlwidaegaWorkName(laborRow.workName || '')) return; // FIXED는 위치별 유지
+
+      // 바탕만들기 동반행: 자신의 workName(예: '바탕만들기')이 아닌 부모 공사명으로 매칭
+      const isBatang = laborRow.sourceAreaRowId.includes('::batang');
+      const lookupWorkName = isBatang
+        ? (Object.entries(BATANG_COMPANION_MAP).find(([, v]) => v === (laborRow.workName || ''))?.[0] || '')
+        : (laborRow.workName || '');
+      if (!lookupWorkName) return;
+
+      const key = `${laborRow.category || ''}|${lookupWorkName}`;
+      const aggregated = areaMap.get(key);
+      if (!aggregated) return;
+      if (aggregated.sourceRowIds.length <= 1) return; // 단일 영역행이면 기존 값과 동일 → skip
+
+      const C = aggregated.totalArea;
+      const D = laborRow.standardWorkQuantity || 0;
+      const E = laborRow.standardPrice || 0;
+
+      let newAmount = 0, newPpsqm = 0, newQty = C > 0 ? 1 : 0;
+      if (D > 0 && E > 0 && C > 0) {
+        newAmount = calculateIWithTiers(C, D, E, laborRateTiers);
+        newPpsqm = calculateAppliedUnitPriceWithTiers(C, D, E, laborRateTiers);
+        newQty = calculateQuantityWithTiers(C, D, E, laborRateTiers);
+      }
+
+      const areaDiff = Math.abs((laborRow.damageArea || 0) - C) > 0.01;
+      const amtDiff = Math.abs((laborRow.amount || 0) - newAmount) > 0.5;
+      const ppsqmDiff = Math.abs((laborRow.pricePerSqm || 0) - newPpsqm) > 0.5;
+      const qtyDiff = Math.abs((laborRow.quantity || 0) - newQty) > 0.01;
+
+      if (areaDiff || amtDiff || ppsqmDiff || qtyDiff) {
+        staleUpdates.push({ rowId: laborRow.id, C, amount: newAmount, pricePerSqm: newPpsqm, quantity: newQty });
+      }
+    });
+
+    // 3. 무한 루프 방지 stateKey
+    const stateKey = staleUpdates.map(s => `${s.rowId}:${s.C.toFixed(2)}:${s.amount}:${s.quantity.toFixed(2)}:${s.pricePerSqm}`).sort().join('|');
+    if (laborAggregationRef.current === stateKey) return;
+
+    if (staleUpdates.length === 0) {
+      laborAggregationRef.current = stateKey;
+      return;
+    }
+    if (laborAggregationPendingRef.current) return;
+
+    laborAggregationRef.current = stateKey;
+    laborAggregationPendingRef.current = true;
+
+    queueMicrotask(() => {
+      laborAggregationPendingRef.current = false;
+      const updateMap = new Map(staleUpdates.map(s => [s.rowId, s]));
+      lastLaborSetSourceRef.current = 'laborAggregation';
+      setLaborCostRows(prev => prev.map(row => {
+        const u = updateMap.get(row.id);
+        if (!u) return row;
+        console.log('[노무비 집계] 갱신:', row.workName, '/', row.detailItem,
+          '면적', row.damageArea, '→', u.C,
+          '합계', row.amount, '→', u.amount);
+        return {
+          ...row,
+          damageArea: u.C,
+          quantity: u.quantity,
+          pricePerSqm: u.pricePerSqm,
+          amount: u.amount,
+        };
+      }));
+    });
+  }, [rows, laborCostRows, mergedIlwidaegaCatalog, exclusionsLoaded, laborRateTiers, isAutoSyncEligibleCase, isPartner, currentUser]);
+
   // 최신 견적 가져오기
   // [핑퐁 차단 2026-05-11] 협력업체 30초 폴링 제거.
   //   관리자/협력업체가 동시에 화면을 열고 있을 때 협력업체 측이 30초마다 DB를 다시 읽고
