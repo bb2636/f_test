@@ -1749,8 +1749,10 @@ export default function FieldEstimate() {
   // 핵심: 동일 Key(공종+공사명+자재항목)는 1행으로 merge, 전체 합산 후 마지막에 ceil 적용
   // isOverridden=true인 행은 사용자 수정값 보존 (autoQuantity만 업데이트)
   // RECONCILE: 복구면적에 없는 자동 생성 행은 삭제
-  const syncMaterialFromRecoveryArea = () => {
+  const syncMaterialFromRecoveryArea = (forceUnlock: boolean = false) => {
     // 협력업체(readOnly)도 동일한 화면값을 보도록 isReadOnly 가드 제거 (저장은 별도로 차단됨)
+    // [정책 2026-05-13] forceUnlock=true: 수동 "복구면적 가져오기" 버튼 호출 → 저장 lock(lockedAtSave) 무효화하고 강제 갱신.
+    //   forceUnlock=false(기본): 자동 useEffect 호출 → lockedAtSave=true 행은 자동 sync 차단.
     if (rows.length === 0) return;
     
     // 기존 행 분류
@@ -1777,7 +1779,11 @@ export default function FieldEstimate() {
           key = row.autoKey.replace('|건축물보양', '|건축물현장정리');
         }
       }
-      existingAutoRowsMap.set(key, row);
+      // [정책 2026-05-13] forceUnlock=true(수동 버튼)면 lock을 풀어서 가드 분기를 우회.
+      //   → 갱신값이 자연스럽게 lockedAtSave=false로 저장돼 다음 진입까지 자유로움.
+      //   다음 저장 시 다시 lockedAtSave=true로 박힘.
+      const rowForMap = forceUnlock ? { ...row, lockedAtSave: false } : row;
+      existingAutoRowsMap.set(key, rowForMap);
     });
     
     // 복구면적에서 공종+공사명별 면적 합산 (반자틀 제외)
@@ -1952,7 +1958,16 @@ export default function FieldEstimate() {
 
         const existingRow = existingAutoRowsMap.get(autoKey);
 
-        if (existingRow && existingRow.isOverridden) {
+        if (existingRow && existingRow.lockedAtSave) {
+          // [정책 2026-05-13] 저장 후 lock 행: 자동 sync 완전 차단 — 메타데이터만 추적용 갱신.
+          //   사용자가 명시적으로 "복구면적 가져오기"를 누르기 전엔 어떤 값도 안 바뀜.
+          resultRowsMap.set(autoKey, {
+            ...existingRow,
+            autoKey,
+            sourceAreaRowIds: data.sourceAreaRowIds,
+          });
+          console.log(`[자재비 집계] 도장공사 ${data.공사명}: lockedAtSave=true, 자동 sync 차단`);
+        } else if (existingRow && existingRow.isOverridden) {
           // 사용자 직접 수정 행: 단가/수량은 보존, 면적/메타만 갱신
           resultRowsMap.set(autoKey, {
             ...existingRow,
@@ -2062,7 +2077,16 @@ export default function FieldEstimate() {
           const fallbackKey = `${norm2(data.공종)}|${norm2(data.공사명)}`;
           const existingRow = existingAutoRowsMap.get(autoKey) || existingAutoRowsMap.get(fallbackKey);
           
-          if (existingRow && existingRow.isOverridden) {
+          if (existingRow && existingRow.lockedAtSave) {
+            // [정책 2026-05-13] 저장 후 lock 행: 자동 sync 완전 차단 — 메타데이터만 추적용 갱신.
+            //   사용자가 "복구면적 가져오기"를 누르기 전엔 진입만으로 어떤 값도 안 바뀜.
+            resultRowsMap.set(autoKey, {
+              ...existingRow,
+              autoKey,
+              sourceAreaRowIds: data.sourceAreaRowIds,
+            });
+            console.log(`[자재비 집계] ${autoKey}: lockedAtSave=true, 자동 sync 차단`);
+          } else if (existingRow && existingRow.isOverridden) {
             // [정책 2026-05-12] 사용자 수정값 절대 우선 — FIXED라도 isOverridden=true면 수량 강제 갱신 금지.
             //   기존엔 욕실/가구 FIXED는 사용자 수정 표식이 있어도 자동 카운트로 강제 덮어썼음(증상 4·5 root cause).
             //   isOverridden=true는 사용자가 의도적으로 수량/단가를 수정한 표식이므로 절대 산식값으로 회귀시키지 않는다.
@@ -2175,7 +2199,15 @@ export default function FieldEstimate() {
         
         const existingRow = existingAutoRowsMap.get(autoKey);
         
-        if (existingRow && existingRow.isOverridden) {
+        if (existingRow && existingRow.lockedAtSave) {
+          // [정책 2026-05-13] 저장 후 lock 행: 자동 sync 완전 차단.
+          resultRowsMap.set(autoKey, {
+            ...existingRow,
+            autoKey,
+            sourceAreaRowIds: data.sourceAreaRowIds,
+          });
+          console.log(`[자재비 집계] ${autoKey}(빈매칭): lockedAtSave=true, 자동 sync 차단`);
+        } else if (existingRow && existingRow.isOverridden) {
           resultRowsMap.set(autoKey, {
             ...existingRow,
             autoKey,
@@ -2238,14 +2270,25 @@ export default function FieldEstimate() {
     const targetAutoRows = existingAutoRows.filter(row => 
       AUTO_SYNC_MATERIAL_WORK_NAMES.includes(row.공사명 || '')
     );
+    // [정책 2026-05-13] lockedAtSave 자동행은 stale이어도 자동 sync에서 삭제 금지(수동 forceUnlock만 허용).
+    //   사용자가 면적을 0으로 만들거나 영역행을 지워서 autoKey가 사라져도 저장된 자재비 행은 유지.
+    const lockedStaleSurvivors: MaterialRow[] = [];
     const deletedCount = targetAutoRows.filter(row => {
       const norm = (v: any) => (v ?? "").toString().trim();
       const key = row.autoKey || `${norm(row.공종)}|${norm(row.공사명)}|${norm(row.자재항목) || "__NONE__"}`;
-      return !nextAutoKeys.has(key);
+      const isStale = !nextAutoKeys.has(key);
+      if (isStale && row.lockedAtSave && !forceUnlock) {
+        lockedStaleSurvivors.push(row);
+        return false;
+      }
+      return isStale;
     }).length;
     
     if (deletedCount > 0) {
       console.log(`[MATERIAL RECONCILE] ${deletedCount}개 stale 자동 행 삭제됨`);
+    }
+    if (lockedStaleSurvivors.length > 0) {
+      console.log(`[MATERIAL RECONCILE] ${lockedStaleSurvivors.length}개 lockedAtSave stale 행 보존됨(자동 sync 삭제 차단)`);
     }
     
     // 수동 행 필터링 로직:
@@ -2290,7 +2333,7 @@ export default function FieldEstimate() {
     
     // 결과 병합: 대상 공사명 자동 행(resultRowsMap) + 비대상 공사명 자동 행(유지) + 필터된 수동 행
     const resultAutoRows = Array.from(resultRowsMap.values());
-    const allRows = [...resultAutoRows, ...nonTargetAutoRows, ...filteredManualRows];
+    const allRows = [...resultAutoRows, ...lockedStaleSurvivors, ...nonTargetAutoRows, ...filteredManualRows];
     
     console.log("[RECONCILE RESULT]", {
       nextKeys: Array.from(nextAutoKeys),
@@ -6440,11 +6483,15 @@ export default function FieldEstimate() {
       });
 
       // 자재비 데이터 (id 제외, sourceLaborRowIndex 추가)
+      // [정책 2026-05-13] 모든 자재 행에 lockedAtSave: true 박아 저장 → 다시 열 때 자동 sync가 사용자 값을 덮어쓰지 않음.
+      //   사용자가 직접 수정하지 않는 한 진입만으로는 어떤 값도 변하지 않도록 보장.
+      //   "복구면적 가져오기" 수동 버튼은 별도 경로(lock 해제 후 강제 sync).
       const materialCostData = materialRows.map(({ id, sourceLaborRowId, ...rest }) => {
         // sourceLaborRowId를 인덱스로 변환
         const laborIndex = laborCostRows.findIndex(lr => lr.id === sourceLaborRowId);
         return {
           ...rest,
+          lockedAtSave: true,
           sourceLaborRowIndex: laborIndex >= 0 ? laborIndex : null,
         };
       });
@@ -6488,10 +6535,11 @@ export default function FieldEstimate() {
       const wasAutoSave = isAutoSavingRef.current;
       isAutoSavingRef.current = false;
 
-      // [LOCK] race 방지: 저장 완료 즉시 로컬 노무비 state도 lockedAtSave=true 박기.
+      // [LOCK] race 방지: 저장 완료 즉시 로컬 노무비/자재비 state도 lockedAtSave=true 박기.
       // refetch/hydration 사이 자동 sync useEffect가 lock 없는 이전 state를 보고
       // 표준값을 덮어쓰는 윈도우를 차단(저장 시점 스냅샷이 견적서/보고서/인보이스에 일관 적용되도록).
       setLaborCostRows(prev => prev.map(row => ({ ...row, lockedAtSave: true })));
+      setMaterialRows(prev => prev.map(row => ({ ...row, lockedAtSave: true })));
 
       if (wasAutoSave) {
         // 자동 저장: 사용자에게 토스트 노출하지 않음 (조용히 동기화)
@@ -9434,7 +9482,7 @@ export default function FieldEstimate() {
                   {/* 손해방지 케이스는 복구면적 산출표가 없으므로 숨김 */}
                   {!isLossPreventionCase && (
                     <Button
-                      onClick={syncMaterialFromRecoveryArea}
+                      onClick={() => syncMaterialFromRecoveryArea(true)}
                       variant="outline"
                       size="sm"
                       disabled={rows.length === 0 || isReadOnly}

@@ -44,6 +44,10 @@ export interface MaterialRow {
   isItemOverridden?: boolean; // 자재항목/자재명만 사용자 선택 (true: 자재명 보존, 수량은 면적 기반 갱신 허용)
   autoQuantity?: number; // 자동 계산 수량 (수동 수정 전 기준값)
   autoUnitType?: 'm2' | 'EA'; // 자동 연동 단위 타입 (m² 또는 EA)
+  // [정책 2026-05-13] 저장 시점 락 — 노무비 lockedAtSave와 동일 정책.
+  //   true인 행은 자동 sync useEffect가 면적 변동·카탈로그 변경 등 어떤 이유로도 갱신하지 못함.
+  //   "복구면적 가져오기" 수동 버튼만이 lock을 풀고 강제 재동기화할 수 있음.
+  lockedAtSave?: boolean;
 }
 
 interface MaterialCostSectionProps {
