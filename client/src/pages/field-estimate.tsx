@@ -7979,11 +7979,11 @@ export default function FieldEstimate() {
                       {rows.map((row, index) => (
                         <tr key={row.id} style={{ borderBottom: "1px solid rgba(12, 12, 12, 0.06)" }}>
                           {/* [정책 2026-05-12] 견적서 탭은 조회 전용 → 행별 체크박스 셀 제거 */}
+                          {/* [정책 2026-05-12] 장소/위치/공종/공사명 — disabled select 대신 plain text div로 표시.
+                              이유: native select는 옵션 목록(마스터데이터 roomCategories/locations 등)에 row 값이 없으면 빈 "선택"으로 표시되어 실제 저장값이 누락된 듯 보임.
+                              조회 전용이므로 row 값을 직접 표시하면 마스터데이터 의존성 제거 + 면적 칸과 동일 외형으로 통일. */}
                           <td style={{ padding: "8px" }}>
-                            <select
-                              value={row.category || ""}
-                              onChange={(e) => updateRow(row.id, 'category', e.target.value)}
-                              disabled={true}
+                            <div
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -7992,20 +7992,15 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 color: row.category ? "#0C0C0C" : "rgba(12, 12, 12, 0.4)",
-                                background: isReadOnly ? "white" : undefined,
+                                background: "white",
+                                minHeight: "32px",
+                                display: "flex",
+                                alignItems: "center",
                               }}
-                            >
-                              <option value="">선택</option>
-                              {roomCategories.map((cat) => (
-                                <option key={cat} value={cat}>{cat}</option>
-                              ))}
-                            </select>
+                            >{row.category || "-"}</div>
                           </td>
                           <td style={{ padding: "8px" }}>
-                            <select
-                              value={row.location || ""}
-                              onChange={(e) => updateRow(row.id, 'location', e.target.value)}
-                              disabled={true}
+                            <div
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8014,23 +8009,15 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 color: row.location ? "#0C0C0C" : "rgba(12, 12, 12, 0.4)",
-                                background: isReadOnly ? "white" : undefined,
+                                background: "white",
+                                minHeight: "32px",
+                                display: "flex",
+                                alignItems: "center",
                               }}
-                            >
-                              <option value="">선택</option>
-                              {locations.map((loc) => (
-                                <option key={loc} value={loc}>{loc}</option>
-                              ))}
-                            </select>
+                            >{row.location || "-"}</div>
                           </td>
                           <td style={{ padding: "8px" }}>
-                            <select
-                              value={row.workType || ""}
-                              onChange={(e) => {
-                                updateRow(row.id, 'workType', e.target.value);
-                                updateRow(row.id, 'workName', '');
-                              }}
-                              disabled={true}
+                            <div
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8039,20 +8026,15 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 color: row.workType ? "#0C0C0C" : "rgba(12, 12, 12, 0.4)",
-                                background: isReadOnly ? "white" : undefined,
+                                background: "white",
+                                minHeight: "32px",
+                                display: "flex",
+                                alignItems: "center",
                               }}
-                            >
-                              <option value="">공종 선택</option>
-                              {getWorkTypesByLocation(row.location).map((wt) => (
-                                <option key={wt} value={wt}>{wt}</option>
-                              ))}
-                            </select>
+                            >{row.workType || "-"}</div>
                           </td>
                           <td style={{ padding: "8px" }}>
-                            <select
-                              value={row.workName || ""}
-                              onChange={(e) => updateRow(row.id, 'workName', e.target.value)}
-                              disabled={true}
+                            <div
                               style={{
                                 width: "100%",
                                 padding: "6px 8px",
@@ -8061,14 +8043,12 @@ export default function FieldEstimate() {
                                 fontFamily: "Pretendard",
                                 fontSize: "14px",
                                 color: row.workName ? "#0C0C0C" : "rgba(12, 12, 12, 0.4)",
-                                background: isReadOnly ? "white" : undefined,
+                                background: "white",
+                                minHeight: "32px",
+                                display: "flex",
+                                alignItems: "center",
                               }}
-                            >
-                              <option value="">공사명 선택</option>
-                              {getWorkNamesByWorkType(row.workType, row.location).map((work) => (
-                                <option key={work} value={work}>{work}</option>
-                              ))}
-                            </select>
+                            >{row.workName || "-"}</div>
                           </td>
                           <td style={{ padding: "8px" }}>
                             <input
