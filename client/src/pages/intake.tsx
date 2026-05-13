@@ -1662,7 +1662,7 @@ export default function Intake({
           (assessor) => assessor.name === value,
         );
         if (selectedAssessor) {
-          updated.assessorContact = selectedAssessor.phone || "";
+          updated.assessorContact = selectedAssessor.office || selectedAssessor.phone || "";
           updated.assessorEmail = selectedAssessor.email || "";
           setAssessorOfficePhone(selectedAssessor.office || "");
         }
@@ -3470,7 +3470,7 @@ export default function Intake({
                           assessorTeam: tempSelectedAssessor.name || "",
                           assessorId: tempSelectedAssessor.company || "",
                           assessorDepartment: tempSelectedAssessor.department || "",
-                          assessorContact: tempSelectedAssessor.phone || "",
+                          assessorContact: tempSelectedAssessor.office || tempSelectedAssessor.phone || "",
                           assessorEmail: tempSelectedAssessor.email || "",
                         }));
                         setAssessorOfficePhone(tempSelectedAssessor.office || "");

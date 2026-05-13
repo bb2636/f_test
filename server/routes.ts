@@ -960,7 +960,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .set({
               assessorId: updatedUser.company,
               assessorTeam: updatedUser.name,
-              assessorContact: updatedUser.phone || "",
+              assessorContact: updatedUser.office || updatedUser.phone || "",
               assessorEmail: updatedUser.email || "",
               assessorDepartment: updatedUser.department || "",
             })
@@ -13096,7 +13096,23 @@ FLOXN 드림`;
       if (recipientType === "심사자") {
         recipientCompany = caseData.assessorId || "";
         recipientName = caseData.assessorTeam || "";
-        recipientPhone = caseData.assessorContact || "";
+        // 심사자 직통번호(office)가 있으면 우선, 없으면 핸드폰 사용
+        let assessorPhone = caseData.assessorContact || "";
+        if (caseData.assessorId && caseData.assessorTeam) {
+          const [assessorUser] = await db
+            .select()
+            .from(users)
+            .where(
+              and(
+                eq(users.company, caseData.assessorId),
+                eq(users.name, caseData.assessorTeam),
+              ),
+            )
+            .limit(1);
+          if (assessorUser?.office) assessorPhone = assessorUser.office;
+          else if (assessorUser?.phone) assessorPhone = assessorUser.phone;
+        }
+        recipientPhone = assessorPhone;
       } else {
         recipientCompany = caseData.investigatorTeam || "";
         recipientName = caseData.investigatorTeamName || "";
@@ -13776,9 +13792,24 @@ https://www.floxn.co.kr/
 
       // 심사자/조사자 연락처
       if (recipients.assessorInvestigator) {
-        // 심사자 연락처
-        if (caseData.assessorContact) {
-          const normalizedPhone = caseData.assessorContact.replace(
+        // 심사자 연락처 (직통번호 우선)
+        let assessorRawPhone = caseData.assessorContact || "";
+        if (caseData.assessorId && caseData.assessorTeam) {
+          const [assessorUser] = await db
+            .select()
+            .from(users)
+            .where(
+              and(
+                eq(users.company, caseData.assessorId),
+                eq(users.name, caseData.assessorTeam),
+              ),
+            )
+            .limit(1);
+          if (assessorUser?.office) assessorRawPhone = assessorUser.office;
+          else if (assessorUser?.phone) assessorRawPhone = assessorUser.phone;
+        }
+        if (assessorRawPhone) {
+          const normalizedPhone = assessorRawPhone.replace(
             /[^0-9]/g,
             "",
           );
