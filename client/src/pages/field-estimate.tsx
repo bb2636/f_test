@@ -8341,19 +8341,24 @@ export default function FieldEstimate() {
                 padding: "24px 32px",
               }}
             >
+              {/* [2026-05-13] 합계 섹션 — 현장출동보고서 견적서 탭과 동일하게 가로 폭 좁히고 행간/폰트 축소
+                  · 소계~VAT: fontSize 16→14, marginBottom 16→0(부모 gap 8px), VAT 라디오 라벨 14→13
+                  · 구분선 margin 20→12, borderTopWidth 2px
+                  · 총 합계: 라벨 18/600 #0C0C0C → 16/700 #253396, 금액 24/700 → 18/700 (#253396 유지) */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {/* 소계 */}
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: "16px",
+                  padding: "8px 0",
                 }}
               >
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 500,
                     color: "#0C0C0C",
                   }}
@@ -8363,7 +8368,7 @@ export default function FieldEstimate() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 600,
                     color: "#0C0C0C",
                   }}
@@ -8379,13 +8384,13 @@ export default function FieldEstimate() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: "16px",
+                  padding: "8px 0",
                 }}
               >
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 500,
                     color: "#0C0C0C",
                   }}
@@ -8395,7 +8400,7 @@ export default function FieldEstimate() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 600,
                     color: "#0C0C0C",
                   }}
@@ -8411,13 +8416,13 @@ export default function FieldEstimate() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: "16px",
+                  padding: "8px 0",
                 }}
               >
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 500,
                     color: "#0C0C0C",
                   }}
@@ -8427,7 +8432,7 @@ export default function FieldEstimate() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 600,
                     color: "#0C0C0C",
                   }}
@@ -8443,13 +8448,13 @@ export default function FieldEstimate() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: "16px",
+                  padding: "8px 0",
                 }}
               >
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 500,
                     color: "#0C0C0C",
                   }}
@@ -8457,7 +8462,7 @@ export default function FieldEstimate() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 600,
                     color: "#0C0C0C",
                   }}
@@ -8473,13 +8478,14 @@ export default function FieldEstimate() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  padding: "8px 0",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <span
                     style={{
                       fontFamily: "Pretendard",
-                      fontSize: "16px",
+                      fontSize: "14px",
                       fontWeight: 500,
                       color: "#0C0C0C",
                     }}
@@ -8500,13 +8506,13 @@ export default function FieldEstimate() {
                         name="vat"
                         checked={vatIncluded}
                         onChange={() => setVatIncluded(true)}
-                        style={{ cursor: "pointer" }}
+                        style={{ cursor: "pointer", accentColor: "#253396" }}
                         data-testid="radio-vat-included"
                       />
                       <span
                         style={{
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           fontWeight: 500,
                           color: vatIncluded ? "#253396" : "#686A6E",
                         }}
@@ -8527,13 +8533,13 @@ export default function FieldEstimate() {
                         name="vat"
                         checked={!vatIncluded}
                         onChange={() => setVatIncluded(false)}
-                        style={{ cursor: "pointer" }}
+                        style={{ cursor: "pointer", accentColor: "#253396" }}
                         data-testid="radio-vat-excluded"
                       />
                       <span
                         style={{
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           fontWeight: 500,
                           color: !vatIncluded ? "#253396" : "#686A6E",
                         }}
@@ -8546,7 +8552,7 @@ export default function FieldEstimate() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 600,
                     color: "#0C0C0C",
                   }}
@@ -8556,29 +8562,23 @@ export default function FieldEstimate() {
                 </span>
               </div>
 
-              {/* 구분선 */}
-              <div
-                style={{
-                  height: "1px",
-                  background: "rgba(12, 12, 12, 0.1)",
-                  margin: "20px 0",
-                }}
-              />
-
-              {/* 총 합계 */}
+              {/* 총 합계 — 상단 2px border로 구분 */}
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  padding: "12px 0 0",
+                  marginTop: "4px",
+                  borderTop: "2px solid rgba(12, 12, 12, 0.1)",
                 }}
               >
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "18px",
-                    fontWeight: 600,
-                    color: "#0C0C0C",
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    color: "#253396",
                   }}
                 >
                   총 합계
@@ -8586,7 +8586,7 @@ export default function FieldEstimate() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "24px",
+                    fontSize: "18px",
                     fontWeight: 700,
                     color: "#253396",
                   }}
@@ -8594,6 +8594,7 @@ export default function FieldEstimate() {
                 >
                   {estimateSummary.total.toLocaleString()}원
                 </span>
+              </div>
               </div>
             </div>
 
