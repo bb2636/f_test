@@ -7391,6 +7391,7 @@ export default function FieldEstimate() {
                           type="text"
                           value={row.damageArea}
                           readOnly
+                          className="keep-border"
                           style={{
                             width: "100%",
                             padding: "8px",
@@ -7474,6 +7475,7 @@ export default function FieldEstimate() {
                           type="text"
                           value={row.repairArea}
                           readOnly
+                          className="keep-border"
                           style={{
                             width: "100%",
                             padding: "8px",
