@@ -845,7 +845,7 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{rep.assignedPartnerManager || "-"}</td>
         <td style={cellStyle}>{formatDate(rep.assignmentDate)}</td>
         <td style={cellStyle}>{rep.accidentType || "-"}</td>
-        <td style={{ ...cellStyle, whiteSpace: "normal", wordBreak: "break-word", maxWidth: "200px" }}>{rep.accidentCause || "-"}</td>
+        <td style={{ ...cellStyle, maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={rep.accidentCause || ""}>{rep.accidentCause || "-"}</td>
         <td style={cellStyle}>{(rep.damagePreventionCost === "true" || (rep.damagePreventionCost as any) === true) ? "손방" : "-"}</td>
         <td style={cellStyle}>{(rep.victimIncidentAssistance === "true" || (rep.victimIncidentAssistance as any) === true) ? "대물" : "-"}</td>
         <td style={cellStyle}>{getGroupRestorationMethod(g.cases)}</td>
@@ -904,7 +904,7 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{c.assignedPartnerManager || "-"}</td>
         <td style={cellStyle}>{formatDate(c.assignmentDate)}</td>
         <td style={cellStyle}>{c.accidentType || "-"}</td>
-        <td style={{ ...cellStyle, whiteSpace: "normal", wordBreak: "break-word", maxWidth: "200px" }}>{c.accidentCause || "-"}</td>
+        <td style={{ ...cellStyle, maxWidth: "200px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={c.accidentCause || ""}>{c.accidentCause || "-"}</td>
         <td style={cellStyle}>{(c.damagePreventionCost === "true" || (c.damagePreventionCost as any) === true) ? "손방" : "-"}</td>
         <td style={cellStyle}>{(c.victimIncidentAssistance === "true" || (c.victimIncidentAssistance as any) === true) ? "대물" : "-"}</td>
         <td style={cellStyle}>{c.restorationMethod || c.recoveryType || "-"}</td>

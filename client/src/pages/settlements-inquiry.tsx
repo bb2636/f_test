@@ -1560,6 +1560,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                     padding: `${verticalPadding} 8px`,
                     width: DATE_COL_WIDTH,
                     minWidth: DATE_COL_WIDTH,
+                    whiteSpace: "nowrap",
                   };
                   const stickyCellStyle = (colIdx: number): React.CSSProperties => ({
                     ...cellStyle,
