@@ -3696,9 +3696,10 @@ export default function FieldReport() {
                         {caseData.accidentCategory || "-"}
                       </div>
                     </div>
-                    <div>
+                    {/* [2026-05-13] 사고원인 — 다른 항목과 동일하게 라벨 좌측 + 값 우측 한 줄 배치 */}
+                    <div className="flex items-center">
                       <span
-                        className="block mb-1.5"
+                        className="w-24 shrink-0"
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "13px",
@@ -3709,8 +3710,11 @@ export default function FieldReport() {
                         사고원인
                       </span>
                       <div
-                        className="p-3 rounded border border-[#E5E7EB]"
                         style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          border: "1px solid rgba(12, 12, 12, 0.1)",
+                          borderRadius: "6px",
                           fontFamily: "Pretendard",
                           fontSize: "13px",
                           color: "#0C0C0C",
