@@ -814,6 +814,7 @@ async function renderCoverPage(
   fonts: FontSet,
   caseData: any,
   partnerData: any,
+  managerData?: any,
 ): Promise<void> {
   const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
   let y = A4_HEIGHT - MARGIN;
@@ -1070,7 +1071,7 @@ async function renderCoverPage(
   drawText(page, {
     x: valueX,
     y,
-    text: "백진화",
+    text: managerData?.name || "-",
     font: fonts.regular,
     size: 11,
   });
@@ -1087,7 +1088,7 @@ async function renderCoverPage(
   drawText(page, {
     x: valueX,
     y,
-    text: "070-8853-0925",
+    text: managerData?.phone || "-",
     font: fonts.regular,
     size: 11,
   });
@@ -3972,9 +3973,24 @@ export async function generatePdfWithPdfLib(
     fonts = { regular: fallbackFont, bold: fallbackFont };
   }
 
+  let managerData: any = null;
+  if (caseData.managerId) {
+    const managerRows = await db
+      .select(USERS_SAFE_COLUMNS)
+      .from(users)
+      .where(eq(users.id, caseData.managerId));
+    if (managerRows.length > 0) {
+      managerData = managerRows[0];
+      console.log(`[pdf-lib] managerData 조회 결과:`, {
+        name: managerData?.name,
+        phone: managerData?.phone,
+      });
+    }
+  }
+
   if (sections.cover) {
     try {
-      await renderCoverPage(pdfDoc, fonts, caseData, partnerData);
+      await renderCoverPage(pdfDoc, fonts, caseData, partnerData, managerData);
       console.log("[pdf-lib] 표지 페이지 생성 완료");
     } catch (err: any) {
       console.error("[pdf-lib] 표지 페이지 생성 실패:", err.message);
