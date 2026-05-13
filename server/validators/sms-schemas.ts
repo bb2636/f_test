@@ -11,6 +11,7 @@ export const sendSmsSchema = z.object({
   insuredContact: z.string().optional(),
   victimName: z.string().optional(),
   victimContact: z.string().optional(),
+  assessorId: z.string().optional(),
   assessorTeam: z.string().optional(),
   assessorContact: z.string().optional(),
   investigatorTeamName: z.string().optional(),

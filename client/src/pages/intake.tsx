@@ -1409,6 +1409,10 @@ export default function Intake({
                 firstCase.victimName || submittedData.victimName || "-",
               victimContact:
                 firstCase.victimContact || submittedData.victimContact || "-",
+              assessorId:
+                firstCase.assessorId ||
+                submittedData.assessorId ||
+                "",
               assessorTeam:
                 firstCase.assessorTeam ||
                 submittedData.assessorTeam ||
@@ -1528,6 +1532,7 @@ export default function Intake({
             insuredContact: formData.insuredContact || "-",
             victimName: formData.victimName || "-",
             victimContact: formData.victimContact || "-",
+            assessorId: formData.assessorId || "",
             assessorTeam: formData.assessorTeam || "-",
             assessorContact: formData.assessorContact || "-",
             investigatorTeamName: formData.investigatorTeamName || "-",

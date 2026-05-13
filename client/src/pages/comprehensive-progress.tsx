@@ -4232,29 +4232,30 @@ export default function ComprehensiveProgress() {
                                     <option value="">수신자 선택</option>
                                     {selectedCase?.assessorTeam && (() => {
                                       const phone = (selectedCase.assessorContact || "").replace(/[^0-9]/g, "");
-                                      const isValidMobile = /^01[016789]\d{7,8}$/.test(phone);
+                                      // 휴대폰(010 등) 또는 직통번호(02/031/070 등 일반 전화) 모두 허용
+                                      const isValidPhone = phone.length >= 9 && phone.length <= 11;
                                       return (
-                                        <option value="심사자" disabled={!isValidMobile}>
+                                        <option value="심사자" disabled={!isValidPhone}>
                                           심사자:{" "}
                                           {selectedCase.assessorId
                                             ? `(${selectedCase.assessorId}) `
                                             : ""}
                                           {selectedCase.assessorTeam}
-                                          {!isValidMobile ? " [연락처 없음]" : ""}
+                                          {!isValidPhone ? " [연락처 없음]" : ""}
                                         </option>
                                       );
                                     })()}
                                     {selectedCase?.investigatorTeamName && (() => {
                                       const phone = (selectedCase.investigatorContact || "").replace(/[^0-9]/g, "");
-                                      const isValidMobile = /^01[016789]\d{7,8}$/.test(phone);
+                                      const isValidPhone = phone.length >= 9 && phone.length <= 11;
                                       return (
-                                        <option value="조사자" disabled={!isValidMobile}>
+                                        <option value="조사자" disabled={!isValidPhone}>
                                           조사자:{" "}
                                           {selectedCase.investigatorTeam
                                             ? `(${selectedCase.investigatorTeam}) `
                                             : ""}
                                           {selectedCase.investigatorTeamName}
-                                          {!isValidMobile ? " [연락처 없음]" : ""}
+                                          {!isValidPhone ? " [연락처 없음]" : ""}
                                         </option>
                                       );
                                     })()}

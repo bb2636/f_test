@@ -12766,6 +12766,7 @@ FLOXN 드림`;
         insuredContact,
         victimName,
         victimContact,
+        assessorId,
         assessorTeam,
         assessorContact,
         investigatorTeamName,
@@ -12799,6 +12800,27 @@ FLOXN 드림`;
           .json({ error: "유효하지 않은 전화번호 형식입니다" });
       }
 
+      // 심사자 직통번호 우선 조회 (본문 표시용) — 동명이인 위험 방지를 위해 회사+이름으로 매칭
+      let resolvedAssessorContactForBody = (typeof assessorContact === "string" ? assessorContact : "") || "";
+      if (assessorId && assessorTeam && assessorTeam !== "-") {
+        const matches = await db
+          .select()
+          .from(users)
+          .where(
+            and(
+              eq(users.company, assessorId),
+              eq(users.name, assessorTeam),
+            ),
+          )
+          .limit(2);
+        // 정확히 1명일 때만 신뢰 (동명이인 회피)
+        if (matches.length === 1) {
+          const u = matches[0];
+          if (u.office) resolvedAssessorContactForBody = u.office;
+          else if (u.phone) resolvedAssessorContactForBody = u.phone;
+        }
+      }
+
       // SMS 메시지 내용 생성 (값이 없는 항목은 표시하지 않음)
       const messageLines: string[] = ["<접수완료 알림>", ""];
 
@@ -12826,16 +12848,16 @@ FLOXN 드림`;
         messageLines.push(`피해자 : ${victimParts.join("  ")}`);
       }
 
-      // 심사자: 이름과 연락처 모두 있을 때만 표시
+      // 심사자: 이름과 연락처 모두 있을 때만 표시 (직통번호 우선)
       if (
         assessorTeam &&
         assessorTeam !== "-" &&
-        typeof assessorContact === "string" &&
-        assessorContact !== "-" &&
-        /[0-9]/.test(assessorContact)
+        resolvedAssessorContactForBody &&
+        resolvedAssessorContactForBody !== "-" &&
+        /[0-9]/.test(resolvedAssessorContactForBody)
       ) {
         messageLines.push(
-          `심사자 : ${assessorTeam}  연락처 ${assessorContact}`,
+          `심사자 : ${assessorTeam}  연락처 ${resolvedAssessorContactForBody}`,
         );
       }
 
@@ -13096,10 +13118,10 @@ FLOXN 드림`;
       if (recipientType === "심사자") {
         recipientCompany = caseData.assessorId || "";
         recipientName = caseData.assessorTeam || "";
-        // 심사자 직통번호(office)가 있으면 우선, 없으면 핸드폰 사용
+        // 심사자 직통번호(office)가 있으면 우선, 없으면 핸드폰 사용 (동명이인 회피)
         let assessorPhone = caseData.assessorContact || "";
         if (caseData.assessorId && caseData.assessorTeam) {
-          const [assessorUser] = await db
+          const matches = await db
             .select()
             .from(users)
             .where(
@@ -13108,9 +13130,12 @@ FLOXN 드림`;
                 eq(users.name, caseData.assessorTeam),
               ),
             )
-            .limit(1);
-          if (assessorUser?.office) assessorPhone = assessorUser.office;
-          else if (assessorUser?.phone) assessorPhone = assessorUser.phone;
+            .limit(2);
+          if (matches.length === 1) {
+            const u = matches[0];
+            if (u.office) assessorPhone = u.office;
+            else if (u.phone) assessorPhone = u.phone;
+          }
         }
         recipientPhone = assessorPhone;
       } else {
@@ -13352,7 +13377,8 @@ FLOXN 드림`;
       const normalizedSender = SOLAPI_SENDER.replace(/[^0-9]/g, "");
       const normalizedTo = recipientPhone.replace(/[^0-9]/g, "");
 
-      if (normalizedTo.length < 10 || normalizedTo.length > 11) {
+      // 휴대폰(10-11자리) 또는 직통번호(02-xxx-xxxx 등 9자리) 모두 허용
+      if (normalizedTo.length < 9 || normalizedTo.length > 11) {
         return res
           .status(400)
           .json({ error: "유효하지 않은 수신자 전화번호입니다" });
@@ -13758,6 +13784,26 @@ https://www.floxn.co.kr/
         managerData = await storage.getUser(caseData.managerId);
       }
 
+      // 심사자 직통번호 우선 조회 (본문/수신처 공통) — 동명이인 회피
+      let resolvedAssessorContact = caseData.assessorContact || "";
+      if (caseData.assessorId && caseData.assessorTeam) {
+        const matches = await db
+          .select()
+          .from(users)
+          .where(
+            and(
+              eq(users.company, caseData.assessorId),
+              eq(users.name, caseData.assessorTeam),
+            ),
+          )
+          .limit(2);
+        if (matches.length === 1) {
+          const u = matches[0];
+          if (u.office) resolvedAssessorContact = u.office;
+          else if (u.phone) resolvedAssessorContact = u.phone;
+        }
+      }
+
       const normalizedSender = SOLAPI_SENDER.replace(/[^0-9]/g, "");
 
       // 수신자별 전화번호 수집
@@ -13792,24 +13838,9 @@ https://www.floxn.co.kr/
 
       // 심사자/조사자 연락처
       if (recipients.assessorInvestigator) {
-        // 심사자 연락처 (직통번호 우선)
-        let assessorRawPhone = caseData.assessorContact || "";
-        if (caseData.assessorId && caseData.assessorTeam) {
-          const [assessorUser] = await db
-            .select()
-            .from(users)
-            .where(
-              and(
-                eq(users.company, caseData.assessorId),
-                eq(users.name, caseData.assessorTeam),
-              ),
-            )
-            .limit(1);
-          if (assessorUser?.office) assessorRawPhone = assessorUser.office;
-          else if (assessorUser?.phone) assessorRawPhone = assessorUser.phone;
-        }
-        if (assessorRawPhone) {
-          const normalizedPhone = assessorRawPhone.replace(
+        // 심사자 연락처 (직통번호 우선) — 위에서 조회한 resolvedAssessorContact 재사용
+        if (resolvedAssessorContact) {
+          const normalizedPhone = resolvedAssessorContact.replace(
             /[^0-9]/g,
             "",
           );
@@ -13926,10 +13957,10 @@ https://www.floxn.co.kr/
             `조사자 : ${caseData.investigatorTeamName}  연락처 ${caseData.investigatorContact}`,
           );
         }
-        // 심사자: 이름과 연락처 모두 있을 때만 표시
-        if (caseData.assessorId && caseData.assessorContact) {
+        // 심사자: 이름과 연락처 모두 있을 때만 표시 (직통번호 우선)
+        if (caseData.assessorId && resolvedAssessorContact) {
           msgLines.push(
-            `심사자 : ${caseData.assessorTeam}  연락처 ${caseData.assessorContact}`,
+            `심사자 : ${caseData.assessorTeam}  연락처 ${resolvedAssessorContact}`,
           );
         }
 
@@ -15464,6 +15495,60 @@ https://www.floxn.co.kr/
     } catch (error) {
       console.error("Remove estimate exclusion error:", error);
       res.status(500).json({ error: "제외 항목 삭제 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 관리자 엔드포인트: 기존 케이스의 심사자 연락처를 직통번호(users.office)로 일괄 동기화
+  app.get("/api/admin/sync-assessor-contacts", async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: "인증이 필요합니다." });
+      }
+      const user = await storage.getUser(req.session.userId);
+      if (!user || user.role !== "관리자") {
+        return res.status(403).json({ error: "관리자 권한이 필요합니다" });
+      }
+
+      // 동명이인(같은 회사+이름) 회피: (company, name) 조합이 정확히 1명인 경우만 업데이트
+      // users.office가 있는 경우 우선 사용, 없으면 users.phone
+      const result = await db.execute(sql`
+        WITH unique_users AS (
+          SELECT company, name,
+                 MAX(office) AS office,
+                 MAX(phone) AS phone
+          FROM users
+          WHERE company IS NOT NULL AND name IS NOT NULL
+          GROUP BY company, name
+          HAVING COUNT(*) = 1
+        )
+        UPDATE cases c
+        SET assessor_contact = COALESCE(NULLIF(u.office, ''), NULLIF(u.phone, ''), c.assessor_contact)
+        FROM unique_users u
+        WHERE u.company = c.assessor_id
+          AND u.name = c.assessor_team
+          AND COALESCE(NULLIF(u.office, ''), NULLIF(u.phone, '')) IS NOT NULL
+          AND COALESCE(c.assessor_contact, '') <> COALESCE(NULLIF(u.office, ''), NULLIF(u.phone, ''))
+        RETURNING c.id, c.case_number, c.assessor_team, c.assessor_contact
+      `);
+
+      // 참고: 동명이인이 있어 스킵된 케이스 목록도 함께 반환
+      const skipped = await db.execute(sql`
+        SELECT DISTINCT c.assessor_id, c.assessor_team
+        FROM cases c
+        JOIN users u ON u.company = c.assessor_id AND u.name = c.assessor_team
+        GROUP BY c.assessor_id, c.assessor_team
+        HAVING COUNT(DISTINCT u.id) > 1
+      `);
+
+      res.json({
+        success: true,
+        updatedCount: (result as any).rowCount ?? (Array.isArray((result as any).rows) ? (result as any).rows.length : 0),
+        sample: ((result as any).rows || []).slice(0, 20),
+        skippedDueToDuplicates: (skipped as any).rows || [],
+      });
+    } catch (error) {
+      console.error("[sync-assessor-contacts] error:", error);
+      res.status(500).json({ error: (error as Error).message });
     }
   });
 
