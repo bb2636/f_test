@@ -3696,8 +3696,8 @@ export default function FieldReport() {
                         {caseData.accidentCategory || "-"}
                       </div>
                     </div>
-                    {/* [2026-05-13] 사고원인 — 다른 항목과 동일하게 라벨 좌측 + 값 우측 한 줄 배치 */}
-                    <div className="flex items-center">
+                    {/* [2026-05-13] 사고원인 — 라벨은 값 박스 첫 줄과 상단 정렬(items-start + 라벨 padding-top 8px로 박스 padding과 맞춤). 여러 줄 텍스트여도 위에 다른 항목들과 동일한 간격 유지. */}
+                    <div className="flex items-start">
                       <span
                         className="w-24 shrink-0"
                         style={{
@@ -3705,6 +3705,7 @@ export default function FieldReport() {
                           fontSize: "13px",
                           fontWeight: 500,
                           color: "rgba(12, 12, 12, 0.6)",
+                          paddingTop: "8px",
                         }}
                       >
                         사고원인
