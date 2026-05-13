@@ -102,6 +102,7 @@ const PROPERTY_DAMAGE_SAMPLE_TEMPLATES: SampleTemplate[] = [
       { category: "주방(복도)", location: "바닥", workType: "가설공사", workName: "건축물보양" },
       { category: "침실1", location: "천장", workType: "목공사", workName: "반자틀" },
       { category: "침실1", location: "천장", workType: "목공사", workName: "석고보드" },
+      { category: "침실1", location: "천장", workType: "수장공사", workName: "도배" },
       { category: "침실1", location: "벽면", workType: "수장공사", workName: "도배" },
       { category: "침실1", location: "바닥", workType: "가설공사", workName: "건축물보양" },
     ],
@@ -111,6 +112,7 @@ const PROPERTY_DAMAGE_SAMPLE_TEMPLATES: SampleTemplate[] = [
     label: "주방 및 거실(대물)",
     rows: [
       { category: "거실", location: "천장", workType: "목공사", workName: "반자틀" },
+      { category: "거실", location: "천장", workType: "목공사", workName: "석고보드" },
       { category: "거실", location: "천장", workType: "수장공사", workName: "도배" },
       { category: "거실", location: "벽면", workType: "수장공사", workName: "도배" },
       { category: "거실", location: "바닥", workType: "가설공사", workName: "건축물보양" },
