@@ -7622,6 +7622,7 @@ export default function FieldEstimate() {
                   작성자 정보
                 </h3>
 
+                {/* [2026-05-13] 작성자 정보: 값 박스에 테두리 추가 (이미지2 기본정보 스타일과 통일) */}
                 {/* 담당자 */}
                 <div
                   style={{
@@ -7649,6 +7650,7 @@ export default function FieldEstimate() {
                       flex: 1,
                       padding: "12px 16px",
                       background: "white",
+                      border: "1px solid rgba(12, 12, 12, 0.1)",
                       borderRadius: "8px",
                       fontFamily: "Pretendard",
                       fontWeight: 400,
@@ -7689,6 +7691,7 @@ export default function FieldEstimate() {
                       flex: 1,
                       padding: "12px 16px",
                       background: "white",
+                      border: "1px solid rgba(12, 12, 12, 0.1)",
                       borderRadius: "8px",
                       fontFamily: "Pretendard",
                       fontWeight: 400,
@@ -7728,6 +7731,7 @@ export default function FieldEstimate() {
                       flex: 1,
                       padding: "12px 16px",
                       background: "white",
+                      border: "1px solid rgba(12, 12, 12, 0.1)",
                       borderRadius: "8px",
                       fontFamily: "Pretendard",
                       fontWeight: 400,
@@ -7789,34 +7793,41 @@ export default function FieldEstimate() {
                   </button>
                 </div>
                 
+                {/* [2026-05-13] 고객 정보 — 작성자 정보와 동일한 가로 정렬(라벨 좌측, 값 우측) + 값 박스 테두리 추가로 통일 */}
                 {/* 접수번호 */}
-                <div style={{ marginBottom: "12px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "12px",
+                  }}
+                >
                   <label
                     style={{
                       fontFamily: "Pretendard",
-                      fontWeight: 500,
+                      fontWeight: 400,
                       fontSize: "14px",
                       lineHeight: "128%",
                       letterSpacing: "-0.01em",
-                      color: "#686A6E",
-                      display: "block",
-                      marginBottom: "8px",
+                      color: "rgba(12, 12, 12, 0.6)",
+                      width: "100px",
+                      flexShrink: 0,
                     }}
                   >
                     접수번호
                   </label>
                   <div
                     style={{
-                      width: "100%",
-                      padding: "10px 20px",
+                      flex: 1,
+                      padding: "12px 16px",
                       background: "white",
+                      border: "1px solid rgba(12, 12, 12, 0.1)",
                       borderRadius: "8px",
-                      border: "none",
                       fontFamily: "Pretendard",
                       fontWeight: 600,
-                      fontSize: "16px",
+                      fontSize: "14px",
                       lineHeight: "128%",
-                      letterSpacing: "-0.02em",
+                      letterSpacing: "-0.01em",
                       color: "#0C0C0C",
                     }}
                     data-testid="text-case-number"
@@ -7826,33 +7837,39 @@ export default function FieldEstimate() {
                 </div>
 
                 {/* 피보험자명 */}
-                <div style={{ marginBottom: "12px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "12px",
+                  }}
+                >
                   <label
                     style={{
                       fontFamily: "Pretendard",
-                      fontWeight: 500,
+                      fontWeight: 400,
                       fontSize: "14px",
                       lineHeight: "128%",
                       letterSpacing: "-0.01em",
-                      color: "#686A6E",
-                      display: "block",
-                      marginBottom: "8px",
+                      color: "rgba(12, 12, 12, 0.6)",
+                      width: "100px",
+                      flexShrink: 0,
                     }}
                   >
                     피보험자명
                   </label>
                   <div
                     style={{
-                      width: "100%",
-                      padding: "10px 20px",
+                      flex: 1,
+                      padding: "12px 16px",
                       background: "white",
+                      border: "1px solid rgba(12, 12, 12, 0.1)",
                       borderRadius: "8px",
-                      border: "none",
                       fontFamily: "Pretendard",
                       fontWeight: 600,
-                      fontSize: "16px",
+                      fontSize: "14px",
                       lineHeight: "128%",
-                      letterSpacing: "-0.02em",
+                      letterSpacing: "-0.01em",
                       color: "#0C0C0C",
                     }}
                     data-testid="text-insured-name"
@@ -7862,33 +7879,38 @@ export default function FieldEstimate() {
                 </div>
 
                 {/* 주소 */}
-                <div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
                   <label
                     style={{
                       fontFamily: "Pretendard",
-                      fontWeight: 500,
+                      fontWeight: 400,
                       fontSize: "14px",
                       lineHeight: "128%",
                       letterSpacing: "-0.01em",
-                      color: "#686A6E",
-                      display: "block",
-                      marginBottom: "8px",
+                      color: "rgba(12, 12, 12, 0.6)",
+                      width: "100px",
+                      flexShrink: 0,
                     }}
                   >
                     주소
                   </label>
                   <div
                     style={{
-                      width: "100%",
-                      padding: "10px 20px",
+                      flex: 1,
+                      padding: "12px 16px",
                       background: "white",
+                      border: "1px solid rgba(12, 12, 12, 0.1)",
                       borderRadius: "8px",
-                      border: "none",
                       fontFamily: "Pretendard",
                       fontWeight: 600,
-                      fontSize: "16px",
+                      fontSize: "14px",
                       lineHeight: "128%",
-                      letterSpacing: "-0.02em",
+                      letterSpacing: "-0.01em",
                       color: "#0C0C0C",
                     }}
                     data-testid="text-address"
