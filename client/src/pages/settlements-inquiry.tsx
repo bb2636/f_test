@@ -1433,6 +1433,9 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
       {/* Wide Table with Horizontal Scroll and Sticky Header/Columns */}
       {(() => {
         const stickyHeaders = ["보험사", "사고번호", "피보험자", "담당자(플록슨)", "심사자", "접수번호", "협력업체"];
+        // 날짜 컬럼은 고정 너비로 좁게 표시
+        const DATE_COL_WIDTH = 84;
+        const DATE_COLUMN_LABELS = new Set(["청구일", "입금일", "계산서 발행일"]);
         const scrollHeaders = ["청구일", "경과", "청구액", "자기부담금", "입금일", "입금액", "협력업체 지급액", "수수료", "계산서 발행일", ...(!isPartner && canManageSettlement ? ["관리"] : []), ...(filterMode === "closed" && !isPartner && canViewReport ? ["보고서열람"] : [])];
         const allHeaders = [...stickyHeaders, ...scrollHeaders];
         const stickyColWidths = [100, 130, 90, 110, 90, 150, 110];
@@ -1474,6 +1477,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                 {allHeaders.map((label, idx) => {
                   const isStickyCol = idx < stickyHeaders.length;
                   const isLast = idx === allHeaders.length - 1;
+                  const isDateCol = DATE_COLUMN_LABELS.has(label);
                   return (
                     <th
                       key={label}
@@ -1486,6 +1490,11 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                           minWidth: stickyColWidths[idx],
                           width: stickyColWidths[idx],
                           boxShadow: idx === stickyHeaders.length - 1 ? "2px 0 4px rgba(0,0,0,0.06)" : undefined,
+                        } : {}),
+                        ...(isDateCol ? {
+                          minWidth: DATE_COL_WIDTH,
+                          width: DATE_COL_WIDTH,
+                          padding: "8px 8px",
                         } : {}),
                         borderRight: isLast ? "none" : "1px solid rgba(12, 12, 12, 0.08)",
                       }}
@@ -1533,14 +1542,24 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
               ) : (
                 pagedRows.map((row, index) => {
                   const rowBg = index % 2 === 0 ? "rgba(255, 255, 255, 1)" : "rgba(248, 248, 248, 1)";
+                  // 접수번호가 2개 이상인 경우 행 높이를 늘리기 위한 패딩 증가
+                  const caseCount = row.caseNumber ? row.caseNumber.split(", ").length : 0;
+                  const isMultiCase = caseCount >= 2;
+                  const verticalPadding = isMultiCase ? "12px" : "2px";
                   const cellStyle: React.CSSProperties = {
-                    padding: "2px 16px",
+                    padding: `${verticalPadding} 16px`,
                     fontFamily: "Pretendard",
                     fontSize: "14px",
                     lineHeight: "115%",
                     color: "rgba(12, 12, 12, 0.8)",
                     borderRight: "1px solid rgba(12, 12, 12, 0.05)",
                     textAlign: "center",
+                  };
+                  const dateCellStyle: React.CSSProperties = {
+                    ...cellStyle,
+                    padding: `${verticalPadding} 8px`,
+                    width: DATE_COL_WIDTH,
+                    minWidth: DATE_COL_WIDTH,
                   };
                   const stickyCellStyle = (colIdx: number): React.CSSProperties => ({
                     ...cellStyle,
@@ -1587,15 +1606,15 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                         </div>
                       </td>
                       <td style={stickyCellStyle(6)}>{row.assignedPartner}</td>
-                      <td style={cellStyle}>{row.claimDate}</td>
+                      <td style={dateCellStyle}>{row.claimDate}</td>
                       <td style={cellStyle}>{row.claimElapsed}</td>
                       <td style={amountStyle}>{renderAmount(row.claimAmount)}</td>
                       <td style={amountStyle}>{renderAmount(row.settlementDeductible)}</td>
-                      <td style={cellStyle}>{row.settlementDate}</td>
+                      <td style={dateCellStyle}>{row.settlementDate}</td>
                       <td style={amountStyle}>{renderAmount(row.settlementDeposit)}</td>
                       <td style={amountStyle}>{renderAmount(row.partnerPaymentAmount)}</td>
                       <td style={amountStyle}>{renderAmount(row.settlementCommission)}</td>
-                      <td style={{ ...cellStyle, borderRight: (isPartner || (!canManageSettlement && !(filterMode === "closed" && canViewReport))) ? "none" : cellStyle.borderRight }}>{row.settlementInvoiceDate}</td>
+                      <td style={{ ...dateCellStyle, borderRight: (isPartner || (!canManageSettlement && !(filterMode === "closed" && canViewReport))) ? "none" : cellStyle.borderRight }}>{row.settlementInvoiceDate}</td>
                       {!isPartner && canManageSettlement && (
                         <td style={{ ...cellStyle, borderRight: filterMode === "closed" ? "1px solid rgba(12, 12, 12, 0.08)" : "none" }}>
                           <button
