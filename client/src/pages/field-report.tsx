@@ -3511,7 +3511,8 @@ export default function FieldReport() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-2.5">
-                    <div className="flex items-start">
+                    {/* [2026-05-13] 각 값 박스에 테두리 추가 — 견적서 탭의 작성자/고객 정보와 동일 스타일로 통일 */}
+                    <div className="flex items-center">
                       <span
                         className="w-24 shrink-0"
                         style={{
@@ -3525,6 +3526,11 @@ export default function FieldReport() {
                       </span>
                       <span
                         style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          background: "white",
+                          border: "1px solid rgba(12, 12, 12, 0.1)",
+                          borderRadius: "6px",
                           fontFamily: "Pretendard",
                           fontSize: "13px",
                           color: "#0C0C0C",
@@ -3535,7 +3541,7 @@ export default function FieldReport() {
                           : caseData.visitDate || "-"}
                       </span>
                     </div>
-                    <div className="flex items-start">
+                    <div className="flex items-center">
                       <span
                         className="w-24 shrink-0"
                         style={{
@@ -3549,6 +3555,11 @@ export default function FieldReport() {
                       </span>
                       <span
                         style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          background: "white",
+                          border: "1px solid rgba(12, 12, 12, 0.1)",
+                          borderRadius: "6px",
                           fontFamily: "Pretendard",
                           fontSize: "13px",
                           color: "#0C0C0C",
@@ -3557,7 +3568,7 @@ export default function FieldReport() {
                         {caseData.assignedPartnerManager || "-"}
                       </span>
                     </div>
-                    <div className="flex items-start">
+                    <div className="flex items-center">
                       <span
                         className="w-24 shrink-0"
                         style={{
@@ -3571,6 +3582,11 @@ export default function FieldReport() {
                       </span>
                       <span
                         style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          background: "white",
+                          border: "1px solid rgba(12, 12, 12, 0.1)",
+                          borderRadius: "6px",
                           fontFamily: "Pretendard",
                           fontSize: "13px",
                           color: "#0C0C0C",
@@ -3579,7 +3595,7 @@ export default function FieldReport() {
                         {caseData.assignedPartner || "-"}
                       </span>
                     </div>
-                    <div className="flex items-start">
+                    <div className="flex items-center">
                       <span
                         className="w-24 shrink-0"
                         style={{
@@ -3593,6 +3609,11 @@ export default function FieldReport() {
                       </span>
                       <span
                         style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          background: "white",
+                          border: "1px solid rgba(12, 12, 12, 0.1)",
+                          borderRadius: "6px",
                           fontFamily: "Pretendard",
                           fontSize: "13px",
                           color: "#0C0C0C",
@@ -3624,7 +3645,7 @@ export default function FieldReport() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-2.5">
-                    <div className="flex items-start">
+                    <div className="flex items-center">
                       <span
                         className="w-24 shrink-0"
                         style={{
@@ -3638,6 +3659,11 @@ export default function FieldReport() {
                       </span>
                       <span
                         style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          background: "white",
+                          border: "1px solid rgba(12, 12, 12, 0.1)",
+                          borderRadius: "6px",
                           fontFamily: "Pretendard",
                           fontSize: "13px",
                           color: "#0C0C0C",
@@ -3715,10 +3741,12 @@ export default function FieldReport() {
                   </CardHeader>
                   <CardContent>
                     <div
-                      className="p-4 rounded"
                       style={{
+                        padding: "8px 12px",
+                        border: "1px solid rgba(12, 12, 12, 0.1)",
+                        borderRadius: "6px",
                         fontFamily: "Pretendard",
-                        fontSize: "14px",
+                        fontSize: "13px",
                         color: "#0C0C0C",
                         background: "white",
                         whiteSpace: "pre-wrap",
