@@ -42,6 +42,7 @@ const CLOSED_STATUSES = [
   "부분입금",
   "접수취소",
 ];
+// 취소대기는 종합진행관리에만 표시되며 통계에는 포함되지 않음
 
 // 직접복구 관련 상태 확인
 const isDirectRecovery = (caseItem: Case): boolean => {

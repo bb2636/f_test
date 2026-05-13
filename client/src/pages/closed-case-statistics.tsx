@@ -12,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const CLOSED_STATUSES = ["접수취소", "종결"];
+// 취소대기는 종합진행관리에만 표시되며 종결 통계에는 포함되지 않음
 
 const isClosed = (c: Case): boolean => CLOSED_STATUSES.includes(c.status);
 
@@ -128,7 +129,7 @@ const STATUS_ORDER = [
 ];
 
 const getActiveCases = (groupCases: Case[]): Case[] => {
-  return groupCases.filter(c => c.status !== "접수취소");
+  return groupCases.filter(c => c.status !== "접수취소" && c.status !== "취소대기");
 };
 
 const getGroupRestorationMethod = (groupCases: Case[]): string => {
@@ -212,7 +213,7 @@ const getClaimAmount = (c: Case): number => {
 };
 
 const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
-  return groupCases.filter(c => c.status !== "접수취소" && !isPreEstimate(c));
+  return groupCases.filter(c => c.status !== "접수취소" && c.status !== "취소대기" && !isPreEstimate(c));
 };
 
 const getPreEstimateClaimFallback = (c: Case, settMap?: Record<string, Settlement>): number => {

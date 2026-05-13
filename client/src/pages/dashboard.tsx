@@ -290,7 +290,7 @@ export default function Dashboard() {
             c.status !== "부분지급" &&
             c.status !== "지급완료" &&
             c.status !== "정산완료" &&
-            c.status !== "접수취소" &&
+            c.status !== "접수취소" && c.status !== "취소대기" &&
             c.status !== "종결" &&
             c.status !== "취소",
         );
@@ -405,7 +405,7 @@ export default function Dashboard() {
         c.status !== "부분지급" &&
         c.status !== "지급완료" &&
         c.status !== "정산완료" &&
-        c.status !== "접수취소" &&
+        c.status !== "접수취소" && c.status !== "취소대기" &&
         c.status !== "종결" &&
         c.status !== "취소";
       const isInsuranceUnsettled =

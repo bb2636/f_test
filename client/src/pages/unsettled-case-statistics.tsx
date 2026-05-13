@@ -11,7 +11,7 @@ import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-const CLOSED_STATUSES = ["접수취소", "종결"];
+const CLOSED_STATUSES = ["접수취소", "취소대기", "종결"];
 
 const isUnsettled = (c: Case): boolean => !CLOSED_STATUSES.includes(c.status);
 
@@ -121,7 +121,7 @@ const STATUS_ORDER = [
 ];
 
 const getActiveCases = (groupCases: Case[]): Case[] => {
-  return groupCases.filter(c => c.status !== "접수취소");
+  return groupCases.filter(c => c.status !== "접수취소" && c.status !== "취소대기");
 };
 
 const getGroupRestorationMethod = (groupCases: Case[]): string => {
@@ -212,7 +212,7 @@ const getClaimAmount = (c: Case): number => {
 };
 
 const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
-  return groupCases.filter(c => c.status !== "접수취소" && !isPreEstimate(c));
+  return groupCases.filter(c => c.status !== "접수취소" && c.status !== "취소대기" && !isPreEstimate(c));
 };
 
 const getPreEstimateClaimFallback = (c: Case, settMap?: Record<string, Settlement>): number => {

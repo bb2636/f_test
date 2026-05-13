@@ -228,6 +228,7 @@ const CASE_STATUSES = [
   "지급완료",
   "정산완료",
   "종결",
+  "취소대기",
   "접수취소",
 ] as const;
 
@@ -331,7 +332,7 @@ export default function ComprehensiveProgress() {
     });
 
     // 접수취소 건은 종결된 건으로 간주하여 제외
-    const activeCases = relatedCases.filter((c) => c.status !== "접수취소");
+    const activeCases = relatedCases.filter((c) => c.status !== "접수취소" && c.status !== "취소대기");
 
     // 활성 케이스가 없으면 버튼 숨김
     if (activeCases.length === 0) return false;
@@ -1249,6 +1250,14 @@ export default function ComprehensiveProgress() {
     if (targetStatus === "접수취소") {
       const targetCase = cases?.find((c) => c.id === caseId);
       if (targetCase) {
+        // 사고번호 또는 담당자가 인입되지 않은 경우 → 취소대기로 자동 전환 (이메일 미발송)
+        const hasInsuranceAccidentNo = !!(targetCase.insuranceAccidentNo && String(targetCase.insuranceAccidentNo).trim());
+        const hasManager = !!(targetCase.managerId && String(targetCase.managerId).trim());
+        if (!hasInsuranceAccidentNo || !hasManager) {
+          setStatusChangeTarget({ caseId, status: "취소대기" });
+          setStatusChangeDialogOpen(true);
+          return;
+        }
         setCancelTargetCase(targetCase);
         setCancelConfirmDialogOpen(true);
       }
@@ -2380,6 +2389,7 @@ export default function ComprehensiveProgress() {
                                   "선견적요청",
                                   "청구",
                                   "종결",
+                                  "취소대기",
                                   "접수취소",
                                 ] as const)
                             ).map((status) => (
@@ -5104,9 +5114,9 @@ export default function ComprehensiveProgress() {
             ? cases?.filter(
                 (c) =>
                   getCaseNumberPrefix(c.caseNumber) === invoiceCasePrefix &&
-                  c.status !== "접수취소",
+                  c.status !== "접수취소" && c.status !== "취소대기",
               ) || []
-            : invoiceCase && invoiceCase.status !== "접수취소"
+            : invoiceCase && invoiceCase.status !== "접수취소" && invoiceCase.status !== "취소대기"
               ? [invoiceCase]
               : [];
         })()}
@@ -5125,9 +5135,9 @@ export default function ComprehensiveProgress() {
             ? cases?.filter(
                 (c) =>
                   getCaseNumberPrefix(c.caseNumber) === invoiceCasePrefix &&
-                  c.status !== "접수취소",
+                  c.status !== "접수취소" && c.status !== "취소대기",
               ) || []
-            : invoiceCase && invoiceCase.status !== "접수취소"
+            : invoiceCase && invoiceCase.status !== "접수취소" && invoiceCase.status !== "취소대기"
               ? [invoiceCase]
               : [];
         })()}

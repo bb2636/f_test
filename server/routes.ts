@@ -3184,6 +3184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "지급완료",
         "정산완료",
         "종결",
+        "취소대기",
         "접수취소",
       ];
 
@@ -3222,7 +3223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const allCases = await storage.getAllCases();
           const siblingCases = allCases.filter(
-            (c) => c.id !== caseId && c.insuranceAccidentNo === updatedCase.insuranceAccidentNo && c.status !== "접수취소"
+            (c) => c.id !== caseId && c.insuranceAccidentNo === updatedCase.insuranceAccidentNo && c.status !== "접수취소" && c.status !== "취소대기"
           );
           // 날짜 동기화 필드 결정
           const dateSyncData: Record<string, string> = {};
@@ -7817,10 +7818,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // 접수건: 활성 케이스 중 접수취소 제외
       const receivedCases = activeCases.filter(
-        (c) => c.status !== "접수취소",
+        (c) => c.status !== "접수취소" && c.status !== "취소대기",
       ).length;
       const lastMonthReceivedCases = activeLastMonthCases.filter(
-        (c) => c.status !== "접수취소",
+        (c) => c.status !== "접수취소" && c.status !== "취소대기",
       ).length;
 
       // 미결건: 정산/종결/취소 완료 상태가 아닌 건
@@ -9326,7 +9327,7 @@ FLOXN 드림`;
         const relatedCase = allRelatedCases[i];
         const caseSuffix = getCaseSuffixNum(relatedCase.caseNumber || "");
 
-        if (relatedCase.status === "접수취소") {
+        if (relatedCase.status === "접수취소" || relatedCase.status === "취소대기") {
           continue;
         }
 
@@ -9543,7 +9544,7 @@ FLOXN 드림`;
         const caseSuffix = getCaseSuffix(relatedCase.caseNumber || "");
 
         // 접수취소 건은 종결된 건으로 인보이스에서 제외
-        if (relatedCase.status === "접수취소") {
+        if (relatedCase.status === "접수취소" || relatedCase.status === "취소대기") {
           console.log(
             `[Invoice PDF] Skipping 접수취소 case: ${relatedCase.caseNumber}`,
           );
@@ -9761,7 +9762,7 @@ FLOXN 드림`;
 
           // 접수취소 건 제외
           const activeCases = relatedCases.filter(
-            (c: any) => c.status !== "접수취소",
+            (c: any) => c.status !== "접수취소" && c.status !== "취소대기",
           );
 
           // Fetch documents from all related cases and build mapping
@@ -10567,7 +10568,7 @@ FLOXN 드림`;
         const caseSuffix = getCaseSuffix(relatedCase.caseNumber || "");
 
         // 접수취소 건은 종결된 건으로 인보이스에서 제외
-        if (relatedCase.status === "접수취소") {
+        if (relatedCase.status === "접수취소" || relatedCase.status === "취소대기") {
           console.log(
             `[send-invoice-email-v2] Skipping 접수취소 case: ${relatedCase.caseNumber}`,
           );
@@ -10768,7 +10769,7 @@ FLOXN 드림`;
 
           // 접수취소 건 제외
           const activeCases = relatedCases.filter(
-            (c: any) => c.status !== "접수취소",
+            (c: any) => c.status !== "접수취소" && c.status !== "취소대기",
           );
 
           // Fetch documents from all related cases and build mapping
@@ -11444,7 +11445,7 @@ FLOXN 드림`;
       // 동일 사고번호의 모든 접수번호 수집 (접수취소 건 제외)
       const allCaseNumbers =
         allCases
-          .filter((c) => c.status !== "접수취소")
+          .filter((c) => c.status !== "접수취소" && c.status !== "취소대기")
           .map((c) => c.caseNumber)
           .filter(Boolean)
           .join(", ") || "-";
@@ -13136,7 +13137,7 @@ FLOXN 드림`;
         const prefix = caseNumber.replace(/-\d+$/, "");
         const relatedCases = await storage.getCasesByPrefix(prefix);
         const filteredCases = relatedCases.filter(
-          (c: any) => c.status !== "접수취소",
+          (c: any) => c.status !== "접수취소" && c.status !== "취소대기",
         );
         const allCasesInGroup =
           filteredCases.length > 0 ? filteredCases : [caseData];
@@ -13265,7 +13266,7 @@ FLOXN 드림`;
           const prefix = caseNumber.replace(/-\d+$/, "");
           const relatedCasesForDeposit = await storage.getCasesByPrefix(prefix);
           const filteredForDeposit = relatedCasesForDeposit.filter(
-            (c: any) => c.status !== "접수취소",
+            (c: any) => c.status !== "접수취소" && c.status !== "취소대기",
           );
           const groupCases = filteredForDeposit.length > 0 ? filteredForDeposit : [caseData];
 

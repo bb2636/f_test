@@ -286,7 +286,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
     // 같은 사고번호의 모든 케이스들 찾기 (row.caseIds 사용) - 접수취소 건 제외
     const relatedCases = row.caseIds
       .map((caseId) => cases.find((c) => c.id === caseId))
-      .filter((c): c is CaseWithLatestProgress => c !== undefined && c.status !== "접수취소");
+      .filter((c): c is CaseWithLatestProgress => c !== undefined && c.status !== "접수취소" && c.status !== "취소대기");
 
     // 직접복구 건이 있으면 해당 케이스를 선택, 없으면 첫 번째 케이스
     const directRepairCase = relatedCases.find(
@@ -2082,9 +2082,9 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
           );
           return invoiceCasePrefix
             ? cases?.filter(
-                (c) => getCaseNumberPrefix(c.caseNumber) === invoiceCasePrefix && c.status !== "접수취소",
+                (c) => getCaseNumberPrefix(c.caseNumber) === invoiceCasePrefix && c.status !== "접수취소" && c.status !== "취소대기",
               ) || []
-            : invoiceCase && invoiceCase.status !== "접수취소"
+            : invoiceCase && invoiceCase.status !== "접수취소" && invoiceCase.status !== "취소대기"
               ? [invoiceCase]
               : [];
         })()}
@@ -2101,9 +2101,9 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
           );
           return invoiceCasePrefix
             ? cases?.filter(
-                (c) => getCaseNumberPrefix(c.caseNumber) === invoiceCasePrefix && c.status !== "접수취소",
+                (c) => getCaseNumberPrefix(c.caseNumber) === invoiceCasePrefix && c.status !== "접수취소" && c.status !== "취소대기",
               ) || []
-            : invoiceCase && invoiceCase.status !== "접수취소"
+            : invoiceCase && invoiceCase.status !== "접수취소" && invoiceCase.status !== "취소대기"
               ? [invoiceCase]
               : [];
         })()}

@@ -16,6 +16,7 @@ export const STATUS_COLORS = {
   primary: "#008FED",        // 1차승인
   success: "#00C853",        // 복구요청(2차승인)
   danger: "#ED1C00",         // 접수취소 / 반려
+  warning: "#F59E0B",        // 취소대기
   completed: "#4CAF50",      // 입금완료/부분지급/지급완료/정산완료/종결
   default: "rgba(12, 12, 12, 0.7)",
 } as const;
@@ -32,6 +33,7 @@ export function getStatusColor(status: string | null | undefined): string {
   if (status === "1차승인") return STATUS_COLORS.primary;
   if (status === "복구요청(2차승인)") return STATUS_COLORS.success;
   if (status === "접수취소" || status === "반려") return STATUS_COLORS.danger;
+  if (status === "취소대기") return STATUS_COLORS.warning;
   if (status && COMPLETED_STATUSES.has(status)) return STATUS_COLORS.completed;
   return STATUS_COLORS.default;
 }
