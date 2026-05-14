@@ -3458,6 +3458,7 @@ export default function ComprehensiveProgress() {
                             {
                               label: "현장방문일",
                               value: selectedCase?.visitDate,
+                              isVisitDateMulti: true,
                             },
                             {
                               label: "출동보고서 제출일",
@@ -3538,12 +3539,50 @@ export default function ComprehensiveProgress() {
                               label: "지급완료일(정산)",
                               value: selectedCase?.settlementCompletedDate,
                             },
-                          ].map((item) => (
+                          ].map((item) => {
+                            // 현장방문일: 같은 사고번호(prefix) 그룹의 모든 접수번호별 세대 리스트로 표기
+                            const isMultiVisit = (item as any).isVisitDateMulti;
+                            let visitGroup: Array<{
+                              caseId: string;
+                              suffix: string;
+                              label: string;
+                              name: string;
+                              date?: string | null;
+                            }> = [];
+                            if (isMultiVisit && selectedCase) {
+                              const prefix = getCaseNumberPrefix(selectedCase.caseNumber);
+                              const groupCases = (cases || [])
+                                .filter((c) => getCaseNumberPrefix(c.caseNumber) === prefix)
+                                .filter((c) => c.status !== "접수취소" && c.status !== "취소대기");
+                              visitGroup = groupCases
+                                .map((c) => {
+                                  const cn = c.caseNumber || "";
+                                  const sfx = cn.includes("-") ? (cn.split("-").pop() || "") : "";
+                                  const isVictim = sfx !== "" && sfx !== "0";
+                                  // 원인세대(-0): 피보험자명, 피해세대(-1+): 피해자명
+                                  const name = isVictim
+                                    ? (c.victimName || "(이름없음)")
+                                    : (c.insuredName || c.victimName || "(이름없음)");
+                                  return {
+                                    caseId: c.id,
+                                    suffix: sfx,
+                                    label: isVictim ? "피해세대" : "원인세대",
+                                    name,
+                                    date: c.visitDate,
+                                  };
+                                })
+                                .sort((a, b) => {
+                                  const na = parseInt(a.suffix || "0", 10);
+                                  const nb = parseInt(b.suffix || "0", 10);
+                                  return (Number.isFinite(na) ? na : 0) - (Number.isFinite(nb) ? nb : 0);
+                                });
+                            }
+                            return (
                             <div
                               key={item.label}
                               style={{
                                 display: "flex",
-                                alignItems: "center",
+                                alignItems: isMultiVisit && visitGroup.length > 1 ? "flex-start" : "center",
                                 paddingBottom: "12px",
                                 borderBottom:
                                   "1px solid rgba(12, 12, 12, 0.05)",
@@ -3557,23 +3596,47 @@ export default function ComprehensiveProgress() {
                                   fontWeight: 400,
                                   letterSpacing: "-0.02em",
                                   color: "rgba(12, 12, 12, 0.5)",
+                                  flexShrink: 0,
                                 }}
                               >
                                 {item.label}
                               </span>
-                              <span
-                                style={{
-                                  fontFamily: "Pretendard",
-                                  fontSize: "16px",
-                                  fontWeight: 400,
-                                  letterSpacing: "-0.02em",
-                                  color: "rgba(12, 12, 12, 0.7)",
-                                }}
-                              >
-                                {formatDate(item.value)}
-                              </span>
+                              {isMultiVisit && visitGroup.length >= 1 ? (
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "4px",
+                                    fontFamily: "Pretendard",
+                                    fontSize: "16px",
+                                    fontWeight: 400,
+                                    letterSpacing: "-0.02em",
+                                    color: "rgba(12, 12, 12, 0.7)",
+                                  }}
+                                  data-testid="visit-date-multi-list"
+                                >
+                                  {visitGroup.map((v) => (
+                                    <div key={v.caseId}>
+                                      {v.label} · {v.name} · {v.date ? formatDate(v.date) : "미방문"}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span
+                                  style={{
+                                    fontFamily: "Pretendard",
+                                    fontSize: "16px",
+                                    fontWeight: 400,
+                                    letterSpacing: "-0.02em",
+                                    color: "rgba(12, 12, 12, 0.7)",
+                                  }}
+                                >
+                                  {formatDate(item.value)}
+                                </span>
+                              )}
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
 

@@ -111,8 +111,25 @@ export default function FieldDrawing() {
   });
 
   // 현장입력에서 선택한 케이스 ID 가져오기 (문자열 "null" 방지)
-  const rawCaseId = localStorage.getItem('selectedFieldSurveyCaseId');
-  const selectedCaseId = (rawCaseId && rawCaseId !== 'null' && rawCaseId !== 'undefined') ? rawCaseId : '';
+  const [selectedCaseId, setSelectedCaseId] = useState<string>(() => {
+    const rawCaseId = localStorage.getItem('selectedFieldSurveyCaseId');
+    return (rawCaseId && rawCaseId !== 'null' && rawCaseId !== 'undefined') ? rawCaseId : '';
+  });
+
+  // 접수번호 탭/타 페이지에서 케이스 변경 시 동기화 (storage 이벤트 + 폴링)
+  useEffect(() => {
+    const sync = () => {
+      const raw = localStorage.getItem('selectedFieldSurveyCaseId');
+      const next = (raw && raw !== 'null' && raw !== 'undefined') ? raw : '';
+      setSelectedCaseId(prev => (prev !== next ? next : prev));
+    };
+    window.addEventListener('storage', sync);
+    const id = setInterval(sync, 500);
+    return () => {
+      window.removeEventListener('storage', sync);
+      clearInterval(id);
+    };
+  }, []);
 
   // 선택된 케이스 데이터 가져오기
   const { data: selectedCase, isLoading: isLoadingSelectedCase } = useQuery<Case>({

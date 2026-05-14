@@ -28,7 +28,22 @@ export default function FieldManagement() {
     const rawCaseId = localStorage.getItem('selectedFieldSurveyCaseId');
     return (rawCaseId && rawCaseId !== 'null' && rawCaseId !== 'undefined') ? rawCaseId : "";
   });
-  
+
+  // 접수번호 탭/타 페이지에서 케이스 변경 시 동기화 (storage 이벤트 + 폴링)
+  useEffect(() => {
+    const sync = () => {
+      const raw = localStorage.getItem('selectedFieldSurveyCaseId');
+      const next = (raw && raw !== 'null' && raw !== 'undefined') ? raw : '';
+      setSelectedCase(prev => (prev !== next ? next : prev));
+    };
+    window.addEventListener('storage', sync);
+    const id = setInterval(sync, 500);
+    return () => {
+      window.removeEventListener('storage', sync);
+      clearInterval(id);
+    };
+  }, []);
+
   const [accidentDate, setAccidentDate] = useState<Date | undefined>(undefined);
   const [accidentTime, setAccidentTime] = useState("");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -1236,17 +1251,27 @@ export default function FieldManagement() {
                   </div>
                 </div>
 
+                {(() => {
+                  // 피해세대(-1, -2 ...) 케이스에서는 라벨/플레이스홀더만 "피해현황"으로 표시.
+                  // DB 컬럼은 그대로 accidentCause 유지 (값/로직 무변경).
+                  const cn = selectedCaseData?.caseNumber || "";
+                  const suffix = cn.includes("-") ? cn.split("-").pop() : "";
+                  const isVictimCase = suffix !== "" && suffix !== "0";
+                  const causeLabel = isVictimCase ? "피해현황" : "사고원인";
+                  return (
                 <div className="flex items-start gap-4">
-                  <div className="mt-2 w-[120px] text-[12px] text-[#6B7280]">사고원인</div>
+                  <div className="mt-2 w-[120px] text-[12px] text-[#6B7280]">{causeLabel}</div>
                   <textarea
                     className="min-h-[70px] w-full rounded-md border border-[#E5E7EB] p-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
-                    placeholder="사고원인"
+                    placeholder={causeLabel}
                     value={accidentCause}
                     onChange={(e) => { handleUserInput(); setAccidentCause(e.target.value); }}
                     disabled={isReadOnly}
                     data-testid="textarea-accident-cause"
                   />
                 </div>
+                  );
+                })()}
 
                 <div className="flex items-center gap-4">
                   <div className="w-[120px] text-[12px] text-[#6B7280]">처리유형</div>

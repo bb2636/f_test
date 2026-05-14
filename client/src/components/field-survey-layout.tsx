@@ -1,5 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { AppSidebarFieldSurvey } from "@/components/app-sidebar-field-survey";
+import { CaseReceiptTabs } from "@/components/case-receipt-tabs";
 
 interface FieldSurveyLayoutProps {
   children: ReactNode;
@@ -45,6 +46,7 @@ export function FieldSurveyLayout({ children }: FieldSurveyLayoutProps) {
       <div className="relative flex h-full">
         <AppSidebarFieldSurvey />
         <main className="flex-1 flex flex-col overflow-y-auto min-h-0">
+          <CaseReceiptTabs />
           {children}
         </main>
       </div>
