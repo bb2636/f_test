@@ -101,6 +101,9 @@ export function SmsNotificationDialog({
   );
   const [additionalMessage, setAdditionalMessage] = useState("");
   const [cancelReason, setCancelReason] = useState(initialCancelReason);
+  // [2026-05-14] 접수취소 사유 구조화: 라디오(처리유형) + 콤보(면책유형) + 자유 텍스트
+  const [cancelReasonRadio, setCancelReasonRadio] = useState<string>("");
+  const [cancelReasonSelect, setCancelReasonSelect] = useState<string>("");
   const [recoveryAmount, setRecoveryAmount] = useState<number | undefined>(
     initialRecoveryAmount,
   );
@@ -120,6 +123,8 @@ export function SmsNotificationDialog({
       setRecipients(STAGE_RECIPIENT_DEFAULTS[stage]);
       setAdditionalMessage("");
       setCancelReason(initialCancelReason);
+      setCancelReasonRadio("");
+      setCancelReasonSelect("");
       setRecoveryAmount(initialRecoveryAmount);
       setFeeRate(initialFeeRate);
       setPaymentAmount(initialPaymentAmount);
@@ -174,14 +179,26 @@ export function SmsNotificationDialog({
     },
   });
 
+  // [2026-05-14] 라디오/콤보/자유 텍스트를 합쳐 단일 cancelReason 문자열로 전송.
+  // 서버 템플릿(cancellation.ts)은 white-space:pre-line 이므로 줄바꿈 그대로 표시됨.
+  const buildCombinedCancelReason = () => {
+    const lines: string[] = [];
+    if (cancelReasonRadio) lines.push(`처리유형: ${cancelReasonRadio}`);
+    if (cancelReasonSelect) lines.push(`면책유형: ${cancelReasonSelect}`);
+    const trimmed = cancelReason.trim();
+    if (trimmed) lines.push(`상세: ${trimmed}`);
+    return lines.join("\n");
+  };
+
   const sendCancellationEmailMutation = useMutation({
     mutationFn: async () => {
+      const combinedReason = buildCombinedCancelReason();
       const response = await apiRequest(
         "POST",
         "/api/send-cancellation-email",
         {
           caseId: caseData.id,
-          cancelReason: cancelReason || undefined,
+          cancelReason: combinedReason || undefined,
           recipients: {
             sendToAssessor,
             sendToInvestigator,
@@ -544,8 +561,78 @@ export function SmsNotificationDialog({
                 {cancelReason.length}/800
               </span>
             </div>
+
+            {/* [2026-05-14] 처리유형 라디오 */}
+            <div
+              style={{
+                display: "flex",
+                gap: "16px",
+                marginBottom: "10px",
+                fontFamily: "Pretendard",
+                fontSize: "13px",
+                color: "#0C0C0C",
+              }}
+            >
+              {["자체수리(타업체)", "현장방문거절"].map((opt) => (
+                <label
+                  key={opt}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="cancel-reason-radio"
+                    value={opt}
+                    checked={cancelReasonRadio === opt}
+                    onChange={() =>
+                      setCancelReasonRadio(
+                        cancelReasonRadio === opt ? "" : opt,
+                      )
+                    }
+                    onClick={() => {
+                      // 같은 라디오 다시 클릭 시 선택 해제
+                      if (cancelReasonRadio === opt) setCancelReasonRadio("");
+                    }}
+                    style={{ accentColor: "#253396", cursor: "pointer" }}
+                    data-testid={`radio-cancel-${opt}`}
+                  />
+                  {opt}
+                </label>
+              ))}
+            </div>
+
+            {/* [2026-05-14] 면책유형 콤보박스 (이름: 기타) */}
+            <div style={{ marginBottom: "10px" }}>
+              <select
+                value={cancelReasonSelect}
+                onChange={(e) => setCancelReasonSelect(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  fontFamily: "Pretendard",
+                  fontSize: "13px",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "6px",
+                  background: "#FFFFFF",
+                  color: cancelReasonSelect ? "#0C0C0C" : "#999999",
+                  cursor: "pointer",
+                }}
+                data-testid="select-cancel-reason"
+              >
+                <option value="">기타</option>
+                <option value="소액청구포기">소액청구포기</option>
+                <option value="약관상면책">약관상면책</option>
+                <option value="위장사고면책">위장사고면책</option>
+                <option value="기타">기타</option>
+              </select>
+            </div>
+
             <Textarea
-              placeholder="원인세대/피해세대 구분하고 추가사항을 입력해 주세요."
+              placeholder="원인세대/피해세대를 구분하고 추가사항을 입력해 주세요."
               value={cancelReason}
               onChange={(e) => {
                 if (e.target.value.length <= 800) {
