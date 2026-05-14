@@ -10053,64 +10053,6 @@ FLOXN 드림`;
           }[] = [];
 
           // 테이블 형태 헤더 그리기 헬퍼 함수 (현장출동보고서 스타일)
-          // 헤더 텍스트 wrap/높이 계산 상수
-          const TBL_TEXT_SIZE = 8;
-          const TBL_LINE_HEIGHT = 11;
-          const TBL_V_PAD = 4;
-
-          // 주소를 col2 폭에 맞춰 글자 단위 wrap (최대 3줄)
-          const wrapAddrLines = (
-            text: string,
-            maxW: number,
-            maxLines = 3,
-          ): string[] => {
-            if (!text) return [""];
-            if (font.widthOfTextAtSize(text, TBL_TEXT_SIZE) <= maxW) return [text];
-            const arr = Array.from(text);
-            const lines: string[] = [];
-            let cur = "";
-            let idx = 0;
-            while (idx < arr.length && lines.length < maxLines) {
-              const ch = arr[idx];
-              if (
-                font.widthOfTextAtSize(cur + ch, TBL_TEXT_SIZE) <= maxW ||
-                cur.length === 0
-              ) {
-                cur += ch;
-                idx++;
-              } else {
-                lines.push(cur);
-                cur = "";
-              }
-            }
-            if (cur && lines.length < maxLines) lines.push(cur);
-            // 최대 줄 도달했는데 잔여 글자 있으면 마지막 줄에 ... 부착
-            if (idx < arr.length) {
-              let last = lines[lines.length - 1] || "";
-              while (
-                last.length > 1 &&
-                font.widthOfTextAtSize(last + "...", TBL_TEXT_SIZE) > maxW
-              ) {
-                last = last.slice(0, -1);
-              }
-              lines[lines.length - 1] = last + "...";
-            }
-            return lines;
-          };
-
-          // 헤더 필요 높이 계산 (호출자가 사전 계산하여 imgHeight 보정에 사용)
-          const computeTableHeaderHeight = (
-            headerInfo: { address: string },
-            width: number,
-            baseHeight: number,
-          ): number => {
-            const col2Width = width * 0.45;
-            const addr = normalizeHeaderIdentifier(headerInfo.address || "-");
-            const lines = wrapAddrLines(addr, col2Width - 10, 3);
-            const required = lines.length * TBL_LINE_HEIGHT + TBL_V_PAD * 2;
-            return Math.max(baseHeight, required);
-          };
-
           const drawTableHeader = (
             page: any,
             x: number,
@@ -10122,11 +10064,41 @@ FLOXN 드림`;
               address: string;
               category: string;
             },
-          ): number => {
+          ) => {
             // 열 너비 비율 (사고번호: 30%, 주소: 45%, 카테고리: 25%)
             const col1Width = width * 0.3;
             const col2Width = width * 0.45;
             const col3Width = width * 0.25;
+
+            // 배경 (진한 회색 - 현장출동보고서 스타일)
+            page.drawRectangle({
+              x: x,
+              y: y,
+              width: width,
+              height: height,
+              color: rgb(0.2, 0.2, 0.2),
+              borderColor: rgb(0.3, 0.3, 0.3),
+              borderWidth: 0.5,
+            });
+
+            // 열 구분선
+            page.drawLine({
+              start: { x: x + col1Width, y: y },
+              end: { x: x + col1Width, y: y + height },
+              color: rgb(0.4, 0.4, 0.4),
+              thickness: 0.5,
+            });
+            page.drawLine({
+              start: { x: x + col1Width + col2Width, y: y },
+              end: { x: x + col1Width + col2Width, y: y + height },
+              color: rgb(0.4, 0.4, 0.4),
+              thickness: 0.5,
+            });
+
+            // 텍스트 (흰색 - 어두운 배경에 맞춤)
+            const textY = y + (height - 9) / 2;
+            const textColor = rgb(1, 1, 1);
+            const textSize = 8;
 
             // 정규화 적용 (ASCII '-' 유지)
             const normalizedAccidentNo = normalizeHeaderIdentifier(
@@ -10138,44 +10110,6 @@ FLOXN 드림`;
             const normalizedCategory = normalizeHeaderIdentifier(
               headerInfo.category,
             );
-
-            // 주소 wrap → 필요 높이 산출 (height보다 크면 위로 확장 = y는 아래로 이동)
-            const addrLines = wrapAddrLines(normalizedAddress, col2Width - 10, 3);
-            const requiredHeight =
-              addrLines.length * TBL_LINE_HEIGHT + TBL_V_PAD * 2;
-            const actualHeight = Math.max(height, requiredHeight);
-            const expansion = actualHeight - height;
-            const yAdj = y - expansion; // top 유지 위해 bottom을 아래로
-
-            // 배경 (진한 회색 - 현장출동보고서 스타일)
-            page.drawRectangle({
-              x: x,
-              y: yAdj,
-              width: width,
-              height: actualHeight,
-              color: rgb(0.2, 0.2, 0.2),
-              borderColor: rgb(0.3, 0.3, 0.3),
-              borderWidth: 0.5,
-            });
-
-            // 열 구분선
-            page.drawLine({
-              start: { x: x + col1Width, y: yAdj },
-              end: { x: x + col1Width, y: yAdj + actualHeight },
-              color: rgb(0.4, 0.4, 0.4),
-              thickness: 0.5,
-            });
-            page.drawLine({
-              start: { x: x + col1Width + col2Width, y: yAdj },
-              end: { x: x + col1Width + col2Width, y: yAdj + actualHeight },
-              color: rgb(0.4, 0.4, 0.4),
-              thickness: 0.5,
-            });
-
-            // 텍스트 (흰색 - 어두운 배경에 맞춤)
-            const textColor = rgb(1, 1, 1);
-            const textSize = TBL_TEXT_SIZE;
-            const centerY = yAdj + (actualHeight - 9) / 2;
 
             // 사고번호 정규화 결과 charCode 로그 (공백 문자 검증)
             console.log(
@@ -10193,16 +10127,12 @@ FLOXN 드림`;
               ),
             );
 
-            // 하이픈 간격 보정 함수 (사고번호 등 단일라인용)
-            const drawTextTight = (
-              text: string,
-              startX: number,
-              drawY: number,
-            ) => {
+            // 하이픈 간격 보정 함수 (사고번호, 주소 공용)
+            const drawTextTight = (text: string, startX: number) => {
               if (!text || !text.includes("-")) {
                 page.drawText(text || "", {
                   x: startX,
-                  y: drawY,
+                  y: textY,
                   size: textSize,
                   font,
                   color: textColor,
@@ -10218,7 +10148,7 @@ FLOXN 드림`;
                 if (parts[i]) {
                   page.drawText(parts[i], {
                     x: cursorX,
-                    y: drawY,
+                    y: textY,
                     size: textSize,
                     font,
                     color: textColor,
@@ -10228,7 +10158,7 @@ FLOXN 드림`;
                 if (i < parts.length - 1) {
                   page.drawText("-", {
                     x: cursorX,
-                    y: drawY,
+                    y: textY,
                     size: textSize,
                     font,
                     color: textColor,
@@ -10238,7 +10168,7 @@ FLOXN 드림`;
               }
             };
 
-            // 사고번호/카테고리 — 컬럼 폭 초과 시 ... 로 절단 (단일라인 안전)
+            // 사고번호 — col1 폭 초과 시 절단
             const fitToWidth = (text: string, maxW: number): string => {
               if (!text) return text;
               if (font.widthOfTextAtSize(text, textSize) <= maxW) return text;
@@ -10251,38 +10181,22 @@ FLOXN 드림`;
               }
               return cur.trim() + "...";
             };
-
-            // 사고번호 (수직 중앙)
             const acciFit = fitToWidth(normalizedAccidentNo, col1Width - 10);
-            drawTextTight(acciFit, x + 5, centerY);
+            drawTextTight(acciFit, x + 5);
 
-            // 주소 (multi-line, 상단부터 차곡차곡, 수직 중앙 블록 정렬)
-            const addrBlockH = addrLines.length * TBL_LINE_HEIGHT;
-            const addrTopY =
-              yAdj +
-              (actualHeight - addrBlockH) / 2 +
-              addrBlockH -
-              TBL_LINE_HEIGHT +
-              (TBL_LINE_HEIGHT - 9) / 2;
-            for (let li = 0; li < addrLines.length; li++) {
-              drawTextTight(
-                addrLines[li],
-                x + col1Width + 5,
-                addrTopY - li * TBL_LINE_HEIGHT,
-              );
-            }
+            // 주소 (하이픈 간격 보정 적용) — col2 폭 초과 시 절단(카테고리 칸 침범 방지)
+            const addrFit = fitToWidth(normalizedAddress, col2Width - 10);
+            drawTextTight(addrFit, x + col1Width + 5);
 
-            // 카테고리 (수직 중앙)
+            // 카테고리 — col3 폭 초과 시 절단
             const catFit = fitToWidth(normalizedCategory, col3Width - 10);
             page.drawText(catFit, {
               x: x + col1Width + col2Width + 5,
-              y: centerY,
+              y: textY,
               size: textSize,
               font,
               color: textColor,
             });
-
-            return actualHeight;
           };
 
           // Helper function to flush pending images with category-based layout
@@ -10305,25 +10219,9 @@ FLOXN 드림`;
                 // 이미지 영역 계산 (각 이미지마다 개별 헤더 포함)
                 const INDIVIDUAL_HEADER_HEIGHT = 24;
                 const availableHeight = A4_HEIGHT - MARGIN * 2;
+                // 각 슬롯: 헤더(24px) + 이미지영역 + GAP
                 const slotHeight = (availableHeight - GAP) / 2;
-
-                // 이 페이지에 들어갈 이미지들의 헤더 필요 높이 사전 계산
-                // (주소가 길어서 wrap되는 경우 슬롯 헤더 높이를 키워 이미지 침범 방지)
-                let slotHeaderH = INDIVIDUAL_HEADER_HEIGHT;
-                for (let j = 0; j < 2 && i + j < pendingImages.length; j++) {
-                  const probe = pendingImages[i + j];
-                  if (j > 0 && !isTwoPerPageCategory(probe.doc.category || ""))
-                    break;
-                  slotHeaderH = Math.max(
-                    slotHeaderH,
-                    computeTableHeaderHeight(
-                      probe.headerInfo,
-                      imgWidth,
-                      INDIVIDUAL_HEADER_HEIGHT,
-                    ),
-                  );
-                }
-                const imgHeight = slotHeight - slotHeaderH - GAP;
+                const imgHeight = slotHeight - INDIVIDUAL_HEADER_HEIGHT - GAP;
 
                 // 최대 2장까지 배치
                 let actualCount = 0;
@@ -10347,7 +10245,7 @@ FLOXN 드림`;
                     MARGIN,
                     slotY + imgHeight + GAP,
                     imgWidth,
-                    slotHeaderH,
+                    INDIVIDUAL_HEADER_HEIGHT,
                     img.headerInfo,
                   );
 
@@ -10383,8 +10281,7 @@ FLOXN 드림`;
                 const page = mergedPdf.addPage([A4_WIDTH, A4_HEIGHT]);
 
                 // 헤더 그리기 - 테이블 형태 (현장출동보고서 스타일)
-                // 주소가 길어 wrap되면 헤더가 위로 확장 → 반환된 실제 높이로 imgHeight 보정
-                const usedHeaderH = drawTableHeader(
+                drawTableHeader(
                   page,
                   MARGIN,
                   A4_HEIGHT - MARGIN - PAGE_HEADER_HEIGHT,
@@ -10395,7 +10292,7 @@ FLOXN 드림`;
 
                 // 전체 페이지 이미지 영역
                 const imgHeight =
-                  A4_HEIGHT - MARGIN * 2 - usedHeaderH - GAP;
+                  A4_HEIGHT - MARGIN * 2 - PAGE_HEADER_HEIGHT - GAP;
                 const yPos = MARGIN;
 
                 try {
@@ -11164,62 +11061,6 @@ FLOXN 드림`;
           }[] = [];
 
           // 테이블 형태 헤더 그리기 헬퍼 함수 (현장출동보고서 스타일)
-          // 헤더 텍스트 wrap/높이 계산 상수 (이메일 경로)
-          const TBL_TEXT_SIZE = 8;
-          const TBL_LINE_HEIGHT = 11;
-          const TBL_V_PAD = 4;
-
-          // 주소를 col2 폭에 맞춰 글자 단위 wrap (최대 3줄)
-          const wrapAddrLines = (
-            text: string,
-            maxW: number,
-            maxLines = 3,
-          ): string[] => {
-            if (!text) return [""];
-            if (font.widthOfTextAtSize(text, TBL_TEXT_SIZE) <= maxW) return [text];
-            const arr = Array.from(text);
-            const lines: string[] = [];
-            let cur = "";
-            let idx = 0;
-            while (idx < arr.length && lines.length < maxLines) {
-              const ch = arr[idx];
-              if (
-                font.widthOfTextAtSize(cur + ch, TBL_TEXT_SIZE) <= maxW ||
-                cur.length === 0
-              ) {
-                cur += ch;
-                idx++;
-              } else {
-                lines.push(cur);
-                cur = "";
-              }
-            }
-            if (cur && lines.length < maxLines) lines.push(cur);
-            if (idx < arr.length) {
-              let last = lines[lines.length - 1] || "";
-              while (
-                last.length > 1 &&
-                font.widthOfTextAtSize(last + "...", TBL_TEXT_SIZE) > maxW
-              ) {
-                last = last.slice(0, -1);
-              }
-              lines[lines.length - 1] = last + "...";
-            }
-            return lines;
-          };
-
-          const computeTableHeaderHeight = (
-            headerInfo: { address: string },
-            width: number,
-            baseHeight: number,
-          ): number => {
-            const col2Width = width * 0.45;
-            const addr = normalizeHeaderIdentifier(headerInfo.address || "-");
-            const lines = wrapAddrLines(addr, col2Width - 10, 3);
-            const required = lines.length * TBL_LINE_HEIGHT + TBL_V_PAD * 2;
-            return Math.max(baseHeight, required);
-          };
-
           const drawTableHeader = (
             page: any,
             x: number,
@@ -11231,11 +11072,43 @@ FLOXN 드림`;
               address: string;
               category: string;
             },
-          ): number => {
+          ) => {
+            // 열 너비 비율 (사고번호: 30%, 주소: 45%, 카테고리: 25%)
             const col1Width = width * 0.3;
             const col2Width = width * 0.45;
             const col3Width = width * 0.25;
 
+            // 배경 (진한 회색 - 현장출동보고서 스타일)
+            page.drawRectangle({
+              x: x,
+              y: y,
+              width: width,
+              height: height,
+              color: rgb(0.2, 0.2, 0.2),
+              borderColor: rgb(0.3, 0.3, 0.3),
+              borderWidth: 0.5,
+            });
+
+            // 열 구분선
+            page.drawLine({
+              start: { x: x + col1Width, y: y },
+              end: { x: x + col1Width, y: y + height },
+              color: rgb(0.4, 0.4, 0.4),
+              thickness: 0.5,
+            });
+            page.drawLine({
+              start: { x: x + col1Width + col2Width, y: y },
+              end: { x: x + col1Width + col2Width, y: y + height },
+              color: rgb(0.4, 0.4, 0.4),
+              thickness: 0.5,
+            });
+
+            // 텍스트 (s��색 - 어두운 배경에 맞춤)
+            const textY = y + (height - 9) / 2;
+            const textColor = rgb(1, 1, 1);
+            const textSize = 8;
+
+            // 정규화 적용 (ASCII '-' 유지)
             const normalizedAccidentNo = normalizeHeaderIdentifier(
               headerInfo.accidentNo,
             );
@@ -11246,40 +11119,7 @@ FLOXN 드림`;
               headerInfo.category,
             );
 
-            const addrLines = wrapAddrLines(normalizedAddress, col2Width - 10, 3);
-            const requiredHeight =
-              addrLines.length * TBL_LINE_HEIGHT + TBL_V_PAD * 2;
-            const actualHeight = Math.max(height, requiredHeight);
-            const expansion = actualHeight - height;
-            const yAdj = y - expansion;
-
-            page.drawRectangle({
-              x: x,
-              y: yAdj,
-              width: width,
-              height: actualHeight,
-              color: rgb(0.2, 0.2, 0.2),
-              borderColor: rgb(0.3, 0.3, 0.3),
-              borderWidth: 0.5,
-            });
-
-            page.drawLine({
-              start: { x: x + col1Width, y: yAdj },
-              end: { x: x + col1Width, y: yAdj + actualHeight },
-              color: rgb(0.4, 0.4, 0.4),
-              thickness: 0.5,
-            });
-            page.drawLine({
-              start: { x: x + col1Width + col2Width, y: yAdj },
-              end: { x: x + col1Width + col2Width, y: yAdj + actualHeight },
-              color: rgb(0.4, 0.4, 0.4),
-              thickness: 0.5,
-            });
-
-            const textColor = rgb(1, 1, 1);
-            const textSize = TBL_TEXT_SIZE;
-            const centerY = yAdj + (actualHeight - 9) / 2;
-
+            // 사고번호 정규화 결과 charCode 로그 (공백 문자 검증)
             console.log(
               "[Invoice Header] accidentNo RAW:",
               headerInfo.accidentNo,
@@ -11295,15 +11135,12 @@ FLOXN 드림`;
               ),
             );
 
-            const drawTextTight = (
-              text: string,
-              startX: number,
-              drawY: number,
-            ) => {
+            // 하이픈 간격 보정 함수 (사고번호, 주소 공용)
+            const drawTextTight = (text: string, startX: number) => {
               if (!text || !text.includes("-")) {
                 page.drawText(text || "", {
                   x: startX,
-                  y: drawY,
+                  y: textY,
                   size: textSize,
                   font,
                   color: textColor,
@@ -11314,11 +11151,12 @@ FLOXN 드림`;
               const parts = text.split("-");
               let cursorX = startX;
               const hyphenWidth = font.widthOfTextAtSize("-", textSize);
+
               for (let i = 0; i < parts.length; i++) {
                 if (parts[i]) {
                   page.drawText(parts[i], {
                     x: cursorX,
-                    y: drawY,
+                    y: textY,
                     size: textSize,
                     font,
                     color: textColor,
@@ -11328,7 +11166,7 @@ FLOXN 드림`;
                 if (i < parts.length - 1) {
                   page.drawText("-", {
                     x: cursorX,
-                    y: drawY,
+                    y: textY,
                     size: textSize,
                     font,
                     color: textColor,
@@ -11338,6 +11176,7 @@ FLOXN 드림`;
               }
             };
 
+            // 사고번호 — col1 폭 초과 시 절단
             const fitToWidth = (text: string, maxW: number): string => {
               if (!text) return text;
               if (font.widthOfTextAtSize(text, textSize) <= maxW) return text;
@@ -11350,38 +11189,22 @@ FLOXN 드림`;
               }
               return cur.trim() + "...";
             };
-
-            // 사고번호 (수직 중앙)
             const acciFit = fitToWidth(normalizedAccidentNo, col1Width - 10);
-            drawTextTight(acciFit, x + 5, centerY);
+            drawTextTight(acciFit, x + 5);
 
-            // 주소 (multi-line, 수직 중앙 블록 정렬)
-            const addrBlockH = addrLines.length * TBL_LINE_HEIGHT;
-            const addrTopY =
-              yAdj +
-              (actualHeight - addrBlockH) / 2 +
-              addrBlockH -
-              TBL_LINE_HEIGHT +
-              (TBL_LINE_HEIGHT - 9) / 2;
-            for (let li = 0; li < addrLines.length; li++) {
-              drawTextTight(
-                addrLines[li],
-                x + col1Width + 5,
-                addrTopY - li * TBL_LINE_HEIGHT,
-              );
-            }
+            // 주소 (하이픈 간격 보정 적용) — col2 폭 초과 시 절단(카테고리 칸 침범 방지)
+            const addrFit = fitToWidth(normalizedAddress, col2Width - 10);
+            drawTextTight(addrFit, x + col1Width + 5);
 
-            // 카테고리 (수직 중앙)
+            // 카테고리 — col3 폭 초과 시 절단
             const catFit = fitToWidth(normalizedCategory, col3Width - 10);
             page.drawText(catFit, {
               x: x + col1Width + col2Width + 5,
-              y: centerY,
+              y: textY,
               size: textSize,
               font,
               color: textColor,
             });
-
-            return actualHeight;
           };
 
           // Helper function to flush pending images with category-based layout
@@ -11404,25 +11227,9 @@ FLOXN 드림`;
                 // 이미지 영역 계산 (각 이미지마다 개별 헤더 포함)
                 const INDIVIDUAL_HEADER_HEIGHT = 24;
                 const availableHeight = A4_HEIGHT - MARGIN * 2;
+                // 각 슬롯: 헤더(24px) + 이미지영역 + GAP
                 const slotHeight = (availableHeight - GAP) / 2;
-
-                // 이 페이지에 들어갈 이미지들의 헤더 필요 높이 사전 계산
-                // (주소가 길어서 wrap되는 경우 슬롯 헤더 높이를 키워 이미지 침범 방지)
-                let slotHeaderH = INDIVIDUAL_HEADER_HEIGHT;
-                for (let j = 0; j < 2 && i + j < pendingImages.length; j++) {
-                  const probe = pendingImages[i + j];
-                  if (j > 0 && !isTwoPerPageCategory(probe.doc.category || ""))
-                    break;
-                  slotHeaderH = Math.max(
-                    slotHeaderH,
-                    computeTableHeaderHeight(
-                      probe.headerInfo,
-                      imgWidth,
-                      INDIVIDUAL_HEADER_HEIGHT,
-                    ),
-                  );
-                }
-                const imgHeight = slotHeight - slotHeaderH - GAP;
+                const imgHeight = slotHeight - INDIVIDUAL_HEADER_HEIGHT - GAP;
 
                 // 최대 2장까지 배치
                 let actualCount = 0;
@@ -11446,7 +11253,7 @@ FLOXN 드림`;
                     MARGIN,
                     slotY + imgHeight + GAP,
                     imgWidth,
-                    slotHeaderH,
+                    INDIVIDUAL_HEADER_HEIGHT,
                     img.headerInfo,
                   );
 
@@ -11481,8 +11288,7 @@ FLOXN 드림`;
                 const page = mergedPdf.addPage([A4_WIDTH, A4_HEIGHT]);
 
                 // 헤더 그리기 - 테이블 형태 (현장출동보고서 스타일)
-                // 주소가 길어 wrap되면 헤더가 위로 확장 → 반환된 실제 높이로 imgHeight 보정
-                const usedHeaderH = drawTableHeader(
+                drawTableHeader(
                   page,
                   MARGIN,
                   A4_HEIGHT - MARGIN - PAGE_HEADER_HEIGHT,
@@ -11493,7 +11299,7 @@ FLOXN 드림`;
 
                 // 전체 페이지 이미지 영역
                 const imgHeight =
-                  A4_HEIGHT - MARGIN * 2 - usedHeaderH - GAP;
+                  A4_HEIGHT - MARGIN * 2 - PAGE_HEADER_HEIGHT - GAP;
                 const yPos = MARGIN;
 
                 try {
