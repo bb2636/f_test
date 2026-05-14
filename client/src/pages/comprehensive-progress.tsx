@@ -1435,7 +1435,7 @@ export default function ComprehensiveProgress() {
   // 날짜 포맷팅 (YYYY-MM-DD)
   const handleExcelDownload = () => {
     const headers = [
-      "증권번호","사고번호","접수번호","보험사","피보험자","주소",
+      "증권번호","사고번호","접수번호","보험사","심사사","심사자","피보험자","주소",
       "담당자","협력사","승인금액","경과1","경과2","경과3","진행상태",
     ];
     const rows = filteredData.map((c: any) => {
@@ -1449,6 +1449,8 @@ export default function ComprehensiveProgress() {
         c.insuranceAccidentNo || "",
         formatCaseNumber(c.caseNumber) || "",
         c.insuranceCompany || "",
+        c.assessorId || "",
+        c.assessorTeam || "",
         c.insuredName || "",
         addressText,
         c.managerName || "",
@@ -1851,11 +1853,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
-                      : "40px 7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%")
+                      ? "40px 7% 8% 7% 6% 6% 5% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                      : "40px 7% 9% 7% 7% 6% 5% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%")
                     : (user?.role === "협력사"
-                      ? "7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
-                      : "7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%"),
+                      ? "7% 8% 7% 6% 6% 5% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                      : "7% 9% 7% 7% 6% 5% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%"),
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -1895,6 +1897,8 @@ export default function ComprehensiveProgress() {
                 { label: "사고번호", textAlign: "center" as const },
                 { label: "접수번호", textAlign: "center" as const },
                 { label: "보험사", textAlign: "center" as const },
+                { label: "심사사", textAlign: "center" as const },
+                { label: "심사자", textAlign: "center" as const },
                 { label: "피보험자", textAlign: "center" as const },
                 { label: "주소", textAlign: "center" as const },
                 { label: "담당자", textAlign: "center" as const },
@@ -2054,11 +2058,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
-                            : "40px 7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%")
+                            ? "40px 7% 8% 7% 6% 6% 5% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                            : "40px 7% 9% 7% 7% 6% 5% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%")
                           : (user?.role === "협력사"
-                            ? "7% 8% 7% 6% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
-                            : "7% 9% 7% 7% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%"),
+                            ? "7% 8% 7% 6% 6% 5% 5% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 8%"
+                            : "7% 9% 7% 7% 6% 5% 5% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 8%"),
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -2152,6 +2156,46 @@ export default function ComprehensiveProgress() {
                       }}
                     >
                       {caseItem.insuranceCompany || "-"}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "13px",
+                        color: "rgba(12, 12, 12, 0.8)",
+                        paddingRight: "4px",
+                        paddingLeft: "4px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                      title={caseItem.assessorId || ""}
+                    >
+                      {caseItem.assessorId || "-"}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "13px",
+                        color: "rgba(12, 12, 12, 0.8)",
+                        paddingRight: "4px",
+                        paddingLeft: "4px",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                      title={caseItem.assessorTeam || ""}
+                    >
+                      {caseItem.assessorTeam || "-"}
                     </div>
                     <div
                       style={{
