@@ -10,6 +10,7 @@ import { format, parseISO, subDays } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { classifyPropertyType } from "@/lib/property-type";
 
 const CLOSED_STATUSES = ["접수취소", "취소대기", "종결"];
 
@@ -733,6 +734,7 @@ export default function UnsettledCaseStatistics() {
       "플록슨 담당자", "접수 일자",
       "의뢰사", "의뢰자", "심사사", "심사자",
       "조사사", "조사자", "협력사", "담당자", "배당일자",
+      ...(searchType !== "접수번호" ? ["피해물유형"] : []),
       "사고유형", "사고원인", "손방 유무", "대물 유무", "복구방식", "지역", "시군구", "진행상태",
       "견적금액", "견적일자", "승인금액", "승인일자",
       ...(searchType !== "접수번호" ? ["청구액", "청구일자", "입금액계", "입금완료일", "지급액계", "지급완료일", "수수료계", "종결일자"] : []),
@@ -786,6 +788,8 @@ export default function UnsettledCaseStatistics() {
         const victimIncident = rep.victimIncidentAssistance === "true" || (rep.victimIncidentAssistance as any) === true;
         const address = rep.insuredAddress || rep.victimAddress || "";
         const claimAmount = g.totalClaim;
+        // [2026-05-14] 피해물유형: 원인세대(rep) 주소 기준 분류
+        const propertyType = classifyPropertyType(rep.insuredAddressDetail, rep.insuredAddress);
         return [
           rep.insuranceCompany || "",
           rep.insurancePolicyNo || "",
@@ -801,6 +805,7 @@ export default function UnsettledCaseStatistics() {
           rep.assignedPartner || "",
           rep.assignedPartnerManager || "",
           formatDate(rep.assignmentDate),
+          propertyType,
           rep.accidentType || "",
           rep.accidentCause || "",
           damagePrevention ? "손방" : "-",

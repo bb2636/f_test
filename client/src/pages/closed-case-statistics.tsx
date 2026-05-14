@@ -10,6 +10,7 @@ import { format, startOfMonth, endOfMonth, parseISO, isWithinInterval } from "da
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { classifyPropertyType, extractCancelReason } from "@/lib/property-type";
 
 const CLOSED_STATUSES = ["접수취소", "종결"];
 // 취소대기는 종합진행관리에만 표시되며 종결 통계에는 포함되지 않음
@@ -693,7 +694,9 @@ export default function ClosedCaseStatistics() {
       "플록슨 담당자", "접수 일자",
       "의뢰사", "의뢰자", "심사사", "심사자",
       "조사사", "조사자", "협력사", "담당자", "배당일자",
+      ...(searchType !== "접수번호" ? ["피해물유형"] : []),
       "사고유형", "사고원인", "손방 유무", "대물 유무", "복구방식", "지역", "시군구", "진행상태",
+      ...(searchType !== "접수번호" ? ["취소사유"] : []),
       "견적금액", "견적일자", "승인금액", "승인일자",
       ...(searchType !== "접수번호" ? ["청구액", "청구일자", "입금액계", "입금완료일", "지급액계", "지급완료일", "수수료계", "종결일자"] : []),
     ];
@@ -744,6 +747,11 @@ export default function ClosedCaseStatistics() {
         const victimIncident = rep.victimIncidentAssistance === "true" || (rep.victimIncidentAssistance as any) === true;
         const address = rep.insuredAddress || rep.victimAddress || "";
         const claimAmount = g.totalClaim;
+        // [2026-05-14] 피해물유형: 원인세대(rep) 주소 기준 분류
+        const propertyType = classifyPropertyType(rep.insuredAddressDetail, rep.insuredAddress);
+        // [2026-05-14] 취소사유: 그룹 내 접수취소된 case의 specialNotes에서 추출
+        const cancelCase = g.cases.find((cs) => cs.status === "접수취소");
+        const cancelReasonText = cancelCase ? extractCancelReason(cancelCase.specialNotes) : "-";
         return [
           rep.insuranceCompany || "",
           rep.insurancePolicyNo || "",
@@ -759,6 +767,7 @@ export default function ClosedCaseStatistics() {
           rep.assignedPartner || "",
           rep.assignedPartnerManager || "",
           formatDate(rep.assignmentDate),
+          propertyType,
           rep.accidentType || "",
           rep.accidentCause || "",
           damagePrevention ? "손방" : "-",
@@ -767,6 +776,7 @@ export default function ClosedCaseStatistics() {
           extractRegion(address),
           extractCityDistrict(address),
           getLatestStatus(g.cases),
+          cancelReasonText,
           isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? (g.totalEstimate ? g.totalEstimate.toLocaleString() : "0") : "-"),
           isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatDate(getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-"),
           (() => { if (isOnlyPreEstimate(g.cases)) return "-"; const ad = getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate; if (!ad) return "-"; return g.totalApproved !== null ? (g.totalApproved ? g.totalApproved.toLocaleString() : "0") : "-"; })(),
