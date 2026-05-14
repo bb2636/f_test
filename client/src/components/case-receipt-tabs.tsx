@@ -73,6 +73,22 @@ export function CaseReceiptTabs() {
   // 단일 케이스(피해세대 없음)이면 탭 미표시
   if (groupCases.length <= 1) return null;
 
+  // [D안 2026-05-14] 그룹 내에서 가장 먼저 등록된(createdAt 최소) 케이스를 "원인세대"로 간주.
+  // 동률(같은 createdAt)이면 접수번호 끝자리가 작은 케이스를 우선.
+  const tsOf = (c: Case): number => {
+    const t = c.createdAt ? new Date(c.createdAt).getTime() : NaN;
+    return Number.isFinite(t) ? t : Number.MAX_SAFE_INTEGER;
+  };
+  const originCase = [...groupCases].sort((a, b) => {
+    const ta = tsOf(a);
+    const tb = tsOf(b);
+    if (ta !== tb) return ta - tb;
+    const na = parseInt(getCaseNumberSuffix(a.caseNumber) || "0", 10);
+    const nb = parseInt(getCaseNumberSuffix(b.caseNumber) || "0", 10);
+    return (Number.isFinite(na) ? na : 0) - (Number.isFinite(nb) ? nb : 0);
+  })[0];
+  const originCaseId = originCase?.id;
+
   const handleSelect = (id: string) => {
     if (id === selectedCaseId) return;
     localStorage.setItem("selectedFieldSurveyCaseId", id);
@@ -99,11 +115,12 @@ export function CaseReceiptTabs() {
     >
       {groupCases.map((c) => {
         const sfx = getCaseNumberSuffix(c.caseNumber);
-        const isVictim = sfx !== "" && sfx !== "0";
-        const label = isVictim ? "피해세대" : "원인세대";
-        const name = isVictim
-          ? (c.victimName || "(이름없음)")
-          : (c.insuredName || c.victimName || "(이름없음)");
+        // [D안] 그룹 내 첫 등록(createdAt 최소) 케이스만 "원인세대", 나머지는 "피해세대"
+        const isOrigin = c.id === originCaseId;
+        const label = isOrigin ? "원인세대" : "피해세대";
+        const name = isOrigin
+          ? (c.insuredName || c.victimName || "(이름없음)")
+          : (c.victimName || "(이름없음)");
         const visit = formatVisitDate(c.visitDate);
         const active = c.id === selectedCaseId;
         return (
