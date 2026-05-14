@@ -69,7 +69,15 @@ type CaseLite = {
   recoveryType?: string | null;
   restorationMethod?: string | null;
   damagePreventionCost?: string | null;
+  invoicePropertyRepairAmount?: string | null;
+  invoiceDamagePreventionAmount?: string | null;
 };
+
+function parseAmount(v?: string | null): number {
+  if (v == null) return 0;
+  const n = parseInt(String(v).replace(/[^\d-]/g, ""), 10);
+  return Number.isFinite(n) ? n : 0;
+}
 
 // 접수번호 그룹 prefix — 마지막 suffix(-0/-1 등)만 제거.
 // (InvoiceSheet/InvoiceManagementPopup 의 getCaseNumberPrefix 와 동일 규칙)
@@ -87,16 +95,23 @@ function inferRecoveryKind(
   allCases?: ReadonlyArray<CaseLite>,
 ): "직접복구" | "선견적요청" | null {
   const fromOne = (c: CaseLite): "직접복구" | "선견적요청" | null => {
-    // 1순위: recoveryType (명시적으로 설정된 값 — 가장 신뢰 가능한 소스)
+    // 1순위: 인보이스에 실제 청구액(대물복구비/손해방지비) 이 1원이라도 있으면 공사비 청구
+    // (실제 작업이 진행되어 청구된 금액이 있다는 가장 강한 신호)
+    if (
+      parseAmount(c.invoicePropertyRepairAmount) > 0 ||
+      parseAmount(c.invoiceDamagePreventionAmount) > 0
+    ) {
+      return "직접복구";
+    }
+    // 2순위: recoveryType (명시적으로 설정된 값)
     if (c.recoveryType === "직접복구" || c.recoveryType === "선견적요청") {
       return c.recoveryType;
     }
-    // 2순위: 손해방지건(damage_prevention_cost='true') 은 실제 작업이 발생한 공사비 청구 성격
-    // → recoveryType 이 비어있을 때만 적용 (recoveryType='선견적요청' 명시 시에는 그 값을 존중)
+    // 3순위: 손해방지건(damage_prevention_cost='true') 은 실제 작업이 발생한 공사비 청구 성격
     if (c.damagePreventionCost === "true") {
       return "직접복구";
     }
-    // 3순위: 복구 방식(restoration_method) 필드에서 보조 추론
+    // 4순위: 복구 방식(restoration_method) 필드에서 보조 추론
     if (
       c.restorationMethod === "직접복구" ||
       c.restorationMethod === "선견적요청"
