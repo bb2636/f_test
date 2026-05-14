@@ -2049,9 +2049,14 @@ export class MemStorage implements IStorage {
       return null;
     }
 
+    // [2026-05-14] B+안: 2차 승인된 케이스라면 견적금액 변경 시 승인금액도 동기화
+    // 이전 동작: approvedAmount는 2차 승인 시점에 한 번 스냅샷되고 이후 견적이 바뀌어도 갱신되지 않음
+    // 변경 동작: 2차 승인된(secondApprovalDate 존재) 케이스의 견적이 갱신되면 승인금액도 같은 값으로 자동 갱신
+    const shouldSyncApproved = !!caseItem.secondApprovalDate;
     const updatedCase: Case = {
       ...caseItem,
       estimateAmount,
+      ...(shouldSyncApproved ? { approvedAmount: estimateAmount } : {}),
       updatedAt: getKSTDate(),
     };
 
@@ -4873,9 +4878,21 @@ export class DbStorage implements IStorage {
     caseId: string,
     estimateAmount: string,
   ): Promise<Case | null> {
+    // [2026-05-14] B+안: 2차 승인된 케이스라면 견적금액 변경 시 승인금액도 동기화
+    // 이전 동작: approvedAmount는 2차 승인 시점에 한 번 스냅샷되고 이후 견적이 바뀌어도 갱신되지 않음
+    //           → 통계/정산청구가 옛 승인금액을 계속 사용
+    // 변경 동작: 2차 승인된(secondApprovalDate 존재) 케이스의 견적이 갱신되면 approvedAmount도 같은 값으로 자동 갱신
+    //           → 견적서 저장 시점에 모든 화면에서 즉시 일관된 금액 사용
+    const existingCase = await this.getCaseById(caseId);
+    const shouldSyncApproved = !!existingCase?.secondApprovalDate;
+
     const result = await db
       .update(cases)
-      .set({ estimateAmount, updatedAt: getKSTTimestamp() })
+      .set({
+        estimateAmount,
+        ...(shouldSyncApproved ? { approvedAmount: estimateAmount } : {}),
+        updatedAt: getKSTTimestamp(),
+      })
       .where(eq(cases.id, caseId))
       .returning();
 
