@@ -61,13 +61,39 @@ export function getStatusDisplayText(
 
 // 케이스 객체 단위 상태 라벨 — "청구" 상태는 복구 방식(recoveryType)에 따라 분기 표시
 // (DB 저장값 변경 없음, 보여지는 라벨만 분기)
-export function getCaseStatusDisplayText(caseItem: {
+// 다중 접수건의 경우 본 케이스에 recoveryType 이 없으면 같은 사고번호(접수번호 prefix)를
+// 가진 연관 케이스에서 recoveryType 을 조회해 동일 라벨로 표시.
+type CaseLite = {
+  caseNumber?: string | null;
   status?: string | null;
   recoveryType?: string | null;
-}): string {
+};
+
+function caseNumberPrefix(caseNumber?: string | null): string {
+  if (!caseNumber) return "";
+  return caseNumber.split("-")[0] || "";
+}
+
+export function getCaseStatusDisplayText(
+  caseItem: CaseLite,
+  allCases?: ReadonlyArray<CaseLite>,
+): string {
   if (caseItem.status === "청구") {
-    if (caseItem.recoveryType === "선견적요청") return "비교견적비 청구";
-    if (caseItem.recoveryType === "직접복구") return "공사비 청구";
+    let recoveryType = caseItem.recoveryType ?? null;
+    if (!recoveryType && allCases && caseItem.caseNumber) {
+      const prefix = caseNumberPrefix(caseItem.caseNumber);
+      if (prefix) {
+        const related = allCases.find(
+          (c) =>
+            caseNumberPrefix(c.caseNumber) === prefix &&
+            (c.recoveryType === "직접복구" ||
+              c.recoveryType === "선견적요청"),
+        );
+        recoveryType = related?.recoveryType ?? null;
+      }
+    }
+    if (recoveryType === "선견적요청") return "비교견적비 청구";
+    if (recoveryType === "직접복구") return "공사비 청구";
     return "청구";
   }
   return getStatusDisplayText(caseItem.status);

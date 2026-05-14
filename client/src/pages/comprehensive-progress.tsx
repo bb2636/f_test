@@ -2410,7 +2410,7 @@ export default function ComprehensiveProgress() {
                               }}
                               data-testid={`button-status-${caseItem.id}`}
                             >
-                              {getCaseStatusDisplayText(caseItem)}
+                              {getCaseStatusDisplayText(caseItem, cases)}
                             </div>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent
@@ -2483,7 +2483,7 @@ export default function ComprehensiveProgress() {
                           }}
                           data-testid={`text-status-${caseItem.id}`}
                         >
-                          {getCaseStatusDisplayText(caseItem)}
+                          {getCaseStatusDisplayText(caseItem, cases)}
                         </div>
                       )}
                     </div>
