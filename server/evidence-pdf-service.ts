@@ -96,6 +96,120 @@ async function loadFontBytes(): Promise<Buffer> {
  * 사고번호(식별자) 전용 렌더링 - 하이픈 분리 + cursorX 당기기
  * pdf-lib kerning 미지원으로 인한 하이픈 뒤 간격 보정
  */
+// 증빙자료 PDF 헤더 렌더링 (파일명 + 사고번호+주소+카테고리)
+// 주소가 길어 한 줄에 들어가지 않으면 주소만 두 번째 행으로 분리하여
+// 파일명 영역과 시각적으로 겹치지 않도록 헤더 높이를 동적으로 확장한다.
+// returns: 실제 사용된 headerHeight
+function drawEvidenceHeader(
+  page: PDFPage,
+  font: PDFFont,
+  opts: {
+    displayCaseNumber: string;
+    cleanFullAddress: string;
+    categoryDisplay: string;
+    fileName: string;
+  }
+): number {
+  const headerColor = { red: 0.2, green: 0.2, blue: 0.2 };
+  const fileNameColor = rgb(0.4, 0.4, 0.4);
+  const headerFontSize = 10;
+  const fileFontSize = 8;
+  const addrFontSize = 9;
+  const padX = 10;
+  const maxRight = A4_WIDTH - MARGIN - padX;
+  const leftX = MARGIN + padX;
+
+  // 단일 라인 폭 측정
+  const prefix = "사고번호 ";
+  const prefixWidth = font.widthOfTextAtSize(prefix, headerFontSize);
+  const idWidth = font.widthOfTextAtSize(opts.displayCaseNumber, headerFontSize);
+  const categorySuffix = ` ${opts.categoryDisplay}`;
+  const categoryWidth = font.widthOfTextAtSize(categorySuffix, headerFontSize);
+  const addrSuffix = opts.cleanFullAddress ? ` ${opts.cleanFullAddress}` : "";
+  const addrSuffixWidth = font.widthOfTextAtSize(addrSuffix, headerFontSize);
+  const singleLineRight = leftX + prefixWidth + idWidth + addrSuffixWidth + categoryWidth;
+
+  const needsWrap = !!opts.cleanFullAddress && singleLineRight > maxRight;
+
+  // 헤더 높이 — 주소가 두 번째 행으로 빠지면 +14px 확장
+  const headerHeight = needsWrap ? HEADER_HEIGHT + 14 : HEADER_HEIGHT;
+
+  // 박스
+  page.drawRectangle({
+    x: MARGIN,
+    y: A4_HEIGHT - MARGIN - headerHeight,
+    width: A4_WIDTH - (MARGIN * 2),
+    height: headerHeight,
+    color: rgb(0.95, 0.95, 0.95),
+    borderColor: rgb(0.7, 0.7, 0.7),
+    borderWidth: 0.5,
+  });
+
+  const top = A4_HEIGHT - MARGIN;
+  const bottom = top - headerHeight;
+
+  // 파일명 (항상 최상단)
+  const fileNameText = opts.fileName.length > 50
+    ? opts.fileName.substring(0, 47) + '...'
+    : opts.fileName;
+  try {
+    page.drawText(fileNameText, {
+      x: leftX,
+      y: top - 13,
+      size: fileFontSize,
+      font,
+      color: fileNameColor,
+    });
+  } catch (e) {
+    // silent
+  }
+
+  if (!needsWrap) {
+    // 단일 라인: "사고번호 X 주소 카테고리"
+    const headerY = bottom + 10;
+    let cursorX = leftX;
+    page.drawText(prefix, { x: cursorX, y: headerY, size: headerFontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+    cursorX += prefixWidth;
+    cursorX = drawIdentifierTight(page, opts.displayCaseNumber, cursorX, headerY, font, headerFontSize, headerColor);
+    const suffix = opts.cleanFullAddress
+      ? ` ${opts.cleanFullAddress} ${opts.categoryDisplay}`
+      : ` ${opts.categoryDisplay}`;
+    page.drawText(suffix, { x: cursorX, y: headerY, size: headerFontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+  } else {
+    // 두 라인: 중간행 = "사고번호 X 카테고리", 하단행 = "주소"
+    const midY = bottom + 22;
+    const addrY = bottom + 8;
+    let cursorX = leftX;
+    page.drawText(prefix, { x: cursorX, y: midY, size: headerFontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+    cursorX += prefixWidth;
+    cursorX = drawIdentifierTight(page, opts.displayCaseNumber, cursorX, midY, font, headerFontSize, headerColor);
+    page.drawText(categorySuffix, { x: cursorX, y: midY, size: headerFontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
+
+    // 주소 라인 — 페이지 폭을 넘는 극단적 케이스만 ... 로 자름
+    const addrMaxWidth = maxRight - leftX;
+    let addressText = opts.cleanFullAddress;
+    if (font.widthOfTextAtSize(addressText, addrFontSize) > addrMaxWidth) {
+      while (font.widthOfTextAtSize(addressText + '...', addrFontSize) > addrMaxWidth && addressText.length > 10) {
+        addressText = addressText.slice(0, -1);
+      }
+      addressText = addressText.trim() + '...';
+    }
+    try {
+      page.drawText(addressText, {
+        x: leftX,
+        y: addrY,
+        size: addrFontSize,
+        font,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+    } catch (e) {
+      // silent
+    }
+  }
+
+  return headerHeight;
+}
+
 function drawIdentifierTight(
   page: PDFPage,
   text: string,
@@ -268,101 +382,22 @@ async function createEvidencePdfForTab(
     
     const page = currentPdf.addPage([A4_WIDTH, A4_HEIGHT]);
     
-    page.drawRectangle({
-      x: MARGIN,
-      y: A4_HEIGHT - MARGIN - HEADER_HEIGHT,
-      width: A4_WIDTH - (MARGIN * 2),
-      height: HEADER_HEIGHT,
-      color: rgb(0.95, 0.95, 0.95),
-      borderColor: rgb(0.7, 0.7, 0.7),
-      borderWidth: 0.5,
-    });
-    
-    // Use image-specific caseNumber if available, otherwise fall back to the general caseNumber
     // Pretendard용 정규화 (ASCII '-' 유지, 치환 금지)
     const displayCaseNumber = normalizeHeaderText(img.caseNumber || insuranceAccidentNo || caseNumber || "");
     const cleanFullAddress = normalizeHeaderText(fullAddress || "");
-    // 헤더 형식: "사고번호 {보험사고번호} {주소} {카테고리}-{세부카테고리}"
-    // categoryDisplay 조합 전 trim() 적용
     const safeTabName = (tabName || "").trim();
     const safeCategory = (img.category || "").trim();
     const categoryDisplay = safeCategory ? `${safeTabName}-${safeCategory}` : safeTabName;
-    const headerText = cleanFullAddress 
-      ? `사고번호 ${displayCaseNumber} ${cleanFullAddress} ${categoryDisplay}`
-      : `사고번호 ${displayCaseNumber} ${categoryDisplay}`;
-    
-    // drawText 직전 charCode 검증 (RAW/NORM)
-    console.log(`[Evidence PDF Header1] RAW caseNumber: "${img.caseNumber || insuranceAccidentNo || caseNumber || ""}"`);
-    console.log(`[Evidence PDF Header1] NORM displayCaseNumber: "${displayCaseNumber}"`);
-    console.log(`[Evidence PDF Header1] charCodes:`, Array.from(displayCaseNumber).map(c => c.charCodeAt(0).toString(16).padStart(4, '0')));
-    console.log(`[Evidence PDF Header1] categoryDisplay: "${categoryDisplay}"`);
-    console.log(`[Evidence PDF Header1] categoryDisplay charCodes:`, Array.from(categoryDisplay).map(c => c.charCodeAt(0).toString(16).padStart(4, '0')));
-    try {
-      // 헤더 텍스트가 길면 작은 폰트 사용
-      const fontSize = headerText.length > 60 ? 8 : 10;
-      const headerY = A4_HEIGHT - MARGIN - HEADER_HEIGHT + 10;
-      const headerColor = { red: 0.2, green: 0.2, blue: 0.2 };
-      let cursorX = MARGIN + 10;
-      
-      // 3파트 분리 렌더링: prefix / 사고번호(drawIdentifierTight) / suffix
-      const prefix = "사고번호 ";
-      page.drawText(prefix, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
-      cursorX += font.widthOfTextAtSize(prefix, fontSize);
-      
-      // 사고번호 - drawIdentifierTight로 하이픈 간격 보정
-      cursorX = drawIdentifierTight(page, displayCaseNumber, cursorX, headerY, font, fontSize, headerColor);
-      
-      // suffix: 주소 + 카테고리 (또는 카테고리만)
-      const suffix = cleanFullAddress 
-        ? ` ${cleanFullAddress} ${categoryDisplay}`
-        : ` ${categoryDisplay}`;
-      const maxRight = A4_WIDTH - MARGIN - 10;
-      const suffixWidth = font.widthOfTextAtSize(suffix, fontSize);
-      if (cursorX + suffixWidth > maxRight && cleanFullAddress) {
-        const categoryOnly = ` ${categoryDisplay}`;
-        const categoryWidth = font.widthOfTextAtSize(categoryOnly, fontSize);
-        const addressMaxWidth = maxRight - cursorX - categoryWidth - 5;
-        if (addressMaxWidth <= 0) {
-          page.drawText(categoryOnly, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
-        } else {
-          let addressText = cleanFullAddress;
-          while (font.widthOfTextAtSize(` ${addressText}...`, fontSize) > addressMaxWidth && addressText.length > 10) {
-            addressText = addressText.slice(0, -1);
-          }
-          if (addressText.length < cleanFullAddress.length) {
-            addressText = addressText.trim() + '...';
-          }
-          if (font.widthOfTextAtSize(` ${addressText}`, fontSize) > addressMaxWidth) {
-            page.drawText(categoryOnly, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
-          } else {
-            page.drawText(` ${addressText}`, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
-            cursorX += font.widthOfTextAtSize(` ${addressText}`, fontSize);
-            page.drawText(categoryOnly, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
-          }
-        }
-      } else {
-        page.drawText(suffix, { x: cursorX, y: headerY, size: fontSize, font, color: rgb(headerColor.red, headerColor.green, headerColor.blue) });
-      }
-    } catch (e) {
-      console.warn(`[Evidence PDF] Failed to draw header text: ${headerText}`);
-    }
-    
-    const fileNameText = img.fileName.length > 50 
-      ? img.fileName.substring(0, 47) + '...' 
-      : img.fileName;
-    try {
-      page.drawText(fileNameText, {
-        x: MARGIN + 10,
-        y: A4_HEIGHT - MARGIN - HEADER_HEIGHT + 22,
-        size: 8,
-        font,
-        color: rgb(0.4, 0.4, 0.4),
-      });
-    } catch (e) {
-      console.warn(`[Evidence PDF] Failed to draw filename text`);
-    }
-    
-    const imageAreaTop = A4_HEIGHT - MARGIN - HEADER_HEIGHT - 10;
+
+    // 헤더 렌더링 (주소가 길면 두 번째 행으로 wrap, headerHeight 동적 확장)
+    const usedHeaderHeight = drawEvidenceHeader(page, font, {
+      displayCaseNumber,
+      cleanFullAddress,
+      categoryDisplay,
+      fileName: img.fileName,
+    });
+
+    const imageAreaTop = A4_HEIGHT - MARGIN - usedHeaderHeight - 10;
     const imageAreaHeight = imageAreaTop - MARGIN - 10;
     const imageAreaWidth = A4_WIDTH - (MARGIN * 2);
     
@@ -480,93 +515,37 @@ async function createEvidencePdfForTab(
         // Re-add the removed image to the new PDF
         const newPage = currentPdf.addPage([A4_WIDTH, A4_HEIGHT]);
         
-        newPage.drawRectangle({
-          x: MARGIN,
-          y: A4_HEIGHT - MARGIN - HEADER_HEIGHT,
-          width: A4_WIDTH - (MARGIN * 2),
-          height: HEADER_HEIGHT,
-          color: rgb(0.95, 0.95, 0.95),
-          borderColor: rgb(0.7, 0.7, 0.7),
-          borderWidth: 0.5,
-        });
-        
-        // Use image-specific caseNumber if available, otherwise fall back to the general caseNumber
         // Pretendard용 정규화 (ASCII '-' 유지, 치환 금지)
         const displayCaseNumber2 = normalizeHeaderText(img.caseNumber || insuranceAccidentNo || caseNumber || "");
         const cleanFullAddress2 = normalizeHeaderText(fullAddress || "");
-        // 헤더 형식: "사고번호 {보험사고번호} {주소} {카테고리}-{세부카테고리}"
-        // categoryDisplay 조합 전 trim() 적용
         const safeTabName2 = (tabName || "").trim();
         const safeCategory2 = (img.category || "").trim();
         const categoryDisplay2 = safeCategory2 ? `${safeTabName2}-${safeCategory2}` : safeTabName2;
-        const headerText2 = cleanFullAddress2 
-          ? `사고번호 ${displayCaseNumber2} ${cleanFullAddress2} ${categoryDisplay2}`
-          : `사고번호 ${displayCaseNumber2} ${categoryDisplay2}`;
-        
-        // drawText 직전 charCode 검증 (RAW/NORM)
-        console.log(`[Evidence PDF Header2] NORM displayCaseNumber2: "${displayCaseNumber2}"`);
-        console.log(`[Evidence PDF Header2] charCodes:`, Array.from(displayCaseNumber2).map(c => c.charCodeAt(0).toString(16).padStart(4, '0')));
-        try {
-          const fontSize2 = headerText2.length > 60 ? 8 : 10;
-          const headerY2 = A4_HEIGHT - MARGIN - HEADER_HEIGHT + 10;
-          const headerColor2 = { red: 0.2, green: 0.2, blue: 0.2 };
-          let cursorX2 = MARGIN + 10;
-          
-          // 3파트 분리 렌더링: prefix / 사고번호(drawIdentifierTight) / suffix
-          const prefix2 = "사고번호 ";
-          newPage.drawText(prefix2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
-          cursorX2 += font.widthOfTextAtSize(prefix2, fontSize2);
-          
-          // 사고번호 - drawIdentifierTight로 하이픈 간격 보정
-          cursorX2 = drawIdentifierTight(newPage, displayCaseNumber2, cursorX2, headerY2, font, fontSize2, headerColor2);
-          
-          // suffix: 주소 + 카테고리 (또는 카테고리만)
-          const suffix2 = cleanFullAddress2 
-            ? ` ${cleanFullAddress2} ${categoryDisplay2}`
-            : ` ${categoryDisplay2}`;
-          const maxRight2 = A4_WIDTH - MARGIN - 10;
-          const suffixWidth2 = font.widthOfTextAtSize(suffix2, fontSize2);
-          if (cursorX2 + suffixWidth2 > maxRight2 && cleanFullAddress2) {
-            const categoryOnly2 = ` ${categoryDisplay2}`;
-            const categoryWidth2 = font.widthOfTextAtSize(categoryOnly2, fontSize2);
-            const addressMaxWidth2 = maxRight2 - cursorX2 - categoryWidth2 - 5;
-            if (addressMaxWidth2 <= 0) {
-              newPage.drawText(categoryOnly2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
-            } else {
-              let addressText2 = cleanFullAddress2;
-              while (font.widthOfTextAtSize(` ${addressText2}...`, fontSize2) > addressMaxWidth2 && addressText2.length > 10) {
-                addressText2 = addressText2.slice(0, -1);
-              }
-              if (addressText2.length < cleanFullAddress2.length) {
-                addressText2 = addressText2.trim() + '...';
-              }
-              if (font.widthOfTextAtSize(` ${addressText2}`, fontSize2) > addressMaxWidth2) {
-                newPage.drawText(categoryOnly2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
-              } else {
-                newPage.drawText(` ${addressText2}`, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
-                cursorX2 += font.widthOfTextAtSize(` ${addressText2}`, fontSize2);
-                newPage.drawText(categoryOnly2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
-              }
-            }
-          } else {
-            newPage.drawText(suffix2, { x: cursorX2, y: headerY2, size: fontSize2, font, color: rgb(headerColor2.red, headerColor2.green, headerColor2.blue) });
-          }
-        } catch (e) {
-          // Silent fail
-        }
-        
+
+        // 헤더 렌더링 (주소가 길면 두 번째 행으로 wrap)
+        const usedHeaderHeight2 = drawEvidenceHeader(newPage, font, {
+          displayCaseNumber: displayCaseNumber2,
+          cleanFullAddress: cleanFullAddress2,
+          categoryDisplay: categoryDisplay2,
+          fileName: img.fileName,
+        });
+
+        // 이미지 영역 — 두 번째 행 wrap 시 높이가 줄어듦
+        const imageAreaTop2 = A4_HEIGHT - MARGIN - usedHeaderHeight2 - 10;
+        const imageAreaHeight2 = imageAreaTop2 - MARGIN - 10;
+
         if (!img.error && img.buffer.length > 0) {
           try {
             const compressedBuffer = await compressJpegBufferForPdf(img.buffer);
             const embeddedImage = await currentPdf.embedJpg(compressedBuffer);
             const imgDims = embeddedImage.scale(1);
             const scaleX = imageAreaWidth / imgDims.width;
-            const scaleY = imageAreaHeight / imgDims.height;
+            const scaleY = imageAreaHeight2 / imgDims.height;
             const scale = Math.min(scaleX, scaleY, 1);
             const drawWidth = imgDims.width * scale;
             const drawHeight = imgDims.height * scale;
             const drawX = MARGIN + (imageAreaWidth - drawWidth) / 2;
-            const drawY = MARGIN + 10 + (imageAreaHeight - drawHeight) / 2;
+            const drawY = MARGIN + 10 + (imageAreaHeight2 - drawHeight) / 2;
             
             newPage.drawImage(embeddedImage, {
               x: drawX,
