@@ -348,6 +348,19 @@
     border-right: none;
   }
 
+  /* HTML <table> 기반 공용 세로/가로 구분선 통일
+   * 적용 대상: 정산청구, 정산종결, 접수취소, 1:1문의관리, 공지사항관리
+   * - 인라인 borderBottom이 이미 있는 셀은 인라인 우선
+   * - 마지막 컬럼은 세로선 제외 */
+  .unified-table th,
+  .unified-table td {
+    border-right: 1px solid rgba(12, 12, 12, 0.08);
+  }
+  .unified-table th:last-child,
+  .unified-table td:last-child {
+    border-right: none;
+  }
+
   /* ============================================================
    * 테이블 행 압축 유틸리티 (6개 화면 공용)
    * - 페이지: 종합진행관리 / 정산청구 / 정산종결 / 접수취소 /

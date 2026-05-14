@@ -1536,7 +1536,7 @@ export default function AdminSettings() {
                   boxShadow: "0px 0px 20px #DBE9F5",
                 }}
               >
-                <table className="w-full">
+                <table className="w-full unified-table">
                   <thead>
                     <tr className="compact-row"
                       style={{

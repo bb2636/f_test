@@ -715,6 +715,7 @@ export default function CancelledCases() {
       >
         <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
           <div
+            className="data-table-header"
             style={{
               display: "grid",
               gridTemplateColumns,
@@ -857,6 +858,7 @@ export default function CancelledCases() {
               return (
                 <div
                   key={caseItem.id}
+                  className="data-table-row"
                   style={{
                     display: "grid",
                     gridTemplateColumns,

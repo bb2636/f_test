@@ -1552,7 +1552,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                     fontSize: "14px",
                     lineHeight: "115%",
                     color: "rgba(12, 12, 12, 0.8)",
-                    borderRight: "1px solid rgba(12, 12, 12, 0.05)",
+                    borderRight: "1px solid rgba(12, 12, 12, 0.08)",
                     textAlign: "center",
                   };
                   const dateCellStyle: React.CSSProperties = {
@@ -1585,7 +1585,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       style={{
                         borderBottom:
                           index < pagedRows.length - 1
-                            ? "1px solid rgba(12, 12, 12, 0.05)"
+                            ? "1px solid rgba(12, 12, 12, 0.08)"
                             : "none",
                         background: rowBg,
                       }}

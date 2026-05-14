@@ -444,7 +444,7 @@ export default function SettlementAction() {
           }}
         >
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <table className="unified-table" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr className="compact-row" style={{ background: "rgba(12, 12, 12, 0.06)" }}>
                   <th
