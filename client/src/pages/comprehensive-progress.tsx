@@ -247,7 +247,7 @@ const progressFormSchema = z.object({
 
 export default function ComprehensiveProgress() {
   const [activeMenu, setActiveMenu] = useState("종합진행관리");
-  const [selectedStatus, setSelectedStatus] = useState("전체");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedManager, setSelectedManager] = useState<string>("__INIT__");
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(() => {
@@ -1090,13 +1090,15 @@ export default function ComprehensiveProgress() {
     "1차승인",
     "현장정보제출",
     "복구요청(2차승인)",
+    "직접복구",
     "청구자료제출(복구)",
     "출동비청구(선견적)",
     "청구",
+    "취소대기",
   ] as const;
 
   const statusOptions = [
-    { name: "전체", key: "all" },
+    { name: "전체현황", key: "all" },
     ...FILTER_STATUSES.map((status) => ({
       name: getStatusDisplayText(status),
       key: status,
@@ -1112,7 +1114,7 @@ export default function ComprehensiveProgress() {
         const isAssignedToMe = caseItem.assignedPartner === user.company;
         const isNotPending = caseItem.status !== "배당대기";
 
-        if (selectedStatus === "전체") {
+        if (selectedStatus === "all") {
           return isAssignedToMe && isNotPending;
         }
         if (selectedStatus === "미복구") {
@@ -1130,7 +1132,7 @@ export default function ComprehensiveProgress() {
         return isAssignedToMe && caseItem.status === selectedStatus;
       }
 
-      if (selectedStatus === "전체") return true;
+      if (selectedStatus === "all") return true;
       if (selectedStatus === "미복구") {
         return caseItem.status === "미복구" || caseItem.status === "출동비 청구";
       }
@@ -1595,7 +1597,7 @@ export default function ComprehensiveProgress() {
                 {statusOptions.map((option) => (
                   <SelectItem
                     key={option.key}
-                    value={option.name}
+                    value={option.key}
                     data-testid={`option-${option.key}`}
                   >
                     {option.name}

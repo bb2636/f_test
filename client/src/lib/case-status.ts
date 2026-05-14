@@ -38,9 +38,23 @@ export function getStatusColor(status: string | null | undefined): string {
   return STATUS_COLORS.default;
 }
 
+// 진행상태 보여지는 이름 매핑 (DB 저장값은 그대로 유지, 표시 라벨만 변경)
+const STATUS_DISPLAY_MAP: Record<string, string> = {
+  "배당대기": "배정 대기",
+  "접수완료": "배정완료",
+  "검토중": "플록슨 심사 중",
+  "1차승인": "플록슨 심사완료",
+  "현장정보제출": "보험사 심사 중",
+  "복구요청(2차승인)": "복구 요청",
+  "청구자료제출(복구)": "복구완료 보고",
+  "출동비청구(선견적)": "비교견적완료 보고",
+  "현장방문": "보고서 작성중",
+  "현장정보입력": "보고서 작성중",
+};
+
 export function getStatusDisplayText(
   status: string | null | undefined,
 ): string {
-  if (!status) return "배당대기";
-  return status;
+  if (!status) return STATUS_DISPLAY_MAP["배당대기"];
+  return STATUS_DISPLAY_MAP[status] ?? status;
 }
