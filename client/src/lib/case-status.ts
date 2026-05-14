@@ -67,6 +67,7 @@ type CaseLite = {
   caseNumber?: string | null;
   status?: string | null;
   recoveryType?: string | null;
+  restorationMethod?: string | null;
 };
 
 // 접수번호 그룹 prefix — 마지막 suffix(-0/-1 등)만 제거.
@@ -87,6 +88,13 @@ function inferRecoveryKind(
   const fromOne = (c: CaseLite): "직접복구" | "선견적요청" | null => {
     if (c.recoveryType === "직접복구" || c.recoveryType === "선견적요청") {
       return c.recoveryType;
+    }
+    // 복구 방식(restoration_method) 필드에서 보조 추론
+    if (
+      c.restorationMethod === "직접복구" ||
+      c.restorationMethod === "선견적요청"
+    ) {
+      return c.restorationMethod;
     }
     if (c.status === "직접복구" || c.status === "청구자료제출(복구)") {
       return "직접복구";
