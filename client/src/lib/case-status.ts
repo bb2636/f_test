@@ -58,3 +58,17 @@ export function getStatusDisplayText(
   if (!status) return STATUS_DISPLAY_MAP["배당대기"];
   return STATUS_DISPLAY_MAP[status] ?? status;
 }
+
+// 케이스 객체 단위 상태 라벨 — "청구" 상태는 복구 방식(recoveryType)에 따라 분기 표시
+// (DB 저장값 변경 없음, 보여지는 라벨만 분기)
+export function getCaseStatusDisplayText(caseItem: {
+  status?: string | null;
+  recoveryType?: string | null;
+}): string {
+  if (caseItem.status === "청구") {
+    if (caseItem.recoveryType === "선견적요청") return "비교견적비 청구";
+    if (caseItem.recoveryType === "직접복구") return "공사비 청구";
+    return "청구";
+  }
+  return getStatusDisplayText(caseItem.status);
+}

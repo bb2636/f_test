@@ -23,7 +23,7 @@ import {
 import logoIcon from "@assets/logo-frame.svg";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
-import { getStatusColor, getStatusDisplayText, STATUS_COLORS } from "@/lib/case-status";
+import { getStatusColor, getStatusDisplayText, getCaseStatusDisplayText, STATUS_COLORS } from "@/lib/case-status";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";
 import { GlobalHeader } from "@/components/global-header";
@@ -2410,7 +2410,7 @@ export default function ComprehensiveProgress() {
                               }}
                               data-testid={`button-status-${caseItem.id}`}
                             >
-                              {getStatusDisplayText(caseItem.status)}
+                              {getCaseStatusDisplayText(caseItem)}
                             </div>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent
@@ -2483,7 +2483,7 @@ export default function ComprehensiveProgress() {
                           }}
                           data-testid={`text-status-${caseItem.id}`}
                         >
-                          {getStatusDisplayText(caseItem.status)}
+                          {getCaseStatusDisplayText(caseItem)}
                         </div>
                       )}
                     </div>
