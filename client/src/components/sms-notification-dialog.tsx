@@ -562,11 +562,12 @@ export function SmsNotificationDialog({
               </span>
             </div>
 
-            {/* [2026-05-14] 처리유형 라디오 */}
+            {/* [2026-05-14] 처리유형 라디오 + 면책유형 콤보박스 (한 줄 배치) */}
             <div
               style={{
                 display: "flex",
                 gap: "16px",
+                alignItems: "center",
                 marginBottom: "10px",
                 fontFamily: "Pretendard",
                 fontSize: "13px",
@@ -581,6 +582,7 @@ export function SmsNotificationDialog({
                     alignItems: "center",
                     gap: "6px",
                     cursor: "pointer",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   <input
@@ -603,15 +605,12 @@ export function SmsNotificationDialog({
                   {opt}
                 </label>
               ))}
-            </div>
-
-            {/* [2026-05-14] 면책유형 콤보박스 (이름: 기타) */}
-            <div style={{ marginBottom: "10px" }}>
               <select
                 value={cancelReasonSelect}
                 onChange={(e) => setCancelReasonSelect(e.target.value)}
                 style={{
-                  width: "100%",
+                  flex: 1,
+                  minWidth: 0,
                   padding: "8px 10px",
                   fontFamily: "Pretendard",
                   fontSize: "13px",
