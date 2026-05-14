@@ -12,7 +12,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { classifyPropertyType } from "@/lib/property-type";
 
-const CLOSED_STATUSES = ["접수취소", "취소대기", "종결"];
+// [2026-05-14] 취소대기 케이스도 미결건 통계에 노출되도록 CLOSED_STATUSES에서 제외.
+//   - 종합진행관리 페이지: 취소대기 그대로 잔류 (해당 파일 미수정)
+//   - 미결건 통계: 취소대기를 미결건으로 분류해 함께 표시 (이번 변경)
+//   - 종결건 통계: 취소대기 계속 제외, 접수취소만 종결/취소건으로 표시 (closed-case-statistics 미수정)
+const CLOSED_STATUSES = ["접수취소", "종결"];
 
 const isUnsettled = (c: Case): boolean => !CLOSED_STATUSES.includes(c.status);
 
@@ -122,7 +126,8 @@ const STATUS_ORDER = [
 ];
 
 const getActiveCases = (groupCases: Case[]): Case[] => {
-  return groupCases.filter(c => c.status !== "접수취소" && c.status !== "취소대기");
+  // [2026-05-14] 미결건 통계에서는 취소대기를 활성 케이스로 인정 (종합관리는 별개로 그대로 유지)
+  return groupCases.filter(c => c.status !== "접수취소");
 };
 
 const getGroupRestorationMethod = (groupCases: Case[]): string => {
@@ -213,7 +218,8 @@ const getClaimAmount = (c: Case): number => {
 };
 
 const getEstimateEligibleCases = (groupCases: Case[]): Case[] => {
-  return groupCases.filter(c => c.status !== "접수취소" && c.status !== "취소대기" && !isPreEstimate(c));
+  // [2026-05-14] 미결건 통계에서는 취소대기도 견적 산출 대상에 포함 (종합관리는 별개)
+  return groupCases.filter(c => c.status !== "접수취소" && !isPreEstimate(c));
 };
 
 const getPreEstimateClaimFallback = (c: Case, settMap?: Record<string, Settlement>): number => {
