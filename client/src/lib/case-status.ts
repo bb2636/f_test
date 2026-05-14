@@ -68,6 +68,7 @@ type CaseLite = {
   status?: string | null;
   recoveryType?: string | null;
   restorationMethod?: string | null;
+  damagePreventionCost?: string | null;
 };
 
 // 접수번호 그룹 prefix — 마지막 suffix(-0/-1 등)만 제거.
@@ -86,6 +87,11 @@ function inferRecoveryKind(
   allCases?: ReadonlyArray<CaseLite>,
 ): "직접복구" | "선견적요청" | null {
   const fromOne = (c: CaseLite): "직접복구" | "선견적요청" | null => {
+    // 손해방지건(damage_prevention_cost='true') 은 실제 작업이 발생한 공사비 청구 성격
+    // → restoration_method 가 '선견적요청' 으로 들어있어도 직접복구로 간주
+    if (c.damagePreventionCost === "true") {
+      return "직접복구";
+    }
     if (c.recoveryType === "직접복구" || c.recoveryType === "선견적요청") {
       return c.recoveryType;
     }
