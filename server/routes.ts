@@ -10168,29 +10168,14 @@ FLOXN 드림`;
               }
             };
 
-            // 사고번호 — col1 폭 초과 시 절단
-            const fitToWidth = (text: string, maxW: number): string => {
-              if (!text) return text;
-              if (font.widthOfTextAtSize(text, textSize) <= maxW) return text;
-              let cur = text;
-              while (
-                cur.length > 0 &&
-                font.widthOfTextAtSize(cur + "...", textSize) > maxW
-              ) {
-                cur = cur.slice(0, -1);
-              }
-              return cur.trim() + "...";
-            };
-            const acciFit = fitToWidth(normalizedAccidentNo, col1Width - 10);
-            drawTextTight(acciFit, x + 5);
+            // 사고번호
+            drawTextTight(normalizedAccidentNo, x + 5);
 
-            // 주소 (하이픈 간격 보정 적용) — col2 폭 초과 시 절단(카테고리 칸 침범 방지)
-            const addrFit = fitToWidth(normalizedAddress, col2Width - 10);
-            drawTextTight(addrFit, x + col1Width + 5);
+            // 주소 (하이픈 간격 보정 적용)
+            drawTextTight(normalizedAddress, x + col1Width + 5);
 
-            // 카테고리 — col3 폭 초과 시 절단
-            const catFit = fitToWidth(normalizedCategory, col3Width - 10);
-            page.drawText(catFit, {
+            // 카테고리
+            page.drawText(normalizedCategory, {
               x: x + col1Width + col2Width + 5,
               y: textY,
               size: textSize,
@@ -11176,29 +11161,14 @@ FLOXN 드림`;
               }
             };
 
-            // 사고번호 — col1 폭 초과 시 절단
-            const fitToWidth = (text: string, maxW: number): string => {
-              if (!text) return text;
-              if (font.widthOfTextAtSize(text, textSize) <= maxW) return text;
-              let cur = text;
-              while (
-                cur.length > 0 &&
-                font.widthOfTextAtSize(cur + "...", textSize) > maxW
-              ) {
-                cur = cur.slice(0, -1);
-              }
-              return cur.trim() + "...";
-            };
-            const acciFit = fitToWidth(normalizedAccidentNo, col1Width - 10);
-            drawTextTight(acciFit, x + 5);
+            // 사고번호
+            drawTextTight(normalizedAccidentNo, x + 5);
 
-            // 주소 (하이픈 간격 보정 적용) — col2 폭 초과 시 절단(카테고리 칸 침범 방지)
-            const addrFit = fitToWidth(normalizedAddress, col2Width - 10);
-            drawTextTight(addrFit, x + col1Width + 5);
+            // 주소 (하이픈 간격 보정 적용)
+            drawTextTight(normalizedAddress, x + col1Width + 5);
 
-            // 카테고리 — col3 폭 초과 시 절단
-            const catFit = fitToWidth(normalizedCategory, col3Width - 10);
-            page.drawText(catFit, {
+            // 카테고리
+            page.drawText(normalizedCategory, {
               x: x + col1Width + col2Width + 5,
               y: textY,
               size: textSize,
