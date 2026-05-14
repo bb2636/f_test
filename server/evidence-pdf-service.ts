@@ -626,16 +626,44 @@ async function addHeaderToPdf(
     const pages = srcDoc.getPages();
     console.log(`[Evidence PDF] Adding headers to PDF: ${fileName} (${pages.length} pages)`);
     
+    // Build header text once - Pretendard용 정규화 (ASCII '-' 유지, 치환 금지)
+    const cleanAccidentNo = normalizeHeaderText(insuranceAccidentNo || "");
+    const cleanAddr = normalizeHeaderText(fullAddress || "");
+    const fontSize = 9;
+
+    const line1Text = cleanAccidentNo ? `사고번호: ${cleanAccidentNo}` : "";
+    const line2RawText = cleanAddr ? `주소: ${cleanAddr}` : "";
+
+    // 두 줄 모두 있으면 헤더 높이 확장(증빙자료/파일명 영역 침범 방지)
+    const useTwoLines = !!(line1Text && line2RawText);
+    const headerHeightForPage = useTwoLines ? HEADER_HEIGHT + 14 : HEADER_HEIGHT;
+
+    // 페이지별 폭 기준 글자 단위 반복 절단 헬퍼 (안전 가드: 최종에도 초과면 강제 축약)
+    const truncateToFit = (text: string, maxW: number): string => {
+      if (!text) return text;
+      if (font.widthOfTextAtSize(text, fontSize) <= maxW) return text;
+      let cur = text;
+      while (cur.length > 0 && font.widthOfTextAtSize(cur + "...", fontSize) > maxW) {
+        cur = cur.slice(0, -1);
+      }
+      let out = cur.trim() + "...";
+      // 안전 가드: "..." 자체가 폭 초과인 극단 케이스
+      while (out.length > 1 && font.widthOfTextAtSize(out, fontSize) > maxW) {
+        out = out.slice(0, -1);
+      }
+      return out;
+    };
+
     for (let i = 0; i < pages.length; i++) {
       const srcPage = pages[i];
       const { width, height } = srcPage.getSize();
-      
-      // Create new page with extra height for header
-      const newPage = newDoc.addPage([width, height + HEADER_HEIGHT]);
-      
+
+      // Create new page with extra height for header (wrap 시 +14)
+      const newPage = newDoc.addPage([width, height + headerHeightForPage]);
+
       // Embed the source page
       const embeddedPage = await newDoc.embedPage(srcPage);
-      
+
       // Draw the original page content below the header
       newPage.drawPage(embeddedPage, {
         x: 0,
@@ -643,16 +671,16 @@ async function addHeaderToPdf(
         width: width,
         height: height,
       });
-      
+
       // Draw white background for header area
       newPage.drawRectangle({
         x: 0,
         y: height,
         width: width,
-        height: HEADER_HEIGHT,
+        height: headerHeightForPage,
         color: rgb(1, 1, 1),
       });
-      
+
       // Draw header line
       newPage.drawLine({
         start: { x: 0, y: height },
@@ -660,48 +688,45 @@ async function addHeaderToPdf(
         thickness: 0.5,
         color: rgb(0.8, 0.8, 0.8),
       });
-      
-      // Build header text - Pretendard용 정규화 (ASCII '-' 유지, 치환 금지)
-      const cleanAccidentNo = normalizeHeaderText(insuranceAccidentNo || "");
-      const cleanAddr = normalizeHeaderText(fullAddress || "");
-      const headerParts: string[] = [];
-      if (cleanAccidentNo) headerParts.push(`사고번호: ${cleanAccidentNo}`);
-      if (cleanAddr) headerParts.push(`주소: ${cleanAddr}`);
-      const headerText = headerParts.join('  |  ') || fileName;
-      
-      // drawText 직전 charCode 검증 (RAW/NORM)
-      console.log(`[Evidence PDF Header3] RAW insuranceAccidentNo: "${insuranceAccidentNo || ""}"`);
-      console.log(`[Evidence PDF Header3] NORM cleanAccidentNo: "${cleanAccidentNo}"`);
-      console.log(`[Evidence PDF Header3] charCodes:`, Array.from(cleanAccidentNo).map(c => c.charCodeAt(0).toString(16).padStart(4, '0')));
-      // 숨은 공백 체크 (0020, 00a0, 200b 등)
-      const hiddenSpaces = Array.from(cleanAccidentNo).filter(c => 
-        [0x0020, 0x00A0, 0x200B, 0x202F, 0x205F, 0x2060, 0x3000].includes(c.charCodeAt(0))
-      );
-      if (hiddenSpaces.length > 0) {
-        console.log(`[Evidence PDF Header3] WARNING: 숨은 공백 발견:`, hiddenSpaces.map(c => c.charCodeAt(0).toString(16)));
-      }
-      
+
       // Draw header text
       try {
-        const fontSize = 9;
-        const textWidth = font.widthOfTextAtSize(headerText, fontSize);
+        // 페이지별 폭으로 절단(다중 페이지 폭 다른 PDF 대비)
         const maxTextWidth = width - 20;
-        
-        // Truncate if too long
-        let displayText = headerText;
-        if (textWidth > maxTextWidth) {
-          const ratio = maxTextWidth / textWidth;
-          const charCount = Math.floor(headerText.length * ratio) - 3;
-          displayText = headerText.substring(0, charCount) + '...';
+        if (useTwoLines) {
+          // 2줄 렌더링: 위쪽=사고번호, 아래쪽=주소(페이지별 절단 적용)
+          const line1Fitted = truncateToFit(line1Text, maxTextWidth);
+          const line2Fitted = truncateToFit(line2RawText, maxTextWidth);
+          const lineGap = 13;
+          const totalTextHeight = fontSize * 2 + (lineGap - fontSize);
+          const topY =
+            height + (headerHeightForPage - totalTextHeight) / 2 + fontSize;
+          newPage.drawText(line1Fitted, {
+            x: 10,
+            y: topY,
+            size: fontSize,
+            font: font,
+            color: rgb(0.2, 0.2, 0.2),
+          });
+          newPage.drawText(line2Fitted, {
+            x: 10,
+            y: topY - lineGap,
+            size: fontSize,
+            font: font,
+            color: rgb(0.3, 0.3, 0.3),
+          });
+        } else {
+          // 단일 라인: 사고번호만 또는 주소만 (페이지별 절단)
+          const singleSrc = line1Text || line2RawText || fileName;
+          const singleText = truncateToFit(singleSrc, maxTextWidth);
+          newPage.drawText(singleText, {
+            x: 10,
+            y: height + (headerHeightForPage - fontSize) / 2,
+            size: fontSize,
+            font: font,
+            color: rgb(0.2, 0.2, 0.2),
+          });
         }
-        
-        newPage.drawText(displayText, {
-          x: 10,
-          y: height + (HEADER_HEIGHT - fontSize) / 2,
-          size: fontSize,
-          font: font,
-          color: rgb(0.2, 0.2, 0.2),
-        });
       } catch (textErr) {
         console.warn(`[Evidence PDF] Failed to draw header text on page ${i + 1}`);
       }
