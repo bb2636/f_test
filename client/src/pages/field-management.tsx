@@ -1018,7 +1018,7 @@ export default function FieldManagement() {
                 <div className="flex items-center flex-wrap gap-y-4">
                   <div className="text-[12px] text-[#6B7280] w-[100px]">협력사</div>
                   <input
-                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
                     value={selectedCaseData.assignedPartner || ""}
                     readOnly
                     placeholder="-"
@@ -1027,7 +1027,7 @@ export default function FieldManagement() {
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[80px]">담당자명</div>
                   <input
-                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
                     value={selectedCaseData.assignedPartnerManager || ""}
                     readOnly
                     placeholder="-"
@@ -1036,7 +1036,7 @@ export default function FieldManagement() {
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[100px]">담당자 연락처</div>
                   <input
-                    className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                    className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
                     value={selectedCaseData.assignedPartnerContact || ""}
                     readOnly
                     placeholder="-"
@@ -1047,7 +1047,7 @@ export default function FieldManagement() {
                 <div className="flex items-center flex-wrap gap-y-4">
                   <div className="text-[12px] text-[#6B7280] w-[100px]">보험사 사고번호</div>
                   <input
-                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
                     value={selectedCaseData.insuranceAccidentNo || ""}
                     readOnly
                     placeholder="-"
@@ -1056,7 +1056,7 @@ export default function FieldManagement() {
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[80px]">보험사</div>
                   <input
-                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
                     value={selectedCaseData.insuranceCompany || ""}
                     readOnly
                     placeholder="-"
@@ -1067,7 +1067,7 @@ export default function FieldManagement() {
                 <div className="flex items-center flex-wrap gap-y-4">
                   <div className="text-[12px] text-[#6B7280] w-[100px]">보험계약자</div>
                   <input
-                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
                     value={selectedCaseData.policyHolderName || ""}
                     readOnly
                     placeholder="-"
@@ -1076,7 +1076,7 @@ export default function FieldManagement() {
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[80px]">피보험자</div>
                   <input
-                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
                     value={selectedCaseData.insuredName || ""}
                     readOnly
                     placeholder="-"
@@ -1085,7 +1085,7 @@ export default function FieldManagement() {
 
                   <div className="text-[12px] text-[#6B7280] ml-12 w-[60px]">연락처</div>
                   <input
-                    className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                    className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
                     value={selectedCaseData.insuredContact || ""}
                     readOnly
                     placeholder="-"

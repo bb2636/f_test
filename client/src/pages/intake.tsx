@@ -219,10 +219,10 @@ const inputClasses =
   "h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100";
 const disabledInputClasses =
   "h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-400 outline-none";
-// [정책 2026-05-12] 자동연동 필드 — 보험계약자 인풋(`${inputClasses} bg-white`)과 동일한 박스 외형.
-// border-slate-200 + bg-white로 통일, readOnly 유지로 직접 입력 차단(자동연동 동작 보존).
+// [정책 2026-05-14] 자동연동 필드 — 회색 배경(bg-slate-50)으로 수동 입력(흰색)과 시각적으로 구분.
+// 테두리는 inputClasses의 border-slate-200 유지, readOnly 유지로 직접 입력 차단(자동연동 동작 보존).
 // keep-border: 전역 `input[readonly]{border:none}` 룰의 예외 클래스(index.css 참조).
-const autoFilledInputClasses = `${inputClasses} bg-white cursor-default keep-border`;
+const autoFilledInputClasses = `${inputClasses} cursor-default keep-border`;
 const selectTriggerClasses =
   "h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 [&>span]:text-left";
 
@@ -2833,8 +2833,9 @@ export default function Intake({
               <div className="col-span-12 md:col-span-6">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>협력사</label>
+                  {/* [2026-05-14] readOnly + keep-border 추가: 전역 input[readonly]{border:none} 룰 예외 처리하여 테두리 표시 */}
                   <input
-                    className={`${inputClasses} ${!readOnly ? "cursor-pointer" : ""}`}
+                    className={`${inputClasses} keep-border ${!readOnly ? "cursor-pointer" : ""}`}
                     value={formData.assignedPartner}
                     onClick={() => !readOnly && setIsPartnerSearchOpen(true)}
                     readOnly
