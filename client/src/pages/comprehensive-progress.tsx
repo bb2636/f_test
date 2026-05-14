@@ -2708,17 +2708,38 @@ export default function ComprehensiveProgress() {
                 alignItems: "center",
               }}
             >
-              <SheetTitle
-                style={{
-                  fontFamily: "Pretendard",
-                  fontWeight: 600,
-                  fontSize: "22px",
-                  letterSpacing: "-0.02em",
-                  color: "#0C0C0C",
-                }}
-              >
-                진행건 상세보기
-              </SheetTitle>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
+                <SheetTitle
+                  style={{
+                    fontFamily: "Pretendard",
+                    fontWeight: 600,
+                    fontSize: "22px",
+                    letterSpacing: "-0.02em",
+                    color: "#0C0C0C",
+                  }}
+                >
+                  진행건 상세보기
+                </SheetTitle>
+                {(() => {
+                  const currentCase = cases?.find((c) => c.id === selectedCaseId);
+                  const caseNumber = currentCase?.caseNumber
+                    ? formatCaseNumber(currentCase.caseNumber)
+                    : "";
+                  return caseNumber ? (
+                    <span
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontWeight: 500,
+                        fontSize: "16px",
+                        color: "#253396",
+                      }}
+                      data-testid="text-detail-case-number"
+                    >
+                      {caseNumber}
+                    </span>
+                  ) : null;
+                })()}
+              </div>
               <div style={{ display: "flex", gap: "8px" }}>
                 {/* 접수건 삭제 버튼 - 권한이 있는 관리자만 표시 */}
                 {user?.role === "관리자" &&
