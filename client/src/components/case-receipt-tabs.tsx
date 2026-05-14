@@ -28,16 +28,27 @@ function formatVisitDate(d?: string | null): string {
   }
 }
 
-// [2026-05-14] 주소에서 "몇동 몇호"만 추출. 동/호 둘 다 없으면 빈 문자열.
-function extractDongHo(...addrs: Array<string | null | undefined>): string {
-  const text = addrs.filter(Boolean).join(" ");
-  if (!text) return "";
-  const dongMatch = text.match(/([0-9A-Za-z가-힣]+동)/);
-  const hoMatch = text.match(/([0-9A-Za-z가-힣\-]+호)/);
-  const parts: string[] = [];
-  if (dongMatch) parts.push(dongMatch[1]);
-  if (hoMatch) parts.push(hoMatch[1]);
-  return parts.join(" ");
+// [2026-05-14] 라벨용 동/호 추출. 우선순위:
+// 1) 주소 텍스트에서 "○○동 ○○호" 패턴 매칭 → 그대로 사용
+// 2) 매칭 실패 시 상세주소(addressDetail)를 그대로 사용 (예: "(101)", "101호")
+// 3) 둘 다 없으면 빈 문자열
+function extractUnitLabel(
+  addressDetail?: string | null,
+  address?: string | null,
+): string {
+  const combined = [address, addressDetail].filter(Boolean).join(" ").trim();
+  if (combined) {
+    const dongMatch = combined.match(/([0-9A-Za-z가-힣]+동)/);
+    const hoMatch = combined.match(/([0-9A-Za-z가-힣\-]+호)/);
+    const parts: string[] = [];
+    if (dongMatch) parts.push(dongMatch[1]);
+    if (hoMatch) parts.push(hoMatch[1]);
+    if (parts.length > 0) return parts.join(" ");
+  }
+  // 동/호 패턴이 없으면 상세주소를 그대로 표시
+  const detail = (addressDetail || "").trim();
+  if (detail) return detail;
+  return "";
 }
 
 export function CaseReceiptTabs() {
@@ -114,12 +125,12 @@ export function CaseReceiptTabs() {
         const isVictim = sfx !== "" && sfx !== "0";
         const label = isVictim ? "피해세대" : "원인세대";
         const visit = formatVisitDate(c.visitDate);
-        // [2026-05-14] 라벨 형식 변경: "구분 · 방문일 · 동호"
+        // [2026-05-14] 라벨 형식 변경: "구분 · 방문일 · 동호(또는 상세주소)"
         // 원인세대(-0): 피보험자 주소, 피해세대(-1+): 피해자 주소(없으면 피보험자 주소 fallback)
         const dongHo = isVictim
-          ? extractDongHo(c.victimAddress, c.victimAddressDetail) ||
-            extractDongHo(c.insuredAddress, c.insuredAddressDetail)
-          : extractDongHo(c.insuredAddress, c.insuredAddressDetail);
+          ? extractUnitLabel(c.victimAddressDetail, c.victimAddress) ||
+            extractUnitLabel(c.insuredAddressDetail, c.insuredAddress)
+          : extractUnitLabel(c.insuredAddressDetail, c.insuredAddress);
         const active = c.id === selectedCaseId;
         return (
           <button
