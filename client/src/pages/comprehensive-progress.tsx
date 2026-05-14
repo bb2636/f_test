@@ -3456,19 +3456,19 @@ export default function ComprehensiveProgress() {
                               value: selectedCase?.visitDate,
                             },
                             {
-                              label: "현장자료 제출일",
+                              label: "출동보고서 제출일",
                               value: selectedCase?.siteInvestigationSubmitDate,
                             },
                             {
-                              label: "1차 승인일(내부)",
+                              label: "1차(플록슨) 승인일",
                               value: selectedCase?.firstApprovalDate,
                             },
                             {
-                              label: "2차 승인일(복구 요청일)",
+                              label: "2차(보험사) 복구 요청일",
                               value: selectedCase?.secondApprovalDate,
                             },
                             {
-                              label: "복구완료일",
+                              label: "복구완료 보고일",
                               value: selectedCase?.constructionCompletionDate,
                             },
                             { label: "청구일", value: selectedCase?.claimDate },
