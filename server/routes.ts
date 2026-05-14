@@ -9335,11 +9335,18 @@ FLOXN 드림`;
           continue;
         }
 
+        // 주소 가져오기: 기본주소 + 상세주소 결합 (-0=피보험자, -1+=피해자)
         let addressLabel = "-";
         if (caseSuffix === 0) {
-          addressLabel = relatedCase.insuredAddressDetail || "-";
+          const baseAddr = relatedCase.insuredAddress || "";
+          const detailAddr = relatedCase.insuredAddressDetail || "";
+          const combined = [baseAddr, detailAddr].filter(Boolean).join(" ").trim();
+          addressLabel = combined || "-";
         } else {
-          addressLabel = relatedCase.victimAddressDetail || "-";
+          const baseAddr = relatedCase.victimAddress || "";
+          const detailAddr = relatedCase.victimAddressDetail || "";
+          const combined = [baseAddr, detailAddr].filter(Boolean).join(" ").trim();
+          addressLabel = combined || "-";
         }
 
         const caseApprovedAmt = parseInt(relatedCase.approvedAmount || "0") || 0;
@@ -9559,16 +9566,18 @@ FLOXN 드림`;
           continue;
         }
 
-        // 주소 가져오기: -0 케이스는 피보험자 상세주소만, -1 이상은 피해자 상세주소만 (fallback 없음)
+        // 주소 가져오기: 기본주소 + 상세주소 결합 (-0=피보험자, -1+=피해자, fallback 없음)
         let addressLabel = "-";
         if (caseSuffix === 0) {
-          // 손방건(-0): 피보험자 상세주소만 사용 (피해세대 주소로 fallback하지 않음)
+          const baseAddr = relatedCase.insuredAddress || "";
           const detailAddr = relatedCase.insuredAddressDetail || "";
-          addressLabel = detailAddr || "-";
+          const combined = [baseAddr, detailAddr].filter(Boolean).join(" ").trim();
+          addressLabel = combined || "-";
         } else {
-          // 대물건(-1, -2, ...): 피해자 상세주소만 사용 (피보험자 주소로 fallback하지 않음)
+          const baseAddr = relatedCase.victimAddress || "";
           const detailAddr = relatedCase.victimAddressDetail || "";
-          addressLabel = detailAddr || "-";
+          const combined = [baseAddr, detailAddr].filter(Boolean).join(" ").trim();
+          addressLabel = combined || "-";
         }
 
         // 해당 케이스에 저장된 금액 가져오기 (승인금액 > 견적금액 > 인보이스금액 순서로 확인)
@@ -10587,14 +10596,18 @@ FLOXN 드림`;
           continue;
         }
 
-        // 상세주소 가져오기: -0 케이스는 피보험자 상세주소만, -1+ 케이스는 피해자 상세주소만 (fallback 없음)
+        // 주소 가져오기: 기본주소 + 상세주소 결합 (-0=피보험자, -1+=피해자, fallback 없음)
         let caseAddressLabel = "-";
         if (caseSuffix === 0) {
-          // 손방건(-0): 피보험자 상세주소만 사용 (피해세대 주소로 fallback하지 않음)
-          caseAddressLabel = relatedCase.insuredAddressDetail || "-";
+          const baseAddr = relatedCase.insuredAddress || "";
+          const detailAddr = relatedCase.insuredAddressDetail || "";
+          const combined = [baseAddr, detailAddr].filter(Boolean).join(" ").trim();
+          caseAddressLabel = combined || "-";
         } else {
-          // 대물건(-1, -2, ...): 피해자 상세주소만 사용 (피보험자 주소로 fallback하지 않음)
-          caseAddressLabel = relatedCase.victimAddressDetail || "-";
+          const baseAddr = relatedCase.victimAddress || "";
+          const detailAddr = relatedCase.victimAddressDetail || "";
+          const combined = [baseAddr, detailAddr].filter(Boolean).join(" ").trim();
+          caseAddressLabel = combined || "-";
         }
 
         // 해당 케이스에 저장된 금액 가져오기 (승인금액 > 견적금액 순서로 확인)

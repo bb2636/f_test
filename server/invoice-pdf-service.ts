@@ -200,6 +200,58 @@ function measureTextWidth(text: string, font: PDFFont, size: number): number {
   }
 }
 
+// 텍스트를 최대 너비에 맞춰 최대 2줄로 분할 (한글/영문 모두 지원, 단어 단위 우선, 필요시 글자 단위)
+function wrapTitleToTwoLines(
+  text: string,
+  font: PDFFont,
+  size: number,
+  maxWidth: number,
+): string[] {
+  const normalized = text;
+  if (measureTextWidth(normalized, font, size) <= maxWidth) {
+    return [normalized];
+  }
+
+  // 공백 기준으로 잘라보기 (단어 보존)
+  const tokens = normalized.split(/(\s+)/);
+  let line1 = "";
+  let i = 0;
+  for (; i < tokens.length; i++) {
+    const next = line1 + tokens[i];
+    if (measureTextWidth(next, font, size) > maxWidth) break;
+    line1 = next;
+  }
+
+  // 단어 단위로 한 토큰도 못 넣은 경우 → 글자 단위로 자르기
+  if (!line1.trim()) {
+    line1 = "";
+    let j = 0;
+    for (; j < normalized.length; j++) {
+      const next = line1 + normalized[j];
+      if (measureTextWidth(next, font, size) > maxWidth) break;
+      line1 = next;
+    }
+    let line2 = normalized.slice(j);
+    if (measureTextWidth(line2, font, size) > maxWidth) {
+      // 2줄째도 너무 길면 ... 으로 절단
+      while (line2.length > 0 && measureTextWidth(line2 + "...", font, size) > maxWidth) {
+        line2 = line2.slice(0, -1);
+      }
+      line2 += "...";
+    }
+    return [line1, line2];
+  }
+
+  let line2 = tokens.slice(i).join("").trimStart();
+  if (measureTextWidth(line2, font, size) > maxWidth) {
+    while (line2.length > 0 && measureTextWidth(line2 + "...", font, size) > maxWidth) {
+      line2 = line2.slice(0, -1);
+    }
+    line2 += "...";
+  }
+  return [line1, line2];
+}
+
 function formatAmount(amount: number): string {
   return amount.toLocaleString("ko-KR") + "원";
 }
@@ -509,12 +561,21 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
 
   y -= headerHeight;
 
-  // 내용 행 높이 계산
+  // 내용 행 높이 계산 (제목이 길면 2줄로 분할)
   const itemRowHeight = 25;
+  const titleMaxWidth = particularsColWidth - cellPadding * 2 - 18; // ■ 기호 들여쓰기 고려
+  const wrappedTitles = data.particulars.map((item) => {
+    const itemTitle =
+      item.title === "현장출동비용" ? item.title : "\u25A0 " + item.title;
+    return wrapTitleToTwoLines(itemTitle, fonts.regular, 10, titleMaxWidth);
+  });
   let contentHeight = 0;
-  for (const item of data.particulars) {
+  for (let idx = 0; idx < data.particulars.length; idx++) {
     contentHeight += itemRowHeight;
-    if (item.detail) {
+    if (wrappedTitles[idx].length > 1) {
+      contentHeight += 14; // 두번째 줄 추가 높이
+    }
+    if (data.particulars[idx].detail) {
       contentHeight += 18;
     }
   }
@@ -543,13 +604,14 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
   // 항목 렌더링
   let itemY = y - cellPadding - 12;
 
-  for (const item of data.particulars) {
-    // 항목 제목 (현장출동비용만 단독인 경우 ■ 기호 생략)
-    const itemTitle =
-      item.title === "현장출동비용" ? item.title : "\u25A0 " + item.title;
+  for (let idx = 0; idx < data.particulars.length; idx++) {
+    const item = data.particulars[idx];
+    const lines = wrappedTitles[idx];
+
+    // 항목 제목 1줄 (필요시 2줄로 wrap)
     drawTextLineTight(
       page,
-      itemTitle,
+      lines[0],
       tableX + cellPadding,
       itemY,
       fonts.regular,
@@ -568,6 +630,19 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     );
 
     itemY -= itemRowHeight;
+
+    // 제목 2줄째
+    if (lines.length > 1) {
+      drawTextLineTight(
+        page,
+        lines[1],
+        tableX + cellPadding + 18, // ■ 기호 너비만큼 들여쓰기
+        itemY + 11,
+        fonts.regular,
+        10,
+      );
+      itemY -= 14;
+    }
 
     // 상세 설명이 있으면 추가
     if (item.detail) {
