@@ -28,6 +28,18 @@ function formatVisitDate(d?: string | null): string {
   }
 }
 
+// [2026-05-14] 주소에서 "몇동 몇호"만 추출. 동/호 둘 다 없으면 빈 문자열.
+function extractDongHo(...addrs: Array<string | null | undefined>): string {
+  const text = addrs.filter(Boolean).join(" ");
+  if (!text) return "";
+  const dongMatch = text.match(/([0-9A-Za-z가-힣]+동)/);
+  const hoMatch = text.match(/([0-9A-Za-z가-힣\-]+호)/);
+  const parts: string[] = [];
+  if (dongMatch) parts.push(dongMatch[1]);
+  if (hoMatch) parts.push(hoMatch[1]);
+  return parts.join(" ");
+}
+
 export function CaseReceiptTabs() {
   const [selectedCaseId, setSelectedCaseId] = useState<string>(() => {
     const raw = localStorage.getItem("selectedFieldSurveyCaseId");
@@ -101,10 +113,13 @@ export function CaseReceiptTabs() {
         const sfx = getCaseNumberSuffix(c.caseNumber);
         const isVictim = sfx !== "" && sfx !== "0";
         const label = isVictim ? "피해세대" : "원인세대";
-        const name = isVictim
-          ? (c.victimName || "(이름없음)")
-          : (c.insuredName || c.victimName || "(이름없음)");
         const visit = formatVisitDate(c.visitDate);
+        // [2026-05-14] 라벨 형식 변경: "구분 · 방문일 · 동호"
+        // 원인세대(-0): 피보험자 주소, 피해세대(-1+): 피해자 주소(없으면 피보험자 주소 fallback)
+        const dongHo = isVictim
+          ? extractDongHo(c.victimAddress, c.victimAddressDetail) ||
+            extractDongHo(c.insuredAddress, c.insuredAddressDetail)
+          : extractDongHo(c.insuredAddress, c.insuredAddressDetail);
         const active = c.id === selectedCaseId;
         return (
           <button
@@ -127,7 +142,7 @@ export function CaseReceiptTabs() {
             data-testid={`tab-receipt-${sfx || "0"}`}
             title={c.caseNumber || ""}
           >
-            {label} · {name} · {visit}
+            {label} · {visit}{dongHo ? ` · ${dongHo}` : ""}
           </button>
         );
       })}
