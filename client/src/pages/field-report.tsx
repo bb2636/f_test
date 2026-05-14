@@ -3003,43 +3003,35 @@ export default function FieldReport() {
                       if (emailPollAbortedRef.current) return;
 
                       if (job.status === "completed") {
-                        // 케이스 상태를 "현장정보제출"로 변경 (성공 후처리)
+                        // [2026-05-14] 상태 전환은 서버 백그라운드 작업이 책임짐(send-field-report-email-v2).
+                        // 클라이언트는 캐시 무효화 + SMS 알림만 수행. 페이지 이탈/타임아웃과 무관하게 상태는 갱신됨.
+                        queryClient.invalidateQueries({
+                          queryKey: [
+                            "/api/field-surveys",
+                            selectedCaseId,
+                            "report",
+                          ],
+                        });
+                        queryClient.invalidateQueries({
+                          queryKey: ["/api/cases"],
+                        });
                         try {
                           await apiRequest(
-                            "PATCH",
-                            `/api/cases/${selectedCaseId}/status`,
-                            { status: "현장정보제출" },
-                          );
-                          queryClient.invalidateQueries({
-                            queryKey: [
-                              "/api/field-surveys",
-                              selectedCaseId,
-                              "report",
-                            ],
-                          });
-                          queryClient.invalidateQueries({
-                            queryKey: ["/api/cases"],
-                          });
-                          try {
-                            await apiRequest(
-                              "POST",
-                              "/api/send-stage-notification",
-                              {
-                                caseId: selectedCaseId,
-                                stage: "현장정보제출",
-                                recipients: {
-                                  partner: false,
-                                  manager: false,
-                                  assessorInvestigator: true,
-                                },
+                            "POST",
+                            "/api/send-stage-notification",
+                            {
+                              caseId: selectedCaseId,
+                              stage: "현장정보제출",
+                              recipients: {
+                                partner: false,
+                                manager: false,
+                                assessorInvestigator: true,
                               },
-                            );
-                            console.log("현장정보제출 SMS 발송 완료");
-                          } catch (smsError) {
-                            console.error("SMS 발송 오류:", smsError);
-                          }
-                        } catch (statusError) {
-                          console.error("상태 업데이트 오류:", statusError);
+                            },
+                          );
+                          console.log("현장정보제출 SMS 발송 완료");
+                        } catch (smsError) {
+                          console.error("SMS 발송 오류:", smsError);
                         }
 
                         const partialFail = (job.failCount || 0) > 0;

@@ -12833,6 +12833,42 @@ FLOXN 드림`;
               ? `${successCount}명에게 전송 완료, ${failedCount}명 전송 실패`
               : `${successCount}명에게 현장출동보고서가 전송되었습니다`;
 
+          // ========== [상태 자동 전환 2026-05-14] ==========
+          // 이메일 발송이 1건 이상 성공하면 케이스 상태를 "현장정보제출"로 자동 전환.
+          // (기존: 클라이언트 폴링이 completed 받은 시점에 PATCH → 사용자가 페이지를 이탈하거나
+          //  3분 폴링 timeout이면 상태 변경 누락. 서버에서 처리하여 신뢰성 보장.)
+          // 가드: 이미 "현장정보제출"이거나 이후 단계인 경우에는 덮어쓰지 않음.
+          if (successCount > 0) {
+            try {
+              const latestCase = await storage.getCaseById(caseId);
+              if (latestCase) {
+                const PRE_SUBMIT_STATUSES = [
+                  "접수완료",
+                  "현장방문",
+                  "현장정보입력",
+                  "검토중",
+                  "반려",
+                  "1차승인",
+                ];
+                if (PRE_SUBMIT_STATUSES.includes(latestCase.status || "")) {
+                  await storage.updateCaseStatus(caseId, "현장정보제출");
+                  console.log(
+                    `[send-field-report-email-v2] [BG ${job.id}] Auto status transition: "${latestCase.status}" → "현장정보제출" (caseId: ${caseId})`,
+                  );
+                } else {
+                  console.log(
+                    `[send-field-report-email-v2] [BG ${job.id}] Skip status transition (current: "${latestCase.status}")`,
+                  );
+                }
+              }
+            } catch (statusErr: any) {
+              console.error(
+                `[send-field-report-email-v2] [BG ${job.id}] Auto status transition failed:`,
+                statusErr,
+              );
+            }
+          }
+
           updateEmailJob(job.id, {
             status: "completed",
             successCount,
