@@ -153,7 +153,13 @@ export function SmsNotificationDialog({
           stage,
           recipients,
           additionalMessage: additionalMessage || undefined,
-          cancelReason: stage === "접수취소" ? cancelReason : undefined,
+          // [2026-05-14] 문자(SMS) 발송에도 라디오/콤보/자유텍스트 합친 결과 전송
+          //   기존: 자유텍스트 cancelReason 만 전송 → 콤보(면책유형) 선택값이 SMS에 누락됨
+          //   변경: 이메일 발송과 동일하게 buildCombinedCancelReason() 사용
+          cancelReason:
+            stage === "접수취소"
+              ? buildCombinedCancelReason() || cancelReason
+              : undefined,
           previousStatus:
             stage === "반려" || stage === "승인반려"
               ? previousStatus
@@ -342,7 +348,7 @@ export function SmsNotificationDialog({
 사고장소 : ${getFullAddress()}
 
 위 접수건은 접수 취소 되었음을 알려드립니다.
-취소 사유 : ${cancelReason || "-"}`;
+취소 사유 : ${buildCombinedCancelReason() || cancelReason || "-"}`;
     } else if (stage === "반려" || stage === "승인반려") {
       const rejectionStatus = previousStatus
         ? `${previousStatus}에서 반려`
