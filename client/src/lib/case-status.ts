@@ -87,15 +87,16 @@ function inferRecoveryKind(
   allCases?: ReadonlyArray<CaseLite>,
 ): "직접복구" | "선견적요청" | null {
   const fromOne = (c: CaseLite): "직접복구" | "선견적요청" | null => {
-    // 손해방지건(damage_prevention_cost='true') 은 실제 작업이 발생한 공사비 청구 성격
-    // → restoration_method 가 '선견적요청' 으로 들어있어도 직접복구로 간주
-    if (c.damagePreventionCost === "true") {
-      return "직접복구";
-    }
+    // 1순위: recoveryType (명시적으로 설정된 값 — 가장 신뢰 가능한 소스)
     if (c.recoveryType === "직접복구" || c.recoveryType === "선견적요청") {
       return c.recoveryType;
     }
-    // 복구 방식(restoration_method) 필드에서 보조 추론
+    // 2순위: 손해방지건(damage_prevention_cost='true') 은 실제 작업이 발생한 공사비 청구 성격
+    // → recoveryType 이 비어있을 때만 적용 (recoveryType='선견적요청' 명시 시에는 그 값을 존중)
+    if (c.damagePreventionCost === "true") {
+      return "직접복구";
+    }
+    // 3순위: 복구 방식(restoration_method) 필드에서 보조 추론
     if (
       c.restorationMethod === "직접복구" ||
       c.restorationMethod === "선견적요청"
