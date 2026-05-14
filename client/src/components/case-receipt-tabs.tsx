@@ -28,27 +28,19 @@ function formatVisitDate(d?: string | null): string {
   }
 }
 
-// [2026-05-14] 라벨용 동/호 추출. 우선순위:
-// 1) 주소 텍스트에서 "○○동 ○○호" 패턴 매칭 → 그대로 사용
-// 2) 매칭 실패 시 상세주소(addressDetail)를 그대로 사용 (예: "(101)", "101호")
-// 3) 둘 다 없으면 빈 문자열
+// [2026-05-14] 라벨용 동/호 추출. "○○동 ○○호" 패턴만 매칭, 실패 시 빈 문자열.
 function extractUnitLabel(
   addressDetail?: string | null,
   address?: string | null,
 ): string {
   const combined = [address, addressDetail].filter(Boolean).join(" ").trim();
-  if (combined) {
-    const dongMatch = combined.match(/([0-9A-Za-z가-힣]+동)/);
-    const hoMatch = combined.match(/([0-9A-Za-z가-힣\-]+호)/);
-    const parts: string[] = [];
-    if (dongMatch) parts.push(dongMatch[1]);
-    if (hoMatch) parts.push(hoMatch[1]);
-    if (parts.length > 0) return parts.join(" ");
-  }
-  // 동/호 패턴이 없으면 상세주소를 그대로 표시
-  const detail = (addressDetail || "").trim();
-  if (detail) return detail;
-  return "";
+  if (!combined) return "";
+  const dongMatch = combined.match(/([0-9A-Za-z가-힣]+동)/);
+  const hoMatch = combined.match(/([0-9A-Za-z가-힣\-]+호)/);
+  const parts: string[] = [];
+  if (dongMatch) parts.push(dongMatch[1]);
+  if (hoMatch) parts.push(hoMatch[1]);
+  return parts.join(" ");
 }
 
 export function CaseReceiptTabs() {
