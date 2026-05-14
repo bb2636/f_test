@@ -69,9 +69,48 @@ type CaseLite = {
   recoveryType?: string | null;
 };
 
+// 접수번호 그룹 prefix — 마지막 suffix(-0/-1 등)만 제거.
+// (InvoiceSheet/InvoiceManagementPopup 의 getCaseNumberPrefix 와 동일 규칙)
 function caseNumberPrefix(caseNumber?: string | null): string {
   if (!caseNumber) return "";
-  return caseNumber.split("-")[0] || "";
+  const parts = caseNumber.split("-");
+  if (parts.length <= 1) return caseNumber;
+  return parts.slice(0, -1).join("-");
+}
+
+// 본인/연관 케이스에서 복구 유형(직접복구/선견적요청)을 추론
+// recoveryType 필드 우선, 없으면 status 단계(직접복구 / 출동비청구(선견적) / 청구자료제출(복구))로 보조 추론
+function inferRecoveryKind(
+  caseItem: CaseLite,
+  allCases?: ReadonlyArray<CaseLite>,
+): "직접복구" | "선견적요청" | null {
+  const fromOne = (c: CaseLite): "직접복구" | "선견적요청" | null => {
+    if (c.recoveryType === "직접복구" || c.recoveryType === "선견적요청") {
+      return c.recoveryType;
+    }
+    if (c.status === "직접복구" || c.status === "청구자료제출(복구)") {
+      return "직접복구";
+    }
+    if (c.status === "출동비청구(선견적)") {
+      return "선견적요청";
+    }
+    return null;
+  };
+
+  const self = fromOne(caseItem);
+  if (self) return self;
+
+  if (allCases && caseItem.caseNumber) {
+    const prefix = caseNumberPrefix(caseItem.caseNumber);
+    if (prefix) {
+      for (const c of allCases) {
+        if (caseNumberPrefix(c.caseNumber) !== prefix) continue;
+        const k = fromOne(c);
+        if (k) return k;
+      }
+    }
+  }
+  return null;
 }
 
 export function getCaseStatusDisplayText(
@@ -79,22 +118,37 @@ export function getCaseStatusDisplayText(
   allCases?: ReadonlyArray<CaseLite>,
 ): string {
   if (caseItem.status === "청구") {
-    let recoveryType = caseItem.recoveryType ?? null;
-    if (!recoveryType && allCases && caseItem.caseNumber) {
-      const prefix = caseNumberPrefix(caseItem.caseNumber);
-      if (prefix) {
-        const related = allCases.find(
-          (c) =>
-            caseNumberPrefix(c.caseNumber) === prefix &&
-            (c.recoveryType === "직접복구" ||
-              c.recoveryType === "선견적요청"),
-        );
-        recoveryType = related?.recoveryType ?? null;
-      }
-    }
-    if (recoveryType === "선견적요청") return "비교견적비 청구";
-    if (recoveryType === "직접복구") return "공사비 청구";
+    const kind = inferRecoveryKind(caseItem, allCases);
+    if (kind === "선견적요청") return "비교견적비 청구";
+    if (kind === "직접복구") return "공사비 청구";
     return "청구";
   }
   return getStatusDisplayText(caseItem.status);
+}
+
+// 진행상태 필터 드롭다운에서 사용하는 합성(synthetic) 키
+// "청구" 단일 항목을 복구 유형에 따라 두 개로 분리해 노출
+export const CLAIM_FILTER_KEYS = {
+  CONSTRUCTION: "청구:직접복구",
+  ESTIMATE: "청구:선견적요청",
+} as const;
+
+export function isClaimFilterKey(key: string): boolean {
+  return (
+    key === CLAIM_FILTER_KEYS.CONSTRUCTION ||
+    key === CLAIM_FILTER_KEYS.ESTIMATE
+  );
+}
+
+// 합성 키로 케이스를 매칭 (status="청구" + 추론된 복구 유형 일치)
+export function matchesClaimFilter(
+  key: string,
+  caseItem: CaseLite,
+  allCases?: ReadonlyArray<CaseLite>,
+): boolean {
+  if (caseItem.status !== "청구") return false;
+  const kind = inferRecoveryKind(caseItem, allCases);
+  if (key === CLAIM_FILTER_KEYS.CONSTRUCTION) return kind === "직접복구";
+  if (key === CLAIM_FILTER_KEYS.ESTIMATE) return kind === "선견적요청";
+  return false;
 }

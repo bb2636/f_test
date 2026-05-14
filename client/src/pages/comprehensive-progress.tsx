@@ -23,7 +23,7 @@ import {
 import logoIcon from "@assets/logo-frame.svg";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
-import { getStatusColor, getStatusDisplayText, getCaseStatusDisplayText, STATUS_COLORS } from "@/lib/case-status";
+import { getStatusColor, getStatusDisplayText, getCaseStatusDisplayText, STATUS_COLORS, CLAIM_FILTER_KEYS, isClaimFilterKey, matchesClaimFilter } from "@/lib/case-status";
 import { useToast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/use-permissions";
 import { GlobalHeader } from "@/components/global-header";
@@ -1083,26 +1083,22 @@ export default function ComprehensiveProgress() {
     { name: "관리자 설정" },
   ];
 
-  const FILTER_STATUSES = [
-    "배당대기",
-    "접수완료",
-    "검토중",
-    "1차승인",
-    "현장정보제출",
-    "복구요청(2차승인)",
-    "직접복구",
-    "청구자료제출(복구)",
-    "출동비청구(선견적)",
-    "청구",
-    "취소대기",
-  ] as const;
-
+  // 진행상태 필터 옵션 — "청구" 단일 항목은 복구 유형에 따라 두 개로 분리해 노출
+  // (DB 저장값은 그대로 "청구", 합성 키로 화면 필터링만 분기)
   const statusOptions = [
     { name: "전체현황", key: "all" },
-    ...FILTER_STATUSES.map((status) => ({
-      name: getStatusDisplayText(status),
-      key: status,
-    })),
+    { name: getStatusDisplayText("배당대기"), key: "배당대기" },
+    { name: getStatusDisplayText("접수완료"), key: "접수완료" },
+    { name: getStatusDisplayText("검토중"), key: "검토중" },
+    { name: getStatusDisplayText("1차승인"), key: "1차승인" },
+    { name: getStatusDisplayText("현장정보제출"), key: "현장정보제출" },
+    { name: getStatusDisplayText("복구요청(2차승인)"), key: "복구요청(2차승인)" },
+    { name: getStatusDisplayText("직접복구"), key: "직접복구" },
+    { name: getStatusDisplayText("청구자료제출(복구)"), key: "청구자료제출(복구)" },
+    { name: getStatusDisplayText("출동비청구(선견적)"), key: "출동비청구(선견적)" },
+    { name: "공사비 청구", key: CLAIM_FILTER_KEYS.CONSTRUCTION },
+    { name: "비교견적비 청구", key: CLAIM_FILTER_KEYS.ESTIMATE },
+    { name: getStatusDisplayText("취소대기"), key: "취소대기" },
   ];
 
   const filteredData = useMemo(() => {
@@ -1129,6 +1125,9 @@ export default function ComprehensiveProgress() {
             (caseItem.status === "출동비 청구" || caseItem.status === "미복구")
           );
         }
+        if (isClaimFilterKey(selectedStatus)) {
+          return isAssignedToMe && matchesClaimFilter(selectedStatus, caseItem, cases || []);
+        }
         return isAssignedToMe && caseItem.status === selectedStatus;
       }
 
@@ -1138,6 +1137,9 @@ export default function ComprehensiveProgress() {
       }
       if (selectedStatus === "출동비 청구") {
         return caseItem.status === "출동비 청구" || caseItem.status === "미복구";
+      }
+      if (isClaimFilterKey(selectedStatus)) {
+        return matchesClaimFilter(selectedStatus, caseItem, cases || []);
       }
       return caseItem.status === selectedStatus;
     });
