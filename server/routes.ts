@@ -90,7 +90,7 @@ import {
   pdfDownloadSchema,
 } from "./validators";
 
-// 피해세대 케이스용 피해자 주소 설정 헬퍼 함수
+// 피해세대 케이스용 피해자 주소 설정 헬퍼 함수 (CREATE 전용 — 신규 케이스 페이로드 기준)
 // 규칙:
 // - 피해자 정보가 없는 경우: victimAddress = insuredAddress, victimAddressDetail = insuredAddressDetail
 // - 피해자 정보가 있는 경우: victimAddress = insuredAddress, victimAddressDetail = 사용자 입력값 유지
@@ -109,6 +109,32 @@ function setVictimAddressForRecoveryCase(caseData: any): void {
     // 피해자 정보 있음: 기본주소는 피보험자 것 사용, 상세주소는 사용자 입력값 유지
     caseData.victimAddress = caseData.insuredAddress || "";
     // victimAddressDetail은 그대로 유지 (사용자 입력값)
+  }
+}
+
+// PATCH 전용: 부분 페이로드에서 victim 주소 자동 미러링 보강
+// 기존 케이스 + 업데이트 머지 상태를 기준으로 판단하므로 부분 PATCH로 인한 데이터 손실 방지.
+// 머지 상태에서 victim 정보가 비어있고 insured 주소가 채워져 있을 때만 victim_address(_detail) 추가.
+function applyVictimAddressSyncForPatch(
+  existingCase: any,
+  updateData: Record<string, any>,
+): void {
+  const merged = { ...existingCase, ...updateData };
+  const hasVictimInfo = !!(
+    merged.victimName ||
+    merged.victimContact ||
+    merged.victimAddressDetail
+  );
+  if (hasVictimInfo) return;
+
+  if (merged.insuredAddress && updateData.victimAddress === undefined) {
+    updateData.victimAddress = merged.insuredAddress;
+  }
+  if (
+    merged.insuredAddressDetail &&
+    updateData.victimAddressDetail === undefined
+  ) {
+    updateData.victimAddressDetail = merged.insuredAddressDetail;
   }
 }
 
@@ -2852,10 +2878,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // 현재 케이스 번호 유지, 손해방지 케이스 업데이트 또는 생성
             newCaseNumber = existingCaseNumber;
 
-            const updatedCase = await storage.updateCase(id, {
+            // 피해자 정보 미입력 시 피보험자 주소를 victim_address(_detail)로 동기화
+            // (현재 -1 케이스의 페이로드에만 적용 — 형제 -0 케이스로는 전파되지 않음)
+            const recoveryUpdatePayload: Record<string, any> = {
               ...updateData,
               caseNumber: newCaseNumber,
-            });
+            };
+            applyVictimAddressSyncForPatch(existingCase, recoveryUpdatePayload);
+
+            const updatedCase = await storage.updateCase(id, recoveryUpdatePayload);
             if (!updatedCase) {
               return res
                 .status(404)
@@ -2973,6 +3004,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateDataWithCaseNumber = shouldProcessCaseNumberLogic
         ? { ...updateData, caseNumber: newCaseNumber }
         : updateData;
+
+      // 피해세대(-1+) 케이스: 피해자 정보 미입력 시 피보험자 주소를 victim_address(_detail)로 동기화
+      // 부분 PATCH 안전(머지 상태 기준 판단, 미정의 필드는 덮어쓰지 않음)
+      const currentSuffixStr = (existingCase.caseNumber || "").split("-")[1];
+      const currentSuffixNum = currentSuffixStr ? Number(currentSuffixStr) : NaN;
+      if (Number.isFinite(currentSuffixNum) && currentSuffixNum >= 1) {
+        applyVictimAddressSyncForPatch(existingCase, updateDataWithCaseNumber as Record<string, any>);
+      }
 
       // 케이스 업데이트
       const updatedCase = await storage.updateCase(
