@@ -10411,11 +10411,15 @@ FLOXN 드림`;
       }
 
       const fileName = `INVOICE_${caseData.insuranceAccidentNo || caseData.caseNumber || caseId}_${Date.now()}.pdf`;
+      // 파일명에 한글/유니코드 포함 시 HTTP 헤더 검증 실패 방지
+      // ASCII 폴백(filename) + RFC 5987 UTF-8 인코딩(filename*) 동시 제공
+      const asciiFallback = fileName.replace(/[^\x20-\x7E]/g, "_").replace(/"/g, "");
+      const encodedFileName = encodeURIComponent(fileName);
 
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="${fileName}"`,
+        `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodedFileName}`,
       );
       res.setHeader("Content-Length", pdfBuffer.length);
       res.send(pdfBuffer);
