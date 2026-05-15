@@ -762,9 +762,9 @@ export default function ComprehensiveProgress() {
           if (stagesRequiringDialog.includes(stage)) {
             if (skipSmsForCancelRef.current) {
               skipSmsForCancelRef.current = false;
+              // [2026-05-15] 접수취소 후 자동 페이지 이동 제거 — 종합진행관리 페이지에 그대로 머무르도록 함
               if (pendingCancelNavigationRef.current) {
                 pendingCancelNavigationRef.current = false;
-                setLocation("/settlements/cancelled");
               }
             } else {
               setSmsCaseData(updatedCaseData);
