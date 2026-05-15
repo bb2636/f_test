@@ -1037,6 +1037,7 @@ export function MaterialCostSection({
                         );
                       }}
                       disabled={isReadOnly}
+                      className="data-[state=checked]:bg-[#253396] data-[state=checked]:border-[#253396]"
                       data-testid={`checkbox-expense-material-${currentGlobalIndex}`}
                     />
                   </td>
