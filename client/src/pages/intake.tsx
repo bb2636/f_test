@@ -1971,7 +1971,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>접수번호</label>
                   <input
-                    className={disabledInputClasses}
+                    className={`${disabledInputClasses} keep-border`}
                     value={displayCaseNumber}
                     readOnly
                     placeholder="접수번호"
