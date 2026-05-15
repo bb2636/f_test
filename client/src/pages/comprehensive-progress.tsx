@@ -1944,11 +1944,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 4% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 6%"
-                      : "40px 4% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 6%")
+                      ? "40px 3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
+                      : "40px 3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 7%")
                     : (user?.role === "협력사"
-                      ? "4% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 6%"
-                      : "4% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 6%"),
+                      ? "3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
+                      : "3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 7%"),
                 padding: "0 20px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2149,11 +2149,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 4% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 6%"
-                            : "40px 4% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 6%")
+                            ? "40px 3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
+                            : "40px 3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 7%")
                           : (user?.role === "협력사"
-                            ? "4% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 6%"
-                            : "4% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 6%"),
+                            ? "3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
+                            : "3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 7%"),
                       padding: "0 20px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -2669,7 +2669,7 @@ export default function ComprehensiveProgress() {
                             : "현장조사 입력"}
                       </div>
                     )}
-                    <div style={{ paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "14px", paddingRight: "10px", overflow: "visible", minWidth: 0 }}>
+                    <div style={{ paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "8px", overflow: "visible", minWidth: 0 }}>
                       {caseItem.status === "배당대기" ? (
                         // 배당대기 상태 - 임시 저장 건이므로 이어서 작성하기 버튼
                         (<button
