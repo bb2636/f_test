@@ -264,6 +264,8 @@ export default function ComprehensiveProgress() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedManager, setSelectedManager] = useState<string>("__INIT__");
+  // [2026-05-15] 메모 구분 조회: all=전체, red=협력사 메모(빨강), blue=관리자 메모(파랑)
+  const [selectedMemoFilter, setSelectedMemoFilter] = useState<"all" | "red" | "blue">("all");
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get("caseId") || null;
@@ -1143,6 +1145,12 @@ export default function ComprehensiveProgress() {
           if ((c.managerName || "") !== managerValue) return false;
         }
       }
+      // [2026-05-15] 메모 구분 필터
+      if (selectedMemoFilter === "red") {
+        if (!c.specialNotes && safeParseNotesHistory(c.partnerNotesHistory as string).length === 0) return false;
+      } else if (selectedMemoFilter === "blue") {
+        if (safeParseNotesHistory(c.adminNotesHistory as string).length === 0) return false;
+      }
       return true;
     });
     const counts: Record<string, number> = {};
@@ -1154,7 +1162,7 @@ export default function ComprehensiveProgress() {
       }
     }
     return counts;
-  }, [cases, user?.role, user?.company, selectedManager]);
+  }, [cases, user?.role, user?.company, selectedManager, selectedMemoFilter]);
 
   const filteredData = useMemo(() => {
     const filteredByStatus = (cases || []).filter((caseItem) => {
@@ -1246,7 +1254,20 @@ export default function ComprehensiveProgress() {
       return true;
     });
 
-    const filteredByManager = filteredByRole.filter((caseItem) => {
+    // [2026-05-15] 메모 구분 필터: 빨강=협력사 메모(specialNotes 또는 partnerNotesHistory), 파랑=관리자 메모(adminNotesHistory)
+    const filteredByMemo = filteredByRole.filter((caseItem) => {
+      if (selectedMemoFilter === "all") return true;
+      if (selectedMemoFilter === "red") {
+        return !!caseItem.specialNotes ||
+          safeParseNotesHistory(caseItem.partnerNotesHistory as string).length > 0;
+      }
+      if (selectedMemoFilter === "blue") {
+        return safeParseNotesHistory(caseItem.adminNotesHistory as string).length > 0;
+      }
+      return true;
+    });
+
+    const filteredByManager = filteredByMemo.filter((caseItem) => {
       const managerValue =
         selectedManager === "__INIT__" ? "전체" : selectedManager;
       if (managerValue === "전체") return true;
@@ -1273,7 +1294,7 @@ export default function ComprehensiveProgress() {
       const numB = extractNumericValue(b.caseNumber);
       return numB - numA;
     });
-  }, [cases, selectedStatus, searchQuery, selectedManager, user?.role, user?.company]);
+  }, [cases, selectedStatus, searchQuery, selectedManager, selectedMemoFilter, user?.role, user?.company]);
 
   // [페이지네이션 2026-05-06] 한 페이지 15건. 산식/렌더 변경 없음 — 입력 배열만 슬라이스.
   const {
@@ -1283,7 +1304,7 @@ export default function ComprehensiveProgress() {
     pageItems: pagedCases,
   } = useCompactPagination(filteredData, 15);
   useEffect(() => { setProgressPage(1); }, [
-    selectedStatus, searchQuery, selectedManager, setProgressPage,
+    selectedStatus, searchQuery, selectedManager, selectedMemoFilter, setProgressPage,
   ]);
 
   const totalCount = filteredData.length;
@@ -1699,6 +1720,61 @@ export default function ComprehensiveProgress() {
                 data-testid="input-search"
               />
             </div>
+
+            {/* [2026-05-15] 메모 구분 콤보박스 — 빨간/파란 점 기준으로 케이스 필터 */}
+            <span
+              style={{
+                fontFamily: "Pretendard",
+                fontSize: "14px",
+                fontWeight: 600,
+                letterSpacing: "-0.02em",
+                color: "#0C0C0C",
+                whiteSpace: "nowrap",
+              }}
+            >메모</span>
+            <Select
+              value={selectedMemoFilter}
+              onValueChange={(v) => setSelectedMemoFilter(v as "all" | "red" | "blue")}
+            >
+              <SelectTrigger
+                className="w-[120px] h-[40px]"
+                style={{
+                  fontFamily: "Pretendard",
+                  fontSize: "14px",
+                  fontWeight: 400,
+                  letterSpacing: "-0.02em",
+                  background: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
+                  borderRadius: "6px",
+                  flexShrink: 0,
+                }}
+                data-testid="select-memo-filter"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent
+                style={{
+                  backgroundColor: "var(--color-input-bg)",
+                  border: "1px solid var(--color-table-border)",
+                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                  zIndex: 1000,
+                }}
+              >
+                <SelectItem value="all" data-testid="option-memo-all">전체</SelectItem>
+                <SelectItem value="red" data-testid="option-memo-red">
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#ED1C00" }} />
+                    협력사 메모
+                  </span>
+                </SelectItem>
+                <SelectItem value="blue" data-testid="option-memo-blue">
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#008FED" }} />
+                    관리자 메모
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
 
             {/* Search Button */}
             <button
