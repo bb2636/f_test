@@ -2196,6 +2196,11 @@ export default function ComprehensiveProgress() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        textAlign: "center",
+                        wordBreak: "break-all",
+                        overflowWrap: "anywhere",
+                        minWidth: 0,
+                        lineHeight: "1.3",
                       }}
                     >
                       {caseItem.insurancePolicyNo || "-"}
