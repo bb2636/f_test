@@ -2189,7 +2189,7 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        paddingRight: "0px",
+                        paddingRight: "6px",
                         paddingLeft: "0px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
@@ -2217,6 +2217,11 @@ export default function ComprehensiveProgress() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        textAlign: "center",
+                        wordBreak: "break-all",
+                        overflowWrap: "anywhere",
+                        minWidth: 0,
+                        lineHeight: "1.3",
                       }}
                     >
                       {caseItem.insuranceAccidentNo || "-"}
