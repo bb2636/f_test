@@ -1967,7 +1967,7 @@ export default function Intake({
             </div>
 
             <div className="grid grid-cols-12 gap-x-4 gap-y-3">
-              <div className="col-span-6 md:col-span-2">
+              <div className="col-span-6 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>접수번호</label>
                   <input
@@ -1981,7 +1981,7 @@ export default function Intake({
                 </div>
               </div>
 
-              <div className="col-span-6 md:col-span-2">
+              <div className="col-span-6 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>접수일자</label>
                   {editCaseId && loadedReceptionDate ? (
@@ -2036,7 +2036,7 @@ export default function Intake({
                 </div>
               </div>
 
-              <div className="col-span-6 md:col-span-2">
+              <div className="col-span-6 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>담당자명</label>
                   <Select
@@ -2065,7 +2065,7 @@ export default function Intake({
                 </div>
               </div>
 
-              <div className="col-span-6 md:col-span-2">
+              <div className="col-span-6 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>담당자 연락처</label>
                   <input
@@ -2422,7 +2422,7 @@ export default function Intake({
             </div>
 
             <div className="grid grid-cols-12 gap-x-4 gap-y-3">
-              <div className="col-span-12 md:col-span-4">
+              <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>보험계약자</label>
                   <input
@@ -2439,7 +2439,7 @@ export default function Intake({
                 </div>
               </div>
 
-              <div className="col-span-12 md:col-span-4">
+              <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>
                     피보험자
@@ -2459,7 +2459,7 @@ export default function Intake({
                 </div>
               </div>
 
-              <div className="col-span-12 md:col-span-4">
+              <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>
                     피보험자 연락처
