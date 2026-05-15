@@ -1944,11 +1944,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 6% 6% 7% 5% 3% 4% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
-                      : "40px 6% 6% 7% 5% 3% 4% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%")
+                      ? "40px 6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
+                      : "40px 6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%")
                     : (user?.role === "협력사"
-                      ? "6% 6% 7% 5% 3% 4% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
-                      : "6% 6% 7% 5% 3% 4% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%"),
+                      ? "6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
+                      : "6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%"),
                 padding: "0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2149,11 +2149,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 6% 6% 7% 5% 3% 4% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
-                            : "40px 6% 6% 7% 5% 3% 4% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%")
+                            ? "40px 6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
+                            : "40px 6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%")
                           : (user?.role === "협력사"
-                            ? "6% 6% 7% 5% 3% 4% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
-                            : "6% 6% 7% 5% 3% 4% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%"),
+                            ? "6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
+                            : "6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%"),
                       padding: "0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
