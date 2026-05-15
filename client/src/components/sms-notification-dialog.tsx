@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   Dialog,
@@ -103,6 +103,10 @@ export function SmsNotificationDialog({
   const [cancelReason, setCancelReason] = useState(initialCancelReason);
   // [2026-05-15] 접수취소 사유 구조화: 모든 처리유형을 라디오로 통합 (기존 콤보박스 옵션 흡수)
   const [cancelReasonRadio, setCancelReasonRadio] = useState<string>("");
+  // [2026-05-15] 콤보박스(드롭다운) 형태 유지 — 내부 옵션은 라디오 버튼
+  const [cancelReasonDropdownOpen, setCancelReasonDropdownOpen] =
+    useState(false);
+  const cancelReasonDropdownRef = useRef<HTMLDivElement | null>(null);
   const [recoveryAmount, setRecoveryAmount] = useState<number | undefined>(
     initialRecoveryAmount,
   );
@@ -123,6 +127,7 @@ export function SmsNotificationDialog({
       setAdditionalMessage("");
       setCancelReason(initialCancelReason);
       setCancelReasonRadio("");
+      setCancelReasonDropdownOpen(false);
       setRecoveryAmount(initialRecoveryAmount);
       setFeeRate(initialFeeRate);
       setPaymentAmount(initialPaymentAmount);
@@ -140,6 +145,21 @@ export function SmsNotificationDialog({
     initialFeeRate,
     initialPaymentAmount,
   ]);
+
+  // [2026-05-15] 콤보박스 외부 클릭 시 닫힘
+  useEffect(() => {
+    if (!cancelReasonDropdownOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (
+        cancelReasonDropdownRef.current &&
+        !cancelReasonDropdownRef.current.contains(e.target as Node)
+      ) {
+        setCancelReasonDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [cancelReasonDropdownOpen]);
 
   const sendNotificationMutation = useMutation({
     mutationFn: async () => {
@@ -565,27 +585,19 @@ export function SmsNotificationDialog({
               </span>
             </div>
 
-            {/* [2026-05-15] 처리유형 라디오 통합 — 기존 콤보박스 옵션도 라디오로 표시 */}
+            {/* [2026-05-15] 처리유형: 좌측 라디오 2개 + 콤보박스(드롭다운) 형태 유지하되 내부 옵션도 라디오 */}
             <div
               style={{
                 display: "flex",
-                gap: "12px 16px",
+                gap: "16px",
                 alignItems: "center",
-                flexWrap: "wrap",
                 marginBottom: "10px",
                 fontFamily: "Pretendard",
                 fontSize: "13px",
                 color: "#0C0C0C",
               }}
             >
-              {[
-                "자체수리(타업체)",
-                "현장방문거절",
-                "소액청구포기",
-                "약관상면책",
-                "위장사고면책",
-                "기타",
-              ].map((opt) => (
+              {["자체수리(타업체)", "현장방문거절"].map((opt) => (
                 <label
                   key={opt}
                   style={{
@@ -607,7 +619,6 @@ export function SmsNotificationDialog({
                       )
                     }
                     onClick={() => {
-                      // 같은 라디오 다시 클릭 시 선택 해제
                       if (cancelReasonRadio === opt) setCancelReasonRadio("");
                     }}
                     style={{ accentColor: "#253396", cursor: "pointer" }}
@@ -616,6 +627,120 @@ export function SmsNotificationDialog({
                   {opt}
                 </label>
               ))}
+
+              {/* 콤보박스 형태 유지 — 내부 옵션은 라디오 버튼 */}
+              {(() => {
+                const dropdownOptions = [
+                  "소액청구포기",
+                  "약관상면책",
+                  "위장사고면책",
+                  "기타",
+                ];
+                const isDropdownSelected = dropdownOptions.includes(
+                  cancelReasonRadio,
+                );
+                return (
+                  <div
+                    ref={cancelReasonDropdownRef}
+                    style={{ flex: 1, minWidth: 0, position: "relative" }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCancelReasonDropdownOpen((v) => !v)
+                      }
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "8px 10px",
+                        fontFamily: "Pretendard",
+                        fontSize: "13px",
+                        border: "1px solid #E5E7EB",
+                        borderRadius: "6px",
+                        background: "#FFFFFF",
+                        color: isDropdownSelected ? "#0C0C0C" : "#999999",
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                      data-testid="combo-cancel-reason"
+                    >
+                      <span>
+                        {isDropdownSelected ? cancelReasonRadio : "기타"}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "10px",
+                          color: "#999999",
+                          marginLeft: "8px",
+                        }}
+                      >
+                        ▼
+                      </span>
+                    </button>
+                    {cancelReasonDropdownOpen && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "calc(100% + 4px)",
+                          left: 0,
+                          right: 0,
+                          background: "#FFFFFF",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: "6px",
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                          zIndex: 50,
+                          padding: "6px 0",
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
+                        data-testid="combo-cancel-reason-list"
+                      >
+                        {dropdownOptions.map((opt) => (
+                          <label
+                            key={opt}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              padding: "8px 12px",
+                              cursor: "pointer",
+                              fontFamily: "Pretendard",
+                              fontSize: "13px",
+                              color: "#0C0C0C",
+                            }}
+                            onMouseDown={(e) => e.preventDefault()}
+                          >
+                            <input
+                              type="radio"
+                              name="cancel-reason-radio"
+                              value={opt}
+                              checked={cancelReasonRadio === opt}
+                              onChange={() => {
+                                setCancelReasonRadio(opt);
+                                setCancelReasonDropdownOpen(false);
+                              }}
+                              onClick={() => {
+                                if (cancelReasonRadio === opt) {
+                                  setCancelReasonRadio("");
+                                  setCancelReasonDropdownOpen(false);
+                                }
+                              }}
+                              style={{
+                                accentColor: "#253396",
+                                cursor: "pointer",
+                              }}
+                              data-testid={`radio-cancel-${opt}`}
+                            />
+                            {opt}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             <Textarea
