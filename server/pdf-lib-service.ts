@@ -1059,7 +1059,8 @@ async function renderCoverPage(
     size: 11,
   });
 
-  y -= 25;
+  // [2026-05-15] 플록슨 담당자: 협력업체(연락처) 칸에서 2줄 띄우고, 협력업체보다 연하게 표기
+  y -= 50;
 
   drawText(page, {
     x: infoX,
@@ -1067,6 +1068,7 @@ async function renderCoverPage(
     text: "플 록 슨 :",
     font: fonts.bold,
     size: 11,
+    color: { r: 0.55, g: 0.55, b: 0.55 },
   });
   drawText(page, {
     x: valueX,
@@ -1074,6 +1076,7 @@ async function renderCoverPage(
     text: managerData?.name || "-",
     font: fonts.regular,
     size: 11,
+    color: { r: 0.55, g: 0.55, b: 0.55 },
   });
 
   y -= 25;
