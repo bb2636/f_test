@@ -5668,7 +5668,7 @@ export default function AdminSettings() {
                         color: "#686A6E",
                       }}
                     >
-                      성함
+                      성함 <span style={{ color: "#E11D48" }}>*</span>
                     </label>
                     <input
                       type="text"
@@ -5705,7 +5705,7 @@ export default function AdminSettings() {
                         color: "#686A6E",
                       }}
                     >
-                      ID
+                      ID <span style={{ color: "#E11D48" }}>*</span>
                     </label>
                     <input
                       type="text"
@@ -5845,7 +5845,7 @@ export default function AdminSettings() {
                             color: "#686A6E",
                           }}
                         >
-                          회사명
+                          회사명 <span style={{ color: "#E11D48" }}>*</span>
                         </label>
                         <input
                           type="text"
@@ -6620,7 +6620,7 @@ export default function AdminSettings() {
                           color: "#686A6E",
                         }}
                       >
-                        회사명
+                        회사명 <span style={{ color: "#E11D48" }}>*</span>
                       </label>
                       <input
                         type="text"
