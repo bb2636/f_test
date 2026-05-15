@@ -9,6 +9,14 @@ export interface CancellationTemplateData {
 
 export function renderCancellationTemplate(data: CancellationTemplateData): { html: string; text: string } {
   const { accidentNo, insuredName, cancelReason, dateStr, caseNumber, logoBuffer } = data;
+  // [2026-05-15] 이메일 표시용으로 라디오 항목의 'ㆍ' 불릿 접두어를 제거
+  // (예: "ㆍ현장방문거절" → "현장방문거절"). 라벨 셀에 '취소사유'가 이미 있으므로 값만 표시.
+  const displayCancelReason = cancelReason
+    ? cancelReason
+        .split("\n")
+        .map((l) => l.replace(/^ㆍ\s*/, ""))
+        .join("\n")
+    : cancelReason;
 
   const html = `
         <div style="font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -30,7 +38,7 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
             </tr>
             <tr>
               <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold; vertical-align: top;">취소사유</td>
-              <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">${cancelReason || "-"}</td>
+              <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">${displayCancelReason || "-"}</td>
             </tr>
             <tr>
               <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">발송일</td>
@@ -59,7 +67,7 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
 - 사고번호(증권번호): ${accidentNo}
 - 접수번호: ${caseNumber}
 - 피보험자명: ${insuredName}
-- 취소사유: ${cancelReason || "-"}
+- 취소사유: ${displayCancelReason || "-"}
 - 발송일: ${dateStr}
 
 감사합니다.
