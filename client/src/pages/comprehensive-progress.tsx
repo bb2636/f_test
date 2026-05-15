@@ -2270,9 +2270,11 @@ export default function ComprehensiveProgress() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
+                        textAlign: "center",
+                        wordBreak: "break-all",
+                        overflowWrap: "anywhere",
+                        minWidth: 0,
+                        lineHeight: "1.3",
                       }}
                       title={caseItem.assessorId || ""}
                     >
