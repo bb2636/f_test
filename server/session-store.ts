@@ -13,14 +13,25 @@ export async function setCurrentSession(userId: string, sessionId: string): Prom
 }
 
 export async function getCurrentSessionId(userId: string): Promise<string | null> {
-  const result = await withTimeout(
-    pool.query(
-      `SELECT current_session_id FROM users WHERE id = $1`,
-      [userId]
-    ),
-    SESSION_OP_TIMEOUT,
-    "getCurrentSessionId",
-  );
+  const runQuery = () =>
+    withTimeout(
+      pool.query(
+        `SELECT current_session_id FROM users WHERE id = $1`,
+        [userId]
+      ),
+      SESSION_OP_TIMEOUT,
+      "getCurrentSessionId",
+    );
+
+  let result;
+  try {
+    result = await runQuery();
+  } catch (err: any) {
+    const isTimeout = typeof err?.message === "string" && err.message.includes("[TIMEOUT]");
+    if (!isTimeout) throw err;
+    console.warn("[SESSION] getCurrentSessionId timeout, retrying once...", { userId });
+    result = await runQuery();
+  }
   return result.rows[0]?.current_session_id || null;
 }
 

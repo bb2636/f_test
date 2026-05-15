@@ -61,4 +61,4 @@ export function withTimeout<T>(promise: Promise<T>, ms: number, label: string): 
 
 export const DB_QUERY_TIMEOUT = 30000;
 export const AUTH_QUERY_TIMEOUT = 10000;
-export const SESSION_OP_TIMEOUT = 5000;
+export const SESSION_OP_TIMEOUT = 8000;
