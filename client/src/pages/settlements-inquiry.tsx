@@ -1461,9 +1461,12 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
           borderRadius: "12px",
           border: "1px solid rgba(12, 12, 12, 0.08)",
           overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          maxHeight: "calc(100vh - 280px)",
         }}
       >
-        <div style={{ overflow: "auto", maxHeight: "calc(100vh - 280px)", position: "relative" }}>
+        <div style={{ overflowX: "auto", overflowY: "auto", flex: 1, position: "relative" }}>
           <table
             style={{
               width: "max-content",
