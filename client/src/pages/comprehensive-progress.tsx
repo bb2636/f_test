@@ -2014,8 +2014,8 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
-                    paddingRight: col.label?.startsWith("경과") ? "12px" : (col.label === "메모" ? "8px" : "4px"),
-                    paddingLeft: col.label?.startsWith("경과") ? "12px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "0px" : "4px")),
+                    paddingRight: col.label?.startsWith("경과") ? "16px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "0px" : "4px")),
+                    paddingLeft: col.label?.startsWith("경과") ? "16px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "0px" : "4px")),
                     paddingTop: "0px",
                     paddingBottom: "0px",
                     lineHeight: "115%",
@@ -2189,7 +2189,7 @@ export default function ComprehensiveProgress() {
                         fontFamily: "Pretendard",
                         fontSize: "13px",
                         color: "rgba(12, 12, 12, 0.8)",
-                        paddingRight: "4px",
+                        paddingRight: "0px",
                         paddingLeft: "0px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
@@ -2669,7 +2669,7 @@ export default function ComprehensiveProgress() {
                             : "현장조사 입력"}
                       </div>
                     )}
-                    <div style={{ paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "8px", overflow: "visible", minWidth: 0 }}>
+                    <div style={{ paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "14px", paddingRight: "10px", overflow: "visible", minWidth: 0 }}>
                       {caseItem.status === "배당대기" ? (
                         // 배당대기 상태 - 임시 저장 건이므로 이어서 작성하기 버튼
                         (<button
