@@ -207,7 +207,7 @@ export function SmsNotificationDialog({
   // 서버 템플릿(cancellation.ts)은 white-space:pre-line 이므로 줄바꿈 그대로 표시됨.
   const buildCombinedCancelReason = () => {
     const lines: string[] = [];
-    if (cancelReasonRadio) lines.push(`처리유형: ${cancelReasonRadio}`);
+    if (cancelReasonRadio) lines.push(`ㆍ${cancelReasonRadio}`);
     const trimmed = cancelReason.trim();
     if (trimmed) lines.push(`상세: ${trimmed}`);
     return lines.join("\n");
