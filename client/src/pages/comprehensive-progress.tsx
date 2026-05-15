@@ -206,6 +206,20 @@ const STAGE_RECIPIENT_DEFAULTS: Record<NotificationStage, RecipientConfig> = {
   종결: { partner: true, manager: false, assessorInvestigator: false },
 };
 
+// 빠른 진행상태 필터 버튼 정의 — selectedStatus 키 매핑
+// (DB값/필터링 로직 변경 없음. 단순히 setSelectedStatus 트리거용)
+const QUICK_STATUS_FILTERS: { label: string; key: string }[] = [
+  { label: "플록슨 심사중", key: "검토중" },
+  { label: "2차(보험사)심사중", key: "현장정보제출" },
+  { label: "복구요청", key: "복구요청(2차승인)" },
+  { label: "복구완료 보고", key: "청구자료제출(복구)" },
+  { label: "비교견적완료 보고", key: "출동비청구(선견적)" },
+  { label: "공사비 청구", key: "청구:직접복구" },
+  { label: "비교견적비 청구", key: "청구:선견적요청" },
+  { label: "취소대기", key: "취소대기" },
+  { label: "반려", key: "반려" },
+];
+
 // 진행상태 목록 - DB에 저장되는 값
 const CASE_STATUSES = [
   "배당대기",
@@ -1090,6 +1104,7 @@ export default function ComprehensiveProgress() {
     { name: getStatusDisplayText("배당대기"), key: "배당대기" },
     { name: getStatusDisplayText("접수완료"), key: "접수완료" },
     { name: getStatusDisplayText("검토중"), key: "검토중" },
+    { name: getStatusDisplayText("반려"), key: "반려" },
     { name: getStatusDisplayText("1차승인"), key: "1차승인" },
     { name: getStatusDisplayText("현장정보제출"), key: "현장정보제출" },
     { name: getStatusDisplayText("복구요청(2차승인)"), key: "복구요청(2차승인)" },
@@ -1100,6 +1115,32 @@ export default function ComprehensiveProgress() {
     { name: "비교견적비 청구", key: CLAIM_FILTER_KEYS.ESTIMATE },
     { name: getStatusDisplayText("취소대기"), key: "취소대기" },
   ];
+
+  // 빠른 필터 버튼용 건수 계산 — 검색어/담당자 필터는 제외하고
+  // role(협력사/심사사/조사사) 가시성과 종결/접수취소 제외만 적용 (필터링 산식 변경 없음)
+  const quickStatusCounts = useMemo(() => {
+    const visible = (cases || []).filter((c) => {
+      if (c.status === "종결" || c.status === "접수취소") return false;
+      if (user?.role === "협력사") {
+        if ((c.assignedPartner || "") !== (user.company || "")) return false;
+        if (c.status === "배당대기") return false;
+      } else if (user?.role === "심사사") {
+        if ((c.assessorId || "") !== (user.company || "")) return false;
+      } else if (user?.role === "조사사") {
+        if ((c.investigatorTeam || "") !== (user.company || "")) return false;
+      }
+      return true;
+    });
+    const counts: Record<string, number> = {};
+    for (const f of QUICK_STATUS_FILTERS) {
+      if (isClaimFilterKey(f.key)) {
+        counts[f.key] = visible.filter((c) => matchesClaimFilter(f.key, c, cases || [])).length;
+      } else {
+        counts[f.key] = visible.filter((c) => c.status === f.key).length;
+      }
+    }
+    return counts;
+  }, [cases, user?.role, user?.company]);
 
   const filteredData = useMemo(() => {
     const filteredByStatus = (cases || []).filter((caseItem) => {
@@ -1558,10 +1599,56 @@ export default function ComprehensiveProgress() {
             background: "#FFFFFF",
             boxShadow: "0px 0px 20px #DBE9F5",
             borderRadius: "12px",
-            padding: "24px",
+            padding: "16px 20px",
             marginBottom: "16px",
           }}
         >
+          {/* Quick Status Filter Buttons */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              marginBottom: "12px",
+            }}
+          >
+            {QUICK_STATUS_FILTERS.map((f) => {
+              const isActive = selectedStatus === f.key;
+              const count = quickStatusCounts[f.key] ?? 0;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setSelectedStatus(f.key)}
+                  style={{
+                    flex: "1 1 0",
+                    minWidth: 0,
+                    padding: "8px 6px",
+                    background: isActive ? "#253396" : "#FFFFFF",
+                    border: `1px solid ${isActive ? "#253396" : "rgba(12,12,12,0.12)"}`,
+                    borderRadius: "8px",
+                    fontFamily: "Pretendard",
+                    fontSize: "13px",
+                    fontWeight: isActive ? 600 : 500,
+                    letterSpacing: "-0.02em",
+                    color: isActive ? "#FFFFFF" : "rgba(12,12,12,0.8)",
+                    cursor: "pointer",
+                    lineHeight: "1.35",
+                    whiteSpace: "pre-line",
+                    textAlign: "center",
+                    transition: "background 0.15s, color 0.15s",
+                  }}
+                  data-testid={`button-quick-status-${f.key}`}
+                >
+                  {f.label}
+                  {"\n"}
+                  <span style={{ fontWeight: 700, fontSize: "12px", opacity: isActive ? 0.95 : 0.7 }}>
+                    ({count}건)
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* Header */}
           {/* Status Filter Dropdown + Search Input (한 줄 배치) */}
           <div
@@ -1574,7 +1661,7 @@ export default function ComprehensiveProgress() {
             {/* Status Filter Dropdown */}
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger
-                className="w-[180px] h-[52px]"
+                className="w-[180px] h-[40px]"
                 style={{
                   fontFamily: "Pretendard",
                   fontSize: "14px",
@@ -1630,8 +1717,8 @@ export default function ComprehensiveProgress() {
                 }}
                 style={{
                   width: "100%",
-                  height: "52px",
-                  padding: "0 20px 0 52px",
+                  height: "40px",
+                  padding: "0 20px 0 44px",
                   background: "var(--color-input-bg)",
                   border: "1px solid var(--color-table-border)",
                   borderRadius: "8px",
@@ -1651,13 +1738,13 @@ export default function ComprehensiveProgress() {
                 // 검색 기능은 실시간으로 이미 작동 중
               }}
               style={{
-                width: "100px",
-                height: "52px",
+                width: "88px",
+                height: "40px",
                 background: "var(--color-button-primary)",
                 borderRadius: "8px",
                 border: "none",
                 fontFamily: "Pretendard",
-                fontSize: "16px",
+                fontSize: "14px",
                 fontWeight: 600,
                 letterSpacing: "-0.02em",
                 color: "#FFFFFF",
