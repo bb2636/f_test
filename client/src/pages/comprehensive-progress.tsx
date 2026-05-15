@@ -1949,7 +1949,7 @@ export default function ComprehensiveProgress() {
                     : (user?.role === "협력사"
                       ? "3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
                       : "3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 7%"),
-                padding: "0 20px",
+                padding: "0 20px 0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                 position: "sticky",
@@ -2014,7 +2014,7 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
-                    paddingRight: col.label?.startsWith("경과") ? "16px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "0px" : "4px")),
+                    paddingRight: col.label?.startsWith("경과") ? "16px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "6px" : "4px")),
                     paddingLeft: col.label?.startsWith("경과") ? "16px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "0px" : "4px")),
                     paddingTop: "0px",
                     paddingBottom: "0px",
@@ -2154,7 +2154,7 @@ export default function ComprehensiveProgress() {
                           : (user?.role === "협력사"
                             ? "3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
                             : "3% 5% 7% 5% 4% 4% 4% minmax(45px,1fr) 5% 7% 7% 3% 3% 3% 9% 3% 7%"),
-                      padding: "0 20px",
+                      padding: "0 20px 0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
                       cursor: "default",
@@ -2290,9 +2290,11 @@ export default function ComprehensiveProgress() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
+                        textAlign: "center",
+                        wordBreak: "break-all",
+                        overflowWrap: "anywhere",
+                        minWidth: 0,
+                        lineHeight: "1.3",
                       }}
                       title={caseItem.assessorTeam || ""}
                     >
