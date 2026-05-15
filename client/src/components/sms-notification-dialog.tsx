@@ -628,7 +628,7 @@ export function SmsNotificationDialog({
                 </label>
               ))}
 
-              {/* 콤보박스 형태 유지 — 내부 옵션은 라디오 버튼 */}
+              {/* 콤보박스 자체가 하나의 라디오 항목 — 라디오 체크 시 콤보박스가 선택됨 */}
               {(() => {
                 const dropdownOptions = [
                   "소액청구포기",
@@ -642,15 +642,43 @@ export function SmsNotificationDialog({
                 return (
                   <div
                     ref={cancelReasonDropdownRef}
-                    style={{ flex: 1, minWidth: 0, position: "relative" }}
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
                   >
+                    <input
+                      type="radio"
+                      name="cancel-reason-radio"
+                      checked={isDropdownSelected}
+                      onChange={() => {
+                        // 라디오 체크 시: 미선택이면 첫 옵션 자동 선택 + 드롭다운 열기
+                        if (!isDropdownSelected) {
+                          setCancelReasonRadio(dropdownOptions[0]);
+                          setCancelReasonDropdownOpen(true);
+                        }
+                      }}
+                      onClick={() => {
+                        // 이미 선택된 라디오 다시 클릭 시 해제
+                        if (isDropdownSelected) {
+                          setCancelReasonRadio("");
+                          setCancelReasonDropdownOpen(false);
+                        }
+                      }}
+                      style={{ accentColor: "#253396", cursor: "pointer" }}
+                      data-testid="radio-cancel-combo"
+                    />
                     <button
                       type="button"
                       onClick={() =>
                         setCancelReasonDropdownOpen((v) => !v)
                       }
                       style={{
-                        width: "100%",
+                        flex: 1,
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
@@ -691,50 +719,40 @@ export function SmsNotificationDialog({
                           borderRadius: "6px",
                           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
                           zIndex: 50,
-                          padding: "6px 0",
+                          padding: "4px 0",
                           display: "flex",
                           flexDirection: "column",
                         }}
                         data-testid="combo-cancel-reason-list"
                       >
                         {dropdownOptions.map((opt) => (
-                          <label
+                          <button
                             key={opt}
+                            type="button"
+                            onClick={() => {
+                              setCancelReasonRadio(opt);
+                              setCancelReasonDropdownOpen(false);
+                            }}
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: "8px",
                               padding: "8px 12px",
                               cursor: "pointer",
                               fontFamily: "Pretendard",
                               fontSize: "13px",
                               color: "#0C0C0C",
+                              background:
+                                cancelReasonRadio === opt
+                                  ? "#F2F3F8"
+                                  : "transparent",
+                              border: "none",
+                              textAlign: "left",
+                              width: "100%",
                             }}
-                            onMouseDown={(e) => e.preventDefault()}
+                            data-testid={`option-cancel-${opt}`}
                           >
-                            <input
-                              type="radio"
-                              name="cancel-reason-radio"
-                              value={opt}
-                              checked={cancelReasonRadio === opt}
-                              onChange={() => {
-                                setCancelReasonRadio(opt);
-                                setCancelReasonDropdownOpen(false);
-                              }}
-                              onClick={() => {
-                                if (cancelReasonRadio === opt) {
-                                  setCancelReasonRadio("");
-                                  setCancelReasonDropdownOpen(false);
-                                }
-                              }}
-                              style={{
-                                accentColor: "#253396",
-                                cursor: "pointer",
-                              }}
-                              data-testid={`radio-cancel-${opt}`}
-                            />
                             {opt}
-                          </label>
+                          </button>
                         ))}
                       </div>
                     )}
