@@ -1448,11 +1448,11 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
           fontWeight: 600,
           lineHeight: "115%",
           color: "rgba(12, 12, 12, 0.8)",
-          borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
-          borderRight: "1px solid rgba(12, 12, 12, 0.08)",
+          borderBottom: "1px solid var(--color-table-border)",
+          borderRight: "1px solid var(--color-table-border)",
           textAlign: "center",
           whiteSpace: "nowrap",
-          background: "rgba(240, 240, 240, 1)",
+          background: "var(--color-table-header)",
         };
         return (
       <div
@@ -1496,7 +1496,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                           width: DATE_COL_WIDTH,
                           padding: "8px 8px",
                         } : {}),
-                        borderRight: isLast ? "none" : "1px solid rgba(12, 12, 12, 0.08)",
+                        borderRight: isLast ? "none" : "1px solid var(--color-table-border)",
                       }}
                     >
                       {label}
@@ -1541,7 +1541,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                 </tr>
               ) : (
                 pagedRows.map((row, index) => {
-                  const rowBg = index % 2 === 0 ? "rgba(255, 255, 255, 1)" : "rgba(248, 248, 248, 1)";
+                  const rowBg = "#FFFFFF";
                   // 접수번호가 2개 이상인 경우 행 높이를 늘리기 위한 패딩 증가
                   const caseCount = row.caseNumber ? row.caseNumber.split(", ").length : 0;
                   const isMultiCase = caseCount >= 2;
@@ -1552,7 +1552,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                     fontSize: "14px",
                     lineHeight: "115%",
                     color: "rgba(12, 12, 12, 0.8)",
-                    borderRight: "1px solid rgba(12, 12, 12, 0.08)",
+                    borderRight: "1px solid var(--color-table-border)",
                     textAlign: "center",
                   };
                   const dateCellStyle: React.CSSProperties = {
@@ -1585,7 +1585,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       style={{
                         borderBottom:
                           index < pagedRows.length - 1
-                            ? "1px solid rgba(12, 12, 12, 0.08)"
+                            ? "1px solid var(--color-table-border)"
                             : "none",
                         background: rowBg,
                       }}
@@ -1617,7 +1617,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       <td style={amountStyle}>{renderAmount(row.settlementCommission)}</td>
                       <td style={{ ...dateCellStyle, borderRight: (isPartner || (!canManageSettlement && !(filterMode === "closed" && canViewReport))) ? "none" : cellStyle.borderRight }}>{row.settlementInvoiceDate}</td>
                       {!isPartner && canManageSettlement && (
-                        <td style={{ ...cellStyle, borderRight: filterMode === "closed" ? "1px solid rgba(12, 12, 12, 0.08)" : "none" }}>
+                        <td style={{ ...cellStyle, borderRight: filterMode === "closed" ? "1px solid var(--color-table-border)" : "none" }}>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
