@@ -101,9 +101,8 @@ export function SmsNotificationDialog({
   );
   const [additionalMessage, setAdditionalMessage] = useState("");
   const [cancelReason, setCancelReason] = useState(initialCancelReason);
-  // [2026-05-14] 접수취소 사유 구조화: 라디오(처리유형) + 콤보(면책유형) + 자유 텍스트
+  // [2026-05-15] 접수취소 사유 구조화: 모든 처리유형을 라디오로 통합 (기존 콤보박스 옵션 흡수)
   const [cancelReasonRadio, setCancelReasonRadio] = useState<string>("");
-  const [cancelReasonSelect, setCancelReasonSelect] = useState<string>("");
   const [recoveryAmount, setRecoveryAmount] = useState<number | undefined>(
     initialRecoveryAmount,
   );
@@ -124,7 +123,6 @@ export function SmsNotificationDialog({
       setAdditionalMessage("");
       setCancelReason(initialCancelReason);
       setCancelReasonRadio("");
-      setCancelReasonSelect("");
       setRecoveryAmount(initialRecoveryAmount);
       setFeeRate(initialFeeRate);
       setPaymentAmount(initialPaymentAmount);
@@ -190,7 +188,6 @@ export function SmsNotificationDialog({
   const buildCombinedCancelReason = () => {
     const lines: string[] = [];
     if (cancelReasonRadio) lines.push(`처리유형: ${cancelReasonRadio}`);
-    if (cancelReasonSelect) lines.push(`면책유형: ${cancelReasonSelect}`);
     const trimmed = cancelReason.trim();
     if (trimmed) lines.push(`상세: ${trimmed}`);
     return lines.join("\n");
@@ -568,19 +565,27 @@ export function SmsNotificationDialog({
               </span>
             </div>
 
-            {/* [2026-05-14] 처리유형 라디오 + 면책유형 콤보박스 (한 줄 배치) */}
+            {/* [2026-05-15] 처리유형 라디오 통합 — 기존 콤보박스 옵션도 라디오로 표시 */}
             <div
               style={{
                 display: "flex",
-                gap: "16px",
+                gap: "12px 16px",
                 alignItems: "center",
+                flexWrap: "wrap",
                 marginBottom: "10px",
                 fontFamily: "Pretendard",
                 fontSize: "13px",
                 color: "#0C0C0C",
               }}
             >
-              {["자체수리(타업체)", "현장방문거절"].map((opt) => (
+              {[
+                "자체수리(타업체)",
+                "현장방문거절",
+                "소액청구포기",
+                "약관상면책",
+                "위장사고면책",
+                "기타",
+              ].map((opt) => (
                 <label
                   key={opt}
                   style={{
@@ -611,29 +616,6 @@ export function SmsNotificationDialog({
                   {opt}
                 </label>
               ))}
-              <select
-                value={cancelReasonSelect}
-                onChange={(e) => setCancelReasonSelect(e.target.value)}
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  padding: "8px 10px",
-                  fontFamily: "Pretendard",
-                  fontSize: "13px",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "6px",
-                  background: "#FFFFFF",
-                  color: cancelReasonSelect ? "#0C0C0C" : "#999999",
-                  cursor: "pointer",
-                }}
-                data-testid="select-cancel-reason"
-              >
-                <option value="">기타</option>
-                <option value="소액청구포기">소액청구포기</option>
-                <option value="약관상면책">약관상면책</option>
-                <option value="위장사고면책">위장사고면책</option>
-                <option value="기타">기타</option>
-              </select>
             </div>
 
             <Textarea
