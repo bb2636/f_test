@@ -1116,9 +1116,11 @@ export default function ComprehensiveProgress() {
     { name: getStatusDisplayText("취소대기"), key: "취소대기" },
   ];
 
-  // 빠른 필터 버튼용 건수 계산 — 검색어/담당자 필터는 제외하고
-  // role(협력사/심사사/조사사) 가시성과 종결/접수취소 제외만 적용 (필터링 산식 변경 없음)
+  // 빠른 필터 버튼용 건수 계산 — 검색어는 제외, role 가시성/종결-취소 제외/선택된 담당자 필터 적용
+  // [2026-05-15] 선택된 담당자(selectedManager)와 연동되도록 변경
   const quickStatusCounts = useMemo(() => {
+    const managerValue =
+      selectedManager === "__INIT__" ? "전체" : selectedManager;
     const visible = (cases || []).filter((c) => {
       if (c.status === "종결" || c.status === "접수취소") return false;
       if (user?.role === "협력사") {
@@ -1128,6 +1130,18 @@ export default function ComprehensiveProgress() {
         if ((c.assessorId || "") !== (user.company || "")) return false;
       } else if (user?.role === "조사사") {
         if ((c.investigatorTeam || "") !== (user.company || "")) return false;
+      }
+      // 담당자 필터 (전체가 아닐 때만 적용)
+      if (managerValue !== "전체") {
+        if (user?.role === "협력사") {
+          if ((c.assignedPartnerManager || "") !== managerValue) return false;
+        } else if (user?.role === "심사사") {
+          if ((c.assessorTeam || "") !== managerValue) return false;
+        } else if (user?.role === "조사사") {
+          if ((c.investigatorTeamName || "") !== managerValue) return false;
+        } else {
+          if ((c.managerName || "") !== managerValue) return false;
+        }
       }
       return true;
     });
@@ -1140,7 +1154,7 @@ export default function ComprehensiveProgress() {
       }
     }
     return counts;
-  }, [cases, user?.role, user?.company]);
+  }, [cases, user?.role, user?.company, selectedManager]);
 
   const filteredData = useMemo(() => {
     const filteredByStatus = (cases || []).filter((caseItem) => {
@@ -1603,52 +1617,6 @@ export default function ComprehensiveProgress() {
             marginBottom: "16px",
           }}
         >
-          {/* Quick Status Filter Buttons */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px",
-              marginBottom: "12px",
-            }}
-          >
-            {QUICK_STATUS_FILTERS.map((f) => {
-              const isActive = selectedStatus === f.key;
-              const count = quickStatusCounts[f.key] ?? 0;
-              return (
-                <button
-                  key={f.key}
-                  onClick={() => setSelectedStatus(f.key)}
-                  style={{
-                    flex: "1 1 0",
-                    minWidth: 0,
-                    padding: "8px 6px",
-                    background: isActive ? "#253396" : "#FFFFFF",
-                    border: `1px solid ${isActive ? "#253396" : "rgba(12,12,12,0.12)"}`,
-                    borderRadius: "8px",
-                    fontFamily: "Pretendard",
-                    fontSize: "13px",
-                    fontWeight: isActive ? 600 : 500,
-                    letterSpacing: "-0.02em",
-                    color: isActive ? "#FFFFFF" : "rgba(12,12,12,0.8)",
-                    cursor: "pointer",
-                    lineHeight: "1.35",
-                    whiteSpace: "pre-line",
-                    textAlign: "center",
-                    transition: "background 0.15s, color 0.15s",
-                  }}
-                  data-testid={`button-quick-status-${f.key}`}
-                >
-                  {f.label}
-                  {"\n"}
-                  <span style={{ fontWeight: 700, fontSize: "12px", opacity: isActive ? 0.95 : 0.7 }}>
-                    ({count}건)
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Header */}
           {/* Status Filter Dropdown + Search Input (한 줄 배치) */}
           <div
@@ -1880,7 +1848,57 @@ export default function ComprehensiveProgress() {
               {totalCount}
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* [2026-05-15] 진행상태 빠른 필터 버튼: 검색바 아래(전체건/엑셀버튼 행)로 이동, 가운데 영역에 배치 */}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "6px",
+              margin: "0 16px",
+              minWidth: 0,
+            }}
+          >
+            {QUICK_STATUS_FILTERS.map((f) => {
+              const isActive = selectedStatus === f.key;
+              const count = quickStatusCounts[f.key] ?? 0;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setSelectedStatus(f.key)}
+                  style={{
+                    flex: "1 1 0",
+                    minWidth: 0,
+                    height: "36px",
+                    padding: "0 6px",
+                    background: isActive ? "#253396" : "#FFFFFF",
+                    border: `1px solid ${isActive ? "#253396" : "rgba(12,12,12,0.12)"}`,
+                    borderRadius: "8px",
+                    fontFamily: "Pretendard",
+                    fontSize: "12px",
+                    fontWeight: isActive ? 600 : 500,
+                    letterSpacing: "-0.02em",
+                    color: isActive ? "#FFFFFF" : "rgba(12,12,12,0.8)",
+                    cursor: "pointer",
+                    lineHeight: "1.2",
+                    whiteSpace: "nowrap",
+                    textAlign: "center",
+                    transition: "background 0.15s, color 0.15s",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                  data-testid={`button-quick-status-${f.key}`}
+                >
+                  {f.label}{" "}
+                  <span style={{ fontWeight: 700, opacity: isActive ? 0.95 : 0.7 }}>
+                    ({count})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
             {canDeleteCases && selectedCaseIds.length > 0 && (
               <button
                 onClick={() => setShowBulkDeleteDialog(true)}
