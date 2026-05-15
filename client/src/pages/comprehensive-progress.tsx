@@ -3647,6 +3647,7 @@ export default function ComprehensiveProgress() {
                               label: string;
                               name: string;
                               date?: string | null;
+                              addressDetail?: string;
                             }> = [];
                             if (isMultiVisit && selectedCase) {
                               const prefix = getCaseNumberPrefix(selectedCase.caseNumber);
@@ -3662,12 +3663,17 @@ export default function ComprehensiveProgress() {
                                   const name = isVictim
                                     ? (c.victimName || "(이름없음)")
                                     : (c.insuredName || c.victimName || "(이름없음)");
+                                  // 상세주소: 원인세대=피보험자 상세주소, 피해세대=피해자 상세주소
+                                  const addrDetail = isVictim
+                                    ? (c.victimAddressDetail || "")
+                                    : (c.insuredAddressDetail || "");
                                   return {
                                     caseId: c.id,
                                     suffix: sfx,
                                     label: isVictim ? "피해세대" : "원인세대",
                                     name,
                                     date: c.visitDate,
+                                    addressDetail: addrDetail,
                                   };
                                 })
                                 .sort((a, b) => {
@@ -3714,11 +3720,18 @@ export default function ComprehensiveProgress() {
                                   }}
                                   data-testid="visit-date-multi-list"
                                 >
-                                  {visitGroup.map((v) => (
-                                    <div key={v.caseId}>
-                                      {v.label} · {v.name} · {v.date ? formatDate(v.date) : "미방문"}
-                                    </div>
-                                  ))}
+                                  {visitGroup.map((v) => {
+                                    // 상세주소에서 동/호까지만 추출 (예: "101동 1502호 거실" → "101동 1502호")
+                                    const addr = (v.addressDetail || "").trim();
+                                    const m = addr.match(/^(.*?\d+호)/);
+                                    const shortAddr = m ? m[1].trim() : addr;
+                                    return (
+                                      <div key={v.caseId}>
+                                        {v.label} · {v.date ? formatDate(v.date) : "미방문"}
+                                        {shortAddr ? ` · ${shortAddr}` : ""}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               ) : (
                                 <span
