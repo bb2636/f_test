@@ -1087,6 +1087,7 @@ async function renderCoverPage(
     text: "연 락 처 :",
     font: fonts.bold,
     size: 11,
+    color: { r: 0.55, g: 0.55, b: 0.55 },
   });
   drawText(page, {
     x: valueX,
@@ -1094,6 +1095,7 @@ async function renderCoverPage(
     text: "070-8853-0925",
     font: fonts.regular,
     size: 11,
+    color: { r: 0.55, g: 0.55, b: 0.55 },
   });
 
   // FLOXN logo at bottom center (using image file)
