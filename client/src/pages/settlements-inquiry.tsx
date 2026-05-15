@@ -1546,6 +1546,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                   const caseCount = row.caseNumber ? row.caseNumber.split(", ").length : 0;
                   const isMultiCase = caseCount >= 2;
                   const verticalPadding = isMultiCase ? "12px" : "2px";
+                  const isLastRow = index === pagedRows.length - 1;
                   const cellStyle: React.CSSProperties = {
                     padding: `${verticalPadding} 16px`,
                     fontFamily: "Pretendard",
@@ -1553,6 +1554,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                     lineHeight: "115%",
                     color: "rgba(12, 12, 12, 0.8)",
                     borderRight: "1px solid var(--color-table-border)",
+                    borderBottom: isLastRow ? "none" : "1px solid var(--color-table-border)",
                     textAlign: "center",
                   };
                   const dateCellStyle: React.CSSProperties = {
