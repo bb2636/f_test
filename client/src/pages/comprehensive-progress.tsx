@@ -1937,7 +1937,7 @@ export default function ComprehensiveProgress() {
               flex: 1,
               display: "flex",
               flexWrap: "wrap",
-              gap: "6px",
+              gap: "10px",
               margin: "0 12px",
               minWidth: 0,
             }}
@@ -1952,7 +1952,7 @@ export default function ComprehensiveProgress() {
                   style={{
                     flex: "0 0 auto",
                     height: "36px",
-                    padding: "0 6px",
+                    padding: "0 10px",
                     background: "#253396",
                     border: `1px solid #253396`,
                     borderRadius: "8px",
