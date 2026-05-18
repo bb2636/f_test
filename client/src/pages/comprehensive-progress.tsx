@@ -1950,10 +1950,9 @@ export default function ComprehensiveProgress() {
                   key={f.key}
                   onClick={() => setSelectedStatus(f.key)}
                   style={{
-                    flex: "1 1 0",
-                    minWidth: 0,
+                    flex: "0 0 auto",
                     height: "36px",
-                    padding: "0 1px",
+                    padding: "0 6px",
                     background: "#253396",
                     border: `1px solid #253396`,
                     borderRadius: "8px",
