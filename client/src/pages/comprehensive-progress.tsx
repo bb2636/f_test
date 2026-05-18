@@ -1954,8 +1954,8 @@ export default function ComprehensiveProgress() {
                     minWidth: 0,
                     height: "36px",
                     padding: "0 1px",
-                    background: "#253297",
-                    border: `1px solid #253297`,
+                    background: "#253396",
+                    border: `1px solid #253396`,
                     borderRadius: "8px",
                     fontFamily: "Pretendard",
                     fontSize: "12px",
@@ -1969,7 +1969,7 @@ export default function ComprehensiveProgress() {
                     transition: "opacity 0.15s",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    opacity: isActive ? 1 : 0.78,
+                    opacity: isActive ? 1 : 0.92,
                   }}
                   data-testid={`button-quick-status-${f.key}`}
                 >
@@ -2046,11 +2046,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 9% 3% 6% 7%"
-                      : "40px 6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 7% 5% 3% 3% 3% 9% 3% 7%")
+                      ? "40px 6% 6% 7% 5% 8% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 5% 3% 6% 7%"
+                      : "40px 6% 6% 7% 5% 8% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 5% 3% 7%")
                     : (user?.role === "협력사"
-                      ? "6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 9% 3% 6% 7%"
-                      : "6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 7% 5% 3% 3% 3% 9% 3% 7%"),
+                      ? "6% 6% 7% 5% 8% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 5% 3% 6% 7%"
+                      : "6% 6% 7% 5% 8% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 5% 3% 7%"),
                 padding: "0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2251,11 +2251,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 9% 3% 6% 7%"
-                            : "40px 6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 7% 5% 3% 3% 3% 9% 3% 7%")
+                            ? "40px 6% 6% 7% 5% 8% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 5% 3% 6% 7%"
+                            : "40px 6% 6% 7% 5% 8% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 5% 3% 7%")
                           : (user?.role === "협력사"
-                            ? "6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 9% 3% 6% 7%"
-                            : "6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 7% 5% 3% 3% 3% 9% 3% 7%"),
+                            ? "6% 6% 7% 5% 8% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 5% 3% 6% 7%"
+                            : "6% 6% 7% 5% 8% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 5% 3% 7%"),
                       padding: "0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
