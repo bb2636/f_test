@@ -1937,7 +1937,7 @@ export default function ComprehensiveProgress() {
               flex: 1,
               display: "flex",
               flexWrap: "wrap",
-              gap: "2px",
+              gap: "6px",
               margin: "0 12px",
               minWidth: 0,
             }}
