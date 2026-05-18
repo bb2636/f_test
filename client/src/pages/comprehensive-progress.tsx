@@ -163,7 +163,8 @@ const formatAmount = (amount: string | number | null | undefined): string => {
   if (!amount) return "-";
   const numAmount = typeof amount === "string" ? parseInt(amount) : amount;
   if (isNaN(numAmount)) return "-";
-  return `₩${numAmount.toLocaleString()}`;
+  // [2026-05-15] 표시값에서 ₩ 기호 제거(요청). DB값/계산 영향 없음.
+  return numAmount.toLocaleString();
 };
 
 const POST_APPROVAL_STATUSES = ["청구", "청구자료제출(복구)", "출동비청구(선견적)", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
@@ -210,7 +211,7 @@ const STAGE_RECIPIENT_DEFAULTS: Record<NotificationStage, RecipientConfig> = {
 // (DB값/필터링 로직 변경 없음. 단순히 setSelectedStatus 트리거용)
 const QUICK_STATUS_FILTERS: { label: string; key: string }[] = [
   { label: "플록슨 심사중", key: "검토중" },
-  { label: "2차(보험사)심사중", key: "현장정보제출" },
+  { label: "보험사 심사중", key: "현장정보제출" },
   { label: "복구요청", key: "복구요청(2차승인)" },
   { label: "복구완료 보고", key: "청구자료제출(복구)" },
   { label: "비교견적완료 보고", key: "출동비청구(선견적)" },
@@ -1145,11 +1146,15 @@ export default function ComprehensiveProgress() {
           if ((c.managerName || "") !== managerValue) return false;
         }
       }
-      // [2026-05-15] 메모 구분 필터
+      // [2026-05-15] 메모 구분 필터: 미확인(채워진 점)만 표시. 확인된(테두리만) 케이스 제외.
       if (selectedMemoFilter === "red") {
-        if (!c.specialNotes && safeParseNotesHistory(c.partnerNotesHistory as string).length === 0) return false;
+        const hasPartnerNotes = !!c.specialNotes || safeParseNotesHistory(c.partnerNotesHistory as string).length > 0;
+        if (!hasPartnerNotes) return false;
+        if (c.partnerNotesAckedByAdmin === "true") return false;
       } else if (selectedMemoFilter === "blue") {
-        if (safeParseNotesHistory(c.adminNotesHistory as string).length === 0) return false;
+        const hasAdminNotes = safeParseNotesHistory(c.adminNotesHistory as string).length > 0;
+        if (!hasAdminNotes) return false;
+        if (c.adminNotesAckedByPartner === "true") return false;
       }
       return true;
     });
@@ -1254,15 +1259,17 @@ export default function ComprehensiveProgress() {
       return true;
     });
 
-    // [2026-05-15] 메모 구분 필터: 빨강=협력사 메모(specialNotes 또는 partnerNotesHistory), 파랑=관리자 메모(adminNotesHistory)
+    // [2026-05-15] 메모 구분 필터: 미확인(채워진 점)만. 확인된(테두리만) 케이스 제외.
     const filteredByMemo = filteredByRole.filter((caseItem) => {
       if (selectedMemoFilter === "all") return true;
       if (selectedMemoFilter === "red") {
-        return !!caseItem.specialNotes ||
+        const hasPartnerNotes = !!caseItem.specialNotes ||
           safeParseNotesHistory(caseItem.partnerNotesHistory as string).length > 0;
+        return hasPartnerNotes && caseItem.partnerNotesAckedByAdmin !== "true";
       }
       if (selectedMemoFilter === "blue") {
-        return safeParseNotesHistory(caseItem.adminNotesHistory as string).length > 0;
+        const hasAdminNotes = safeParseNotesHistory(caseItem.adminNotesHistory as string).length > 0;
+        return hasAdminNotes && caseItem.adminNotesAckedByPartner !== "true";
       }
       return true;
     });
@@ -1764,13 +1771,13 @@ export default function ComprehensiveProgress() {
                 <SelectItem value="red" data-testid="option-memo-red">
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                     <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#ED1C00" }} />
-                    협력사 메모
+                    협력사 메모 미확인
                   </span>
                 </SelectItem>
                 <SelectItem value="blue" data-testid="option-memo-blue">
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                     <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#008FED" }} />
-                    관리자 메모
+                    플록슨 메모 미확인
                   </span>
                 </SelectItem>
               </SelectContent>
@@ -1946,27 +1953,28 @@ export default function ComprehensiveProgress() {
                     flex: "1 1 0",
                     minWidth: 0,
                     height: "36px",
-                    padding: "0 6px",
-                    background: isActive ? "#253396" : "#FFFFFF",
-                    border: `1px solid ${isActive ? "#253396" : "rgba(12,12,12,0.12)"}`,
+                    padding: "0 2px",
+                    background: "#253396",
+                    border: `1px solid #253396`,
                     borderRadius: "8px",
                     fontFamily: "Pretendard",
                     fontSize: "12px",
-                    fontWeight: isActive ? 600 : 500,
-                    letterSpacing: "-0.02em",
-                    color: isActive ? "#FFFFFF" : "rgba(12,12,12,0.8)",
+                    fontWeight: isActive ? 700 : 600,
+                    letterSpacing: "-0.04em",
+                    color: "#FFFFFF",
                     cursor: "pointer",
                     lineHeight: "1.2",
                     whiteSpace: "nowrap",
                     textAlign: "center",
-                    transition: "background 0.15s, color 0.15s",
+                    transition: "opacity 0.15s",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    opacity: isActive ? 1 : 0.78,
                   }}
                   data-testid={`button-quick-status-${f.key}`}
                 >
                   {f.label}{" "}
-                  <span style={{ fontWeight: 700, opacity: isActive ? 0.95 : 0.7 }}>
+                  <span style={{ fontWeight: 700 }}>
                     ({count})
                   </span>
                 </button>
@@ -2038,11 +2046,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
-                      : "40px 6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%")
+                      ? "40px 6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 7% 3% 6% 7%"
+                      : "40px 6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 7% 3% 7%")
                     : (user?.role === "협력사"
-                      ? "6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
-                      : "6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%"),
+                      ? "6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 7% 3% 6% 7%"
+                      : "6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 7% 3% 7%"),
                 padding: "0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2243,11 +2251,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
-                            : "40px 6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%")
+                            ? "40px 6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 7% 3% 6% 7%"
+                            : "40px 6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 7% 3% 7%")
                           : (user?.role === "협력사"
-                            ? "6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 9% 3% 6% 7%"
-                            : "6% 6% 7% 5% 4% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 9% 3% 7%"),
+                            ? "6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 6% 7% 3% 3% 3% 7% 3% 6% 7%"
+                            : "6% 6% 7% 5% 6% 3% 4% minmax(45px,1fr) 4% 7% 7% 3% 3% 3% 7% 3% 7%"),
                       padding: "0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
