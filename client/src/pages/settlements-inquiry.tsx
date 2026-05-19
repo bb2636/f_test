@@ -86,6 +86,7 @@ interface SettlementRow {
   // 추가 필드
   insuredName: string; // 피보험자 이름
   claimDate: string; // 청구일 (invoicePdfGenerated)
+  assessorCompany: string; // 심사사 (assessorId, 회사명)
   assessorName: string; // 심사자 (assessorTeam)
   claimElapsed: string; // 경과 (청구일~현재, 입금완료 시 "-")
 }
@@ -608,6 +609,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         assignedPartner: caseItem.assignedPartner || "-",
         insuredName: caseItem.insuredName || "-",
         claimDate: caseItem.claimDate || "-",
+        assessorIdValue: caseItem.assessorId || "",
         assessorTeamValue: caseItem.assessorTeam || "",
         paymentCompletedDate: (caseItem as any).paymentCompletedDate || null,
       };
@@ -824,6 +826,10 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         partnerPaymentDate: casesInGroup.find((c) => c.partnerPaymentDate && c.partnerPaymentDate !== "-")?.partnerPaymentDate || primaryCase.partnerPaymentDate,
         insuredName: primaryCase.insuredName || "-",
         claimDate: primaryCase.claimDate || "-",
+        assessorCompany: (() => {
+          const v = casesInGroup.find(c => c.assessorIdValue)?.assessorIdValue || "";
+          return v || "-";
+        })(),
         assessorName: (() => {
           const assessorVal = casesInGroup.find(c => c.assessorTeamValue)?.assessorTeamValue || "";
           return assessorVal || "-";
@@ -974,7 +980,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
   const handleExcelDownload = () => {
     const isClosed = filterMode === "closed";
     const headers = [
-      "보험사","사고번호","피보험자","담당자(플록슨)","심사자","접수번호","협력업체",
+      "보험사","사고번호","피보험자","담당자(플록슨)","심사사","심사자","접수번호","협력업체",
       "청구일","경과","청구액","자기부담금","입금일","입금액","협력업체 지급액","수수료","계산서 발행일",
     ];
     const fmtAmt = (v: number) => (v == null || v <= 0 ? "-" : Number(v).toLocaleString());
@@ -984,6 +990,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
       r.accidentNumber || "-",
       r.insuredName || "-",
       r.admin || "-",
+      r.assessorCompany || "-",
       r.assessorName || "-",
       formatCaseNumber(r.caseNumber) || r.caseNumber || "-",
       r.assignedPartner || "-",
@@ -1432,13 +1439,13 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
       </div>
       {/* Wide Table with Horizontal Scroll and Sticky Header/Columns */}
       {(() => {
-        const stickyHeaders = ["보험사", "사고번호", "피보험자", "담당자(플록슨)", "심사자", "접수번호", "협력업체"];
+        const stickyHeaders = ["보험사", "사고번호", "피보험자", "담당자(플록슨)", "심사사", "심사자", "접수번호", "협력업체"];
         // 날짜 컬럼은 고정 너비로 좁게 표시
         const DATE_COL_WIDTH = 84;
         const DATE_COLUMN_LABELS = new Set(["청구일", "입금일", "계산서 발행일"]);
         const scrollHeaders = ["청구일", "경과", "청구액", "자기부담금", "입금일", "입금액", "협력업체 지급액", "수수료", "계산서 발행일", ...(!isPartner && canManageSettlement ? ["관리"] : []), ...(filterMode === "closed" && !isPartner && canViewReport ? ["보고서열람"] : [])];
         const allHeaders = [...stickyHeaders, ...scrollHeaders];
-        const stickyColWidths = [100, 130, 90, 110, 90, 150, 110];
+        const stickyColWidths = [100, 130, 90, 110, 100, 90, 150, 110];
         const stickyColLefts = stickyColWidths.map((_, i) => stickyColWidths.slice(0, i).reduce((a, b) => a + b, 0));
         const totalStickyWidth = stickyColWidths.reduce((a, b) => a + b, 0);
         const thBaseStyle: React.CSSProperties = {
@@ -1513,7 +1520,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={isPartner ? 16 : 17}
+                    colSpan={isPartner ? 17 : 18}
                     style={{
                       padding: "48px",
                       textAlign: "center",
@@ -1528,7 +1535,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
               ) : filteredRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={isPartner ? 16 : 17}
+                    colSpan={isPartner ? 17 : 18}
                     style={{
                       padding: "48px",
                       textAlign: "center",
@@ -1601,8 +1608,9 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       <td style={stickyCellStyle(3)}>
                         {row.managerId ? usersByIdMap.get(row.managerId)?.name || "-" : "-"}
                       </td>
-                      <td style={stickyCellStyle(4)}>{row.assessorName}</td>
-                      <td style={{ ...stickyCellStyle(5), padding: "8px 12px" }}>
+                      <td style={stickyCellStyle(4)}>{row.assessorCompany}</td>
+                      <td style={stickyCellStyle(5)}>{row.assessorName}</td>
+                      <td style={{ ...stickyCellStyle(6), padding: "8px 12px" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                           {row.caseNumber
                             ?.split(", ")
@@ -1611,7 +1619,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                             )) || "-"}
                         </div>
                       </td>
-                      <td style={stickyCellStyle(6)}>{row.assignedPartner}</td>
+                      <td style={stickyCellStyle(7)}>{row.assignedPartner}</td>
                       <td style={dateCellStyle}>{row.claimDate}</td>
                       <td style={cellStyle}>{row.claimElapsed}</td>
                       <td style={amountStyle}>{renderAmount(row.claimAmount)}</td>
