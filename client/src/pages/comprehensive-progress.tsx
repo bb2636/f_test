@@ -2042,15 +2042,16 @@ export default function ComprehensiveProgress() {
               className="data-table-header"
               style={{
                 display: "grid",
-                minWidth: "1500px",
+                // [2026-05-19] 전체 너비 1500→1700px, 피보험자 4%→6% (잘림 해소)
+                minWidth: "1700px",
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
-                      : "40px 7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%")
+                      ? "40px 7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
+                      : "40px 7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%")
                     : (user?.role === "협력사"
-                      ? "7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
-                      : "7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%"),
+                      ? "7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
+                      : "7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%"),
                 padding: "0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2248,15 +2249,16 @@ export default function ComprehensiveProgress() {
                     className="data-table-row"
                     style={{
                       display: "grid",
-                      minWidth: "1500px",
+                      // [2026-05-19] 전체 너비 1500→1700px, 피보험자 4%→6% (잘림 해소)
+                      minWidth: "1700px",
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
-                            : "40px 7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%")
+                            ? "40px 7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
+                            : "40px 7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%")
                           : (user?.role === "협력사"
-                            ? "7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
-                            : "7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%"),
+                            ? "7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
+                            : "7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%"),
                       padding: "0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
