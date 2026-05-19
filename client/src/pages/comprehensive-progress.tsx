@@ -2630,24 +2630,33 @@ export default function ComprehensiveProgress() {
                             }}
                           >
                             {(user?.role === "협력사"
-                              ? PARTNER_ALLOWED_STATUSES
-                              : ([
-                                  "접수완료",
-                                  "검토중",
-                                  "반려",
-                                  "복구요청(2차승인)",
-                                  "직접복구",
-                                  "선견적요청",
-                                  "청구",
-                                  "종결",
-                                  "취소대기",
-                                  "접수취소",
-                                ] as const)
-                            ).map((status) => (
+                              ? PARTNER_ALLOWED_STATUSES.map((s) => ({
+                                  value: s,
+                                  // [2026-05-19] 협력사 분기도 선견적요청 표시는 "비교견적완료보고"
+                                  label: s === "선견적요청" ? "비교견적완료보고" : getStatusDisplayText(s),
+                                  testId: s,
+                                }))
+                              : [
+                                  { value: "접수완료", label: getStatusDisplayText("접수완료"), testId: "접수완료" },
+                                  { value: "검토중", label: getStatusDisplayText("검토중"), testId: "검토중" },
+                                  { value: "반려", label: getStatusDisplayText("반려"), testId: "반려" },
+                                  { value: "복구요청(2차승인)", label: getStatusDisplayText("복구요청(2차승인)"), testId: "복구요청(2차승인)" },
+                                  { value: "직접복구", label: getStatusDisplayText("직접복구"), testId: "직접복구" },
+                                  // [2026-05-19] 선견적요청은 표시만 "비교견적완료보고"로 — DB 저장값 불변
+                                  { value: "선견적요청", label: "비교견적완료보고", testId: "선견적요청" },
+                                  // [2026-05-19] 기존 "청구" 단일 항목을 두 개로 분리 표시
+                                  // 두 항목 모두 status="청구"로 저장됨 (DB값 불변)
+                                  { value: "청구", label: "공사비 청구", testId: "청구-공사비" },
+                                  { value: "청구", label: "비교견적비 청구", testId: "청구-비교견적비" },
+                                  { value: "종결", label: getStatusDisplayText("종결"), testId: "종결" },
+                                  { value: "취소대기", label: getStatusDisplayText("취소대기"), testId: "취소대기" },
+                                  { value: "접수취소", label: getStatusDisplayText("접수취소"), testId: "접수취소" },
+                                ]
+                            ).map((item) => (
                               <DropdownMenuItem
-                                key={status}
+                                key={item.testId}
                                 onClick={() =>
-                                  handleStatusChange(caseItem.id, status)
+                                  handleStatusChange(caseItem.id, item.value)
                                 }
                                 style={{
                                   display: "flex",
@@ -2659,15 +2668,13 @@ export default function ComprehensiveProgress() {
                                   fontFamily: "Pretendard",
                                   fontSize: "14px",
                                   fontWeight: 500,
-                                  color: getStatusColor(status),
+                                  color: getStatusColor(item.value),
                                   background: "transparent",
                                   borderRadius: "4px",
                                 }}
-                                data-testid={`button-status-option-${status}`}
+                                data-testid={`button-status-option-${item.testId}`}
                               >
-                                {status === "청구"
-                                  ? getCaseStatusDisplayText({ ...caseItem, status: "청구" }, cases)
-                                  : getStatusDisplayText(status)}
+                                {item.label}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
