@@ -1117,7 +1117,7 @@ export default function FieldManagement() {
               <div className="mt-6 space-y-6">
                 {/* Row 1: 사고 발생 일시 + 방문 일시 */}
                 <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex w-[250px] flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">사고 발생 일시</div>
                     <div className="flex">
                       <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen} modal={false}>
@@ -1229,7 +1229,7 @@ export default function FieldManagement() {
                   const causeLabel = isVictimCase ? "피해현황" : "사고원인";
                   return (
                     <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
-                      <div className="flex flex-col gap-1.5">
+                      <div className="flex w-[250px] flex-col gap-1.5">
                         <div className="text-[12px] text-[#6B7280]">누수유형</div>
                         <div className="flex h-9 flex-wrap items-center gap-6 text-[13px] text-[#374151]">
                           {["배관", "방수", "코킹", "기타"].map((type) => (
@@ -1278,7 +1278,7 @@ export default function FieldManagement() {
 
                 {/* Row 3: 처리유형 + 기타사항입력 + 복구방식 */}
                 <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex w-[250px] flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">처리유형</div>
                     <div className="flex h-9 flex-wrap items-center gap-6 text-[13px] text-[#374151]">
                       {["수리", "비교견적", "기타"].map((type) => (
