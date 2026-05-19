@@ -348,6 +348,28 @@
     border-right: none;
   }
 
+  /* [2026-05-19] 종합진행관리 등 div-grid 테이블:
+   *  - 주소칸 외 셀이 두 줄로 넘어가지 않도록 기본 nowrap 적용
+   *  - 주소칸은 인라인 whiteSpace:"normal" 로 명시되어 wrap 유지됨
+   *  - 인라인 wordBreak:"break-all" 보다 우선 적용 위해 !important
+   */
+  .data-table-header > div,
+  .data-table-row > div {
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .data-table-header > div *,
+  .data-table-row > div * {
+    white-space: inherit;
+  }
+  /* 주소 셀(인라인 whiteSpace:"normal")은 위 nowrap 보다 우선 적용 */
+  .data-table-row > div[data-testid^="text-address-"] {
+    white-space: normal !important;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
   /* HTML <table> 기반 공용 세로/가로 구분선 통일
    * 적용 대상: 정산청구, 정산종결, 접수취소, 1:1문의관리, 공지사항관리
    * - 인라인 borderBottom이 이미 있는 셀은 인라인 우선

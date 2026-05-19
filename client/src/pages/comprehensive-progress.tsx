@@ -2036,12 +2036,13 @@ export default function ComprehensiveProgress() {
             maxHeight: "calc(100vh - 260px)",
           }}
         >
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 }}>
+          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             {/* Table Header */}
             <div
               className="data-table-header"
               style={{
                 display: "grid",
+                minWidth: "1500px",
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
@@ -2247,6 +2248,7 @@ export default function ComprehensiveProgress() {
                     className="data-table-row"
                     style={{
                       display: "grid",
+                      minWidth: "1500px",
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
@@ -2603,8 +2605,7 @@ export default function ComprehensiveProgress() {
                                 color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#253396" : getStatusColor(caseItem.status),
                                 textAlign: "center",
                                 lineHeight: "1.4",
-                                maxWidth: "140px",
-                                wordBreak: "keep-all",
+                                whiteSpace: "nowrap",
                                 cursor: updateStatusMutation.isPending
                                   ? "not-allowed"
                                   : "pointer",
@@ -2684,8 +2685,7 @@ export default function ComprehensiveProgress() {
                             color: getStatusColor(caseItem.status) === STATUS_COLORS.default ? "#253396" : getStatusColor(caseItem.status),
                             textAlign: "center",
                             lineHeight: "1.4",
-                            maxWidth: "140px",
-                            wordBreak: "keep-all",
+                            whiteSpace: "nowrap",
                           }}
                           data-testid={`text-status-${caseItem.id}`}
                         >
