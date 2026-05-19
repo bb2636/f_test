@@ -1012,137 +1012,94 @@ export default function FieldManagement() {
               <div className="text-[14px] font-bold">기본 정보</div>
               <div className="mt-2 border-t border-[#E5E7EB]"></div>
 
-              {/* [정책 2026-05-12] 자동연동 필드 — 입력 가능한 인풋과 동일한 박스 외형(border 또렷, bg-white).
-                  readOnly 인풋으로 변경하여 사용자 직접 입력 차단(자동연동 동작 보존). */}
-              <div className="mt-10 space-y-10">
-                <div className="flex items-center flex-wrap gap-y-4">
-                  <div className="text-[12px] text-[#6B7280] w-[100px]">협력사</div>
-                  <input
-                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
-                    value={selectedCaseData.assignedPartner || ""}
-                    readOnly
-                    placeholder="-"
-                    data-testid="text-partner"
-                  />
-
-                  <div className="text-[12px] text-[#6B7280] ml-12 w-[80px]">담당자명</div>
-                  <input
-                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
-                    value={selectedCaseData.assignedPartnerManager || ""}
-                    readOnly
-                    placeholder="-"
-                    data-testid="text-manager-name"
-                  />
-
-                  <div className="text-[12px] text-[#6B7280] ml-12 w-[100px]">담당자 연락처</div>
-                  <input
-                    className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
-                    value={selectedCaseData.assignedPartnerContact || ""}
-                    readOnly
-                    placeholder="-"
-                    data-testid="text-manager-contact"
-                  />
+              {/* [정책 2026-05-19] 이미지대로 재배치 — 라벨을 인풋 위에 두는 스택 형태,
+                  Row1: 보험사고번호 | 보험사 | 보험계약자 | 피보험자 | 연락처
+                  Row2: 협력사 | 담당자명 | 담당자 연락처
+                  자동연동(readOnly) 필드는 bg-slate-50, 입력 필드는 bg-white 유지. */}
+              <div className="mt-6 space-y-6">
+                <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">보험사고번호</div>
+                    <input
+                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      value={selectedCaseData.insuranceAccidentNo || ""}
+                      readOnly
+                      placeholder="-"
+                      data-testid="text-accident-no"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">보험사</div>
+                    <input
+                      className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      value={selectedCaseData.insuranceCompany || ""}
+                      readOnly
+                      placeholder="-"
+                      data-testid="text-insurance-company"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">보험계약자</div>
+                    <input
+                      className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      value={selectedCaseData.policyHolderName || ""}
+                      readOnly
+                      placeholder="-"
+                      data-testid="text-policyholder"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">피보험자</div>
+                    <input
+                      className="h-9 w-[140px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      value={selectedCaseData.insuredName || ""}
+                      readOnly
+                      placeholder="-"
+                      data-testid="text-insured-name"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">연락처</div>
+                    <input
+                      className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      value={selectedCaseData.insuredContact || ""}
+                      readOnly
+                      placeholder="-"
+                      data-testid="text-insured-contact"
+                    />
+                  </div>
                 </div>
 
-                <div className="flex items-center flex-wrap gap-y-4">
-                  <div className="text-[12px] text-[#6B7280] w-[100px]">보험사 사고번호</div>
-                  <input
-                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
-                    value={selectedCaseData.insuranceAccidentNo || ""}
-                    readOnly
-                    placeholder="-"
-                    data-testid="text-accident-no"
-                  />
-
-                  <div className="text-[12px] text-[#6B7280] ml-12 w-[80px]">보험사</div>
-                  <input
-                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
-                    value={selectedCaseData.insuranceCompany || ""}
-                    readOnly
-                    placeholder="-"
-                    data-testid="text-insurance-company"
-                  />
-                </div>
-
-                <div className="flex items-center flex-wrap gap-y-4">
-                  <div className="text-[12px] text-[#6B7280] w-[100px]">보험계약자</div>
-                  <input
-                    className="h-9 w-[200px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
-                    value={selectedCaseData.policyHolderName || ""}
-                    readOnly
-                    placeholder="-"
-                    data-testid="text-policyholder"
-                  />
-
-                  <div className="text-[12px] text-[#6B7280] ml-12 w-[80px]">피보험자</div>
-                  <input
-                    className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
-                    value={selectedCaseData.insuredName || ""}
-                    readOnly
-                    placeholder="-"
-                    data-testid="text-insured-name"
-                  />
-
-                  <div className="text-[12px] text-[#6B7280] ml-12 w-[60px]">연락처</div>
-                  <input
-                    className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
-                    value={selectedCaseData.insuredContact || ""}
-                    readOnly
-                    placeholder="-"
-                    data-testid="text-insured-contact"
-                  />
-                </div>
-
-                {/* [정책 2026-05-12] 날짜/시간 단독 표시 박스 — 내용 길이에 맞게 축소(h-9, 각 130px). */}
-                <div className="flex items-center gap-x-8">
-                  <div className="text-[12px] text-[#6B7280]">사고 발생 일시</div>
-                  <div className="flex">
-                    <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen} modal={false}>
-                      <PopoverTrigger asChild>
-                        <button
-                          ref={accidentDateTriggerRef}
-                          type="button"
-                          className="flex h-9 w-[140px] items-center justify-between rounded-l-md border border-[#E5E7EB] bg-white px-3"
-                          disabled={isReadOnly}
-                          data-testid="button-accident-date"
-                        >
-                          <span className={`text-[12px] ${accidentDate ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}`}>
-                            {accidentDate ? format(accidentDate, "yyyy.MM.dd", { locale: ko }) : "날짜 선택"}
-                          </span>
-                          <CalendarIcon className="h-4 w-4 text-[#9CA3AF]" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent 
-                        className="w-auto p-0"
-                        onOpenAutoFocus={(e) => e.preventDefault()}
-                        onCloseAutoFocus={(e) => e.preventDefault()}
-                      >
-                        <Calendar
-                          mode="single"
-                          selected={accidentDate}
-                          onSelect={(date) => {
-                            setAccidentDate(date);
-                            setDatePickerOpen(false);
-                          }}
-                          classNames={{
-                            day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-
-                    <div className="flex h-9 w-[110px] items-center justify-between rounded-r-md border border-l-0 border-[#E5E7EB] bg-white px-3">
-                      <input
-                        type="time"
-                        value={accidentTime}
-                        onChange={(e) => { handleUserInput(); setAccidentTime(e.target.value); }}
-                        className="w-full text-[12px] bg-transparent outline-none"
-                        disabled={isReadOnly}
-                        data-testid="input-accident-time"
-                        placeholder="시간 선택"
-                      />
-                      <Clock className="h-4 w-4 text-[#9CA3AF]" />
-                    </div>
+                <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">협력사</div>
+                    <input
+                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      value={selectedCaseData.assignedPartner || ""}
+                      readOnly
+                      placeholder="-"
+                      data-testid="text-partner"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">담당자명</div>
+                    <input
+                      className="h-9 w-[160px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      value={selectedCaseData.assignedPartnerManager || ""}
+                      readOnly
+                      placeholder="-"
+                      data-testid="text-manager-name"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">담당자 연락처</div>
+                    <input
+                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      value={selectedCaseData.assignedPartnerContact || ""}
+                      readOnly
+                      placeholder="-"
+                      data-testid="text-manager-contact"
+                    />
                   </div>
                 </div>
               </div>
@@ -1152,180 +1109,227 @@ export default function FieldManagement() {
               <div className="text-[14px] font-bold">현장조사 정보</div>
               <div className="mt-3 border-t border-[#E5E7EB]"></div>
 
-              <div className="mt-4 space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-[120px] text-[12px] text-[#6B7280]">방문 일시</div>
-
-                  {/* [정책 2026-05-12] 날짜/시간 단독 표시 박스 — 내용 길이에 맞게 축소(140px/110px). */}
-                  <div className="flex items-center gap-2">
-                    <Popover open={visitDatePickerOpen} onOpenChange={setVisitDatePickerOpen} modal={false}>
-                      <PopoverTrigger asChild>
-                        <button
-                          ref={visitDateTriggerRef}
-                          type="button"
-                          className="flex h-9 w-[140px] items-center justify-between rounded-md border border-[#E5E7EB] bg-white px-3"
-                          disabled={isReadOnly}
-                          data-testid="button-visit-date"
+              {/* [정책 2026-05-19] 이미지대로 재배치 —
+                  Row1: 사고 발생 일시 | 방문 일시
+                  Row2: 누수유형 | 사고원인
+                  Row3: 처리유형 | 기타사항입력 | 복구방식
+                  '출동 담당자'는 기본정보 담당자명과 중복이므로 제거. */}
+              <div className="mt-6 space-y-6">
+                {/* Row 1: 사고 발생 일시 + 방문 일시 */}
+                <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">사고 발생 일시</div>
+                    <div className="flex">
+                      <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen} modal={false}>
+                        <PopoverTrigger asChild>
+                          <button
+                            ref={accidentDateTriggerRef}
+                            type="button"
+                            className="flex h-9 w-[140px] items-center justify-between rounded-l-md border border-[#E5E7EB] bg-white px-3"
+                            disabled={isReadOnly}
+                            data-testid="button-accident-date"
+                          >
+                            <span className={`text-[12px] ${accidentDate ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}`}>
+                              {accidentDate ? format(accidentDate, "yyyy.MM.dd", { locale: ko }) : "날짜 선택"}
+                            </span>
+                            <CalendarIcon className="h-4 w-4 text-[#9CA3AF]" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-auto p-0"
+                          onOpenAutoFocus={(e) => e.preventDefault()}
+                          onCloseAutoFocus={(e) => e.preventDefault()}
                         >
-                          <span className={`text-[12px] ${visitDate ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}`}>
-                            {visitDate ? format(visitDate, "yyyy.MM.dd", { locale: ko }) : "날짜 선택"}
-                          </span>
-                          <CalendarIcon className="h-4 w-4 text-[#9CA3AF]" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent 
-                        className="w-auto p-0"
-                        onOpenAutoFocus={(e) => e.preventDefault()}
-                        onCloseAutoFocus={(e) => e.preventDefault()}
-                      >
-                        <Calendar
-                          mode="single"
-                          selected={visitDate}
-                          onSelect={(date) => {
-                            setVisitDate(date);
-                            setVisitDatePickerOpen(false);
-                          }}
-                          classNames={{
-                            day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                          <Calendar
+                            mode="single"
+                            selected={accidentDate}
+                            onSelect={(date) => {
+                              setAccidentDate(date);
+                              setDatePickerOpen(false);
+                            }}
+                            classNames={{
+                              day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
 
-                    <div className="flex h-9 w-[110px] items-center justify-between rounded-md border border-[#E5E7EB] bg-white px-3">
-                      <input
-                        type="time"
-                        value={visitTime}
-                        onChange={(e) => { handleUserInput(); setVisitTime(e.target.value); }}
-                        className="w-full text-[12px] bg-transparent outline-none"
-                        disabled={isReadOnly}
-                        data-testid="input-visit-time"
-                      />
-                      <Clock className="h-4 w-4 text-[#9CA3AF]" />
+                      <div className="flex h-9 w-[110px] items-center justify-between rounded-r-md border border-l-0 border-[#E5E7EB] bg-white px-3">
+                        <input
+                          type="time"
+                          value={accidentTime}
+                          onChange={(e) => { handleUserInput(); setAccidentTime(e.target.value); }}
+                          className="w-full text-[12px] bg-transparent outline-none"
+                          disabled={isReadOnly}
+                          data-testid="input-accident-time"
+                          placeholder="시간 선택"
+                        />
+                        <Clock className="h-4 w-4 text-[#9CA3AF]" />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="ml-2 flex items-center gap-3">
-                    <div className="text-[12px] text-[#6B7280]">출동 담당자</div>
-                    <input
-                      className="h-9 w-[260px] rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF] keep-border"
-                      placeholder="출동 담당자"
-                      value={selectedCaseData.assignedPartnerManager || ""}
-                      readOnly
-                      data-testid="input-dispatch-manager"
-                    />
-                  </div>
-                </div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">방문 일시</div>
+                    <div className="flex">
+                      <Popover open={visitDatePickerOpen} onOpenChange={setVisitDatePickerOpen} modal={false}>
+                        <PopoverTrigger asChild>
+                          <button
+                            ref={visitDateTriggerRef}
+                            type="button"
+                            className="flex h-9 w-[140px] items-center justify-between rounded-l-md border border-[#E5E7EB] bg-white px-3"
+                            disabled={isReadOnly}
+                            data-testid="button-visit-date"
+                          >
+                            <span className={`text-[12px] ${visitDate ? "text-[#0C0C0C]" : "text-[#9CA3AF]"}`}>
+                              {visitDate ? format(visitDate, "yyyy.MM.dd", { locale: ko }) : "날짜 선택"}
+                            </span>
+                            <CalendarIcon className="h-4 w-4 text-[#9CA3AF]" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="w-auto p-0"
+                          onOpenAutoFocus={(e) => e.preventDefault()}
+                          onCloseAutoFocus={(e) => e.preventDefault()}
+                        >
+                          <Calendar
+                            mode="single"
+                            selected={visitDate}
+                            onSelect={(date) => {
+                              setVisitDate(date);
+                              setVisitDatePickerOpen(false);
+                            }}
+                            classNames={{
+                              day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
 
-                <div className="flex items-center gap-4">
-                  <div className="w-[120px] text-[12px] text-[#6B7280]">누수유형</div>
-
-                  <div className="flex flex-wrap items-center gap-6 text-[13px] text-[#374151]">
-                    {["배관", "방수", "코킹", "기타"].map((type) => (
-                      <label key={type} className="inline-flex items-center gap-2 cursor-pointer">
+                      <div className="flex h-9 w-[110px] items-center justify-between rounded-r-md border border-l-0 border-[#E5E7EB] bg-white px-3">
                         <input
-                          type="checkbox"
-                          checked={leakTypes.has(type)}
-                          onChange={() => toggleLeakType(type)}
+                          type="time"
+                          value={visitTime}
+                          onChange={(e) => { handleUserInput(); setVisitTime(e.target.value); }}
+                          className="w-full text-[12px] bg-transparent outline-none"
                           disabled={isReadOnly}
-                          className="h-4 w-4 accent-[#253396]"
-                          data-testid={`checkbox-leak-type-${type}`}
+                          data-testid="input-visit-time"
                         />
-                        <span className={leakTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
-                          {type}
-                        </span>
-                      </label>
-                    ))}
-                    
-                    {leakTypes.has("기타") && (
-                      <input
-                        type="text"
-                        className="h-8 w-[180px] rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
-                        placeholder="기타 누수유형 입력"
-                        value={leakTypeOther}
-                        onChange={(e) => { handleUserInput(); setLeakTypeOther(e.target.value); }}
-                        disabled={isReadOnly}
-                        data-testid="input-leak-type-other"
-                      />
-                    )}
+                        <Clock className="h-4 w-4 text-[#9CA3AF]" />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
+                {/* Row 2: 누수유형 + 사고원인 */}
                 {(() => {
-                  // 피해세대(-1, -2 ...) 케이스에서는 라벨/플레이스홀더만 "피해현황"으로 표시.
-                  // DB 컬럼은 그대로 accidentCause 유지 (값/로직 무변경).
                   const cn = selectedCaseData?.caseNumber || "";
                   const suffix = cn.includes("-") ? cn.split("-").pop() : "";
                   const isVictimCase = suffix !== "" && suffix !== "0";
                   const causeLabel = isVictimCase ? "피해현황" : "사고원인";
                   return (
-                <div className="flex items-start gap-4">
-                  <div className="mt-2 w-[120px] text-[12px] text-[#6B7280]">{causeLabel}</div>
-                  <textarea
-                    className="min-h-[70px] w-full rounded-md border border-[#E5E7EB] p-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
-                    placeholder={causeLabel}
-                    value={accidentCause}
-                    onChange={(e) => { handleUserInput(); setAccidentCause(e.target.value); }}
-                    disabled={isReadOnly}
-                    data-testid="textarea-accident-cause"
-                  />
-                </div>
+                    <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-[12px] text-[#6B7280]">누수유형</div>
+                        <div className="flex h-9 flex-wrap items-center gap-6 text-[13px] text-[#374151]">
+                          {["배관", "방수", "코킹", "기타"].map((type) => (
+                            <label key={type} className="inline-flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={leakTypes.has(type)}
+                                onChange={() => toggleLeakType(type)}
+                                disabled={isReadOnly}
+                                className="h-4 w-4 accent-[#253396]"
+                                data-testid={`checkbox-leak-type-${type}`}
+                              />
+                              <span className={leakTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
+                                {type}
+                              </span>
+                            </label>
+                          ))}
+                          {leakTypes.has("기타") && (
+                            <input
+                              type="text"
+                              className="h-8 w-[180px] rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
+                              placeholder="기타 누수유형 입력"
+                              value={leakTypeOther}
+                              onChange={(e) => { handleUserInput(); setLeakTypeOther(e.target.value); }}
+                              disabled={isReadOnly}
+                              data-testid="input-leak-type-other"
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-1 min-w-[300px] flex-col gap-1.5">
+                        <div className="text-[12px] text-[#6B7280]">{causeLabel}</div>
+                        <textarea
+                          className="min-h-[70px] w-full rounded-md border border-[#E5E7EB] bg-white p-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
+                          placeholder={causeLabel}
+                          value={accidentCause}
+                          onChange={(e) => { handleUserInput(); setAccidentCause(e.target.value); }}
+                          disabled={isReadOnly}
+                          data-testid="textarea-accident-cause"
+                        />
+                      </div>
+                    </div>
                   );
                 })()}
 
-                <div className="flex items-center gap-4">
-                  <div className="w-[120px] text-[12px] text-[#6B7280]">처리유형</div>
-
-                  <div className="flex flex-wrap items-center gap-6 text-[13px] text-[#374151]">
-                    {["수리", "비교견적", "기타"].map((type) => (
-                      <label key={type} className="inline-flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={processingTypes.has(type)}
-                          onChange={() => toggleProcessingType(type)}
-                          disabled={isReadOnly}
-                          className="h-4 w-4 accent-[#253396]"
-                          data-testid={`checkbox-processing-type-${type}`}
-                        />
-                        <span className={processingTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
-                          {type}
-                        </span>
-                      </label>
-                    ))}
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-[12px] text-[#6B7280]">기타사항입력</span>
-                      <input
-                        className="h-9 w-[260px] rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF] keep-border"
-                        placeholder="기타사항"
-                        value={processingTypeOther}
-                        onChange={(e) => { handleUserInput(); setProcessingTypeOther(e.target.value); }}
-                        disabled={isReadOnly}
-                        data-testid="input-processing-type-other"
-                      />
+                {/* Row 3: 처리유형 + 기타사항입력 + 복구방식 */}
+                <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">처리유형</div>
+                    <div className="flex h-9 flex-wrap items-center gap-6 text-[13px] text-[#374151]">
+                      {["수리", "비교견적", "기타"].map((type) => (
+                        <label key={type} className="inline-flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={processingTypes.has(type)}
+                            onChange={() => toggleProcessingType(type)}
+                            disabled={isReadOnly}
+                            className="h-4 w-4 accent-[#253396]"
+                            data-testid={`checkbox-processing-type-${type}`}
+                          />
+                          <span className={processingTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
+                            {type}
+                          </span>
+                        </label>
+                      ))}
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="w-[120px] text-[12px] text-[#6B7280]">복구방식</div>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">기타사항입력</div>
+                    <input
+                      className="h-9 w-[260px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] outline-none placeholder:text-[#9CA3AF] keep-border"
+                      placeholder="기타사항"
+                      value={processingTypeOther}
+                      onChange={(e) => { handleUserInput(); setProcessingTypeOther(e.target.value); }}
+                      disabled={isReadOnly}
+                      data-testid="input-processing-type-other"
+                    />
+                  </div>
 
-                  <div className="flex items-center gap-6 text-[13px] text-[#374151]">
-                    {["부분수리", "전체수리"].map((method) => (
-                      <label key={method} className="inline-flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={recoveryMethodType === method}
-                          onChange={() => setRecoveryMethodType(method)}
-                          disabled={isReadOnly}
-                          className="h-4 w-4 accent-[#253396]"
-                          data-testid={`checkbox-recovery-method-${method}`}
-                        />
-                        <span className={recoveryMethodType === method ? "text-[#253396]" : "text-[#0C0C0C]"}>
-                          {method}
-                        </span>
-                      </label>
-                    ))}
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[12px] text-[#6B7280]">복구방식</div>
+                    <div className="flex h-9 items-center gap-6 text-[13px] text-[#374151]">
+                      {["부분수리", "전체수리"].map((method) => (
+                        <label key={method} className="inline-flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={recoveryMethodType === method}
+                            onChange={() => setRecoveryMethodType(method)}
+                            disabled={isReadOnly}
+                            className="h-4 w-4 accent-[#253396]"
+                            data-testid={`checkbox-recovery-method-${method}`}
+                          />
+                          <span className={recoveryMethodType === method ? "text-[#253396]" : "text-[#0C0C0C]"}>
+                            {method}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
