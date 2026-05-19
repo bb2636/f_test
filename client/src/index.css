@@ -348,21 +348,21 @@
     border-right: none;
   }
 
-  /* [2026-05-19] 종합진행관리 등 div-grid 테이블:
-   *  - 주소칸 외 셀이 두 줄로 넘어가지 않도록 기본 nowrap 적용
-   *  - 주소칸은 인라인 whiteSpace:"normal" 로 명시되어 wrap 유지됨
-   *  - 인라인 wordBreak:"break-all" 보다 우선 적용 위해 !important
+  /* [2026-05-19 v2] 종합진행관리 등 div-grid 테이블:
+   *  - 내용이 칸을 넘으면 줄바꿈 처리(잘림 방지)
+   *  - 한글/한영혼합 안전 줄바꿈: word-break: break-word
+   *  - 주소칸은 기존대로 wrap 유지 (별도 처리 불필요)
    */
   .data-table-header > div,
   .data-table-row > div {
-    white-space: nowrap !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal !important;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
-  /* [2026-05-19] 종합진행관리 등 테이블 칸에 글씨를 살짝 축소하여
-   * 좁은 컬럼(피보험자, 심사사/심사자 등)에서 잘림을 줄임.
-   * 인라인 fontSize:13px 보다 우선 적용 위해 !important.
-   * 칸에 맞춰 13px → 12px 로 축소 (헤더/바디 동일) */
+  /* [2026-05-19] 테이블 칸 글씨 축소: 인라인 fontSize:13px → 12px (헤더/바디 동일)
+   * 좁은 컬럼에서 잘림을 줄이고 줄바꿈 시 한 줄에 더 많이 들어가게 함. */
   .data-table-header > div,
   .data-table-header > div *,
   .data-table-row > div,
@@ -372,12 +372,6 @@
   .data-table-header > div *,
   .data-table-row > div * {
     white-space: inherit;
-  }
-  /* 주소 셀(인라인 whiteSpace:"normal")은 위 nowrap 보다 우선 적용 */
-  .data-table-row > div[data-testid^="text-address-"] {
-    white-space: normal !important;
-    overflow: visible;
-    text-overflow: clip;
   }
 
   /* HTML <table> 기반 공용 세로/가로 구분선 통일
