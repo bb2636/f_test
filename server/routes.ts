@@ -12576,6 +12576,35 @@ FLOXN 드림`;
         return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
       }
 
+      // ========== [accidentCause 추적 2026-05-19] ==========
+      // 사용자 보고: 이메일 전송 후 사고원인이 사라진다는 의혹.
+      // 이메일 발송 직전 스냅샷을 찍어 BG 종료 시점 값과 비교, 변경되면 즉시 경보.
+      // 종료 경로 3개(성공/실패조기return/예외)에서 모두 호출하기 위해 헬퍼로 추출.
+      const accidentCauseBeforeEmail = caseData.accidentCause;
+      console.log(
+        `[accidentCause-trace] [BEFORE EMAIL] caseId=${caseId} caseNumber=${caseData.caseNumber} accidentCause=${JSON.stringify(accidentCauseBeforeEmail)}`,
+      );
+      let accidentCauseAfterChecked = false;
+      const checkAccidentCauseAfter = async (exitReason: string) => {
+        if (accidentCauseAfterChecked) return;
+        accidentCauseAfterChecked = true;
+        try {
+          const afterCase = await storage.getCaseById(caseId);
+          const accidentCauseAfterEmail = afterCase?.accidentCause;
+          if (accidentCauseBeforeEmail !== accidentCauseAfterEmail) {
+            console.error(
+              `[accidentCause-trace] 🚨 CHANGED DURING EMAIL SEND! exit=${exitReason} caseId=${caseId} caseNumber=${afterCase?.caseNumber} before=${JSON.stringify(accidentCauseBeforeEmail)} after=${JSON.stringify(accidentCauseAfterEmail)}`,
+            );
+          } else {
+            console.log(
+              `[accidentCause-trace] [AFTER EMAIL] exit=${exitReason} caseId=${caseId} unchanged=${JSON.stringify(accidentCauseAfterEmail)}`,
+            );
+          }
+        } catch (traceErr) {
+          console.warn(`[accidentCause-trace] after-snapshot failed:`, traceErr);
+        }
+      };
+
       // ========== [백그라운드화 2026-05-07] ==========
       // PDF 생성 + SMTP 발송이 7~20초 걸려 클라이언트가 오래 대기 → UX 저하.
       // 작업을 백그라운드로 돌리고 즉시 jobId 응답 → 클라이언트는 5초마다 폴링.
@@ -12818,6 +12847,7 @@ FLOXN 드림`;
             .map((r) => `${r.email}: ${r.error || "전송 실패"}`);
 
           if (successCount === 0) {
+            await checkAccidentCauseAfter("all-failed");
             updateEmailJob(job.id, {
               status: "failed",
               successCount: 0,
@@ -12869,6 +12899,8 @@ FLOXN 드림`;
             }
           }
 
+          await checkAccidentCauseAfter("completed");
+
           updateEmailJob(job.id, {
             status: "completed",
             successCount,
@@ -12881,6 +12913,7 @@ FLOXN 드림`;
             `[send-field-report-email-v2] [BG ${job.id}] Background error:`,
             bgError,
           );
+          await checkAccidentCauseAfter("bg-error");
           updateEmailJob(job.id, {
             status: "failed",
             message:

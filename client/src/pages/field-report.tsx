@@ -3731,7 +3731,7 @@ export default function FieldReport() {
                         }}
                       >
                         {caseData.accidentCause ||
-                          "이 안에는 사고원인이 적성됩니다."}
+                          "이 안에는 사고원인이 작성됩니다."}
                       </div>
                     </div>
                   </CardContent>
