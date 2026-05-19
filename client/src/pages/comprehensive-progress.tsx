@@ -214,7 +214,7 @@ const QUICK_STATUS_FILTERS: { label: string; key: string }[] = [
   { label: "보험사 심사중", key: "현장정보제출" },
   { label: "복구요청", key: "복구요청(2차승인)" },
   { label: "복구완료 보고", key: "청구자료제출(복구)" },
-  { label: "비교견적완료 보고", key: "출동비청구(선견적)" },
+  { label: "비교견적완료보고", key: "출동비청구(선견적)" },
   { label: "공사비 청구", key: "청구:직접복구" },
   { label: "비교견적비 청구", key: "청구:선견적요청" },
   { label: "취소대기", key: "취소대기" },
@@ -2045,11 +2045,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 6% 6% 7% 5% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 8% 3% 6% 7%"
-                      : "40px 6% 6% 7% 5% 6% 4% 4% minmax(45px,1fr) 4% 7% 5% 3% 3% 3% 8% 3% 7%")
+                      ? "40px 7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
+                      : "40px 7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%")
                     : (user?.role === "협력사"
-                      ? "6% 6% 7% 5% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 8% 3% 6% 7%"
-                      : "6% 6% 7% 5% 6% 4% 4% minmax(45px,1fr) 4% 7% 5% 3% 3% 3% 8% 3% 7%"),
+                      ? "7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
+                      : "7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%"),
                 padding: "0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2250,11 +2250,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 6% 6% 7% 5% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 8% 3% 6% 7%"
-                            : "40px 6% 6% 7% 5% 6% 4% 4% minmax(45px,1fr) 4% 7% 5% 3% 3% 3% 8% 3% 7%")
+                            ? "40px 7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
+                            : "40px 7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%")
                           : (user?.role === "협력사"
-                            ? "6% 6% 7% 5% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 8% 3% 6% 7%"
-                            : "6% 6% 7% 5% 6% 4% 4% minmax(45px,1fr) 4% 7% 5% 3% 3% 3% 8% 3% 7%"),
+                            ? "7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
+                            : "7% 6% 7% 4% 6% 4% 4% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%"),
                       padding: "0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -2664,7 +2664,9 @@ export default function ComprehensiveProgress() {
                                 }}
                                 data-testid={`button-status-option-${status}`}
                               >
-                                {getStatusDisplayText(status)}
+                                {status === "청구"
+                                  ? getCaseStatusDisplayText({ ...caseItem, status: "청구" }, cases)
+                                  : getStatusDisplayText(status)}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
