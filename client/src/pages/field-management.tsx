@@ -1231,7 +1231,7 @@ export default function FieldManagement() {
                     <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
                       <div className="flex w-[250px] flex-col gap-1.5">
                         <div className="text-[12px] text-[#6B7280]">누수유형</div>
-                        <div className="flex h-9 flex-wrap items-center gap-6 text-[13px] text-[#374151]">
+                        <div className="flex h-9 items-center gap-6 text-[13px] text-[#374151]">
                           {["배관", "방수", "코킹", "기타"].map((type) => (
                             <label key={type} className="inline-flex items-center gap-2 cursor-pointer">
                               <input
