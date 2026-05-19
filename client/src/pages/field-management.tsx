@@ -871,7 +871,10 @@ export default function FieldManagement() {
           accidentLocation: null,
           accidentDescription: null,
           accidentType: null,
-          accidentCause: null,
+          // [사고원인 보호 2026-05-19] 새 피해세대 케이스 생성 시
+          //   부모/형제 케이스의 사고원인을 그대로 승계. null로 보내면 신규 케이스가
+          //   빈값 상태로 시작해 가드가 발동하지 않아 영원히 빈칸으로 남는 문제 방지.
+          accidentCause: selectedCaseData.accidentCause || null,
           restorationMethod: null,
           otherVendorEstimate: null,
           additionalVictims: "[]",

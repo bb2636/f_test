@@ -4610,14 +4610,19 @@ export class DbStorage implements IStorage {
     // [사고원인 보호 2026-05-11] 한 번 입력된 사고원인은 빈 값으로 덮어쓰기 금지.
     //   다른 값으로의 변경(실제 수정)은 허용. null/""/공백만 차단.
     //   접수/현장조사/정산 등 어느 화면에서 호출하든 단일 chokepoint에서 차단.
-    if (existingCase && existingCase.accidentCause && existingCase.accidentCause.trim() !== '' &&
-        'accidentCause' in updateData) {
+    // [진단 로그 2026-05-19] existingCase가 빈값이라 가드가 발동하지 않는 경우도 추적.
+    if ('accidentCause' in updateData) {
       const incoming = updateData.accidentCause;
       const isClear = incoming === null || incoming === undefined ||
         (typeof incoming === 'string' && incoming.trim() === '');
       if (isClear) {
-        console.log(`[updateCase] ⚠️ Blocked accidentCause clear: keeping "${existingCase.accidentCause}" (caseId: ${caseId})`);
-        delete updateData.accidentCause;
+        const existingVal = existingCase?.accidentCause;
+        if (existingVal && existingVal.trim() !== '') {
+          console.log(`[updateCase] ⚠️ Blocked accidentCause clear: keeping "${existingVal}" (caseId: ${caseId}, caseNumber: ${existingCase?.caseNumber})`);
+          delete updateData.accidentCause;
+        } else {
+          console.log(`[updateCase] ℹ️ accidentCause clear allowed (existing was empty): caseId=${caseId}, caseNumber=${existingCase?.caseNumber}, incoming=${JSON.stringify(incoming)}`);
+        }
       }
     }
     if (updateData.restorationMethod) {
@@ -5105,14 +5110,19 @@ export class DbStorage implements IStorage {
     // [사고원인 보호 2026-05-11] 한 번 입력된 사고원인은 빈 값으로 덮어쓰기 금지.
     //   현장입력 폼이 useState("")로 시작해 케이스 전환/로드 race 시 ""가 박히는 것 차단.
     //   다른 값으로의 실제 수정은 허용.
-    if (existingCase && existingCase.accidentCause && existingCase.accidentCause.trim() !== '' &&
-        'accidentCause' in safeFieldData) {
+    // [진단 로그 2026-05-19] existingCase가 빈값이라 가드가 발동하지 않는 경우도 추적.
+    if ('accidentCause' in safeFieldData) {
       const incoming = (safeFieldData as any).accidentCause;
       const isClear = incoming === null || incoming === undefined ||
         (typeof incoming === 'string' && incoming.trim() === '');
       if (isClear) {
-        console.log(`[updateCaseFieldSurvey] ⚠️ Blocked accidentCause clear: keeping "${existingCase.accidentCause}" (caseId: ${caseId})`);
-        delete (safeFieldData as any).accidentCause;
+        const existingVal = existingCase?.accidentCause;
+        if (existingVal && existingVal.trim() !== '') {
+          console.log(`[updateCaseFieldSurvey] ⚠️ Blocked accidentCause clear: keeping "${existingVal}" (caseId: ${caseId}, caseNumber: ${existingCase?.caseNumber})`);
+          delete (safeFieldData as any).accidentCause;
+        } else {
+          console.log(`[updateCaseFieldSurvey] ℹ️ accidentCause clear allowed (existing was empty): caseId=${caseId}, caseNumber=${existingCase?.caseNumber}, incoming=${JSON.stringify(incoming)}`);
+        }
       }
     }
 
