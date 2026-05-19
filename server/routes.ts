@@ -14553,7 +14553,7 @@ https://www.floxn.co.kr/
 
     try {
       const validatedData = cancellationEmailSchema.parse(req.body);
-      const { caseId, cancelReason, recipients } = validatedData;
+      const { caseId, cancelReason, cancelReasonCategory, recipients } = validatedData;
 
       const caseData = await storage.getCaseById(caseId);
       if (!caseData) {
@@ -14596,9 +14596,14 @@ https://www.floxn.co.kr/
           .json({ error: "수신자 이메일이 선택되지 않았습니다" });
       }
 
-      if (cancelReason) {
+      // [2026-05-19] DB 저장 시 카테고리(라디오값) + 자유텍스트 결합 (기존 저장 포맷 유지 차원에서 한 필드에 합쳐 보관)
+      const combinedForStorage = [
+        cancelReasonCategory?.trim() ? `ㆍ${cancelReasonCategory.trim()}` : null,
+        cancelReason?.trim() ? `상세: ${cancelReason.trim()}` : null,
+      ].filter(Boolean).join("\n");
+      if (combinedForStorage) {
         try {
-          await storage.updateCase(caseId, { specialNotes: `[취소사유] ${cancelReason}` });
+          await storage.updateCase(caseId, { specialNotes: `[취소사유] ${combinedForStorage}` });
           console.log(`[send-cancellation-email] 접수취소 사유 저장 완료: caseId=${caseId}`);
         } catch (saveErr) {
           console.error(`[send-cancellation-email] 접수취소 사유 저장 실패:`, saveErr);
@@ -14805,11 +14810,12 @@ https://www.floxn.co.kr/
       const col4Width = tableWidth - col1Width - col2Width - col3Width; // 나머지
 
       // 수임일자 (배당일자 우선, 없으면 접수일자)
+      // [2026-05-19] 표기 형식 "YYYY-MM-DD" → "YYYY.MM.DD"
       let receptionDateStr = "-";
       const acceptanceDateSource = caseData.assignmentDate || caseData.receptionDate;
       if (acceptanceDateSource) {
         const rd = new Date(acceptanceDateSource);
-        receptionDateStr = `${rd.getFullYear()}-${String(rd.getMonth() + 1).padStart(2, "0")}-${String(rd.getDate()).padStart(2, "0")}`;
+        receptionDateStr = `${rd.getFullYear()}.${String(rd.getMonth() + 1).padStart(2, "0")}.${String(rd.getDate()).padStart(2, "0")}`;
       }
 
       // Row 1: 사고번호(증권번호) | value | 수임일자 | value
@@ -14946,7 +14952,44 @@ https://www.floxn.co.kr/
       );
       yPos -= rowHeight;
 
-      // Row 3: 취소사유 (full width)
+      // [2026-05-19] Row 2.5: 취소사유(라디오 선택값) — 라벨 | 값 (full width)
+      const categoryText = normalizeText(cancelReasonCategory || "-");
+      // 라벨 셀
+      page.drawRectangle({
+        x: margin,
+        y: yPos - rowHeight,
+        width: col1Width,
+        height: rowHeight,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 0.5,
+      });
+      page.drawText("취소사유", {
+        x: margin + 5,
+        y: yPos - 20,
+        size: 10,
+        font: customFont,
+        color: rgb(0, 0, 0),
+      });
+      // 값 셀 (나머지 너비 전체)
+      page.drawRectangle({
+        x: margin + col1Width,
+        y: yPos - rowHeight,
+        width: tableWidth - col1Width,
+        height: rowHeight,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 0.5,
+      });
+      drawTextTight(
+        categoryText,
+        margin + col1Width + 5,
+        yPos - 20,
+        10,
+        customFont,
+        rgb(0, 0, 0),
+      );
+      yPos -= rowHeight;
+
+      // Row 3: 취소내용 (full width)
       // 줄바꿈(\n, \r\n)을 먼저 분리한 뒤, 각 줄 안에서 셀 너비 기준으로 추가 줄바꿈
       const reasonText = normalizeText(cancelReason || "-");
       const reasonCellWidth = tableWidth - col1Width - 10; // 셀 내부 패딩 고려
@@ -14998,7 +15041,8 @@ https://www.floxn.co.kr/
         borderColor: rgb(0, 0, 0),
         borderWidth: 0.5,
       });
-      page.drawText("취소사유", {
+      // [2026-05-19] 라벨 "취소사유" → "취소내용"
+      page.drawText("취소내용", {
         x: margin + 5,
         y: yPos - reasonRowHeight / 2 - 4,
         size: 10,
@@ -15082,7 +15126,7 @@ https://www.floxn.co.kr/
       );
 
       const { html: htmlContent, text: textContent } = renderCancellationTemplate({
-        accidentNo, insuredName, cancelReason: cancelReason ?? null, dateStr, caseNumber, logoBuffer,
+        accidentNo, insuredName, cancelReason: cancelReason ?? null, cancelReasonCategory: cancelReasonCategory ?? null, dateStr, caseNumber, logoBuffer,
       });
 
       const results: { email: string; success: boolean; error?: string }[] = [];

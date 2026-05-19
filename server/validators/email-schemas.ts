@@ -72,6 +72,8 @@ export const sendFieldReportEmailV2Schema = z.object({
 export const cancellationEmailSchema = z.object({
   caseId: z.string(),
   cancelReason: z.string().optional(),
+  // [2026-05-19] 라디오 선택값(취소사유 카테고리)을 별도 필드로 전달받음
+  cancelReasonCategory: z.string().optional(),
   recipients: z.object({
     sendToAssessor: z.boolean().default(false),
     sendToInvestigator: z.boolean().default(false),

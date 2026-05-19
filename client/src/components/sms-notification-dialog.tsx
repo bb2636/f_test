@@ -215,13 +215,17 @@ export function SmsNotificationDialog({
 
   const sendCancellationEmailMutation = useMutation({
     mutationFn: async () => {
-      const combinedReason = buildCombinedCancelReason();
+      // [2026-05-19] 이메일/PDF에서 '취소사유'(카테고리)와 '취소내용'(자유텍스트)을 분리 표시
+      //   - cancelReason: 자유텍스트 원문만 전송 (취소내용 셀에 표시)
+      //   - cancelReasonCategory: 라디오 선택값만 전송 (취소사유 셀에 표시)
+      const detailOnly = cancelReason.trim();
       const response = await apiRequest(
         "POST",
         "/api/send-cancellation-email",
         {
           caseId: caseData.id,
-          cancelReason: combinedReason || undefined,
+          cancelReason: detailOnly || undefined,
+          cancelReasonCategory: cancelReasonRadio || undefined,
           recipients: {
             sendToAssessor,
             sendToInvestigator,
@@ -464,6 +468,8 @@ export function SmsNotificationDialog({
               {caseData.receptionDate
                 ? new Date(caseData.receptionDate).toLocaleDateString("ko-KR")
                 : "-"}{" "}
+              {/* [2026-05-19] 접수일 다음에 심사담당(심사사/심사자) 표시 */}
+              | 심사담당: {caseData.assessorTeam || "-"} / {caseData.assessorId || "-"}{" "}
               | 처리담당: {caseData.assignedPartner || "-"} | 의뢰일:{" "}
               {caseData.assignmentDate
                 ? new Date(caseData.assignmentDate).toLocaleDateString("ko-KR")

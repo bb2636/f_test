@@ -2,13 +2,15 @@ export interface CancellationTemplateData {
   accidentNo: string;
   insuredName: string;
   cancelReason: string | null;
+  // [2026-05-19] 라디오 선택값(취소사유 카테고리). 별도 행으로 표시
+  cancelReasonCategory?: string | null;
   dateStr: string;
   caseNumber: string;
   logoBuffer: Buffer | null;
 }
 
 export function renderCancellationTemplate(data: CancellationTemplateData): { html: string; text: string } {
-  const { accidentNo, insuredName, cancelReason, dateStr, caseNumber, logoBuffer } = data;
+  const { accidentNo, insuredName, cancelReason, cancelReasonCategory, dateStr, caseNumber, logoBuffer } = data;
   // [2026-05-15] 이메일 표시용으로 라디오 항목의 'ㆍ' 불릿 접두어를 제거
   // (예: "ㆍ현장방문거절" → "현장방문거절"). 라벨 셀에 '취소사유'가 이미 있으므로 값만 표시.
   const displayCancelReason = cancelReason
@@ -17,6 +19,7 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
         .map((l) => l.replace(/^ㆍ\s*/, ""))
         .join("\n")
     : cancelReason;
+  const displayCategory = cancelReasonCategory && cancelReasonCategory.trim() ? cancelReasonCategory.trim() : "-";
 
   const html = `
         <div style="font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -37,7 +40,11 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
               <td style="padding: 10px 15px; border: 1px solid #ccc;">${insuredName}</td>
             </tr>
             <tr>
-              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold; vertical-align: top;">취소사유</td>
+              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">취소사유</td>
+              <td style="padding: 10px 15px; border: 1px solid #ccc;">${displayCategory}</td>
+            </tr>
+            <tr>
+              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold; vertical-align: top;">취소내용</td>
               <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">${displayCancelReason || "-"}</td>
             </tr>
             <tr>
@@ -67,7 +74,8 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
 - 사고번호(증권번호): ${accidentNo}
 - 접수번호: ${caseNumber}
 - 피보험자명: ${insuredName}
-- 취소사유: ${displayCancelReason || "-"}
+- 취소사유: ${displayCategory}
+- 취소내용: ${displayCancelReason || "-"}
 - 발송일: ${dateStr}
 
 감사합니다.
