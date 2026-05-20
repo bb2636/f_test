@@ -1742,7 +1742,7 @@ export default function ComprehensiveProgress() {
               onValueChange={(v) => setSelectedMemoFilter(v as "all" | "red" | "blue")}
             >
               <SelectTrigger
-                className="w-[120px] h-[40px]"
+                className="w-[170px] h-[40px]"
                 style={{
                   fontFamily: "Pretendard",
                   fontSize: "14px",
@@ -1767,14 +1767,14 @@ export default function ComprehensiveProgress() {
               >
                 <SelectItem value="all" data-testid="option-memo-all">전체</SelectItem>
                 <SelectItem value="red" data-testid="option-memo-red">
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#ED1C00" }} />
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#ED1C00", flexShrink: 0 }} />
                     협력사 메모 미확인
                   </span>
                 </SelectItem>
                 <SelectItem value="blue" data-testid="option-memo-blue">
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#008FED" }} />
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#008FED", flexShrink: 0 }} />
                     플록슨 메모 미확인
                   </span>
                 </SelectItem>
