@@ -276,7 +276,8 @@ interface GroupedRow {
 //   cell:   padding 10px 8px → 4px 8px (≈ 12px 절감/행), line-height 128% → 118%
 //   대략 row 높이 38~40px → 26~28px 수준으로 압축.
 const headerStyle: React.CSSProperties = {
-  padding: "6px 8px",
+  // [2026-05-20] 접수취소 페이지 헤더와 동일하게 상하 padding 8px
+  padding: "8px",
   fontFamily: "Pretendard",
   // [2026-05-19] 접수취소 페이지(13px)와 글씨 크기 통일
   fontSize: "13px",
@@ -1212,15 +1213,19 @@ export default function UnsettledCaseStatistics() {
           엑셀 다운로드
         </Button>
       </div>
+      {/* [2026-05-20] 접수취소 페이지와 동일한 카드 스타일(그림자) + 페이지네이션 카드 내부 배치 */}
       <div
         style={{
           background: "#FFFFFF",
+          boxShadow: "0px 0px 20px #DBE9F5",
           borderRadius: "12px",
-          border: "1px solid rgba(12, 12, 12, 0.06)",
           overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          maxHeight: "calc(100vh - 320px)",
         }}
       >
-        <div style={{ overflow: "auto", maxHeight: "calc(100vh - 280px)", position: "relative" }}>
+        <div style={{ overflow: "auto", flex: 1, position: "relative" }}>
         <table style={{ width: "max-content", minWidth: "100%", borderCollapse: "separate", borderSpacing: 0 }}>
           <thead style={{ position: "sticky", top: 0, zIndex: 30 }}>
             <tr>
@@ -1310,13 +1315,14 @@ export default function UnsettledCaseStatistics() {
           </tbody>
         </table>
         </div>
+        {/* [2026-05-20] 접수취소 페이지처럼 페이지네이션을 카드 내부 하단에 배치 */}
+        <CompactPagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          testIdPrefix="pagination-unsettled-stats"
+        />
       </div>
-      <CompactPagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        testIdPrefix="pagination-unsettled-stats"
-      />
     </div>
   );
 }
