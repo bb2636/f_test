@@ -469,8 +469,17 @@ export function SmsNotificationDialog({
                 ? new Date(caseData.receptionDate).toLocaleDateString("ko-KR")
                 : "-"}{" "}
               {/* [2026-05-19] 접수일 다음에 심사담당(심사사/심사자) 표시 */}
-              | 심사담당: {caseData.assessorTeam || "-"} / {caseData.assessorId || "-"}{" "}
-              | 처리담당: {caseData.assignedPartner || "-"} | 의뢰일:{" "}
+              | 심사담당: {caseData.assessorTeam || "-"} / {caseData.assessorId || "-"}
+            </div>
+            {/* [2026-05-19] 처리담당~긴급여부는 다음 줄로 분리 표시 */}
+            <div
+              style={{
+                fontFamily: "Pretendard",
+                fontSize: "12px",
+                color: "#666666",
+              }}
+            >
+              처리담당: {caseData.assignedPartner || "-"} | 의뢰일:{" "}
               {caseData.assignmentDate
                 ? new Date(caseData.assignmentDate).toLocaleDateString("ko-KR")
                 : "-"}{" "}
