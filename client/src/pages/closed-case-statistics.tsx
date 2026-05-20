@@ -280,7 +280,8 @@ interface GroupedRow {
 const headerStyle: React.CSSProperties = {
   padding: "6px 8px",
   fontFamily: "Pretendard",
-  fontSize: "14px",
+  // [2026-05-19] 접수취소 페이지(13px)와 글씨 크기 통일
+  fontSize: "13px",
   fontWeight: 600,
   lineHeight: "118%",
   letterSpacing: "-0.02em",

@@ -1451,7 +1451,8 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         const thBaseStyle: React.CSSProperties = {
           padding: "8px 16px",
           fontFamily: "Pretendard",
-          fontSize: "14px",
+          // [2026-05-19] 접수취소 페이지(13px)와 글씨 크기 통일
+          fontSize: "13px",
           fontWeight: 600,
           lineHeight: "115%",
           color: "rgba(12, 12, 12, 0.8)",
@@ -1552,15 +1553,14 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
               ) : (
                 pagedRows.map((row, index) => {
                   const rowBg = "#FFFFFF";
-                  // 접수번호가 2개 이상인 경우 행 높이를 늘리기 위한 패딩 증가
-                  const caseCount = row.caseNumber ? row.caseNumber.split(", ").length : 0;
-                  const isMultiCase = caseCount >= 2;
-                  const verticalPadding = isMultiCase ? "12px" : "2px";
+                  // [2026-05-19] 접수취소 페이지와 행 높이 통일 — 다중 접수건도 동일 vertical padding(2px) 적용
+                  const verticalPadding = "2px";
                   const isLastRow = index === pagedRows.length - 1;
                   const cellStyle: React.CSSProperties = {
                     padding: `${verticalPadding} 16px`,
                     fontFamily: "Pretendard",
-                    fontSize: "14px",
+                    // [2026-05-19] 접수취소 페이지(13px)와 글씨 크기 통일
+                    fontSize: "13px",
                     lineHeight: "115%",
                     color: "rgba(12, 12, 12, 0.8)",
                     borderRight: "1px solid var(--color-table-border)",

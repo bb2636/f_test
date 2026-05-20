@@ -449,9 +449,9 @@ export default function SettlementAction() {
                 <tr className="compact-row" style={{ background: "rgba(12, 12, 12, 0.06)" }}>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -463,9 +463,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -477,9 +477,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -491,9 +491,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -505,9 +505,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -519,9 +519,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -533,9 +533,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -547,9 +547,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -561,9 +561,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -575,9 +575,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -589,9 +589,9 @@ export default function SettlementAction() {
                   </th>
                   <th
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       fontFamily: "Pretendard",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 600,
                       color: "rgba(12, 12, 12, 0.8)",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -608,7 +608,7 @@ export default function SettlementAction() {
                       <span
                         style={{
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.5)",
                         }}
                       >
@@ -622,7 +622,7 @@ export default function SettlementAction() {
                       <span
                         style={{
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.5)",
                         }}
                       >
@@ -643,9 +643,9 @@ export default function SettlementAction() {
                     >
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -655,9 +655,9 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -667,9 +667,9 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -679,9 +679,9 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -691,9 +691,9 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -703,9 +703,9 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -715,9 +715,9 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -727,9 +727,9 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -739,9 +739,9 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -751,9 +751,9 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           fontFamily: "Pretendard",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           color: "rgba(12, 12, 12, 0.8)",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
@@ -763,7 +763,7 @@ export default function SettlementAction() {
                       </td>
                       <td
                         style={{
-                          padding: "12px 16px",
+                          padding: "2px 16px",
                           borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                           textAlign: "center",
                         }}
