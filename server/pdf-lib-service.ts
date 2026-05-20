@@ -3989,6 +3989,7 @@ export async function generatePdfWithPdfLib(
       console.log(`[pdf-lib] managerData 조회 결과:`, {
         name: managerData?.name,
         phone: managerData?.phone,
+        office: managerData?.office,
       });
     }
   }
