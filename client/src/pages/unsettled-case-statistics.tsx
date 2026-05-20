@@ -1046,6 +1046,78 @@ export default function UnsettledCaseStatistics() {
             </button>
           </div>
           <div style={{ width: "1px", height: "24px", background: "rgba(12, 12, 12, 0.1)" }} />
+          <button
+            onClick={() => setHistoricalMode(!historicalMode)}
+            className="flex items-center gap-1.5"
+            style={{
+              height: "36px",
+              padding: "0 14px",
+              borderRadius: "8px",
+              border: historicalMode ? "1px solid #D97706" : "1px solid rgba(12, 12, 12, 0.1)",
+              background: historicalMode ? "rgba(217, 119, 6, 0.08)" : "#FFFFFF",
+              color: historicalMode ? "#D97706" : "rgba(12, 12, 12, 0.5)",
+              fontSize: "13px",
+              fontWeight: 600,
+              fontFamily: "Pretendard",
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+            data-testid="toggle-historical-mode"
+          >
+            <History size={14} />
+            과거 조회
+          </button>
+          {historicalMode && (
+            <div className="flex items-center gap-2">
+              <span style={{ fontSize: "14px", fontWeight: 600, color: "#D97706", whiteSpace: "nowrap", fontFamily: "Pretendard" }}>
+                과거 조회일 :
+              </span>
+              <Popover open={historicalCalendarOpen} onOpenChange={setHistoricalCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    className="flex items-center gap-2"
+                    style={{
+                      height: "36px",
+                      padding: "0 12px",
+                      border: "1px solid #D97706",
+                      borderRadius: "6px",
+                      background: "rgba(217, 119, 6, 0.05)",
+                      fontSize: "13px",
+                      fontFamily: "Pretendard",
+                      fontWeight: 500,
+                      color: "#D97706",
+                      cursor: "pointer",
+                    }}
+                    data-testid="button-historical-date"
+                  >
+                    <CalendarIcon size={14} />
+                    {format(historicalDate, "yyyy.MM.dd")}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <div style={{ padding: "8px 12px", fontSize: "12px", fontWeight: 600, color: "rgba(12,12,12,0.5)", fontFamily: "Pretendard", borderBottom: "1px solid rgba(12,12,12,0.06)" }}>
+                    조회할 과거 날짜 선택
+                  </div>
+                  <Calendar
+                    mode="single"
+                    selected={historicalDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setHistoricalDate(date);
+                        setHistoricalCalendarOpen(false);
+                      }
+                    }}
+                    locale={ko}
+                    disabled={(date) => date > new Date()}
+                    classNames={{
+                      day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+          <div style={{ width: "1px", height: "24px", background: "rgba(12, 12, 12, 0.1)" }} />
           <div className="relative" style={{ flex: "1 1 360px", minWidth: "320px", maxWidth: "640px" }}>
             <Search size={20} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.4)" }} />
             <Input
@@ -1083,80 +1155,6 @@ export default function UnsettledCaseStatistics() {
           >
             검색
           </Button>
-          {historicalMode && (
-          <div className="flex items-center gap-2">
-            <span style={{ fontSize: "14px", fontWeight: 600, color: "#D97706", whiteSpace: "nowrap", fontFamily: "Pretendard" }}>
-              과거 조회일 :
-            </span>
-            <Popover open={historicalCalendarOpen} onOpenChange={setHistoricalCalendarOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  className="flex items-center gap-2"
-                  style={{
-                    height: "36px",
-                    padding: "0 12px",
-                    border: "1px solid #D97706",
-                    borderRadius: "6px",
-                    background: "rgba(217, 119, 6, 0.05)",
-                    fontSize: "13px",
-                    fontFamily: "Pretendard",
-                    fontWeight: 500,
-                    color: "#D97706",
-                    cursor: "pointer",
-                  }}
-                  data-testid="button-historical-date"
-                >
-                  <CalendarIcon size={14} />
-                  {format(historicalDate, "yyyy.MM.dd")}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <div style={{ padding: "8px 12px", fontSize: "12px", fontWeight: 600, color: "rgba(12,12,12,0.5)", fontFamily: "Pretendard", borderBottom: "1px solid rgba(12,12,12,0.06)" }}>
-                  조회할 과거 날짜 선택
-                </div>
-                <Calendar
-                  mode="single"
-                  selected={historicalDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setHistoricalDate(date);
-                      setHistoricalCalendarOpen(false);
-                    }
-                  }}
-                  locale={ko}
-                  disabled={(date) => date > new Date()}
-                  classNames={{
-                    day_selected: "bg-[#253396] text-white hover:bg-[#253396] hover:text-white focus:bg-[#253396] focus:text-white",
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        )}
-
-        <div style={{ width: "1px", height: "24px", background: "rgba(12, 12, 12, 0.1)" }} />
-
-        <button
-          onClick={() => setHistoricalMode(!historicalMode)}
-          className="flex items-center gap-1.5"
-          style={{
-            height: "36px",
-            padding: "0 14px",
-            borderRadius: "8px",
-            border: historicalMode ? "1px solid #D97706" : "1px solid rgba(12, 12, 12, 0.1)",
-            background: historicalMode ? "rgba(217, 119, 6, 0.08)" : "#FFFFFF",
-            color: historicalMode ? "#D97706" : "rgba(12, 12, 12, 0.5)",
-            fontSize: "13px",
-            fontWeight: 600,
-            fontFamily: "Pretendard",
-            cursor: "pointer",
-            transition: "all 0.2s",
-          }}
-          data-testid="toggle-historical-mode"
-        >
-          <History size={14} />
-          과거 조회
-        </button>
         </div>
       </div>
 
