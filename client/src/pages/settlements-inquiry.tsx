@@ -1553,8 +1553,8 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
               ) : (
                 pagedRows.map((row, index) => {
                   const rowBg = "#FFFFFF";
-                  // [2026-05-19] 접수취소 페이지와 행 높이 통일 — 다중 접수건도 동일 vertical padding(2px) 적용
-                  const verticalPadding = "2px";
+                  // [2026-05-20] 미결건/종결건 통계 페이지와 행 높이 통일 — vertical padding 9px
+                  const verticalPadding = "9px";
                   const isLastRow = index === pagedRows.length - 1;
                   const cellStyle: React.CSSProperties = {
                     padding: `${verticalPadding} 16px`,
@@ -1610,8 +1610,8 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       </td>
                       <td style={stickyCellStyle(4)}>{row.assessorCompany}</td>
                       <td style={stickyCellStyle(5)}>{row.assessorName}</td>
-                      {/* [2026-05-19] 다중 접수건 칸 — 안 여백/항목 간격 축소 (8/12 → 2/8, gap 8 → 2) */}
-                      <td style={{ ...stickyCellStyle(6), padding: "2px 8px" }}>
+                      {/* [2026-05-20] 다중 접수건 칸 — 다른 셀과 동일 vertical padding(9px) */}
+                      <td style={{ ...stickyCellStyle(6), padding: "9px 8px" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "2px", fontSize: "11px", lineHeight: "115%" }}>
                           {row.caseNumber
                             ?.split(", ")
