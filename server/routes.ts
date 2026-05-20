@@ -14952,46 +14952,12 @@ https://www.floxn.co.kr/
       );
       yPos -= rowHeight;
 
-      // [2026-05-19] Row 2.5: 취소사유(라디오 선택값) — 라벨 | 값 (full width)
+      // [2026-05-19] 취소사유/취소내용 칸 통합 — 한 칸(취소내용)에
+      //   1줄: "취소사유: {라디오 선택값}"
+      //   2줄~: 자유 텍스트 (셀 너비 기준 자동 줄바꿈)
       const categoryText = normalizeText(cancelReasonCategory || "-");
-      // 라벨 셀
-      page.drawRectangle({
-        x: margin,
-        y: yPos - rowHeight,
-        width: col1Width,
-        height: rowHeight,
-        borderColor: rgb(0, 0, 0),
-        borderWidth: 0.5,
-      });
-      page.drawText("취소사유", {
-        x: margin + 5,
-        y: yPos - 20,
-        size: 10,
-        font: customFont,
-        color: rgb(0, 0, 0),
-      });
-      // 값 셀 (나머지 너비 전체)
-      page.drawRectangle({
-        x: margin + col1Width,
-        y: yPos - rowHeight,
-        width: tableWidth - col1Width,
-        height: rowHeight,
-        borderColor: rgb(0, 0, 0),
-        borderWidth: 0.5,
-      });
-      drawTextTight(
-        categoryText,
-        margin + col1Width + 5,
-        yPos - 20,
-        10,
-        customFont,
-        rgb(0, 0, 0),
-      );
-      yPos -= rowHeight;
-
-      // Row 3: 취소내용 (full width)
-      // 줄바꿈(\n, \r\n)을 먼저 분리한 뒤, 각 줄 안에서 셀 너비 기준으로 추가 줄바꿈
-      const reasonText = normalizeText(cancelReason || "-");
+      const freeText = normalizeText(cancelReason || "-");
+      const reasonText = `취소사유: ${categoryText}\n${freeText}`;
       const reasonCellWidth = tableWidth - col1Width - 10; // 셀 내부 패딩 고려
       const reasonFontSize = 10;
       const reasonLines: string[] = [];

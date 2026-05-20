@@ -40,12 +40,10 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
               <td style="padding: 10px 15px; border: 1px solid #ccc;">${insuredName}</td>
             </tr>
             <tr>
-              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">취소사유</td>
-              <td style="padding: 10px 15px; border: 1px solid #ccc;">${displayCategory}</td>
-            </tr>
-            <tr>
+              <!-- [2026-05-19] 취소사유/취소내용 칸 통합 — 취소내용 한 칸에 "취소사유: {선택값}" + 다음 줄에 자유텍스트 -->
               <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold; vertical-align: top;">취소내용</td>
-              <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">${displayCancelReason || "-"}</td>
+              <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">취소사유: ${displayCategory}
+${displayCancelReason || "-"}</td>
             </tr>
             <tr>
               <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">발송일</td>
@@ -74,8 +72,9 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
 - 사고번호(증권번호): ${accidentNo}
 - 접수번호: ${caseNumber}
 - 피보험자명: ${insuredName}
-- 취소사유: ${displayCategory}
-- 취소내용: ${displayCancelReason || "-"}
+- 취소내용:
+  취소사유: ${displayCategory}
+  ${displayCancelReason || "-"}
 - 발송일: ${dateStr}
 
 감사합니다.
