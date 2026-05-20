@@ -756,7 +756,7 @@ export default function CancelledCases() {
               { label: "경과일", textAlign: "center" as const },
               { label: "진행상태", textAlign: "center" as const },
               { label: "취소일자", textAlign: "center" as const },
-              { label: "취소사유" },
+              { label: "취소사유", textAlign: "center" as const },
               { label: "", textAlign: "center" as const },
             ].map((col, idx) => (
               <div
@@ -1036,12 +1036,10 @@ export default function CancelledCases() {
                   <div
                     style={{
                       ...cellStyle,
+                      justifyContent: "center",
+                      textAlign: "center",
                       fontSize: "12px",
                       lineHeight: "1.4",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical" as const,
-                      overflow: "hidden",
                     }}
                     title={latestNote || cancelReasonCategory}
                   >
