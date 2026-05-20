@@ -1585,7 +1585,7 @@ export default function ComprehensiveProgress() {
       {/* Main Content */}
       <div
         style={{
-          maxWidth: "1595px",
+          maxWidth: "1800px",
           margin: "0 auto",
           padding: "32px 20px",
           position: "relative",
@@ -2048,11 +2048,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 7% 6% 7% 6% 6% 4% 5% minmax(45px,1fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
-                      : "40px 7% 6% 7% 6% 6% 4% 5% minmax(45px,1fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%")
+                      ? "40px 7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
+                      : "40px 7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%")
                     : (user?.role === "협력사"
-                      ? "7% 6% 7% 6% 6% 4% 5% minmax(45px,1fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
-                      : "7% 6% 7% 6% 6% 4% 5% minmax(45px,1fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%"),
+                      ? "7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
+                      : "7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%"),
                 padding: "0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2259,11 +2259,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 7% 6% 7% 6% 6% 4% 5% minmax(45px,1fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
-                            : "40px 7% 6% 7% 6% 6% 4% 5% minmax(45px,1fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%")
+                            ? "40px 7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
+                            : "40px 7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%")
                           : (user?.role === "협력사"
-                            ? "7% 6% 7% 6% 6% 4% 5% minmax(45px,1fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
-                            : "7% 6% 7% 6% 6% 4% 5% minmax(45px,1fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%"),
+                            ? "7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
+                            : "7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%"),
                       padding: "0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
