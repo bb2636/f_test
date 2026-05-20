@@ -297,7 +297,7 @@ const headerStyle: React.CSSProperties = {
 const cellStyle: React.CSSProperties = {
   // [2026-05-20] 접수취소 페이지 행 높이와 동일하게 통일
   //   (접수취소는 셀 내부 상태뱃지/아이콘에 6px 패딩이 있어 실측 행 높이 ≈ 30px)
-  padding: "8px",
+  padding: "9px 8px",
   fontFamily: "Pretendard",
   fontSize: "13px",
   lineHeight: "115%",
