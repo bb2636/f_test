@@ -1029,6 +1029,48 @@ export default function ClosedCaseStatistics() {
 
           <div style={{ width: "1px", height: "28px", background: "rgba(12, 12, 12, 0.1)" }} />
 
+          <div className="flex items-center" style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(12, 12, 12, 0.1)" }}>
+            <button
+              onClick={() => setSearchType("사고번호")}
+              style={{
+                height: "36px",
+                padding: "0 16px",
+                background: searchType === "사고번호" ? "var(--color-button-primary)" : "#FFFFFF",
+                color: searchType === "사고번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
+                fontSize: "13px",
+                fontWeight: 600,
+                fontFamily: "Pretendard",
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              data-testid="toggle-accident-number"
+            >
+              사고번호
+            </button>
+            <button
+              onClick={() => setSearchType("접수번호")}
+              style={{
+                height: "36px",
+                padding: "0 16px",
+                background: searchType === "접수번호" ? "var(--color-button-primary)" : "#FFFFFF",
+                color: searchType === "접수번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
+                fontSize: "13px",
+                fontWeight: 600,
+                fontFamily: "Pretendard",
+                border: "none",
+                borderLeft: "1px solid rgba(12, 12, 12, 0.1)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              data-testid="toggle-receipt-number"
+            >
+              접수번호
+            </button>
+          </div>
+
+          <div style={{ width: "1px", height: "28px", background: "rgba(12, 12, 12, 0.1)" }} />
+
           <div className="relative" style={{ flex: "1 1 360px", minWidth: "320px", maxWidth: "640px" }}>
             <Search size={20} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.4)" }} />
             <Input
@@ -1066,48 +1108,6 @@ export default function ClosedCaseStatistics() {
           >
             검색
           </Button>
-
-          <div style={{ width: "1px", height: "28px", background: "rgba(12, 12, 12, 0.1)" }} />
-
-          <div className="flex items-center" style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(12, 12, 12, 0.1)" }}>
-          <button
-            onClick={() => setSearchType("사고번호")}
-            style={{
-              height: "36px",
-              padding: "0 16px",
-              background: searchType === "사고번호" ? "var(--color-button-primary)" : "#FFFFFF",
-              color: searchType === "사고번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
-              fontSize: "13px",
-              fontWeight: 600,
-              fontFamily: "Pretendard",
-              border: "none",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            data-testid="toggle-accident-number"
-          >
-            사고번호
-          </button>
-          <button
-            onClick={() => setSearchType("접수번호")}
-            style={{
-              height: "36px",
-              padding: "0 16px",
-              background: searchType === "접수번호" ? "var(--color-button-primary)" : "#FFFFFF",
-              color: searchType === "접수번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
-              fontSize: "13px",
-              fontWeight: 600,
-              fontFamily: "Pretendard",
-              border: "none",
-              borderLeft: "1px solid rgba(12, 12, 12, 0.1)",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            data-testid="toggle-receipt-number"
-          >
-            접수번호
-          </button>
-        </div>
         </div>
       </div>
       <div className="flex items-center justify-between mb-3">
