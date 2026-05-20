@@ -363,7 +363,7 @@ export default function CancelledCases() {
     return null;
   }
 
-  const gridTemplateColumns = "120px 110px 120px 100px 80px 1fr 80px 100px 90px 60px 140px 100px 180px 50px";
+  const gridTemplateColumns = "120px 130px 120px 100px 80px 1fr 80px 100px 90px 60px 120px 100px 180px 50px";
 
   return (
     <div className="p-8 flxn-page" style={{ background: "var(--color-bg)", minHeight: "100%" }}>
