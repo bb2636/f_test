@@ -11,7 +11,22 @@ import { format, startOfMonth, endOfMonth, parseISO, isWithinInterval } from "da
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { classifyPropertyType, extractCancelReason } from "@/lib/property-type";
+import { classifyPropertyType } from "@/lib/property-type";
+
+// [2026-05-20] 취소사유 카테고리 추출 — 라디오 선택값만 (cancelled-cases.tsx와 동일 로직)
+//   "[취소사유] 처리유형: {카테고리}\n상세: ..."   → {카테고리}
+//   "[취소사유] ㆍ{카테고리}\n상세: ..."           → {카테고리}
+//   "[취소사유] {자유텍스트}"  (구포맷)            → 첫 줄
+const extractCancelReasonCategory = (note: string | null | undefined): string => {
+  if (!note) return "-";
+  const text = String(note).replace(/^\[취소사유\]\s*/, "");
+  const m1 = text.match(/처리유형\s*:\s*([^\n]+)/);
+  if (m1) return m1[1].trim();
+  const m2 = text.match(/^\s*[ㆍ·•]\s*([^\n]+)/);
+  if (m2) return m2[1].trim();
+  const first = text.split("\n")[0]?.trim();
+  return first || "-";
+};
 
 const CLOSED_STATUSES = ["접수취소", "종결"];
 // 취소대기는 종합진행관리에만 표시되며 종결 통계에는 포함되지 않음
@@ -756,7 +771,7 @@ export default function ClosedCaseStatistics() {
         const propertyType = classifyPropertyType(rep.insuredAddressDetail, rep.insuredAddress);
         // [2026-05-14] 취소사유: 그룹 내 접수취소된 case의 specialNotes에서 추출
         const cancelCase = g.cases.find((cs) => cs.status === "접수취소");
-        const cancelReasonText = cancelCase ? extractCancelReason(cancelCase.specialNotes) : "-";
+        const cancelReasonText = cancelCase ? extractCancelReasonCategory(cancelCase.specialNotes) : "-";
         return [
           rep.insuranceCompany || "",
           rep.insurancePolicyNo || "",
