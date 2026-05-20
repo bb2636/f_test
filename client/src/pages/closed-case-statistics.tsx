@@ -294,10 +294,11 @@ const headerStyle: React.CSSProperties = {
 };
 
 const cellStyle: React.CSSProperties = {
-  padding: "4px 8px",
+  // [2026-05-20] 접수취소 페이지 행 높이와 동일하게 통일 (paddingTop/Bottom 2px)
+  padding: "2px 8px",
   fontFamily: "Pretendard",
   fontSize: "13px",
-  lineHeight: "118%",
+  lineHeight: "115%",
   letterSpacing: "-0.02em",
   color: "rgba(12, 12, 12, 0.8)",
   borderRight: "1px solid rgba(12, 12, 12, 0.06)",
