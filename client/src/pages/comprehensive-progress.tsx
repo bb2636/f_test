@@ -321,6 +321,10 @@ export default function ComprehensiveProgress() {
   const [statusChangeTarget, setStatusChangeTarget] = useState<{
     caseId: string;
     status: string;
+    // [2026-05-20] "청구" 단일 status가 드롭다운에서 "공사비 청구"/"비교견적비 청구"로
+    //   분리 표시되므로, 어느 라벨을 클릭했는지 보존해 확인 팝업에 동일 라벨로 노출.
+    //   DB 저장값(status)은 불변, 표시용으로만 사용.
+    displayLabel?: string;
   } | null>(null);
 
   // 청구하기 버튼 표시 조건: 연관된 모든 케이스가 "청구" 상태인 경우에만 버튼 표시
@@ -1329,7 +1333,7 @@ export default function ComprehensiveProgress() {
   };
 
   // 상태 변경 핸들러
-  const handleStatusChange = (caseId: string, status: string) => {
+  const handleStatusChange = (caseId: string, status: string, displayLabel?: string) => {
     // 자동 전환이 필요한 상태인지 확인
     const targetStatus = STATUS_AUTO_TRANSITION[status] || status;
 
@@ -1360,7 +1364,7 @@ export default function ComprehensiveProgress() {
 
     // 관리자 또는 허용된 협력사: 확인 팝업 표시
     if (user?.role === "관리자" || user?.role === "협력사") {
-      setStatusChangeTarget({ caseId, status: targetStatus });
+      setStatusChangeTarget({ caseId, status: targetStatus, displayLabel });
       setStatusChangeDialogOpen(true);
       return;
     }
@@ -2659,7 +2663,7 @@ export default function ComprehensiveProgress() {
                               <DropdownMenuItem
                                 key={item.testId}
                                 onClick={() =>
-                                  handleStatusChange(caseItem.id, item.value)
+                                  handleStatusChange(caseItem.id, item.value, item.label)
                                 }
                                 style={{
                                   display: "flex",
@@ -5547,7 +5551,9 @@ export default function ComprehensiveProgress() {
                   color: getStatusColor(statusChangeTarget?.status || ""),
                 }}
               >
-                "{statusChangeTarget?.status}"
+                {/* [2026-05-20] 드롭다운에서 사용한 표시 라벨(displayLabel)을 우선 노출.
+                    없을 경우 STATUS_DISPLAY_MAP 매핑값으로 폴백. DB값(status) 불변. */}
+                "{statusChangeTarget?.displayLabel || getStatusDisplayText(statusChangeTarget?.status)}"
               </span>
               (으)로 변경하시겠습니까?
             </AlertDialogDescription>
