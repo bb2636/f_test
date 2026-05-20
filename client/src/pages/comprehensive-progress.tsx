@@ -1334,17 +1334,11 @@ export default function ComprehensiveProgress() {
     const targetStatus = STATUS_AUTO_TRANSITION[status] || status;
 
     // 접수취소인 경우 확인 팝업 먼저 표시
+    // [2026-05-19] 사고번호/담당자 미인입 시 취소대기로 자동전환하던 로직 제거 —
+    //   사용자 요청: 접수취소를 누르면 항상 '접수취소' 팝업이 뜨도록 변경.
     if (targetStatus === "접수취소") {
       const targetCase = cases?.find((c) => c.id === caseId);
       if (targetCase) {
-        // 사고번호 또는 담당자가 인입되지 않은 경우 → 취소대기로 자동 전환 (이메일 미발송)
-        const hasInsuranceAccidentNo = !!(targetCase.insuranceAccidentNo && String(targetCase.insuranceAccidentNo).trim());
-        const hasManager = !!(targetCase.managerId && String(targetCase.managerId).trim());
-        if (!hasInsuranceAccidentNo || !hasManager) {
-          setStatusChangeTarget({ caseId, status: "취소대기" });
-          setStatusChangeDialogOpen(true);
-          return;
-        }
         setCancelTargetCase(targetCase);
         setCancelConfirmDialogOpen(true);
       }
