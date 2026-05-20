@@ -59,6 +59,22 @@ const safeParseNotesHistory = (
 // 상태 색상 / 표시 텍스트는 client/src/lib/case-status.ts 에서 import
 // (산식·로직 변경 없음 — 단순 추출)
 
+// [2026-05-19] 취소사유 카테고리 추출 — specialNotes 저장 포맷에서 라디오 선택값만 뽑음
+//   "[취소사유] 처리유형: {카테고리}\n상세: ..."         → {카테고리}
+//   "[취소사유] 처리유형: {카테고리}\n면책유형: ..."     → {카테고리}
+//   "[취소사유] ㆍ{카테고리}\n상세: ..."                   → {카테고리}
+//   "[취소사유] {자유텍스트}"  (구포맷)                    → 첫 줄
+const extractCancelReasonCategory = (note: string | null | undefined): string => {
+  if (!note) return "-";
+  const text = String(note).replace(/^\[취소사유\]\s*/, "");
+  const m1 = text.match(/처리유형\s*:\s*([^\n]+)/);
+  if (m1) return m1[1].trim();
+  const m2 = text.match(/^\s*[ㆍ·•]\s*([^\n]+)/);
+  if (m2) return m2[1].trim();
+  const first = text.split("\n")[0]?.trim();
+  return first || "-";
+};
+
 const formatAmount = (amount: string | number | null | undefined): string => {
   if (!amount) return "-";
   const numAmount = typeof amount === "string" ? parseInt(amount) : amount;
@@ -306,7 +322,7 @@ export default function CancelledCases() {
         String(calculateDays(c.createdAt)),
         getStatusDisplayText(c.status) || c.status || "",
         formatDate(c.cancellationDate),
-        (latestNote || "").replace(/[\r\n]+/g, " "),
+        extractCancelReasonCategory(latestNote),
       ];
     });
     const csvContent = [headers.join(","), ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
@@ -842,6 +858,14 @@ export default function CancelledCases() {
                 }
               })();
 
+              // [2026-05-19] 취소사유 컬럼 — 라디오로 선택한 카테고리 값만 추출해 표시
+              //   저장 포맷 호환:
+              //     "[취소사유] 처리유형: {카테고리}\n상세: ..."
+              //     "[취소사유] ㆍ{카테고리}\n상세: ..."
+              //     "[취소사유] 처리유형: {카테고리}\n면책유형: ..."
+              //     "[취소사유] {자유텍스트}"  (구포맷 — fallback)
+              const cancelReasonCategory = extractCancelReasonCategory(latestNote);
+
               const cellStyle: React.CSSProperties = {
                 fontFamily: "Pretendard",
                 fontSize: "13px",
@@ -1019,9 +1043,9 @@ export default function CancelledCases() {
                       WebkitBoxOrient: "vertical" as const,
                       overflow: "hidden",
                     }}
-                    title={latestNote}
+                    title={latestNote || cancelReasonCategory}
                   >
-                    {latestNote}
+                    {cancelReasonCategory}
                   </div>
                   <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {canViewDetail ? (
