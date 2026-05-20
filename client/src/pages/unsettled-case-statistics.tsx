@@ -1004,8 +1004,48 @@ export default function UnsettledCaseStatistics() {
           marginBottom: "16px",
         }}
       >
-        {/* [2026-05-20] 과거 조회일/사고·접수번호 토글/과거 조회 버튼을 검색창 오른쪽 같은 행으로 이동 */}
+        {/* [2026-05-20] 사고/접수번호 토글은 검색창 왼쪽, 과거 조회일/과거 조회 버튼은 오른쪽 */}
         <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center" style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(12, 12, 12, 0.1)" }}>
+            <button
+              onClick={() => setSearchType("사고번호")}
+              style={{
+                height: "36px",
+                padding: "0 16px",
+                background: searchType === "사고번호" ? "var(--color-button-primary)" : "#FFFFFF",
+                color: searchType === "사고번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
+                fontSize: "13px",
+                fontWeight: 600,
+                fontFamily: "Pretendard",
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              data-testid="toggle-unsettled-accident-number"
+            >
+              사고번호
+            </button>
+            <button
+              onClick={() => setSearchType("접수번호")}
+              style={{
+                height: "36px",
+                padding: "0 16px",
+                background: searchType === "접수번호" ? "var(--color-button-primary)" : "#FFFFFF",
+                color: searchType === "접수번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
+                fontSize: "13px",
+                fontWeight: 600,
+                fontFamily: "Pretendard",
+                border: "none",
+                borderLeft: "1px solid rgba(12, 12, 12, 0.1)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              data-testid="toggle-unsettled-receipt-number"
+            >
+              접수번호
+            </button>
+          </div>
+          <div style={{ width: "1px", height: "24px", background: "rgba(12, 12, 12, 0.1)" }} />
           <div className="relative" style={{ flex: "1 1 360px", minWidth: "320px", maxWidth: "640px" }}>
             <Search size={20} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.4)" }} />
             <Input
@@ -1093,48 +1133,6 @@ export default function UnsettledCaseStatistics() {
             </Popover>
           </div>
         )}
-
-        <div style={{ width: "1px", height: "24px", background: "rgba(12, 12, 12, 0.1)" }} />
-
-        <div className="flex items-center" style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(12, 12, 12, 0.1)" }}>
-          <button
-            onClick={() => setSearchType("사고번호")}
-            style={{
-              height: "36px",
-              padding: "0 16px",
-              background: searchType === "사고번호" ? "var(--color-button-primary)" : "#FFFFFF",
-              color: searchType === "사고번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
-              fontSize: "13px",
-              fontWeight: 600,
-              fontFamily: "Pretendard",
-              border: "none",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            data-testid="toggle-unsettled-accident-number"
-          >
-            사고번호
-          </button>
-          <button
-            onClick={() => setSearchType("접수번호")}
-            style={{
-              height: "36px",
-              padding: "0 16px",
-              background: searchType === "접수번호" ? "var(--color-button-primary)" : "#FFFFFF",
-              color: searchType === "접수번호" ? "#FFFFFF" : "rgba(12, 12, 12, 0.5)",
-              fontSize: "13px",
-              fontWeight: 600,
-              fontFamily: "Pretendard",
-              border: "none",
-              borderLeft: "1px solid rgba(12, 12, 12, 0.1)",
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            data-testid="toggle-unsettled-receipt-number"
-          >
-            접수번호
-          </button>
-        </div>
 
         <div style={{ width: "1px", height: "24px", background: "rgba(12, 12, 12, 0.1)" }} />
 

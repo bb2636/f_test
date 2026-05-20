@@ -960,46 +960,8 @@ export default function ClosedCaseStatistics() {
           marginBottom: "16px",
         }}
       >
-        {/* [2026-05-20] 종결기간/사고·접수번호 토글을 검색창 오른쪽 같은 행으로 이동 */}
+        {/* [2026-05-20] 종결기간은 검색창 왼쪽, 사고/접수번호 토글은 검색 버튼 오른쪽 */}
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative" style={{ flex: "1 1 360px", minWidth: "320px", maxWidth: "640px" }}>
-            <Search size={20} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.4)" }} />
-            <Input
-              placeholder="증권번호, 사고번호 또는 접수번호를 입력해주세요"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                }
-              }}
-              className="w-full focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#0C0C0C]"
-              style={{
-                paddingLeft: "48px",
-                height: "52px",
-                borderRadius: "8px",
-                fontFamily: "Pretendard",
-                fontSize: "14px",
-              }}
-              data-testid="input-statistics-search"
-            />
-          </div>
-          <Button
-            style={{
-              width: "100px",
-              height: "52px",
-              background: "var(--color-button-primary)",
-              color: "#FFFFFF",
-              borderRadius: "8px",
-              fontFamily: "Pretendard",
-              fontSize: "16px",
-              fontWeight: 600,
-            }}
-            data-testid="button-statistics-search"
-          >
-            검색
-          </Button>
-          <div style={{ width: "1px", height: "28px", background: "rgba(12, 12, 12, 0.1)" }} />
           <span style={{ fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", fontFamily: "Pretendard" }}>
             종결기간 :
           </span>
@@ -1064,6 +1026,46 @@ export default function ClosedCaseStatistics() {
               </div>
             </PopoverContent>
           </Popover>
+
+          <div style={{ width: "1px", height: "28px", background: "rgba(12, 12, 12, 0.1)" }} />
+
+          <div className="relative" style={{ flex: "1 1 360px", minWidth: "320px", maxWidth: "640px" }}>
+            <Search size={20} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.4)" }} />
+            <Input
+              placeholder="증권번호, 사고번호 또는 접수번호를 입력해주세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                }
+              }}
+              className="w-full focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#0C0C0C]"
+              style={{
+                paddingLeft: "48px",
+                height: "52px",
+                borderRadius: "8px",
+                fontFamily: "Pretendard",
+                fontSize: "14px",
+              }}
+              data-testid="input-statistics-search"
+            />
+          </div>
+          <Button
+            style={{
+              width: "100px",
+              height: "52px",
+              background: "var(--color-button-primary)",
+              color: "#FFFFFF",
+              borderRadius: "8px",
+              fontFamily: "Pretendard",
+              fontSize: "16px",
+              fontWeight: 600,
+            }}
+            data-testid="button-statistics-search"
+          >
+            검색
+          </Button>
 
           <div style={{ width: "1px", height: "28px", background: "rgba(12, 12, 12, 0.1)" }} />
 
