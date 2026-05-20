@@ -873,8 +873,8 @@ export default function CancelledCases() {
                 color: "rgba(12, 12, 12, 0.8)",
                 paddingRight: "4px",
                 paddingLeft: "4px",
-                paddingTop: "2px",
-                paddingBottom: "2px",
+                paddingTop: "9px",
+                paddingBottom: "9px",
                 display: "flex",
                 alignItems: "center",
               };
