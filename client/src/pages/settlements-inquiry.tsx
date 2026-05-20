@@ -1451,11 +1451,11 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         const thBaseStyle: React.CSSProperties = {
           padding: "8px 16px",
           fontFamily: "Pretendard",
-          // [2026-05-19] 접수취소 페이지(13px)와 글씨 크기 통일
+          // [2026-05-19] 접수취소 페이지와 헤더 폰트 스타일 통일 (13px / weight 600 / color 0.6)
           fontSize: "13px",
           fontWeight: 600,
           lineHeight: "115%",
-          color: "rgba(12, 12, 12, 0.8)",
+          color: "rgba(12, 12, 12, 0.6)",
           borderBottom: "1px solid var(--color-table-border)",
           borderRight: "1px solid var(--color-table-border)",
           textAlign: "center",
