@@ -14339,8 +14339,17 @@ https://www.floxn.co.kr/
 
         if (cancelReason) {
           try {
-            await storage.updateCase(caseId, { specialNotes: `[취소사유] ${cancelReason}` });
-            console.log(`[send-stage-notification] 접수취소 사유 저장 완료: caseId=${caseId}`);
+            // [2026-05-20] 취소사유 셀에는 라디오 선택값만 저장 (ㆍ로 시작하는 줄만 추출, 없으면 저장 skip)
+            const radioLine = String(cancelReason)
+              .split("\n")
+              .map((s) => s.trim())
+              .find((s) => /^[ㆍ·•]/.test(s));
+            if (radioLine) {
+              await storage.updateCase(caseId, { specialNotes: `[취소사유] ${radioLine}` });
+              console.log(`[send-stage-notification] 접수취소 사유 저장 완료: caseId=${caseId}`);
+            } else {
+              console.log(`[send-stage-notification] 라디오 선택값 없음 → 취소사유 저장 skip: caseId=${caseId}`);
+            }
           } catch (saveErr) {
             console.error(`[send-stage-notification] 접수취소 사유 저장 실패:`, saveErr);
           }
@@ -14597,13 +14606,13 @@ https://www.floxn.co.kr/
       }
 
       // [2026-05-19] DB 저장 시 카테고리(라디오값) + 자유텍스트 결합 (기존 저장 포맷 유지 차원에서 한 필드에 합쳐 보관)
-      const combinedForStorage = [
-        cancelReasonCategory?.trim() ? `ㆍ${cancelReasonCategory.trim()}` : null,
-        cancelReason?.trim() ? `상세: ${cancelReason.trim()}` : null,
-      ].filter(Boolean).join("\n");
-      if (combinedForStorage) {
+      // [2026-05-20] 취소사유 셀에는 라디오 선택값만 저장 (자유텍스트는 이메일/PDF에만 사용)
+      const radioOnlyForStorage = cancelReasonCategory?.trim()
+        ? `ㆍ${cancelReasonCategory.trim()}`
+        : "";
+      if (radioOnlyForStorage) {
         try {
-          await storage.updateCase(caseId, { specialNotes: `[취소사유] ${combinedForStorage}` });
+          await storage.updateCase(caseId, { specialNotes: `[취소사유] ${radioOnlyForStorage}` });
           console.log(`[send-cancellation-email] 접수취소 사유 저장 완료: caseId=${caseId}`);
         } catch (saveErr) {
           console.error(`[send-cancellation-email] 접수취소 사유 저장 실패:`, saveErr);

@@ -79,7 +79,7 @@ const formatAmount = (amount: string | number | null | undefined): string => {
   if (!amount) return "-";
   const numAmount = typeof amount === "string" ? parseInt(amount) : amount;
   if (isNaN(numAmount)) return "-";
-  return `₩${numAmount.toLocaleString()}`;
+  return numAmount.toLocaleString();
 };
 
 const formatDate = (dateString: string | null | undefined) => {
@@ -363,7 +363,7 @@ export default function CancelledCases() {
     return null;
   }
 
-  const gridTemplateColumns = "120px 110px 120px 100px 80px 1fr 80px 100px 90px 60px 140px 100px 50px 50px";
+  const gridTemplateColumns = "120px 110px 120px 100px 80px 1fr 80px 100px 90px 60px 140px 100px 180px 50px";
 
   return (
     <div className="p-8 flxn-page" style={{ background: "var(--color-bg)", minHeight: "100%" }}>
@@ -744,14 +744,14 @@ export default function CancelledCases() {
             }}
           >
             {[
-              { label: "증권번호" },
-              { label: "사고번호" },
-              { label: "접수번호" },
-              { label: "보험사" },
-              { label: "피보험자" },
+              { label: "증권번호", textAlign: "center" as const },
+              { label: "사고번호", textAlign: "center" as const },
+              { label: "접수번호", textAlign: "center" as const },
+              { label: "보험사", textAlign: "center" as const },
+              { label: "피보험자", textAlign: "center" as const },
               { label: "주소", textAlign: "center" as const },
-              { label: "담당자" },
-              { label: "협력사" },
+              { label: "담당자", textAlign: "center" as const },
+              { label: "협력사", textAlign: "center" as const },
               { label: "승인금액", textAlign: "center" as const },
               { label: "경과일", textAlign: "center" as const },
               { label: "진행상태", textAlign: "center" as const },
@@ -893,19 +893,19 @@ export default function CancelledCases() {
                   }}
                   data-testid={`cancelled-case-row-${caseItem.id}`}
                 >
-                  <div style={cellStyle}>
+                  <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {caseItem.insurancePolicyNo || "-"}
                   </div>
-                  <div style={cellStyle}>
+                  <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {caseItem.insuranceAccidentNo || "-"}
                   </div>
-                  <div style={cellStyle}>
+                  <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {formatCaseNumber(caseItem.caseNumber) || "-"}
                   </div>
-                  <div style={cellStyle}>
+                  <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {caseItem.insuranceCompany || "-"}
                   </div>
-                  <div style={cellStyle}>
+                  <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {caseItem.insuredName || "-"}
                   </div>
                   <div
@@ -923,10 +923,10 @@ export default function CancelledCases() {
                   >
                     {addressText}
                   </div>
-                  <div style={cellStyle}>
+                  <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {caseItem.managerName || "-"}
                   </div>
-                  <div style={cellStyle}>
+                  <div style={{ ...cellStyle, justifyContent: "center" }}>
                     {caseItem.assignedPartner || "-"}
                   </div>
                   <div style={{ ...cellStyle, justifyContent: "flex-end" }}>
