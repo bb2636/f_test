@@ -2831,7 +2831,7 @@ export default function Intake({
                     disabled={readOnly}
                   >
                     <SelectTrigger
-                      className={selectTriggerClasses}
+                      className={`${selectTriggerClasses} !bg-white`}
                       data-testid="select-accident-cause"
                     >
                       <SelectValue placeholder="사고 원인 선택" />
@@ -2868,7 +2868,7 @@ export default function Intake({
                     disabled={readOnly}
                   >
                     <SelectTrigger
-                      className={selectTriggerClasses}
+                      className={`${selectTriggerClasses} !bg-white`}
                       data-testid="select-other-vendor"
                     >
                       <SelectValue placeholder="타업체 견적 여부 선택" />
