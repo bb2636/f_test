@@ -1451,8 +1451,8 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
         const thBaseStyle: React.CSSProperties = {
           padding: "8px 16px",
           fontFamily: "Pretendard",
-          // [2026-05-19] 접수취소 페이지와 헤더 폰트 스타일 통일 (13px / weight 600 / color 0.6)
-          fontSize: "13px",
+          // [2026-05-19] 헤더 폰트 12px (본문과 동일하게 1px 축소)
+          fontSize: "12px",
           fontWeight: 600,
           lineHeight: "115%",
           color: "rgba(12, 12, 12, 0.6)",
@@ -1559,8 +1559,8 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                   const cellStyle: React.CSSProperties = {
                     padding: `${verticalPadding} 16px`,
                     fontFamily: "Pretendard",
-                    // [2026-05-19] 접수취소 페이지(13px)와 글씨 크기 통일
-                    fontSize: "13px",
+                    // [2026-05-19] 본문 글씨 12px (1px 축소)
+                    fontSize: "12px",
                     lineHeight: "115%",
                     color: "rgba(12, 12, 12, 0.8)",
                     borderRight: "1px solid var(--color-table-border)",
@@ -1610,8 +1610,9 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       </td>
                       <td style={stickyCellStyle(4)}>{row.assessorCompany}</td>
                       <td style={stickyCellStyle(5)}>{row.assessorName}</td>
-                      <td style={{ ...stickyCellStyle(6), padding: "8px 12px" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {/* [2026-05-19] 다중 접수건 칸 — 안 여백/항목 간격 축소 (8/12 → 2/8, gap 8 → 2) */}
+                      <td style={{ ...stickyCellStyle(6), padding: "2px 8px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "2px", fontSize: "11px", lineHeight: "115%" }}>
                           {row.caseNumber
                             ?.split(", ")
                             .map((num, idx) => (
