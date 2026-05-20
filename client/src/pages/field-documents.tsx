@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { getStatusDisplayText } from "@/lib/case-status";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { User, Case, CaseDocument } from "@shared/schema";
 import {
@@ -2882,7 +2883,7 @@ export default function FieldDocuments() {
                           fontSize: "12px",
                         }}
                       >
-                        {caseItem.status}
+                        {getStatusDisplayText(caseItem.status)}
                       </span>
                     </div>
                   </div>

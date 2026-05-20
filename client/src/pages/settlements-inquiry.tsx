@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { getStatusDisplayText } from "@/lib/case-status";
 import { useCompactPagination } from "@/lib/use-compact-pagination";
 import { CompactPagination } from "@/components/ui/compact-pagination";
 import ReactDOM from "react-dom";
@@ -1836,7 +1837,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                       진행상태
                     </div>
                     <div style={{ fontSize: "14px", fontWeight: 500 }}>
-                      {selectedCaseForManagement.status}
+                      {getStatusDisplayText(selectedCaseForManagement.status)}
                     </div>
                   </div>
                 </div>

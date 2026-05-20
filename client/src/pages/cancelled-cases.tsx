@@ -1191,7 +1191,7 @@ export default function CancelledCases() {
                             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>
                               <div style={{ width: "100px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "rgba(12, 12, 12, 0.6)" }}>진행상태</div>
                               <div style={{ padding: "6px 16px", background: getStatusColor(selectedCase.status) || "#253396", borderRadius: "4px", fontFamily: "Pretendard", fontWeight: 500, fontSize: "14px", color: "#FFFFFF" }}>
-                                {selectedCase.status || "접수완료"}
+                                {getStatusDisplayText(selectedCase.status || "접수완료")}
                               </div>
                             </div>
                             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "10px 0px", gap: "16px" }}>

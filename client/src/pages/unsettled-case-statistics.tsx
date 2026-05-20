@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { getStatusDisplayText } from "@/lib/case-status";
 import { useCompactPagination } from "@/lib/use-compact-pagination";
 import { CompactPagination } from "@/components/ui/compact-pagination";
 import { useQuery } from "@tanstack/react-query";
@@ -782,7 +783,7 @@ export default function UnsettledCaseStatistics() {
           c.restorationMethod || c.recoveryType || "",
           extractRegion(address),
           extractCityDistrict(address),
-          c.status,
+          getStatusDisplayText(c.status),
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : formatDate(c.siteInvestigationSubmitDate)),
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : (() => { const cn = c.caseNumber || ""; const ld = cn.lastIndexOf("-"); const pf = ld > 0 ? cn.substring(0, ld) : cn; const inv = pf ? invoicesByPrefixMap[pf] : null; const invAmt = inv?.totalApprovedAmount ? parseInt(inv.totalApprovedAmount) : 0; if (invAmt > 0) return invAmt.toLocaleString(); const caseClaim = getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c); return caseClaim ? caseClaim.toLocaleString() : ""; })()),
@@ -968,7 +969,7 @@ export default function UnsettledCaseStatistics() {
         <td style={cellStyle}>{c.restorationMethod || c.recoveryType || "-"}</td>
         <td style={cellStyle}>{extractRegion(c.insuredAddress || c.victimAddress)}</td>
         <td style={cellStyle}>{extractCityDistrict(c.insuredAddress || c.victimAddress)}</td>
-        <td style={{ ...cellStyle, fontWeight: 500 }}>{c.status}</td>
+        <td style={{ ...cellStyle, fontWeight: 500 }}>{getStatusDisplayText(c.status)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : (preEst ? "-" : formatAmount(estimateAmt))}</td>
         <td style={cellStyle}>{blankAmounts ? "-" : (preEst ? "-" : formatDate(c.siteInvestigationSubmitDate))}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : (preEst ? "-" : formatAmount(approvedAmt))}</td>
