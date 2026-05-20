@@ -4,7 +4,6 @@ export type PropertyType =
   | "상가"
   | "공장"
   | "시설물"
-  | "단독주택"
   | "기타";
 
 export function classifyPropertyType(
@@ -43,12 +42,8 @@ export function classifyPropertyType(
     return "시설물";
   }
 
-  // 단독주택 판정:
-  // (1) "단독/다가구/다세대" 키워드가 있으면 단독주택
-  if (/단독|다가구|다세대/.test(text)) return "단독주택";
-  // (2) 도로명주소(○○로/○○길) + 번지(숫자) 형태로만 구성된 경우 단독주택
-  if (/[가-힣A-Za-z0-9]+(?:로|길)\s*\d+/.test(text)) return "단독주택";
-
+  // [2026-05-20] 단독주택 분류 제거 — 모두 "기타"로 분류
+  // (도로명+번지만 있는 케이스 / 단독·다가구·다세대 키워드 모두 기타 처리)
   return "기타";
 }
 
