@@ -297,7 +297,7 @@ const headerStyle: React.CSSProperties = {
 const cellStyle: React.CSSProperties = {
   // [2026-05-20] 접수취소 페이지 행 높이와 동일하게 통일
   //   (접수취소는 셀 내부 상태뱃지/아이콘에 6px 패딩이 있어 실측 행 높이 ≈ 30px)
-  padding: "9px 8px",
+  padding: "11px 8px",
   fontFamily: "Pretendard",
   fontSize: "13px",
   lineHeight: "115%",
@@ -960,8 +960,9 @@ export default function ClosedCaseStatistics() {
           marginBottom: "16px",
         }}
       >
-        <div className="flex items-center gap-3" style={{ maxWidth: "640px" }}>
-          <div className="relative flex-1">
+        {/* [2026-05-20] 종결기간/사고·접수번호 토글을 검색창 오른쪽 같은 행으로 이동 */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative" style={{ flex: "1 1 360px", minWidth: "320px", maxWidth: "640px" }}>
             <Search size={20} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.4)" }} />
             <Input
               placeholder="증권번호, 사고번호 또는 접수번호를 입력해주세요"
@@ -998,10 +999,7 @@ export default function ClosedCaseStatistics() {
           >
             검색
           </Button>
-        </div>
-      </div>
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="flex items-center gap-2">
+          <div style={{ width: "1px", height: "28px", background: "rgba(12, 12, 12, 0.1)" }} />
           <span style={{ fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", fontFamily: "Pretendard" }}>
             종결기간 :
           </span>
@@ -1066,11 +1064,10 @@ export default function ClosedCaseStatistics() {
               </div>
             </PopoverContent>
           </Popover>
-        </div>
 
-        <div style={{ width: "1px", height: "24px", background: "rgba(12, 12, 12, 0.1)" }} />
+          <div style={{ width: "1px", height: "28px", background: "rgba(12, 12, 12, 0.1)" }} />
 
-        <div className="flex items-center" style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(12, 12, 12, 0.1)" }}>
+          <div className="flex items-center" style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(12, 12, 12, 0.1)" }}>
           <button
             onClick={() => setSearchType("사고번호")}
             style={{
@@ -1108,6 +1105,7 @@ export default function ClosedCaseStatistics() {
           >
             접수번호
           </button>
+        </div>
         </div>
       </div>
       <div className="flex items-center justify-between mb-3">
