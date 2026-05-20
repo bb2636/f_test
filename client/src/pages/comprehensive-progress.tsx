@@ -2042,16 +2042,17 @@ export default function ComprehensiveProgress() {
               className="data-table-header"
               style={{
                 display: "grid",
-                // [2026-05-19] 전체 너비 1500→1700px, 피보험자 4%→6% (잘림 해소)
-                minWidth: "1700px",
+                // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
+                // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
+                //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
-                      : "40px 7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%")
+                      ? "40px 7% 6% 7% 6% 4% 4% 5% minmax(45px,1fr) 4% 5% 5% 4% 4% 4% 9% 3% 6% 6%"
+                      : "40px 7% 6% 7% 6% 4% 4% 5% minmax(45px,1fr) 4% 6% 5% 4% 4% 4% 9% 3% 6%")
                     : (user?.role === "협력사"
-                      ? "7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
-                      : "7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%"),
+                      ? "7% 6% 7% 6% 4% 4% 5% minmax(45px,1fr) 4% 5% 5% 4% 4% 4% 9% 3% 6% 6%"
+                      : "7% 6% 7% 6% 4% 4% 5% minmax(45px,1fr) 4% 6% 5% 4% 4% 4% 9% 3% 6%"),
                 padding: "0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2117,8 +2118,9 @@ export default function ComprehensiveProgress() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: col.textAlign === "center" ? "center" : "flex-start",
-                    paddingRight: col.label?.startsWith("경과") ? "16px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "6px" : "4px")),
-                    paddingLeft: col.label?.startsWith("경과") ? "16px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "0px" : "4px")),
+                    // [2026-05-19 v3] 경과1~3 헤더가 좁은 폭에서 세로쓰기 되지 않도록 가로 패딩 축소(16px→2px)
+                    paddingRight: col.label?.startsWith("경과") ? "2px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "6px" : "4px")),
+                    paddingLeft: col.label?.startsWith("경과") ? "2px" : (col.label === "메모" ? "8px" : (col.label === "증권번호" ? "0px" : "4px")),
                     paddingTop: "0px",
                     paddingBottom: "0px",
                     lineHeight: "115%",
@@ -2249,16 +2251,17 @@ export default function ComprehensiveProgress() {
                     className="data-table-row"
                     style={{
                       display: "grid",
-                      // [2026-05-19] 전체 너비 1500→1700px, 피보험자 4%→6% (잘림 해소)
-                      minWidth: "1700px",
+                      // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
+                      // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
+                      //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
-                            : "40px 7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%")
+                            ? "40px 7% 6% 7% 6% 4% 4% 5% minmax(45px,1fr) 4% 5% 5% 4% 4% 4% 9% 3% 6% 6%"
+                            : "40px 7% 6% 7% 6% 4% 4% 5% minmax(45px,1fr) 4% 6% 5% 4% 4% 4% 9% 3% 6%")
                           : (user?.role === "협력사"
-                            ? "7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 5% 5% 3% 3% 3% 10% 3% 6% 7%"
-                            : "7% 6% 7% 4% 6% 4% 6% minmax(45px,1fr) 4% 6% 5% 3% 3% 3% 10% 3% 7%"),
+                            ? "7% 6% 7% 6% 4% 4% 5% minmax(45px,1fr) 4% 5% 5% 4% 4% 4% 9% 3% 6% 6%"
+                            : "7% 6% 7% 6% 4% 4% 5% minmax(45px,1fr) 4% 6% 5% 4% 4% 4% 9% 3% 6%"),
                       padding: "0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",

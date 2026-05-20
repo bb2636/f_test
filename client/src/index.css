@@ -348,18 +348,22 @@
     border-right: none;
   }
 
-  /* [2026-05-19 v2] 종합진행관리 등 div-grid 테이블:
-   *  - 내용이 칸을 넘으면 줄바꿈 처리(잘림 방지)
-   *  - 한글/한영혼합 안전 줄바꿈: word-break: break-word
-   *  - 주소칸은 기존대로 wrap 유지 (별도 처리 불필요)
+  /* [2026-05-19 v3] 종합진행관리 등 div-grid 테이블:
+   *  - 본문(row) 셀: 내용이 칸을 넘으면 줄바꿈(잘림 방지)
+   *  - 헤더(header) 셀: 한 줄 유지 (세로쓰기 방지)
+   *  - 주소칸은 기존대로 wrap (본문 정책과 동일)
    */
-  .data-table-header > div,
   .data-table-row > div {
     white-space: normal !important;
     overflow: visible;
     text-overflow: clip;
     word-break: break-word;
     overflow-wrap: anywhere;
+  }
+  .data-table-header > div {
+    white-space: nowrap !important;
+    overflow: visible;
+    text-overflow: clip;
   }
   /* [2026-05-19] 테이블 칸 글씨 축소: 인라인 fontSize:13px → 12px (헤더/바디 동일)
    * 좁은 컬럼에서 잘림을 줄이고 줄바꿈 시 한 줄에 더 많이 들어가게 함. */
