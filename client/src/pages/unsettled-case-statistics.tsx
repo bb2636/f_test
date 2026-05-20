@@ -1004,8 +1004,9 @@ export default function UnsettledCaseStatistics() {
           marginBottom: "16px",
         }}
       >
-        <div className="flex items-center gap-3" style={{ maxWidth: "640px" }}>
-          <div className="relative flex-1">
+        {/* [2026-05-20] 과거 조회일/사고·접수번호 토글/과거 조회 버튼을 검색창 오른쪽 같은 행으로 이동 */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative" style={{ flex: "1 1 360px", minWidth: "320px", maxWidth: "640px" }}>
             <Search size={20} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.4)" }} />
             <Input
               placeholder="증권번호, 사고번호 또는 접수번호를 입력해주세요"
@@ -1042,10 +1043,7 @@ export default function UnsettledCaseStatistics() {
           >
             검색
           </Button>
-        </div>
-      </div>
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        {historicalMode && (
+          {historicalMode && (
           <div className="flex items-center gap-2">
             <span style={{ fontSize: "14px", fontWeight: 600, color: "#D97706", whiteSpace: "nowrap", fontFamily: "Pretendard" }}>
               과거 조회일 :
@@ -1161,6 +1159,7 @@ export default function UnsettledCaseStatistics() {
           <History size={14} />
           과거 조회
         </button>
+        </div>
       </div>
 
       {historicalMode && (
