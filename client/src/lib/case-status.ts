@@ -50,6 +50,8 @@ const STATUS_DISPLAY_MAP: Record<string, string> = {
   "출동비청구(선견적)": "비교견적완료보고",
   "현장방문": "보고서 작성중",
   "현장정보입력": "보고서 작성중",
+  // [2026-05-19] DB에 띄어쓰기 포함 값("현장정보 입력")으로 저장된 케이스 대응
+  "현장정보 입력": "보고서 작성중",
 };
 
 export function getStatusDisplayText(
