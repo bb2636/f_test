@@ -3648,7 +3648,7 @@ export default function FieldReport() {
                         color: "rgba(12, 12, 12, 0.8)",
                       }}
                     >
-                      사고 원인(누수원천)
+                      {isLossPreventionCase ? "사고 원인(누수원천)" : "피해현황"}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-2.5">
@@ -3689,7 +3689,7 @@ export default function FieldReport() {
                           color: "rgba(12, 12, 12, 0.6)",
                         }}
                       >
-                        {isLossPreventionCase ? "누수유형" : "카테고리"}
+                        누수유형
                       </span>
                       <div
                         className="px-2 py-0.5 rounded"
@@ -3715,7 +3715,7 @@ export default function FieldReport() {
                           paddingTop: "8px",
                         }}
                       >
-                        사고원인
+                        {isLossPreventionCase ? "사고원인" : "피해내용"}
                       </span>
                       <div
                         style={{
@@ -3731,7 +3731,7 @@ export default function FieldReport() {
                         }}
                       >
                         {caseData.accidentCause ||
-                          "이 안에는 사고원인이 작성됩니다."}
+                          (isLossPreventionCase ? "이 안에는 사고원인이 작성됩니다." : "이 안에는 피해내용이 작성됩니다.")}
                       </div>
                     </div>
                   </CardContent>
