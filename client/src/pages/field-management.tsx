@@ -1120,7 +1120,7 @@ export default function FieldManagement() {
               <div className="mt-6 space-y-6">
                 {/* Row 1: 사고 발생 일시 + 방문 일시 */}
                 <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
-                  <div className="flex w-[320px] flex-col gap-1.5">
+                  <div className="flex w-[520px] flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">사고 발생 일시</div>
                     <div className="flex">
                       <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen} modal={false}>
@@ -1232,10 +1232,10 @@ export default function FieldManagement() {
                   const causeLabel = isVictimCase ? "피해현황" : "사고원인";
                   return (
                     <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
-                      <div className="flex w-[320px] flex-col gap-1.5">
+                      <div className="flex w-[520px] flex-col gap-1.5">
                         <div className="text-[12px] text-[#6B7280]">누수유형</div>
-                        <div className="flex min-h-9 flex-col gap-2 text-[13px] text-[#374151]">
-                          <div className="flex h-9 items-center gap-6">
+                        <div className="flex h-9 items-center gap-3 text-[13px] text-[#374151]">
+                          <div className="flex h-9 shrink-0 items-center gap-6">
                             {["배관", "방수", "코킹", "기타"].map((type) => (
                               <label key={type} className="inline-flex items-center gap-2 cursor-pointer whitespace-nowrap">
                                 <input
@@ -1255,8 +1255,8 @@ export default function FieldManagement() {
                           {leakTypes.has("기타") && (
                             <input
                               type="text"
-                              className="h-8 w-full rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
-                              placeholder="기타 누수유형 입력"
+                              className="h-8 flex-1 rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
+                              placeholder="기타사항입력"
                               value={leakTypeOther}
                               onChange={(e) => { handleUserInput(); setLeakTypeOther(e.target.value); }}
                               disabled={isReadOnly}
@@ -1283,37 +1283,35 @@ export default function FieldManagement() {
 
                 {/* Row 3: 처리유형 + 기타사항입력 + 복구방식 */}
                 <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
-                  <div className="flex w-[320px] flex-col gap-1.5">
+                  <div className="flex w-[520px] flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">처리유형</div>
-                    <div className="flex h-9 flex-wrap items-center gap-6 text-[13px] text-[#374151]">
-                      {["수리", "비교견적", "기타"].map((type) => (
-                        <label key={type} className="inline-flex items-center gap-2 cursor-pointer whitespace-nowrap">
-                          <input
-                            type="checkbox"
-                            checked={processingTypes.has(type)}
-                            onChange={() => toggleProcessingType(type)}
-                            disabled={isReadOnly}
-                            className="h-4 w-4 accent-[#253396]"
-                            data-testid={`checkbox-processing-type-${type}`}
-                          />
-                          <span className={processingTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
-                            {type}
-                          </span>
-                        </label>
-                      ))}
+                    <div className="flex h-9 items-center gap-3 text-[13px] text-[#374151]">
+                      <div className="flex h-9 shrink-0 items-center gap-6">
+                        {["수리", "비교견적", "기타"].map((type) => (
+                          <label key={type} className="inline-flex items-center gap-2 cursor-pointer whitespace-nowrap">
+                            <input
+                              type="checkbox"
+                              checked={processingTypes.has(type)}
+                              onChange={() => toggleProcessingType(type)}
+                              disabled={isReadOnly}
+                              className="h-4 w-4 accent-[#253396]"
+                              data-testid={`checkbox-processing-type-${type}`}
+                            />
+                            <span className={processingTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
+                              {type}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      <input
+                        className="h-8 flex-1 rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] outline-none placeholder:text-[#9CA3AF] keep-border"
+                        placeholder="기타사항입력"
+                        value={processingTypeOther}
+                        onChange={(e) => { handleUserInput(); setProcessingTypeOther(e.target.value); }}
+                        disabled={isReadOnly}
+                        data-testid="input-processing-type-other"
+                      />
                     </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <div className="text-[12px] text-[#6B7280]">기타사항입력</div>
-                    <input
-                      className="h-9 w-[260px] rounded-md border border-[#E5E7EB] bg-white px-3 text-[13px] outline-none placeholder:text-[#9CA3AF] keep-border"
-                      placeholder="기타사항"
-                      value={processingTypeOther}
-                      onChange={(e) => { handleUserInput(); setProcessingTypeOther(e.target.value); }}
-                      disabled={isReadOnly}
-                      data-testid="input-processing-type-other"
-                    />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
