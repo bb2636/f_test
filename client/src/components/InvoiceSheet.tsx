@@ -1722,7 +1722,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                       cursor: "pointer",
                     }}
                   >
-                    심사사: {[caseData.assessorId, caseData.assessorTeam ? `(${caseData.assessorTeam})` : null, caseData.assessorEmail].filter(Boolean).join(" ")}
+                    심사자: {[caseData.assessorId, caseData.assessorTeam ? `(${caseData.assessorTeam})` : null, caseData.assessorEmail].filter(Boolean).join(" ")}
                   </label>
                 </div>
               )}
