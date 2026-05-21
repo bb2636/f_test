@@ -3689,7 +3689,7 @@ export default function FieldReport() {
                           color: "rgba(12, 12, 12, 0.6)",
                         }}
                       >
-                        카테고리
+                        {isLossPreventionCase ? "누수유형" : "카테고리"}
                       </span>
                       <div
                         className="px-2 py-0.5 rounded"
