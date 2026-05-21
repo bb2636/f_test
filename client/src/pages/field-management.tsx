@@ -1234,26 +1234,28 @@ export default function FieldManagement() {
                     <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
                       <div className="flex w-[320px] flex-col gap-1.5">
                         <div className="text-[12px] text-[#6B7280]">누수유형</div>
-                        <div className="flex h-9 items-center gap-6 text-[13px] text-[#374151]">
-                          {["배관", "방수", "코킹", "기타"].map((type) => (
-                            <label key={type} className="inline-flex items-center gap-2 cursor-pointer whitespace-nowrap">
-                              <input
-                                type="checkbox"
-                                checked={leakTypes.has(type)}
-                                onChange={() => toggleLeakType(type)}
-                                disabled={isReadOnly}
-                                className="h-4 w-4 accent-[#253396]"
-                                data-testid={`checkbox-leak-type-${type}`}
-                              />
-                              <span className={leakTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
-                                {type}
-                              </span>
-                            </label>
-                          ))}
+                        <div className="flex min-h-9 flex-col gap-2 text-[13px] text-[#374151]">
+                          <div className="flex h-9 items-center gap-6">
+                            {["배관", "방수", "코킹", "기타"].map((type) => (
+                              <label key={type} className="inline-flex items-center gap-2 cursor-pointer whitespace-nowrap">
+                                <input
+                                  type="checkbox"
+                                  checked={leakTypes.has(type)}
+                                  onChange={() => toggleLeakType(type)}
+                                  disabled={isReadOnly}
+                                  className="h-4 w-4 accent-[#253396]"
+                                  data-testid={`checkbox-leak-type-${type}`}
+                                />
+                                <span className={leakTypes.has(type) ? "text-[#253396]" : "text-[#0C0C0C]"}>
+                                  {type}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
                           {leakTypes.has("기타") && (
                             <input
                               type="text"
-                              className="h-8 w-[180px] rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
+                              className="h-8 w-full rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
                               placeholder="기타 누수유형 입력"
                               value={leakTypeOther}
                               onChange={(e) => { handleUserInput(); setLeakTypeOther(e.target.value); }}
