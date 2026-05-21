@@ -2631,8 +2631,7 @@ export default function FieldReport() {
                       color: "#0C0C0C",
                     }}
                   >
-                    심사사 (
-                    {caseData.assessorTeam || caseData.assessorId || "미지정"})
+                    {caseData.assessorId || "미지정"} : {caseData.assessorTeam || "미지정"}
                   </div>
                   <div
                     style={{
@@ -2693,11 +2692,7 @@ export default function FieldReport() {
                       color: "#0C0C0C",
                     }}
                   >
-                    조사사 (
-                    {caseData.investigatorTeamName ||
-                      caseData.investigatorTeam ||
-                      "미지정"}
-                    )
+                    {caseData.investigatorTeam || "미지정"} : {caseData.investigatorTeamName || "미지정"}
                   </div>
                   <div
                     style={{
