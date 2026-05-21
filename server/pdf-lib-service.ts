@@ -1241,8 +1241,11 @@ async function renderFieldReportPage(
 
   y -= 15;
 
-  // Section 2: 사고 원인(+수리항목)
-  y = drawSectionHeader("사고 원인(+수리항목)", y);
+  // Section 2: 사고 원인(+수리항목) / 피해세대는 피해현황
+  const _frpCaseNumber = caseData?.caseNumber || "";
+  const _frpSuffixMatch = _frpCaseNumber.match(/-(\d+)$/);
+  const _frpIsVictim = _frpSuffixMatch ? parseInt(_frpSuffixMatch[1], 10) > 0 : false;
+  y = drawSectionHeader(_frpIsVictim ? "피해현황" : "사고 원인(+수리항목)", y);
 
   const accidentInfoRows: TableCell[][] = [
     [
@@ -1294,7 +1297,7 @@ async function renderFieldReportPage(
     });
 
     const headerTextY = y - causeRowHeight / 2 - causeFontSize / 3;
-    const headerText = "사고원인";
+    const headerText = _frpIsVictim ? "피해내용" : "사고원인";
     const headerTextWidth = measureTextWidthAdjusted(headerText, fonts.bold, causeFontSize);
     try {
       drawTextCharByChar(

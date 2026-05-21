@@ -1229,7 +1229,7 @@ export default function FieldManagement() {
                   const cn = selectedCaseData?.caseNumber || "";
                   const suffix = cn.includes("-") ? cn.split("-").pop() : "";
                   const isVictimCase = suffix !== "" && suffix !== "0";
-                  const causeLabel = isVictimCase ? "피해현황" : "사고원인";
+                  const causeLabel = isVictimCase ? "피해내용" : "사고원인";
                   return (
                     <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
                       <div className="flex w-[520px] flex-col gap-1.5">
