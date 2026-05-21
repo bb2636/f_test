@@ -32,7 +32,10 @@ interface InvoiceSheetProps {
     recoveryType?: string | null;
     estimateAmount?: string | null;
     assessorId?: string | null;
+    assessorTeam?: string | null;
     assessorEmail?: string | null;
+    investigatorTeam?: string | null;
+    investigatorTeamName?: string | null;
     investigatorEmail?: string | null;
   } | null;
   relatedCases?: Array<{
@@ -1719,7 +1722,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                       cursor: "pointer",
                     }}
                   >
-                    심사자 이메일: {caseData.assessorEmail}
+                    심사사: {[caseData.assessorId, caseData.assessorTeam ? `(${caseData.assessorTeam})` : null, caseData.assessorEmail].filter(Boolean).join(" ")}
                   </label>
                 </div>
               )}
@@ -1751,7 +1754,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                       cursor: "pointer",
                     }}
                   >
-                    조사자 이메일: {caseData.investigatorEmail}
+                    조사사: {[caseData.investigatorTeam, caseData.investigatorTeamName ? `(${caseData.investigatorTeamName})` : null, caseData.investigatorEmail].filter(Boolean).join(" ")}
                   </label>
                 </div>
               )}

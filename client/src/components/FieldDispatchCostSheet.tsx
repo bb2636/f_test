@@ -29,7 +29,11 @@ interface FieldDispatchCostSheetProps {
     receptionDate?: string | null;
     fieldDispatchInvoiceAmount?: string | null;
     fieldDispatchInvoiceRemarks?: string | null;
+    assessorId?: string | null;
+    assessorTeam?: string | null;
     assessorEmail?: string | null;
+    investigatorTeam?: string | null;
+    investigatorTeamName?: string | null;
     investigatorEmail?: string | null;
   } | null;
   relatedCases?: Array<{
@@ -920,7 +924,7 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
                         cursor: "pointer",
                       }}
                     >
-                      심사자 이메일: {caseData.assessorEmail}
+                      {[caseData.assessorId, caseData.assessorTeam ? `(${caseData.assessorTeam})` : null, caseData.assessorEmail].filter(Boolean).join(" ")}
                     </label>
                   </div>
                 )}
@@ -942,7 +946,7 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
                         cursor: "pointer",
                       }}
                     >
-                      조사자 이메일: {caseData.investigatorEmail}
+                      {[caseData.investigatorTeam, caseData.investigatorTeamName ? `(${caseData.investigatorTeamName})` : null, caseData.investigatorEmail].filter(Boolean).join(" ")}
                     </label>
                   </div>
                 )}
