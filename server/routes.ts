@@ -3967,7 +3967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update case field survey endpoint (협력사: 언제든지, 관리자: 제출 후에만)
+  // Update case field survey endpoint (협력사/관리자 모두 언제든지 수정 가능)
   app.patch("/api/cases/:caseId/field-survey", async (req, res) => {
     // Check authentication
     if (!req.session?.userId) {
@@ -3977,8 +3977,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userRole = req.session.userRole;
     const { caseId } = req.params;
 
-    // 협력사: 언제든지 수정 가능
-    // 관리자: 협력사가 제출(submitted) 후에만 수정 가능
+    // 협력사/관리자 모두 제출 전/후 언제든지 수정 가능
+    // (관리자 페이로드의 status/fieldSurveyStatus는 아래 로직에서 무시되어 워크플로 보존)
     if (userRole !== "협력사" && userRole !== "관리자") {
       return res
         .status(403)
