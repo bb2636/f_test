@@ -1243,7 +1243,7 @@ export default function FieldReport() {
         {/* 역할별 버튼 */}
         <div className="flex items-center gap-3">
           {/* 역할 확인 중일 때는 버튼 표시하지 않음 */}
-          {!isUserLoading && isPartner && (
+          {!isUserLoading && (isPartner || isAdmin) && (
             <>
               <Button
                 data-testid="button-submit-report"

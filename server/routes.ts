@@ -3635,9 +3635,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
     }
 
-    // Check authorization (협력사만 가능)
-    if (req.session.userRole !== "협력사") {
-      return res.status(403).json({ error: "협력사 권한이 필요합니다" });
+    // Check authorization (협력사 또는 관리자)
+    if (req.session.userRole !== "협력사" && req.session.userRole !== "관리자") {
+      return res.status(403).json({ error: "협력사 또는 관리자 권한이 필요합니다" });
     }
 
     try {
@@ -3647,6 +3647,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const caseData = await storage.getCaseById(caseId);
       if (!caseData) {
         return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
+      }
+
+      // 제출 가능 상태 가드: 미제출/반려 상태에서만 제출 허용 (이미 제출/심사/승인된 케이스 되감기 방지)
+      const currentFsStatus = caseData.fieldSurveyStatus;
+      const isSubmittable =
+        !currentFsStatus ||
+        currentFsStatus === "draft" ||
+        currentFsStatus === "rejected";
+      if (!isSubmittable) {
+        return res.status(400).json({
+          error: "이미 제출된 보고서입니다",
+        });
       }
 
       // 도면 조회
@@ -3973,18 +3985,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .json({ error: "협력사 또는 관리자 권한이 필요합니다" });
     }
 
-    // 관리자인 경우, 케이스가 제출된 상태인지 확인
-    if (userRole === "관리자") {
-      const existingCase = await storage.getCaseById(caseId);
-      if (!existingCase) {
-        return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
-      }
-      if (existingCase.fieldSurveyStatus !== "submitted") {
-        return res.status(403).json({
-          error: "협력사가 보고서를 제출한 후에만 수정할 수 있습니다",
-        });
-      }
-    }
+    // 관리자도 협력사 제출 전 현장입력 가능 (status/fieldSurveyStatus는 아래 로직에서 보존)
 
     try {
       // Validate field data with Zod
