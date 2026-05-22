@@ -327,7 +327,7 @@ export function AppSidebarFieldSurvey() {
                   }}
                 >
                   <p>① 증빙자료 등록</p>
-                  <p style={{ paddingLeft: "12px" }}>▷ 사진 (수리중 사진, 복구완료 사진)</p>
+                  <p style={{ paddingLeft: "12px" }}>▷ 사진 (수리중 및 복구완료 사진)</p>
                   <p style={{ paddingLeft: "12px" }}>▷ 청구자료</p>
                   <p>② 증빙자료 등록 화면의</p>
                   <p>　우측 상단의</p>
