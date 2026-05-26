@@ -153,6 +153,7 @@ interface EstimateRow {
   id: string;
   category: string;
   location: string;
+  workType?: string;
   workName: string;
   damageWidth?: number;
   damageHeight?: number;
@@ -678,16 +679,31 @@ export default function FieldReport() {
     if (estimateRows.length === 0) return {} as Record<string, number>;
     const workNameAreas: Record<string, number> = {};
     const lengthBasedWorkNames = ["걸레받이", "몰딩"];
+    // labor-cost-section.tsx의 getCeilingMultiplier와 동일하게 유지
+    const getCeilingMultiplier = (workType: string, location: string): number => {
+      if (workType === "욕실공사") return 1.0;
+      if (location === "천장") {
+        if (workType === "도장공사") return 1.2;
+        return 1.3;
+      }
+      return 1.0;
+    };
+    const BATANG_COMPANION_MAP: Record<string, string> = {
+      "수성페인트": "바탕만들기(수성페인트)",
+      "무늬코트": "바탕만들기(무늬코트)",
+      "탄성코트": "바탕만들기(탄성코트)",
+    };
     estimateRows.forEach((row: EstimateRow) => {
       const workName = row.workName || "";
       if (!workName) return;
       const area = Number(row.repairArea) || 0;
       const location = row.location || "";
+      const workType = row.workType || "";
       const isLengthBased = lengthBasedWorkNames.includes(workName);
-      const isCeiling = !isLengthBased && (location.includes("천장") || location === "천장");
       let adjustedArea = area;
-      if (isCeiling) {
-        adjustedArea = area * 1.3;
+      if (!isLengthBased) {
+        const ceilingMult = getCeilingMultiplier(workType, location);
+        adjustedArea = area * ceilingMult;
       }
       if (!workNameAreas[workName]) workNameAreas[workName] = 0;
       workNameAreas[workName] += adjustedArea;
@@ -698,6 +714,11 @@ export default function FieldReport() {
         workNameAreas[wn] = Math.round(workNameAreas[wn] * 100) / 100;
       } else {
         workNameAreas[wn] = Math.round(workNameAreas[wn] * 10) / 10;
+      }
+    });
+    Object.entries(BATANG_COMPANION_MAP).forEach(([parentName, companionName]) => {
+      if (workNameAreas[parentName] !== undefined && workNameAreas[companionName] === undefined) {
+        workNameAreas[companionName] = workNameAreas[parentName];
       }
     });
     return workNameAreas;
