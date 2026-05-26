@@ -3649,12 +3649,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "케이스를 찾을 수 없습니다" });
       }
 
-      // 제출 가능 상태 가드: 미제출/반려 상태에서만 제출 허용 (이미 제출/심사/승인된 케이스 되감기 방지)
+      // 제출 가능 상태 가드: 미제출/반려 상태에서만 제출 허용 (이미 심사/승인된 케이스 되감기 방지)
+      // - fieldSurveyStatus가 submitted라도 status="반려" 또는 reviewDecision="비승인"이면 재제출 허용
       const currentFsStatus = caseData.fieldSurveyStatus;
+      const isRejected =
+        caseData.status === "반려" || caseData.reviewDecision === "비승인";
       const isSubmittable =
         !currentFsStatus ||
         currentFsStatus === "draft" ||
-        currentFsStatus === "rejected";
+        currentFsStatus === "rejected" ||
+        isRejected;
       if (!isSubmittable) {
         return res.status(400).json({
           error: "이미 제출된 보고서입니다",
