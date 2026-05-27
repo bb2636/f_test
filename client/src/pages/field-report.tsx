@@ -2511,14 +2511,21 @@ export default function FieldReport() {
                     }
 
                     const blob = await response.blob();
+                    if (!blob || blob.size === 0) {
+                      throw new Error("빈 PDF 파일이 생성되었습니다. 다시 시도해주세요.");
+                    }
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
                     a.download = `현장출동보고서_${caseData?.caseNumber || "report"}_${new Date().toISOString().split("T")[0]}.pdf`;
+                    a.rel = "noopener";
                     document.body.appendChild(a);
                     a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
+                    // 브라우저가 다운로드를 시작할 시간을 확보 후 정리 (즉시 revoke 시 다운로드 실패 사례 방지)
+                    setTimeout(() => {
+                      try { document.body.removeChild(a); } catch {}
+                      window.URL.revokeObjectURL(url);
+                    }, 2000);
 
                     setShowPdfDialog(false);
                     toast({
@@ -4862,14 +4869,20 @@ export default function FieldReport() {
                                 throw new Error("PDF 생성 실패");
                               }
                               const blob = await response.blob();
+                              if (!blob || blob.size === 0) {
+                                throw new Error("빈 PDF 파일이 생성되었습니다. 다시 시도해주세요.");
+                              }
                               const url = window.URL.createObjectURL(blob);
                               const a = document.createElement("a");
                               a.href = url;
                               a.download = `견적서_${caseNo}.pdf`;
+                              a.rel = "noopener";
                               document.body.appendChild(a);
                               a.click();
-                              document.body.removeChild(a);
-                              window.URL.revokeObjectURL(url);
+                              setTimeout(() => {
+                                try { document.body.removeChild(a); } catch {}
+                                window.URL.revokeObjectURL(url);
+                              }, 2000);
                               toast({
                                 title: "PDF 다운로드 완료",
                                 description: "견적서가 다운로드되었습니다.",
