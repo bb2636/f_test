@@ -541,14 +541,21 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
       }
 
       const blob = await response.blob();
+      if (!blob || blob.size === 0) {
+        throw new Error("빈 PDF 파일이 생성되었습니다. 다시 시도해주세요.");
+      }
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `INVOICE_${caseData.insuranceAccidentNo || caseData.caseNumber || caseData.id}.pdf`;
+      a.rel = "noopener";
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // 다운로드 시작 시간 확보 후 정리 (즉시 revoke 시 다운로드 실패 방지)
+      setTimeout(() => {
+        try { document.body.removeChild(a); } catch {}
+        window.URL.revokeObjectURL(url);
+      }, 2000);
 
       toast({
         title: "PDF 다운로드 완료",

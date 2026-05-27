@@ -127,16 +127,28 @@ export function PdfDownloadModal({ open, onOpenChange, caseId, caseNumber }: Pdf
       return response.blob();
     },
     onSuccess: (blob) => {
+      if (!blob || blob.size === 0) {
+        toast({
+          variant: "destructive",
+          title: "PDF 생성 실패",
+          description: "빈 PDF 파일이 생성되었습니다. 다시 시도해주세요.",
+        });
+        return;
+      }
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = caseNumber 
         ? `현장출동보고서_${caseNumber}.pdf` 
         : `현장출동보고서_${caseId}.pdf`;
+      a.rel = "noopener";
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // 다운로드 시작 시간 확보 후 정리 (즉시 revoke 시 다운로드 실패 방지)
+      setTimeout(() => {
+        try { document.body.removeChild(a); } catch {}
+        window.URL.revokeObjectURL(url);
+      }, 2000);
       
       toast({
         title: "PDF 다운로드 완료",
