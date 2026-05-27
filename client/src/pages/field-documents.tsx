@@ -221,10 +221,14 @@ const downloadFile = (
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
+  link.rel = "noopener";
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
+  // 다운로드 시작 시간 확보 후 정리 (즉시 revoke 시 다운로드 실패 방지)
+  setTimeout(() => {
+    try { document.body.removeChild(link); } catch {}
+    window.URL.revokeObjectURL(url);
+  }, 2000);
 };
 
 export default function FieldDocuments() {

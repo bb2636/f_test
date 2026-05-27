@@ -1012,8 +1012,13 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
     const link = document.createElement("a");
     link.href = url;
     link.download = `${isClosed ? "정산종결" : "정산청구"}_${format(new Date(), "yyyyMMdd")}.csv`;
+    link.rel = "noopener";
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      try { document.body.removeChild(link); } catch {}
+      URL.revokeObjectURL(url);
+    }, 2000);
   };
 
   const handleReset = () => {

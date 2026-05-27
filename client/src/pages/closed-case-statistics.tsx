@@ -820,8 +820,13 @@ export default function ClosedCaseStatistics() {
     const link = document.createElement("a");
     link.href = url;
     link.download = `종결건_통계_${format(new Date(), "yyyyMMdd")}.csv`;
+    link.rel = "noopener";
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      try { document.body.removeChild(link); } catch {}
+      URL.revokeObjectURL(url);
+    }, 2000);
   };
 
   const stickyColWidths = searchType === "접수번호"

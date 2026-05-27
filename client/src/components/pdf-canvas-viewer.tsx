@@ -145,12 +145,18 @@ export function PdfCanvasViewer({ pdfData, loading, error, fileName }: PdfCanvas
   const handleDownload = useCallback(() => {
     if (!pdfData) return;
     const blob = new Blob([pdfData], { type: "application/pdf" });
+    if (blob.size === 0) return;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = fileName || "document.pdf";
+    a.rel = "noopener";
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      try { document.body.removeChild(a); } catch {}
+      URL.revokeObjectURL(url);
+    }, 2000);
   }, [pdfData, fileName]);
 
   if (loading || rendering) {

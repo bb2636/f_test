@@ -332,8 +332,13 @@ export default function CancelledCases() {
     const link = document.createElement("a");
     link.href = url;
     link.download = `접수취소_${format(new Date(), "yyyyMMdd")}.csv`;
+    link.rel = "noopener";
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      try { document.body.removeChild(link); } catch {}
+      URL.revokeObjectURL(url);
+    }, 2000);
   };
 
   const handleReset = () => {

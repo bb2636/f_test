@@ -693,13 +693,25 @@ export default function FieldDrawing() {
       });
       
       canvas.toBlob((blob) => {
-        if (!blob) return;
+        if (!blob || blob.size === 0) {
+          toast({
+            title: "저장 실패",
+            description: "빈 이미지가 생성되었습니다. 다시 시도해주세요.",
+            variant: "destructive",
+          });
+          return;
+        }
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `도면_${new Date().toISOString().split('T')[0]}.png`;
+        a.rel = "noopener";
+        document.body.appendChild(a);
         a.click();
-        URL.revokeObjectURL(url);
+        setTimeout(() => {
+          try { document.body.removeChild(a); } catch {}
+          URL.revokeObjectURL(url);
+        }, 2000);
         
         toast({
           title: "저장 완료",

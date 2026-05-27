@@ -849,8 +849,13 @@ export default function UnsettledCaseStatistics() {
     link.href = url;
     const suffix = historicalMode ? `_과거조회_${format(historicalDate, "yyyyMMdd")}` : "";
     link.download = `미결건_통계${suffix}_${format(new Date(), "yyyyMMdd")}.csv`;
+    link.rel = "noopener";
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      try { document.body.removeChild(link); } catch {}
+      URL.revokeObjectURL(url);
+    }, 2000);
   };
 
   const stickyColWidths = searchType === "접수번호"
