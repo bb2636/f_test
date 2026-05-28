@@ -639,14 +639,18 @@ export default function UnsettledCaseStatistics() {
             }
             const invoiceClaim = getCaseInvoiceClaimAmount(c);
             if (invoiceClaim > 0) return sum + invoiceClaim;
-            return sum + getCaseApprovedForStats(c);
+            // [2026-05-28] 청구액 = 승인금액만 사용 (견적금액 폴백 제거)
+            // 사유: 그룹 내 일부 케이스(approvedAmount=0인데 상태가 청구로 진행)가
+            // 견적금액으로 폴백되어 "승인+견적" 합산으로 표시되는 문제 수정.
+            return sum + (parseFloat(c.approvedAmount || "0") || 0);
           }, 0);
           const total = preEstimateClaim + directClaim;
           if (total > 0) return total;
           const hasClaimDate = active.some(c => c.claimDate && c.claimDate.trim() !== "");
           if (hasClaimDate && onlyPreEstimate) return 100000;
           if (hasClaimDate && !onlyPreEstimate) {
-            const fallback = targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+            // [2026-05-28] 폴백도 견적 합산 없이 순수 승인금액만
+            const fallback = targets.reduce((sum, c) => sum + (parseFloat(c.approvedAmount || "0") || 0), 0);
             if (fallback > 0) return fallback;
             const settClaimFallback = active.reduce((sum, c) => {
               const sett = settlementMap[c.id];
