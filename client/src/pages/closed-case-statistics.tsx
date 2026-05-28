@@ -180,6 +180,33 @@ const getLatestStatus = (groupCases: Case[]): string => {
   return latestStatus;
 };
 
+// 종합진행관리와 동일한 표시 라벨을 반환 (DB 저장값은 변경하지 않음)
+// "청구" 상태는 복구 유형 추론을 위해 대표 케이스가 필요하므로 별도 헬퍼로 처리
+const getLatestStatusDisplay = (
+  groupCases: Case[],
+  allCases: Case[],
+): string => {
+  const active = getActiveCases(groupCases);
+  const fallback = groupCases[0];
+  if (active.length === 0) {
+    return fallback ? getCaseStatusDisplayText(fallback, allCases) : "-";
+  }
+  const hasDirectRecovery = active.some(c => isDirectRecovery(c));
+  const targetCases = hasDirectRecovery
+    ? active.filter(c => isDirectRecovery(c))
+    : active;
+  let minIndex = STATUS_ORDER.length;
+  let repCase: Case = targetCases[0];
+  for (const c of targetCases) {
+    const idx = STATUS_ORDER.indexOf(c.status);
+    if (idx !== -1 && idx < minIndex) {
+      minIndex = idx;
+      repCase = c;
+    }
+  }
+  return getCaseStatusDisplayText(repCase, allCases);
+};
+
 const isOnlyPreEstimate = (groupCases: Case[]): boolean => {
   const active = getActiveCases(groupCases);
   if (active.length === 0) return false;
@@ -797,7 +824,7 @@ export default function ClosedCaseStatistics() {
           getGroupRestorationMethod(g.cases),
           extractRegion(address),
           extractCityDistrict(address),
-          getLatestStatus(g.cases),
+          getLatestStatusDisplay(g.cases, cases),
           cancelReasonText,
           isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? (g.totalEstimate ? g.totalEstimate.toLocaleString() : "0") : "-"),
           isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatDate(getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-"),
@@ -888,7 +915,7 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{getGroupRestorationMethod(g.cases)}</td>
         <td style={cellStyle}>{extractRegion(rep.insuredAddress || rep.victimAddress)}</td>
         <td style={cellStyle}>{extractCityDistrict(rep.insuredAddress || rep.victimAddress)}</td>
-        <td style={{ ...cellStyle, fontWeight: 500 }}>{getLatestStatus(g.cases)}</td>
+        <td style={{ ...cellStyle, fontWeight: 500 }}>{getLatestStatusDisplay(g.cases, cases)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatAmount(g.totalEstimate) : "-")}</td>
         <td style={cellStyle}>{isOnlyPreEstimate(g.cases) ? "-" : (g.totalEstimate !== null ? formatDate(getGroupDate(g.cases, "siteInvestigationSubmitDate") || rep.siteInvestigationSubmitDate) : "-")}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{(() => { if (isOnlyPreEstimate(g.cases)) return "-"; const approvalDate = getGroupDate(g.cases, "secondApprovalDate") || rep.secondApprovalDate; if (!approvalDate) return "-"; return g.totalApproved !== null ? formatAmount(g.totalApproved) : "-"; })()}</td>
