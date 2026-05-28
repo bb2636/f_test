@@ -715,8 +715,112 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     );
   }
 
-  // === 4. 계좌 정보 박스 ===
+  // === 4. 계좌 정보 박스 (앞에 비고 박스 있으면 그 아래 배치) ===
   y -= totalRowHeight + (data.isOnlyFieldDispatch ? 50 : 35);
+
+  // 비고 박스 (remarks 있을 때만 표시) — 최종 가격 아래, 계좌 정보 박스 위
+  // 비고 내용이 없으면 박스 자체를 그리지 않아 기존 레이아웃 그대로 유지
+  if (data.remarks && data.remarks.trim().length > 0) {
+    const remarksHeaderHeight = 24;
+    const remarksFontSize = 10;
+    const remarksLineHeight = 14;
+    const remarksPadding = 12;
+    const remarksBodyMaxWidth = CONTENT_WIDTH - remarksPadding * 2;
+
+    // 텍스트 줄바꿈: 사용자가 입력한 \n 보존 + 폭 초과 시 자동 줄바꿈
+    const lines: string[] = [];
+    const paragraphs = data.remarks.split("\n");
+    for (const para of paragraphs) {
+      if (para.length === 0) {
+        lines.push("");
+        continue;
+      }
+      let remaining = para;
+      while (remaining.length > 0) {
+        if (
+          measureTextWidth(remaining, fonts.regular, remarksFontSize) <=
+          remarksBodyMaxWidth
+        ) {
+          lines.push(remaining);
+          break;
+        }
+        let take = remaining.length;
+        while (
+          take > 0 &&
+          measureTextWidth(
+            remaining.substring(0, take),
+            fonts.regular,
+            remarksFontSize,
+          ) > remarksBodyMaxWidth
+        ) {
+          take--;
+        }
+        if (take === 0) take = 1;
+        lines.push(remaining.substring(0, take));
+        remaining = remaining.substring(take);
+      }
+    }
+    // 페이지 넘침 방지: 비고 박스 아래 들어갈 컨텐츠(계좌 박스 + 푸터)의 공간을 확보
+    //   계좌 헤더(28) + 계좌 본문(90) + 푸터 간격(35) + 푸터 라인/로고(40) + 여유(20) = 약 213
+    const RESERVED_BELOW = 213;
+    const availableForRemarks =
+      y - MARGIN - RESERVED_BELOW - remarksHeaderHeight - remarksPadding * 2;
+    const maxLines = Math.max(2, Math.floor(availableForRemarks / remarksLineHeight));
+    if (lines.length > maxLines) {
+      // 한 페이지에 다 못 들어가는 경우: 마지막 줄에 생략 표시
+      lines.splice(maxLines - 1);
+      lines.push("…(이하 생략)");
+    }
+
+    const remarksBodyHeight = Math.max(
+      44,
+      lines.length * remarksLineHeight + remarksPadding * 2 - 2,
+    );
+
+    // 헤더 박스 (옅은 회색 배경 + "비 고" 라벨)
+    page.drawRectangle({
+      x: tableX,
+      y: y - remarksHeaderHeight,
+      width: CONTENT_WIDTH,
+      height: remarksHeaderHeight,
+      color: rgb(0.96, 0.96, 0.96),
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 0.5,
+    });
+    drawTextLine(
+      page,
+      "비 고",
+      tableX + remarksPadding,
+      y - remarksHeaderHeight + 8,
+      fonts.bold,
+      10,
+    );
+
+    // 본문 박스 (흰 배경 + 비고 내용 텍스트)
+    page.drawRectangle({
+      x: tableX,
+      y: y - remarksHeaderHeight - remarksBodyHeight,
+      width: CONTENT_WIDTH,
+      height: remarksBodyHeight,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 0.5,
+    });
+    let textY = y - remarksHeaderHeight - remarksPadding - 2;
+    for (const line of lines) {
+      drawTextLine(
+        page,
+        line,
+        tableX + remarksPadding,
+        textY,
+        fonts.regular,
+        remarksFontSize,
+      );
+      textY -= remarksLineHeight;
+    }
+
+    // 계좌 정보 박스 위치를 비고 박스 아래로 밀어내기 (gap 20)
+    y -= remarksHeaderHeight + remarksBodyHeight + 20;
+  }
 
   const accountBoxWidth = CONTENT_WIDTH;
 

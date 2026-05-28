@@ -2050,9 +2050,12 @@ export class MemStorage implements IStorage {
     }
 
     // [2026-05-14] B+안: 2차 승인된 케이스라면 견적금액 변경 시 승인금액도 동기화
-    // 이전 동작: approvedAmount는 2차 승인 시점에 한 번 스냅샷되고 이후 견적이 바뀌어도 갱신되지 않음
-    // 변경 동작: 2차 승인된(secondApprovalDate 존재) 케이스의 견적이 갱신되면 승인금액도 같은 값으로 자동 갱신
-    const shouldSyncApproved = !!caseItem.secondApprovalDate;
+    // [2026-05-28] A안 확장: 1차 승인(reviewDecision="승인") 받았거나 approvedAmount가 박혀있는 케이스도 동기화
+    const existingApproved = parseInt(caseItem.approvedAmount || "0") || 0;
+    const shouldSyncApproved =
+      !!caseItem.secondApprovalDate ||
+      caseItem.reviewDecision === "승인" ||
+      existingApproved > 0;
     const updatedCase: Case = {
       ...caseItem,
       estimateAmount,
@@ -4884,12 +4887,17 @@ export class DbStorage implements IStorage {
     estimateAmount: string,
   ): Promise<Case | null> {
     // [2026-05-14] B+안: 2차 승인된 케이스라면 견적금액 변경 시 승인금액도 동기화
-    // 이전 동작: approvedAmount는 2차 승인 시점에 한 번 스냅샷되고 이후 견적이 바뀌어도 갱신되지 않음
-    //           → 통계/정산청구가 옛 승인금액을 계속 사용
-    // 변경 동작: 2차 승인된(secondApprovalDate 존재) 케이스의 견적이 갱신되면 approvedAmount도 같은 값으로 자동 갱신
-    //           → 견적서 저장 시점에 모든 화면에서 즉시 일관된 금액 사용
+    // [2026-05-28] A안 확장: 1차 승인(reviewDecision="승인") 받은 케이스 또는
+    //   이미 approvedAmount가 박혀있는 케이스도 동기화 대상에 포함.
+    //   → 1차 승인 후 관리자가 견적을 수정(특히 0원)해도 승인금액이 즉시 일치.
+    //   → 0원 수정도 그대로 반영(승인금액=0). 정책상 0원 견적은 별도 검증 필요시 호출부에서 처리.
+    //   첫 저장(아직 승인 이력 없음) 케이스는 기존대로 approvedAmount는 건드리지 않음.
     const existingCase = await this.getCaseById(caseId);
-    const shouldSyncApproved = !!existingCase?.secondApprovalDate;
+    const existingApproved = parseInt(existingCase?.approvedAmount || "0") || 0;
+    const shouldSyncApproved =
+      !!existingCase?.secondApprovalDate ||
+      existingCase?.reviewDecision === "승인" ||
+      existingApproved > 0;
 
     const result = await db
       .update(cases)
