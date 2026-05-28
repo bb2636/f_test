@@ -1236,6 +1236,8 @@ export default function ComprehensiveProgress() {
       ).toLowerCase();
       const policyNumber = (caseItem.insurancePolicyNo || "").toLowerCase();
       const assignedPartner = (caseItem.assignedPartner || "").toLowerCase();
+      const assessorId = (caseItem.assessorId || "").toLowerCase();
+      const assessorTeam = (caseItem.assessorTeam || "").toLowerCase();
 
       return (
         insuranceCompany.includes(normalizedQuery) ||
@@ -1246,7 +1248,9 @@ export default function ComprehensiveProgress() {
         insuredAddress.includes(normalizedQuery) ||
         insuredAddressDetail.includes(normalizedQuery) ||
         policyNumber.includes(normalizedQuery) ||
-        assignedPartner.includes(normalizedQuery)
+        assignedPartner.includes(normalizedQuery) ||
+        assessorId.includes(normalizedQuery) ||
+        assessorTeam.includes(normalizedQuery)
       );
     });
 
@@ -1706,7 +1710,7 @@ export default function ComprehensiveProgress() {
               />
               <input
                 type="text"
-                placeholder="보험사 사고번호, 접수번호, 피보험자, 피보험자 주소, 당사 담당자, 증권번호, 협력사 등으로 검색해주세요."
+                placeholder="보험사 사고번호, 접수번호, 피보험자, 피보험자 주소, 당사 담당자, 증권번호, 협력사, 심사사, 심사자 등으로 검색해주세요."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => {
