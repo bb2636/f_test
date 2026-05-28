@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { getStatusDisplayText } from "@/lib/case-status";
+import { getStatusDisplayText, getCaseStatusDisplayText } from "@/lib/case-status";
 import { useCompactPagination } from "@/lib/use-compact-pagination";
 import { CompactPagination } from "@/components/ui/compact-pagination";
 import { useQuery } from "@tanstack/react-query";
@@ -200,7 +200,9 @@ const getRepresentativeCase = (groupCases: Case[]): Case => {
 };
 
 const getCaseEstimateForStats = (c: Case): number => {
-  return parseFloat(c.approvedAmount || c.estimateAmount || c.initialEstimateAmount || "0") || 0;
+  // 견적금액 = 업체가 올린 견적금액(estimateAmount). 승인되어도 견적금액 칸은 원본 견적금액을 표시.
+  // 반려 후 재제출 시 estimateAmount가 최신 값으로 갱신되므로 자동 반영됨.
+  return parseFloat(c.estimateAmount || c.initialEstimateAmount || "0") || 0;
 };
 
 const APPROVED_STATUSES = ["청구", "청구자료제출(복구)", "출동비청구(선견적)", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
@@ -751,7 +753,7 @@ export default function ClosedCaseStatistics() {
           c.restorationMethod || c.recoveryType || "",
           extractRegion(address),
           extractCityDistrict(address),
-          getStatusDisplayText(c.status),
+          getCaseStatusDisplayText(c, cases),
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : (getCaseEstimateForStats(c) ? getCaseEstimateForStats(c).toLocaleString() : "")),
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : formatDate(c.siteInvestigationSubmitDate)),
           c.status === "접수취소" ? "-" : (isPreEstimate(c) ? "-" : (() => { const cn = c.caseNumber || ""; const ld = cn.lastIndexOf("-"); const pf = ld > 0 ? cn.substring(0, ld) : cn; const inv = pf ? invoicesByPrefixMap[pf] : null; const invAmt = inv?.totalApprovedAmount ? parseInt(inv.totalApprovedAmount) : 0; if (invAmt > 0) return invAmt.toLocaleString(); const caseClaim = getCaseInvoiceClaimAmount(c) || getCaseApprovedForStats(c); return caseClaim ? caseClaim.toLocaleString() : ""; })()),
@@ -945,7 +947,7 @@ export default function ClosedCaseStatistics() {
         <td style={cellStyle}>{c.restorationMethod || c.recoveryType || "-"}</td>
         <td style={cellStyle}>{extractRegion(c.insuredAddress || c.victimAddress)}</td>
         <td style={cellStyle}>{extractCityDistrict(c.insuredAddress || c.victimAddress)}</td>
-        <td style={{ ...cellStyle, fontWeight: 500 }}>{getStatusDisplayText(c.status)}</td>
+        <td style={{ ...cellStyle, fontWeight: 500 }}>{getCaseStatusDisplayText(c, cases)}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : (preEst ? "-" : formatAmount(estimateAmt))}</td>
         <td style={cellStyle}>{blankAmounts ? "-" : (preEst ? "-" : formatDate(c.siteInvestigationSubmitDate))}</td>
         <td style={{ ...cellStyle, textAlign: "right" }}>{blankAmounts ? "-" : (preEst ? "-" : formatAmount(approvedAmt))}</td>
