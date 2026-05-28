@@ -157,10 +157,16 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
       const inputFields = pdfContainer.querySelectorAll('.invoice-input-field');
       const spanFields = pdfContainer.querySelectorAll('.invoice-span-field');
       const wonLabels = pdfContainer.querySelectorAll('.invoice-input-field + span');
-      
+      // 비고 textarea ↔ mirror div 토글 — html2canvas는 textarea value를 못 그리므로
+      // 줄바꿈(\n) 보존된 mirror div를 임시로 보이게 함
+      const remarksTextareas = pdfContainer.querySelectorAll('.field-dispatch-remarks-textarea');
+      const remarksMirrors = pdfContainer.querySelectorAll('.field-dispatch-remarks-mirror');
+
       inputFields.forEach(el => (el as HTMLElement).style.display = 'none');
       wonLabels.forEach(el => (el as HTMLElement).style.display = 'none');
       spanFields.forEach(el => (el as HTMLElement).style.display = 'inline');
+      remarksTextareas.forEach(el => (el as HTMLElement).style.display = 'none');
+      remarksMirrors.forEach(el => (el as HTMLElement).style.display = 'block');
 
       const canvas = await html2canvas(invoicePdfRef.current, {
         scale: 2,
@@ -172,6 +178,8 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
       inputFields.forEach(el => (el as HTMLElement).style.display = '');
       wonLabels.forEach(el => (el as HTMLElement).style.display = '');
       spanFields.forEach(el => (el as HTMLElement).style.display = 'none');
+      remarksTextareas.forEach(el => (el as HTMLElement).style.display = '');
+      remarksMirrors.forEach(el => (el as HTMLElement).style.display = 'none');
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -693,6 +701,7 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
                   비고
                 </div>
                 <textarea
+                  className="field-dispatch-remarks-textarea"
                   value={invoiceRemarks}
                   onChange={(e) => setInvoiceRemarks(e.target.value)}
                   placeholder="내용을 입력해주세요"
@@ -714,6 +723,31 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
                   }}
                   data-testid="textarea-field-dispatch-remarks"
                 />
+                {/* PDF 캡처용 미러 — html2canvas가 textarea의 value를 못 그리므로
+                    캡처 직전 textarea를 숨기고 이 div를 보이게 토글.
+                    white-space: pre-wrap 으로 사용자가 입력한 줄바꿈(\n) 그대로 보존. */}
+                <div
+                  className="field-dispatch-remarks-mirror"
+                  style={{
+                    display: "none",
+                    width: "100%",
+                    minHeight: "120px",
+                    fontFamily: "Pretendard",
+                    fontWeight: 400,
+                    fontSize: "14px",
+                    lineHeight: "150%",
+                    letterSpacing: "-0.01em",
+                    color: "rgba(12, 12, 12, 0.9)",
+                    background: "rgba(12, 12, 12, 0.04)",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {invoiceRemarks}
+                </div>
               </div>
 
               <div style={{
