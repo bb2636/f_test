@@ -227,8 +227,11 @@ const getRepresentativeCase = (groupCases: Case[]): Case => {
 };
 
 const getCaseEstimateForStats = (c: Case): number => {
-  // 견적금액 = 업체가 올린 견적금액(estimateAmount). 승인되어도 견적금액 칸은 원본 견적금액을 표시.
-  // 반려 후 재제출 시 estimateAmount가 최신 값으로 갱신되므로 자동 반영됨.
+  // [2026-05-28] 견적금액 = 업체가 올린 견적금액(estimateAmount).
+  // 서버측 estimateAmount→approvedAmount 자동 동기화는 제거됨
+  //   (server/storage.ts updateCaseEstimateAmount).
+  // 반려 후 업체가 재제출하면 estimateAmount가 최신 값으로 갱신되므로 자동 반영.
+  // initialEstimateAmount는 구데이터 폴백용.
   return parseFloat(c.estimateAmount || c.initialEstimateAmount || "0") || 0;
 };
 
@@ -613,14 +616,18 @@ export default function ClosedCaseStatistics() {
             }
             const invoiceClaim = getCaseInvoiceClaimAmount(c);
             if (invoiceClaim > 0) return sum + invoiceClaim;
-            return sum + getCaseApprovedForStats(c);
+            // [2026-05-28] 청구액 = 승인금액만 사용 (견적금액 폴백 제거)
+            // 사유: 그룹 내 일부 케이스(approvedAmount=0인데 상태가 청구로 진행)가
+            // 견적금액으로 폴백되어 "승인+견적" 합산으로 표시되는 문제 수정.
+            return sum + (parseFloat(c.approvedAmount || "0") || 0);
           }, 0);
           const total = preEstimateClaim + directClaim;
           if (total > 0) return total;
           const hasClaimDate = active.some(c => c.claimDate && c.claimDate.trim() !== "");
           if (hasClaimDate && onlyPreEstimate) return 100000;
           if (hasClaimDate && !onlyPreEstimate) {
-            const fallback = targets.reduce((sum, c) => sum + getCaseApprovedForStats(c), 0);
+            // [2026-05-28] 폴백도 견적 합산 없이 순수 승인금액만
+            const fallback = targets.reduce((sum, c) => sum + (parseFloat(c.approvedAmount || "0") || 0), 0);
             if (fallback > 0) return fallback;
           }
           return total;

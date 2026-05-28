@@ -393,34 +393,13 @@ export default function ComprehensiveProgress() {
 
   const syncedApprovedAmountRef = useRef<Map<string, string>>(new Map());
 
-  useEffect(() => {
-    if (!cases || cases.length === 0) return;
-    for (const c of cases) {
-      if (!c?.id) continue;
-      const isApproved =
-        (c as any).reviewDecision === "승인" ||
-        POST_APPROVAL_STATUSES.includes(c.status as any);
-      if (!isApproved) continue;
-
-      const estimate = parseInt((c as any).estimateAmount || "0") || 0;
-      if (estimate <= 0) continue;
-
-      const approved = parseInt((c as any).approvedAmount || "0") || 0;
-      if (estimate === approved) {
-        syncedApprovedAmountRef.current.set(c.id, String(estimate));
-        continue;
-      }
-
-      const lastSynced = syncedApprovedAmountRef.current.get(c.id);
-      if (lastSynced === String(estimate)) continue;
-
-      syncedApprovedAmountRef.current.set(c.id, String(estimate));
-      syncApprovedAmountMutation.mutate({
-        caseId: c.id,
-        amount: String(estimate),
-      });
-    }
-  }, [cases]);
+  // [2026-05-28] 자동 동기화 제거 — 견적금액과 승인금액은 독립 관리.
+  //   사유: 업체가 올린 견적금액(estimateAmount)이 승인금액(approvedAmount)으로 덮어쓰여
+  //   미결/종결 통계의 견적금액 칸이 승인금액과 동일하게 표시되는 문제 발생.
+  //   approvedAmount는 심사자가 별도 갱신해야 함.
+  // useEffect/Mutation은 더 이상 호출하지 않음(참조는 다른 코드 영향 최소화 위해 유지).
+  void syncApprovedAmountMutation;
+  void syncedApprovedAmountRef;
 
   const { data: favorites = [] } = useQuery<UserFavorite[]>({
     queryKey: ["/api/favorites"],
@@ -3322,7 +3301,8 @@ export default function ComprehensiveProgress() {
                                 }}
                               >
                                 {formatAmount(
-                                  selectedCase.initialEstimateAmount,
+                                  selectedCase.estimateAmount ||
+                                    selectedCase.initialEstimateAmount,
                                 )}
                               </div>
                             </div>

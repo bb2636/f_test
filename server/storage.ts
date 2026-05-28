@@ -2049,17 +2049,11 @@ export class MemStorage implements IStorage {
       return null;
     }
 
-    // [2026-05-14] B+안: 2차 승인된 케이스라면 견적금액 변경 시 승인금액도 동기화
-    // [2026-05-28] A안 확장: 1차 승인(reviewDecision="승인") 받았거나 approvedAmount가 박혀있는 케이스도 동기화
-    const existingApproved = parseInt(caseItem.approvedAmount || "0") || 0;
-    const shouldSyncApproved =
-      !!caseItem.secondApprovalDate ||
-      caseItem.reviewDecision === "승인" ||
-      existingApproved > 0;
+    // [2026-05-28] 견적금액과 승인금액 분리 — 자동 동기화 제거 (DbStorage와 동일 정책).
+    // estimateAmount는 "업체가 올린 견적금액"으로 순수 보존, approvedAmount는 별도 관리.
     const updatedCase: Case = {
       ...caseItem,
       estimateAmount,
-      ...(shouldSyncApproved ? { approvedAmount: estimateAmount } : {}),
       updatedAt: getKSTDate(),
     };
 
@@ -4886,24 +4880,15 @@ export class DbStorage implements IStorage {
     caseId: string,
     estimateAmount: string,
   ): Promise<Case | null> {
-    // [2026-05-14] B+안: 2차 승인된 케이스라면 견적금액 변경 시 승인금액도 동기화
-    // [2026-05-28] A안 확장: 1차 승인(reviewDecision="승인") 받은 케이스 또는
-    //   이미 approvedAmount가 박혀있는 케이스도 동기화 대상에 포함.
-    //   → 1차 승인 후 관리자가 견적을 수정(특히 0원)해도 승인금액이 즉시 일치.
-    //   → 0원 수정도 그대로 반영(승인금액=0). 정책상 0원 견적은 별도 검증 필요시 호출부에서 처리.
-    //   첫 저장(아직 승인 이력 없음) 케이스는 기존대로 approvedAmount는 건드리지 않음.
-    const existingCase = await this.getCaseById(caseId);
-    const existingApproved = parseInt(existingCase?.approvedAmount || "0") || 0;
-    const shouldSyncApproved =
-      !!existingCase?.secondApprovalDate ||
-      existingCase?.reviewDecision === "승인" ||
-      existingApproved > 0;
-
+    // [2026-05-28] 견적금액과 승인금액 분리 — 자동 동기화 제거.
+    // 정책: estimateAmount는 "업체가 올린 견적금액"으로 순수 보존.
+    //   반려 후 재제출 시 estimateAmount만 갱신되어 통계/상세보기에 즉시 반영.
+    //   approvedAmount는 심사자가 별도로 갱신해야 함(자동 덮어쓰기 X).
+    // 이전 A안/B+안 sync는 견적금액 칸이 승인금액과 동일하게 표시되는 문제를 일으켜 제거.
     const result = await db
       .update(cases)
       .set({
         estimateAmount,
-        ...(shouldSyncApproved ? { approvedAmount: estimateAmount } : {}),
         updatedAt: getKSTTimestamp(),
       })
       .where(eq(cases.id, caseId))
