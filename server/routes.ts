@@ -13471,7 +13471,7 @@ FLOXN 드림`;
       if (recipientType === "심사자") {
         recipientCompany = caseData.assessorId || "";
         recipientName = caseData.assessorTeam || "";
-        // 심사자 직통번호(office)가 있으면 우선, 없으면 핸드폰 사용 (동명이인 회피)
+        // 심사자 SMS는 핸드폰번호(phone) 우선, 없으면 사무실(office) 사용 (동명이인 회피)
         let assessorPhone = caseData.assessorContact || "";
         if (caseData.assessorId && caseData.assessorTeam) {
           const matches = await db
@@ -13486,8 +13486,8 @@ FLOXN 드림`;
             .limit(2);
           if (matches.length === 1) {
             const u = matches[0];
-            if (u.office) assessorPhone = u.office;
-            else if (u.phone) assessorPhone = u.phone;
+            if (u.phone) assessorPhone = u.phone;
+            else if (u.office) assessorPhone = u.office;
           }
         }
         recipientPhone = assessorPhone;
@@ -14137,7 +14137,8 @@ https://www.floxn.co.kr/
         managerData = await storage.getUser(caseData.managerId);
       }
 
-      // 심사자 직통번호 우선 조회 (본문/수신처 공통) — 동명이인 회피
+      // 심사자 핸드폰번호 우선 조회 (본문/수신처 공통) — 동명이인 회피
+      // SMS는 사무실 번호 대신 핸드폰으로 발송되어야 함
       let resolvedAssessorContact = caseData.assessorContact || "";
       if (caseData.assessorId && caseData.assessorTeam) {
         const matches = await db
@@ -14152,8 +14153,8 @@ https://www.floxn.co.kr/
           .limit(2);
         if (matches.length === 1) {
           const u = matches[0];
-          if (u.office) resolvedAssessorContact = u.office;
-          else if (u.phone) resolvedAssessorContact = u.phone;
+          if (u.phone) resolvedAssessorContact = u.phone;
+          else if (u.office) resolvedAssessorContact = u.office;
         }
       }
 
