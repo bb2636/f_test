@@ -216,9 +216,13 @@ const getRepresentativeCase = (groupCases: Case[]): Case => {
 };
 
 const getCaseEstimateForStats = (c: Case): number => {
-  // 견적금액 = 업체가 올린 견적금액(estimateAmount). 승인되어도 견적금액 칸은 원본 견적금액을 표시.
-  // 반려 후 재제출 시 estimateAmount가 최신 값으로 갱신되므로 자동 반영됨.
-  return parseFloat(c.estimateAmount || c.initialEstimateAmount || "0") || 0;
+  // [2026-05-28] 견적금액 = 업체가 처음 올린 견적금액(initialEstimateAmount) 우선.
+  // 사유: estimateAmount는 1차/2차 승인 후 견적이 수정되면 approvedAmount와 자동 동기화됨
+  //   (server/storage.ts updateCaseEstimateAmount). 그래서 estimateAmount를 우선 쓰면
+  //   미결건 통계 견적금액 칸이 승인금액과 동일하게 표시되는 문제 발생.
+  // 진행건 상세보기 > 기본정보 > 견적금액과 동일한 소스(initialEstimateAmount) 사용.
+  // initialEstimateAmount가 없는 구데이터만 estimateAmount로 폴백.
+  return parseFloat(c.initialEstimateAmount || c.estimateAmount || "0") || 0;
 };
 
 const APPROVED_STATUSES = ["청구", "청구자료제출(복구)", "출동비청구(선견적)", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
