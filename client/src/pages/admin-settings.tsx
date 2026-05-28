@@ -1357,9 +1357,16 @@ export default function AdminSettings() {
     .filter((u) => {
       const matchesRole = roleFilter === "전체" || u.role === roleFilter;
       const normalizedQuery = searchQuery.trim().toLowerCase();
-      const normalizedName = u.name.toLowerCase();
+      const normalizedName = (u.name || "").toLowerCase();
+      const normalizedCompany = (u.company || "").toLowerCase();
+      // 전화번호는 숫자/하이픈 차이 무시하고 검색 (예: "010-1234-5678" ↔ "01012345678")
+      const phoneDigits = (u.phone || "").replace(/[^0-9]/g, "");
+      const queryDigits = normalizedQuery.replace(/[^0-9]/g, "");
       const matchesSearch =
-        normalizedQuery === "" || normalizedName.includes(normalizedQuery);
+        normalizedQuery === "" ||
+        normalizedName.includes(normalizedQuery) ||
+        normalizedCompany.includes(normalizedQuery) ||
+        (queryDigits !== "" && phoneDigits.includes(queryDigits));
       return matchesRole && matchesSearch;
     })
     .sort((a, b) => {
@@ -2455,7 +2462,7 @@ export default function AdminSettings() {
                     />
                     <input
                       type="text"
-                      placeholder="성함을 입력해주세요."
+                      placeholder="성함, 업체명, 전화번호로 검색해주세요."
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
                       onKeyDown={handleSearchKeyDown}
