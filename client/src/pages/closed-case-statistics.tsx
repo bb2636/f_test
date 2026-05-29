@@ -601,24 +601,23 @@ export default function ClosedCaseStatistics() {
           const hasDirectRecovery = nonPreEstimate.some(c => isDirectRecovery(c));
           const targets = hasDirectRecovery ? nonPreEstimate.filter(c => isDirectRecovery(c)) : nonPreEstimate;
 
-          const seenPrefixes = new Set<string>();
+          // [2026-05-29] 청구금액 중복합산 방지 (미결 통계와 동일 로직).
+          // 손방/대물 청구금액은 케이스 그룹(prefix) 공유값으로 각 케이스에 동일 저장됨.
+          // → 청구서/청구금액은 prefix당 1회만, 승인금액 폴백만 케이스별 합산.
+          const seenInvoicePrefixes = new Set<string>();
           const directClaim = targets.reduce((sum, c) => {
             const cn = c.caseNumber || "";
             const lastDash = cn.lastIndexOf("-");
             const pf = lastDash > 0 ? cn.substring(0, lastDash) : cn;
-            if (pf && !seenPrefixes.has(pf)) {
-              seenPrefixes.add(pf);
-              const inv = invoicesByPrefixMap[pf];
-              const invAmt = inv?.totalApprovedAmount ? parseInt(inv.totalApprovedAmount) : 0;
-              if (invAmt > 0) return sum + invAmt;
-            } else if (pf && seenPrefixes.has(pf)) {
-              return sum;
+            const inv = pf ? invoicesByPrefixMap[pf] : null;
+            const invAmt = inv?.totalApprovedAmount ? parseInt(inv.totalApprovedAmount) : 0;
+            const groupInvoiceClaim = invAmt > 0 ? invAmt : getCaseInvoiceClaimAmount(c);
+            if (groupInvoiceClaim > 0) {
+              if (pf && seenInvoicePrefixes.has(pf)) return sum;
+              if (pf) seenInvoicePrefixes.add(pf);
+              return sum + groupInvoiceClaim;
             }
-            const invoiceClaim = getCaseInvoiceClaimAmount(c);
-            if (invoiceClaim > 0) return sum + invoiceClaim;
-            // [2026-05-28] 청구액 = 승인금액만 사용 (견적금액 폴백 제거)
-            // 사유: 그룹 내 일부 케이스(approvedAmount=0인데 상태가 청구로 진행)가
-            // 견적금액으로 폴백되어 "승인+견적" 합산으로 표시되는 문제 수정.
+            // 청구서/청구금액이 없는 경우만 케이스별 승인금액 합산 (견적금액 폴백 없음)
             return sum + (parseFloat(c.approvedAmount || "0") || 0);
           }, 0);
           const total = preEstimateClaim + directClaim;
