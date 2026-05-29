@@ -663,8 +663,8 @@ export default function UnsettledCaseStatistics() {
               return sum;
             }, 0);
             if (settClaimFallback > 0) return settClaimFallback;
-            const estFallback = targets.reduce((sum, c) => sum + getCaseEstimateForStats(c), 0);
-            if (estFallback > 0) return estFallback;
+            // [2026-05-28] 청구액 = 승인금액 정책 — 견적금액 폴백 제거.
+            // 승인금액/정산금액이 없으면 청구액은 0으로 둠(견적금액으로 부풀리지 않음).
           }
           return total;
         })(),

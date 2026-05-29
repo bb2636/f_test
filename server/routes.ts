@@ -986,7 +986,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .set({
               assessorId: updatedUser.company,
               assessorTeam: updatedUser.name,
-              assessorContact: updatedUser.office || updatedUser.phone || "",
+              assessorContact: updatedUser.phone || updatedUser.office || "",
               assessorEmail: updatedUser.email || "",
               assessorDepartment: updatedUser.department || "",
             })
@@ -13169,8 +13169,8 @@ FLOXN 드림`;
         // 정확히 1명일 때만 신뢰 (동명이인 회피)
         if (matches.length === 1) {
           const u = matches[0];
-          if (u.office) resolvedAssessorContactForBody = u.office;
-          else if (u.phone) resolvedAssessorContactForBody = u.phone;
+          if (u.phone) resolvedAssessorContactForBody = u.phone;
+          else if (u.office) resolvedAssessorContactForBody = u.office;
         }
       }
 
@@ -15895,12 +15895,12 @@ https://www.floxn.co.kr/
           HAVING COUNT(*) = 1
         )
         UPDATE cases c
-        SET assessor_contact = COALESCE(NULLIF(u.office, ''), NULLIF(u.phone, ''), c.assessor_contact)
+        SET assessor_contact = COALESCE(NULLIF(u.phone, ''), NULLIF(u.office, ''), c.assessor_contact)
         FROM unique_users u
         WHERE u.company = c.assessor_id
           AND u.name = c.assessor_team
-          AND COALESCE(NULLIF(u.office, ''), NULLIF(u.phone, '')) IS NOT NULL
-          AND COALESCE(c.assessor_contact, '') <> COALESCE(NULLIF(u.office, ''), NULLIF(u.phone, ''))
+          AND COALESCE(NULLIF(u.phone, ''), NULLIF(u.office, '')) IS NOT NULL
+          AND COALESCE(c.assessor_contact, '') <> COALESCE(NULLIF(u.phone, ''), NULLIF(u.office, ''))
         RETURNING c.id, c.case_number, c.assessor_team, c.assessor_contact
       `);
 
