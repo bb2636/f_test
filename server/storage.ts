@@ -295,6 +295,10 @@ export interface IStorage {
     caseId: string,
     estimateAmount: string,
   ): Promise<Case | null>;
+  updateCaseApprovedAmount(
+    caseId: string,
+    approvedAmount: string,
+  ): Promise<Case | null>;
   submitFieldSurvey(caseId: string, estimateInfo?: { estimateTotal: string; isPrevention: boolean }): Promise<Case | null>;
   reviewCase(
     caseId: string,
@@ -1933,7 +1937,7 @@ export class MemStorage implements IStorage {
         break;
       case "복구요청(2차승인)":
         dateUpdates.secondApprovalDate = currentDate;
-        if (caseItem.estimateAmount) {
+        if (!caseItem.approvedAmount && caseItem.estimateAmount) {
           dateUpdates.approvedAmount = caseItem.estimateAmount;
         }
         break;
@@ -2054,6 +2058,27 @@ export class MemStorage implements IStorage {
     const updatedCase: Case = {
       ...caseItem,
       estimateAmount,
+      updatedAt: getKSTDate(),
+    };
+
+    this.cases.set(caseId, updatedCase);
+    return updatedCase;
+  }
+
+  async updateCaseApprovedAmount(
+    caseId: string,
+    approvedAmount: string,
+  ): Promise<Case | null> {
+    const caseItem = this.cases.get(caseId);
+    if (!caseItem) {
+      return null;
+    }
+
+    // 관리자/심사자가 견적을 수정한 경우 — 승인금액(approvedAmount)에만 반영하고
+    // 견적금액(estimateAmount, 협력업체 원본)은 그대로 보존한다.
+    const updatedCase: Case = {
+      ...caseItem,
+      approvedAmount,
       updatedAt: getKSTDate(),
     };
 
@@ -4728,7 +4753,9 @@ export class DbStorage implements IStorage {
         break;
       case "복구요청(2차승인)":
         dateUpdates.secondApprovalDate = currentDate;
-        if (existingCase.estimateAmount) {
+        // 관리자/심사자가 승인 전 견적을 수정해 approvedAmount를 이미 갱신했다면 유지,
+        // 수정 없이 승인하는 경우에만 협력업체 견적금액을 승인금액으로 확정한다.
+        if (!existingCase.approvedAmount && existingCase.estimateAmount) {
           dateUpdates.approvedAmount = existingCase.estimateAmount;
         }
         break;
@@ -4901,6 +4928,28 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
+  async updateCaseApprovedAmount(
+    caseId: string,
+    approvedAmount: string,
+  ): Promise<Case | null> {
+    // 관리자/심사자가 견적을 수정한 경우 — 승인금액(approvedAmount)에만 반영하고
+    // 견적금액(estimateAmount, 협력업체 원본)은 그대로 보존한다.
+    const result = await db
+      .update(cases)
+      .set({
+        approvedAmount,
+        updatedAt: getKSTTimestamp(),
+      })
+      .where(eq(cases.id, caseId))
+      .returning();
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    return result[0];
+  }
+
   async submitFieldSurvey(caseId: string, estimateInfo?: { estimateTotal: string; isPrevention: boolean }): Promise<Case | null> {
     const currentDate = getKSTDate();
 
@@ -5023,9 +5072,10 @@ export class DbStorage implements IStorage {
       if (!existingCase.secondApprovalDate) {
         additionalUpdates.secondApprovalDate = currentDate;
       }
-      // 2차승인 시 승인금액 확정 (현재 견적 총액을 승인금액으로 저장 - 매번 갱신)
-      // 협력사가 견적을 수정한 후 재승인 받으면 최신 금액이 저장됨
-      if (existingCase.estimateAmount) {
+      // 2차승인 시 승인금액 확정
+      //   관리자/심사자가 승인 전 견적을 수정해 approvedAmount를 이미 갱신했다면 그 값을 유지.
+      //   수정 없이 승인하는 경우에만 협력업체 견적금액을 승인금액으로 확정한다.
+      if (!existingCase.approvedAmount && existingCase.estimateAmount) {
         additionalUpdates.approvedAmount = existingCase.estimateAmount;
       }
     }

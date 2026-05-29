@@ -6202,9 +6202,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         vatIncluded ?? true, // VAT 포함/별도 옵션
       );
 
-      // 견적 총액을 케이스에 항상 업데이트 (최신 견적금액 유지)
+      // 견적 총액 반영 — 호출자 역할에 따라 분리
+      //   협력사: 견적금액(estimateAmount) 갱신 (업체가 올린 견적서 금액)
+      //   그 외(관리자/심사자 등): 승인금액(approvedAmount)에만 반영하고
+      //     견적금액(협력업체 원본)은 그대로 보존
       if (totalAmount !== undefined && totalAmount !== null) {
-        await storage.updateCaseEstimateAmount(caseId, totalAmount.toString());
+        if (req.session.userRole === "협력사") {
+          await storage.updateCaseEstimateAmount(caseId, totalAmount.toString());
+        } else {
+          await storage.updateCaseApprovedAmount(caseId, totalAmount.toString());
+        }
       }
 
       // 견적은 케이스별 개별 관리 - 동기화하지 않음
