@@ -31,6 +31,7 @@ interface InvoiceSheetProps {
     invoicePdfGenerated?: string | null;
     recoveryType?: string | null;
     estimateAmount?: string | null;
+    approvedAmount?: string | null;
     assessorId?: string | null;
     assessorTeam?: string | null;
     assessorEmail?: string | null;
@@ -43,6 +44,7 @@ interface InvoiceSheetProps {
     caseNumber?: string | null;
     recoveryType?: string | null;
     estimateAmount?: string | null;
+    approvedAmount?: string | null;
   }>;
 }
 
@@ -341,13 +343,15 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
         if (isFieldDispatch) {
           damagePreventionFieldDispatch++;
         } else {
-          damagePreventionAmount += parseInt(c.estimateAmount || "0") || 0;
+          // 인보이스에는 승인금액(approvedAmount) 우선, 없으면 견적금액(estimateAmount)
+          damagePreventionAmount += parseInt(c.approvedAmount || c.estimateAmount || "0") || 0;
         }
       } else if (suffix > 0) {
         if (isFieldDispatch) {
           propertyFieldDispatch++;
         } else {
-          propertyRepairAmount += parseInt(c.estimateAmount || "0") || 0;
+          // 인보이스에는 승인금액(approvedAmount) 우선, 없으면 견적금액(estimateAmount)
+          propertyRepairAmount += parseInt(c.approvedAmount || c.estimateAmount || "0") || 0;
         }
       }
     }
