@@ -4925,6 +4925,8 @@ export class DbStorage implements IStorage {
       return null;
     }
 
+    // 견적금액 변경을 인보이스/통계/목록에 즉시 반영 (캐시 무효화)
+    invalidateCasesCache();
     return result[0];
   }
 
@@ -4947,6 +4949,8 @@ export class DbStorage implements IStorage {
       return null;
     }
 
+    // 승인금액 변경을 인보이스/통계/목록에 즉시 반영 (캐시 무효화)
+    invalidateCasesCache();
     return result[0];
   }
 
@@ -5100,6 +5104,8 @@ export class DbStorage implements IStorage {
       return null;
     }
 
+    // 보고서 승인(승인금액 확정/상태 변경)을 인보이스/통계/목록에 즉시 반영
+    invalidateCasesCache();
     return result[0];
   }
 
