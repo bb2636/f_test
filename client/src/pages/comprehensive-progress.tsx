@@ -169,15 +169,22 @@ const formatAmount = (amount: string | number | null | undefined): string => {
 
 const POST_APPROVAL_STATUSES = ["청구", "청구자료제출(복구)", "출동비청구(선견적)", "입금완료", "부분입금", "부분지급", "지급완료", "정산완료", "종결"];
 
+// 최종(2차) 승인 버튼을 누른 이후의 상태들 — 이 시점부터만 승인금액을 노출한다.
+const FINAL_APPROVED_STATUSES = ["복구요청(2차승인)", "직접복구", "선견적요청", ...POST_APPROVAL_STATUSES];
+
 const getDisplayApprovedAmount = (c: any): string => {
+  // [정책] 최종 승인 버튼(2차 승인)을 누른 뒤에만 '승인금액'을 표시한다.
+  //   그 전(현장정보제출 등)에 견적서/노무비/자재비/복구면적산출표를 저장해
+  //   approvedAmount가 갱신돼 있어도 종합진행관리 '승인금액' 칸에는 노출하지 않는다.
+  const isFinallyApproved =
+    !!c?.secondApprovalDate ||
+    c?.reportApprovalDecision === "승인" ||
+    FINAL_APPROVED_STATUSES.includes(c?.status);
+  if (!isFinallyApproved) return "-";
   const approved = parseInt(c?.approvedAmount || "0") || 0;
   if (approved > 0) return formatAmount(c.approvedAmount);
-  const isApproved = c?.reviewDecision === "승인" || POST_APPROVAL_STATUSES.includes(c?.status);
-  if (isApproved) {
-    const estimate = c?.estimateAmount || c?.initialEstimateAmount;
-    return formatAmount(estimate);
-  }
-  return "-";
+  const estimate = c?.estimateAmount || c?.initialEstimateAmount;
+  return formatAmount(estimate);
 };
 
 // SMS 자동 발송을 위한 수신자 기본 설정
