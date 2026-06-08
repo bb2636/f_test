@@ -181,15 +181,9 @@ const getDisplayApprovedAmount = (c: any): string => {
     c?.reportApprovalDecision === "승인" ||
     FINAL_APPROVED_STATUSES.includes(c?.status);
   if (!isFinallyApproved) return "-";
-  // 승인금액 → 견적금액 → 초기견적 순으로 0이 아닌 첫 값을 사용한다.
-  // (DB에 문자열 "0"이 저장된 경우 truthy로 잘못 통과하던 문제를 방지)
-  const pick = (v: any): string | null =>
-    (parseInt(v || "0") || 0) > 0 ? String(v) : null;
-  const amount =
-    pick(c?.approvedAmount) ??
-    pick(c?.estimateAmount) ??
-    pick(c?.initialEstimateAmount);
-  return amount ? formatAmount(amount) : "-";
+  // [정책] 오직 '승인금액'만 표시한다. 견적금액/초기견적으로 대체하지 않는다.
+  //   승인금액이 0이면 0 그대로, 값이 없으면 "-"로 표시.
+  return formatAmount(c?.approvedAmount);
 };
 
 // SMS 자동 발송을 위한 수신자 기본 설정
