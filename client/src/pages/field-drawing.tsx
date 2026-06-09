@@ -971,24 +971,45 @@ export default function FieldDrawing() {
 
   // 잠금 토글
   const handleToggleLock = () => {
+    let willLock: boolean | null = null;
     if (selectedImageId) {
-      setUploadedImages(prev =>
-        prev.map(img =>
-          img.id === selectedImageId ? { ...img, locked: !img.locked } : img
-        )
-      );
+      const target = uploadedImages.find(i => i.id === selectedImageId);
+      if (target) {
+        willLock = !target.locked;
+        setUploadedImages(prev =>
+          prev.map(img =>
+            img.id === selectedImageId ? { ...img, locked: !img.locked } : img
+          )
+        );
+      }
     } else if (selectedRectangleId) {
-      setRectangles(prev =>
-        prev.map(rect =>
-          rect.id === selectedRectangleId ? { ...rect, locked: !rect.locked } : rect
-        )
-      );
+      const target = rectangles.find(r => r.id === selectedRectangleId);
+      if (target) {
+        willLock = !target.locked;
+        setRectangles(prev =>
+          prev.map(rect =>
+            rect.id === selectedRectangleId ? { ...rect, locked: !rect.locked } : rect
+          )
+        );
+      }
     } else if (selectedAccidentAreaId) {
-      setAccidentAreas(prev =>
-        prev.map(area =>
-          area.id === selectedAccidentAreaId ? { ...area, locked: !area.locked } : area
-        )
-      );
+      const target = accidentAreas.find(a => a.id === selectedAccidentAreaId);
+      if (target) {
+        willLock = !target.locked;
+        setAccidentAreas(prev =>
+          prev.map(area =>
+            area.id === selectedAccidentAreaId ? { ...area, locked: !area.locked } : area
+          )
+        );
+      }
+    }
+    if (willLock !== null) {
+      toast({
+        title: willLock ? "잠금" : "잠금 해제",
+        description: willLock
+          ? "이동·크기조절이 잠겼습니다. 자물쇠를 다시 누르면 해제됩니다."
+          : "이동·크기조절이 가능합니다.",
+      });
     }
   };
 
@@ -1564,6 +1585,8 @@ export default function FieldDrawing() {
                 <button
                   onClick={handleToggleLock}
                   className="p-1 rounded hover:bg-white/10"
+                  style={rectangles.find(r => r.id === selectedRectangleId)?.locked ? { background: "#253396" } : undefined}
+                  title={rectangles.find(r => r.id === selectedRectangleId)?.locked ? "잠금 해제" : "잠금"}
                   data-testid="button-toggle-lock"
                 >
                   <Lock className="w-4 h-4 text-white" />
@@ -1598,6 +1621,8 @@ export default function FieldDrawing() {
                 <button
                   onClick={handleToggleLock}
                   className="p-2 rounded hover:bg-white/10"
+                  style={selectedImage?.locked ? { background: "#253396" } : undefined}
+                  title={selectedImage?.locked ? "잠금 해제" : "잠금"}
                   data-testid="button-toggle-lock-image"
                 >
                   <Lock className="w-5 h-5 text-white" />
@@ -1663,6 +1688,8 @@ export default function FieldDrawing() {
                 <button
                   onClick={handleToggleLock}
                   className="p-2 rounded hover:bg-white/10"
+                  style={selectedAccidentArea?.locked ? { background: "#253396" } : undefined}
+                  title={selectedAccidentArea?.locked ? "잠금 해제" : "잠금"}
                   data-testid="button-toggle-lock-accident-area"
                 >
                   <Lock className="w-5 h-5 text-white" />
@@ -1721,6 +1748,26 @@ export default function FieldDrawing() {
                       }}
                     />
                     
+                    {image.locked && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 2,
+                          left: 2,
+                          background: "rgba(37, 51, 150, 0.9)",
+                          borderRadius: "3px",
+                          padding: "2px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          zIndex: 12,
+                          pointerEvents: "none",
+                        }}
+                        data-testid={`lock-badge-${image.id}`}
+                      >
+                        <Lock style={{ width: 10, height: 10, color: "#FFFFFF" }} />
+                      </div>
+                    )}
                     {/* 리사이즈 핸들 */}
                     {selectedImageId === image.id && !image.locked && (
                       <>
@@ -1760,6 +1807,26 @@ export default function FieldDrawing() {
                     }}
                     data-testid={`rectangle-${rect.id}`}
                   >
+                    {rect.locked && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 2,
+                          left: 2,
+                          background: "rgba(37, 51, 150, 0.9)",
+                          borderRadius: "3px",
+                          padding: "2px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          zIndex: 12,
+                          pointerEvents: "none",
+                        }}
+                        data-testid={`lock-badge-${rect.id}`}
+                      >
+                        <Lock style={{ width: 10, height: 10, color: "#FFFFFF" }} />
+                      </div>
+                    )}
                     {/* 텍스트 입력 */}
                     {selectedRectangleId === rect.id ? (
                       <input
@@ -1928,6 +1995,26 @@ export default function FieldDrawing() {
                     }}
                     data-testid={`accident-area-${area.id}`}
                   >
+                    {area.locked && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 2,
+                          left: 2,
+                          background: "rgba(37, 51, 150, 0.9)",
+                          borderRadius: "3px",
+                          padding: "2px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          zIndex: 65,
+                          pointerEvents: "none",
+                        }}
+                        data-testid={`lock-badge-${area.id}`}
+                      >
+                        <Lock style={{ width: 10, height: 10, color: "#FFFFFF" }} />
+                      </div>
+                    )}
                     {/* 리사이즈 핸들 */}
                     {selectedAccidentAreaId === area.id && !area.locked && (
                       <>
