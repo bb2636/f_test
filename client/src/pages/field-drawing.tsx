@@ -1444,7 +1444,7 @@ export default function FieldDrawing() {
           </div>
 
           {/* 선택된 사각형의 컨트롤 (상단 중앙 아래) */}
-          {selectedRectangle && selectedTool === "pointer" && (
+          {selectedRectangle && (selectedTool === "pointer" || selectedTool === "rectangle") && (
             <div 
               className="absolute z-10"
               data-ui="control-panel"
