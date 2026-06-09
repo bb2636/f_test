@@ -778,12 +778,14 @@ export default function FieldDrawing() {
     
     // In pointer mode, stop propagation and handle selection/drag
     e.stopPropagation();
-    if (image.locked) return;
     
     setSelectedImageId(image.id);
     setSelectedRectangleId(null);
     setSelectedAccidentAreaId(null);
     setSelectedLeakId(null);
+    
+    // 잠긴 도형은 선택만 하고 이동/리사이즈는 막음 (선택 시 패널에서 잠금해제/삭제 가능)
+    if (image.locked) return;
     
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (!canvasRect) return;
@@ -812,12 +814,14 @@ export default function FieldDrawing() {
     
     // In pointer mode, stop propagation and handle selection/drag
     e.stopPropagation();
-    if (rect.locked) return;
     
     setSelectedRectangleId(rect.id);
     setSelectedImageId(null);
     setSelectedAccidentAreaId(null);
     setSelectedLeakId(null);
+    
+    // 잠긴 도형은 선택만 하고 이동/리사이즈는 막음 (선택 시 패널에서 잠금해제/삭제 가능)
+    if (rect.locked) return;
     
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (!canvasRect) return;
@@ -846,12 +850,14 @@ export default function FieldDrawing() {
     
     // In pointer mode, stop propagation and handle selection/drag
     e.stopPropagation();
-    if (area.locked) return;
     
     setSelectedAccidentAreaId(area.id);
     setSelectedImageId(null);
     setSelectedRectangleId(null);
     setSelectedLeakId(null);
+    
+    // 잠긴 도형은 선택만 하고 이동/리사이즈는 막음 (선택 시 패널에서 잠금해제/삭제 가능)
+    if (area.locked) return;
     
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (!canvasRect) return;

@@ -16,3 +16,8 @@ zIndex: 사각형 5/15 < 사고영역 50/60 < 누수마커 100/110. 사고영역
 
 ## 키보드 삭제
 데스크톱 관리자는 Delete/Backspace로 선택 항목 삭제 기대. INPUT/TEXTAREA/contentEditable 포커스 및 isReadOnly(협력사) 시 무시.
+
+## locked는 "클릭/커서 안됨" 증상의 원인이 아님 (확인됨)
+PROD 207개 도면 전체에서 locked=true인 사각형/사고영역 0개. clone-drawing(가져오기)도 사각형을 잠그지 않음(원본 그대로 복사). handleCanvasClick/handleCanvasMouseDown은 pointer 모드에서 선택 해제 안 함. 도형 mousedown은 stopPropagation으로 선택 setter 실행 → 잠금없는 도형 선택/패널은 정상 동작.
+**Why:** "배포 화면에서 사각형 hover시 커서 안변함+클릭안됨"은 locked 교착이 아니라 **배포 아티팩트가 구버전**(패널 clamp/키보드삭제/locked-selectable 수정 미반영)이라서임. 재배포로 해결.
+**적용:** locked 가설 재추적 금지. 현장 버전 불일치 의심 시 빌드 SHA/버전 배지로 확정.
