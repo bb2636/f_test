@@ -1,0 +1,1 @@
+- [field-drawing 캔버스 선택/삭제](field-drawing-canvas.md) — 컨트롤 패널이 도형 x에 왼쪽정렬돼 우측에선 삭제버튼 화면밖; 사각형 z-index가 사고영역/마커보다 낮아 겹치면 선택 가로채짐

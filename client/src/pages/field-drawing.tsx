@@ -947,6 +947,22 @@ export default function FieldDrawing() {
     }
   };
 
+  // 키보드 Delete/Backspace 로 선택 항목 삭제 (입력창 포커스 시 제외)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isReadOnly) return;
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const el = document.activeElement as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      if (selectedImageId || selectedRectangleId || selectedAccidentAreaId || selectedLeakId) {
+        e.preventDefault();
+        handleDelete();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isReadOnly, selectedImageId, selectedRectangleId, selectedAccidentAreaId, selectedLeakId]);
+
   // 잠금 토글
   const handleToggleLock = () => {
     if (selectedImageId) {
@@ -1183,6 +1199,18 @@ export default function FieldDrawing() {
 
   const selectedImage = uploadedImages.find(img => img.id === selectedImageId);
   const selectedRectangle = rectangles.find(rect => rect.id === selectedRectangleId);
+  // 사각형 컨트롤 패널 위치(삭제 버튼 포함)가 캔버스 밖으로 넘어가지 않도록 clamp
+  const RECT_PANEL_WIDTH = 360;
+  const rectPanelLeft = selectedRectangle
+    ? (() => {
+        const canvasW = canvasRef.current?.clientWidth ?? 0;
+        const raw = selectedRectangle.x * DISPLAY_SCALE;
+        return canvasW > 0 ? Math.min(raw, Math.max(8, canvasW - RECT_PANEL_WIDTH)) : raw;
+      })()
+    : 0;
+  const rectPanelTop = selectedRectangle
+    ? Math.max(selectedRectangle.y * DISPLAY_SCALE - 60, 80)
+    : 0;
   const selectedAccidentArea = accidentAreas.find(area => area.id === selectedAccidentAreaId);
 
   return (
@@ -1449,8 +1477,8 @@ export default function FieldDrawing() {
               className="absolute z-10"
               data-ui="control-panel"
               style={{
-                left: `${selectedRectangle.x * DISPLAY_SCALE}px`,
-                top: `${Math.max(selectedRectangle.y * DISPLAY_SCALE - 60, 80)}px`,
+                left: `${rectPanelLeft}px`,
+                top: `${rectPanelTop}px`,
               }}
             >
               <div 
