@@ -14618,8 +14618,11 @@ https://www.floxn.co.kr/
           .json({ error: "수신자 이메일이 선택되지 않았습니다" });
       }
 
-      // [2026-06-09] 다중세대 동시 취소: 대상 케이스 ID 집합 (primary 항상 포함)
-      const targetIds = Array.from(new Set([caseId, ...(caseIds || [])]));
+      // [2026-06-09] 다중세대 동시 취소: 사용자가 선택한 대상(caseIds)을 권위 기준으로 사용.
+      //   클릭한 caseId를 강제로 합치지 않음 — 클릭 건을 체크 해제하면 취소/저장 대상에서도 제외.
+      //   caseIds가 비어있으면(구버전 호환) 클릭 건만 처리.
+      const targetIds =
+        caseIds && caseIds.length > 0 ? Array.from(new Set(caseIds)) : [caseId];
 
       // [2026-06-09] 세대 유형/호수 라벨 산출 (클라이언트 getCancelHouseholdLabel과 동일 규칙)
       const getHouseholdLabel = (c: {
