@@ -74,6 +74,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   SmsNotificationDialog,
+  getCancelHouseholdLabel,
+  getCancelSuffix,
   type NotificationStage,
   type RecipientConfig,
 } from "@/components/sms-notification-dialog";
@@ -313,7 +315,14 @@ export default function ComprehensiveProgress() {
   const [cancelConfirmDialogOpen, setCancelConfirmDialogOpen] = useState(false);
   const [cancelTargetCase, setCancelTargetCase] =
     useState<CaseWithLatestProgress | null>(null);
-  const skipSmsForCancelRef = useRef(false);
+  // [2026-06-09] 접수취소 다중세대 연동: 같은 사고 관련 건 후보/선택/확정 목록
+  const [cancelCandidates, setCancelCandidates] = useState<
+    CaseWithLatestProgress[]
+  >([]);
+  const [selectedCancelIds, setSelectedCancelIds] = useState<string[]>([]);
+  const [cancelSelectedCases, setCancelSelectedCases] = useState<
+    CaseWithLatestProgress[]
+  >([]);
   const pendingCancelNavigationRef = useRef(false);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -582,9 +591,13 @@ export default function ComprehensiveProgress() {
     mutationFn: async ({
       caseId,
       status,
+      suppressCancelSms,
     }: {
       caseId: string;
       status: string;
+      // [2026-06-09] true면 접수취소 상태변경 성공 후 SMS/이메일 팝업 재오픈을 건너뜀
+      //   (다중 취소: 이메일은 확인 다이얼로그에서 1회 발송 후 건별 상태변경만 수행)
+      suppressCancelSms?: boolean;
     }) => {
       // 백엔드에서 미복구→출동비 청구 전환 처리
       return await apiRequest("PATCH", `/api/cases/${caseId}/status`, {
@@ -752,8 +765,9 @@ export default function ComprehensiveProgress() {
         const stage = smsRequiredStages[variables.status];
         if (stage && updatedCaseData) {
           if (stagesRequiringDialog.includes(stage)) {
-            if (skipSmsForCancelRef.current) {
-              skipSmsForCancelRef.current = false;
+            if (variables.suppressCancelSms) {
+              // [2026-06-09] 다중 취소: 이메일은 이미 1회 발송됨 — 건별 플래그로 SMS 재오픈을 건너뜀
+              //   (공유 카운터 대신 mutation 변수로 판단해 성공/실패 순서 경합 제거)
               // [2026-05-15] 접수취소 후 자동 페이지 이동 제거 — 종합진행관리 페이지에 그대로 머무르도록 함
               if (pendingCancelNavigationRef.current) {
                 pendingCancelNavigationRef.current = false;
@@ -779,7 +793,6 @@ export default function ComprehensiveProgress() {
 
       if (pendingCancelNavigationRef.current) {
         pendingCancelNavigationRef.current = false;
-        skipSmsForCancelRef.current = false;
       }
 
       toast({
@@ -1332,7 +1345,23 @@ export default function ComprehensiveProgress() {
     if (targetStatus === "접수취소") {
       const targetCase = cases?.find((c) => c.id === caseId);
       if (targetCase) {
+        // [2026-06-09] 같은 사고번호(prefix)의 관련 건을 후보로 모음 (원인/피해세대).
+        //   이미 접수취소/취소대기인 건은 제외하되, 클릭한 건은 항상 포함.
+        const groupPrefix = getCaseNumberPrefix(targetCase.caseNumber);
+        const candidates = (cases || [])
+          .filter((c) => {
+            if (c.id === targetCase.id) return true;
+            if (!groupPrefix) return false;
+            if (getCaseNumberPrefix(c.caseNumber) !== groupPrefix) return false;
+            return c.status !== "접수취소" && c.status !== "취소대기";
+          })
+          .sort(
+            (a, b) =>
+              getCancelSuffix(a.caseNumber) - getCancelSuffix(b.caseNumber),
+          );
         setCancelTargetCase(targetCase);
+        setCancelCandidates(candidates);
+        setSelectedCancelIds(candidates.map((c) => c.id));
         setCancelConfirmDialogOpen(true);
       }
       return;
@@ -5513,16 +5542,25 @@ export default function ComprehensiveProgress() {
           }}
           caseData={smsCaseData as unknown as SchemaCase}
           stage={smsStage}
+          cancelTargetCases={cancelSelectedCases as unknown as SchemaCase[]}
           onSuccess={() => {
             if (smsStage === "접수취소" && smsCaseData) {
-              skipSmsForCancelRef.current = true;
+              // [2026-06-09] 선택된 모든 세대를 동시에 접수취소 처리
+              const targets =
+                cancelSelectedCases.length > 0
+                  ? cancelSelectedCases
+                  : [smsCaseData];
               pendingCancelNavigationRef.current = true;
-              updateStatusMutation.mutate({
-                caseId: smsCaseData.id,
-                status: "접수취소",
+              targets.forEach((tc) => {
+                updateStatusMutation.mutate({
+                  caseId: tc.id,
+                  status: "접수취소",
+                  suppressCancelSms: true,
+                });
               });
               setSmsDialogOpen(false);
               setSmsCaseData(null);
+              setCancelSelectedCases([]);
             } else {
               setSmsDialogOpen(false);
               setSmsCaseData(null);
@@ -5590,24 +5628,68 @@ export default function ComprehensiveProgress() {
           <AlertDialogHeader>
             <AlertDialogTitle>접수 취소 확인</AlertDialogTitle>
             <AlertDialogDescription>
-              [
-              {cancelTargetCase?.insuranceAccidentNo || cancelTargetCase?.caseNumber}
-              ] 건을 접수 취소 하시겠습니까?
+              {selectedCancelIds.length}건을 접수 취소하겠습니까? 취소할 대상을
+              선택하세요.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {/* [2026-06-09] 같은 사고 관련 건(원인/피해세대) 체크박스 목록 — 기본 전체 선택 */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              padding: "8px 0",
+              maxHeight: "240px",
+              overflowY: "auto",
+            }}
+          >
+            {cancelCandidates.map((c) => {
+              const checked = selectedCancelIds.includes(c.id);
+              return (
+                <label
+                  key={c.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    cursor: "pointer",
+                    fontFamily: "Pretendard",
+                    fontSize: "14px",
+                    color: "#0C0C0C",
+                  }}
+                >
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={(v) => {
+                      setSelectedCancelIds((prev) =>
+                        v === true
+                          ? Array.from(new Set([...prev, c.id]))
+                          : prev.filter((id) => id !== c.id),
+                      );
+                    }}
+                    data-testid={`checkbox-cancel-target-${c.id}`}
+                  />
+                  <span>{getCancelHouseholdLabel(c)}</span>
+                </label>
+              );
+            })}
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel
               onClick={() => {
                 setCancelConfirmDialogOpen(false);
                 setCancelTargetCase(null);
+                setCancelCandidates([]);
+                setSelectedCancelIds([]);
               }}
               data-testid="button-cancel-cancellation"
             >
               취소
             </AlertDialogCancel>
             <AlertDialogAction
+              disabled={selectedCancelIds.length === 0}
               onClick={() => {
-                if (cancelTargetCase) {
+                if (cancelTargetCase && selectedCancelIds.length > 0) {
                   setCancelConfirmDialogOpen(false);
                   const enrichedCase = { ...cancelTargetCase };
                   if (!enrichedCase.assessorEmail && enrichedCase.assessorTeam) {
@@ -5626,10 +5708,17 @@ export default function ComprehensiveProgress() {
                       (enrichedCase as any).investigatorEmail = investigatorUser.email;
                     }
                   }
+                  // [2026-06-09] 선택된 세대들을 SMS/이메일 다이얼로그와 동시취소에 연동
+                  const selected = cancelCandidates.filter((c) =>
+                    selectedCancelIds.includes(c.id),
+                  );
+                  setCancelSelectedCases(selected);
                   setSmsCaseData(enrichedCase);
                   setSmsStage("접수취소");
                   setSmsDialogOpen(true);
                   setCancelTargetCase(null);
+                  setCancelCandidates([]);
+                  setSelectedCancelIds([]);
                 }
               }}
               data-testid="button-confirm-cancellation"

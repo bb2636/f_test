@@ -17,6 +17,29 @@ import { apiRequest } from "@/lib/queryClient";
 import { MessageSquare, Send, Loader2, Check, X } from "lucide-react";
 import type { Case } from "@shared/schema";
 
+// [2026-06-09] 접수취소 다중세대 연동: 케이스번호 접미사로 세대 유형/호수 라벨 산출
+//   -0 = 원인세대(피보험자 상세주소), -1 이상 = 피해세대(피해자 상세주소 우선)
+export function getCancelSuffix(
+  caseNumber: string | null | undefined,
+): number {
+  const m = (caseNumber || "").match(/-(\d+)$/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+export function getCancelHouseholdLabel(c: {
+  caseNumber?: string | null;
+  insuredAddressDetail?: string | null;
+  victimAddressDetail?: string | null;
+}): string {
+  const suffix = getCancelSuffix(c.caseNumber);
+  const type = suffix === 0 ? "원인세대" : "피해세대";
+  const ho =
+    suffix === 0
+      ? c.insuredAddressDetail || ""
+      : c.victimAddressDetail || c.insuredAddressDetail || "";
+  return ho ? `${type} (${ho})` : `${type} (${c.caseNumber || "-"})`;
+}
+
 type NotificationStage =
   | "접수완료"
   | "현장정보입력"
@@ -81,6 +104,8 @@ interface SmsNotificationDialogProps {
   paymentAmount?: number;
   previousStatus?: string;
   onSuccess?: () => void;
+  // [2026-06-09] 접수취소 다중세대 연동: 함께 취소할 대상(원인/피해세대) 목록
+  cancelTargetCases?: Case[];
 }
 
 export function SmsNotificationDialog({
@@ -94,6 +119,7 @@ export function SmsNotificationDialog({
   paymentAmount: initialPaymentAmount,
   previousStatus,
   onSuccess,
+  cancelTargetCases = [],
 }: SmsNotificationDialogProps) {
   const { toast } = useToast();
   const [recipients, setRecipients] = useState<RecipientConfig>(
@@ -224,6 +250,11 @@ export function SmsNotificationDialog({
         "/api/send-cancellation-email",
         {
           caseId: caseData.id,
+          // [2026-06-09] 선택된 다중세대 동시 취소 — 대상 케이스 ID 목록 전달
+          caseIds:
+            cancelTargetCases.length > 0
+              ? cancelTargetCases.map((c) => c.id)
+              : [caseData.id],
           cancelReason: detailOnly || undefined,
           cancelReasonCategory: cancelReasonRadio || undefined,
           recipients: {
@@ -793,6 +824,41 @@ export function SmsNotificationDialog({
               data-testid="textarea-cancel-reason"
             />
           </div>
+
+          {/* [2026-06-09] 취소 대상 — 확인 다이얼로그에서 선택한 세대 목록 연동 */}
+          {cancelTargetCases.length > 0 && (
+            <div style={{ margin: "0 24px 20px 24px" }}>
+              <div
+                style={{
+                  fontFamily: "Pretendard",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: "#0C0C0C",
+                  marginBottom: "8px",
+                }}
+              >
+                취소 대상
+              </div>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+              >
+                {cancelTargetCases.map((c) => (
+                  <div
+                    key={c.id}
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "13px",
+                      fontWeight: 500,
+                      color: "#253396",
+                    }}
+                    data-testid={`cancel-target-${c.id}`}
+                  >
+                    ㆍ{getCancelHouseholdLabel(c)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 수신자 이메일 */}
           <div style={{ margin: "0 24px 20px 24px" }}>

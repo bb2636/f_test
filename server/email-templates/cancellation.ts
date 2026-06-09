@@ -7,10 +7,12 @@ export interface CancellationTemplateData {
   dateStr: string;
   caseNumber: string;
   logoBuffer: Buffer | null;
+  // [2026-06-09] 접수취소 다중세대 연동: 함께 취소되는 대상(원인/피해세대) 라벨 목록
+  cancelTargets?: string[];
 }
 
 export function renderCancellationTemplate(data: CancellationTemplateData): { html: string; text: string } {
-  const { accidentNo, insuredName, cancelReason, cancelReasonCategory, dateStr, caseNumber, logoBuffer } = data;
+  const { accidentNo, insuredName, cancelReason, cancelReasonCategory, dateStr, caseNumber, logoBuffer, cancelTargets } = data;
   // [2026-05-15] 이메일 표시용으로 라디오 항목의 'ㆍ' 불릿 접두어를 제거
   // (예: "ㆍ현장방문거절" → "현장방문거절"). 라벨 셀에 '취소사유'가 이미 있으므로 값만 표시.
   const displayCancelReason = cancelReason
@@ -20,6 +22,20 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
         .join("\n")
     : cancelReason;
   const displayCategory = cancelReasonCategory && cancelReasonCategory.trim() ? cancelReasonCategory.trim() : "-";
+  // [2026-06-09] 취소 대상(다중세대) 표시용 — html 행/text 블록
+  const targets = (cancelTargets || []).filter((t) => t && t.trim());
+  const cancelTargetsRowHtml =
+    targets.length > 0
+      ? `
+            <tr>
+              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold; vertical-align: top;">취소 대상</td>
+              <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">${targets.join("\n")}</td>
+            </tr>`
+      : "";
+  const cancelTargetsTextBlock =
+    targets.length > 0
+      ? `- 취소 대상:\n${targets.map((t) => `  ${t}`).join("\n")}\n`
+      : "";
 
   const html = `
         <div style="font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -44,7 +60,7 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
               <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold; vertical-align: top;">취소내용</td>
               <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">취소사유: ${displayCategory}
 ${displayCancelReason || "-"}</td>
-            </tr>
+            </tr>${cancelTargetsRowHtml}
             <tr>
               <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">발송일</td>
               <td style="padding: 10px 15px; border: 1px solid #ccc;">${dateStr}</td>
@@ -75,7 +91,7 @@ ${displayCancelReason || "-"}</td>
 - 취소내용:
   취소사유: ${displayCategory}
   ${displayCancelReason || "-"}
-- 발송일: ${dateStr}
+${cancelTargetsTextBlock}- 발송일: ${dateStr}
 
 감사합니다.
 FLOXN`;

@@ -71,6 +71,8 @@ export const sendFieldReportEmailV2Schema = z.object({
 
 export const cancellationEmailSchema = z.object({
   caseId: z.string(),
+  // [2026-06-09] 접수취소 다중세대 연동: 함께 취소할 대상 케이스 ID 목록
+  caseIds: z.array(z.string()).optional(),
   cancelReason: z.string().optional(),
   // [2026-05-19] 라디오 선택값(취소사유 카테고리)을 별도 필드로 전달받음
   cancelReasonCategory: z.string().optional(),

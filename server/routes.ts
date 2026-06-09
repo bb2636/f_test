@@ -14575,7 +14575,7 @@ https://www.floxn.co.kr/
 
     try {
       const validatedData = cancellationEmailSchema.parse(req.body);
-      const { caseId, cancelReason, cancelReasonCategory, recipients } = validatedData;
+      const { caseId, caseIds, cancelReason, cancelReasonCategory, recipients } = validatedData;
 
       const caseData = await storage.getCaseById(caseId);
       if (!caseData) {
@@ -14618,17 +14618,45 @@ https://www.floxn.co.kr/
           .json({ error: "수신자 이메일이 선택되지 않았습니다" });
       }
 
+      // [2026-06-09] 다중세대 동시 취소: 대상 케이스 ID 집합 (primary 항상 포함)
+      const targetIds = Array.from(new Set([caseId, ...(caseIds || [])]));
+
+      // [2026-06-09] 세대 유형/호수 라벨 산출 (클라이언트 getCancelHouseholdLabel과 동일 규칙)
+      const getHouseholdLabel = (c: {
+        caseNumber?: string | null;
+        insuredAddressDetail?: string | null;
+        victimAddressDetail?: string | null;
+      }): string => {
+        const m = (c.caseNumber || "").match(/-(\d+)$/);
+        const suffix = m ? parseInt(m[1], 10) : 0;
+        const type = suffix === 0 ? "원인세대" : "피해세대";
+        const ho =
+          suffix === 0
+            ? c.insuredAddressDetail || ""
+            : c.victimAddressDetail || c.insuredAddressDetail || "";
+        return ho ? `${type} (${ho})` : `${type} (${c.caseNumber || "-"})`;
+      };
+
       // [2026-05-19] DB 저장 시 카테고리(라디오값) + 자유텍스트 결합 (기존 저장 포맷 유지 차원에서 한 필드에 합쳐 보관)
       // [2026-05-20] 취소사유 셀에는 라디오 선택값만 저장 (자유텍스트는 이메일/PDF에만 사용)
       const radioOnlyForStorage = cancelReasonCategory?.trim()
         ? `ㆍ${cancelReasonCategory.trim()}`
         : "";
-      if (radioOnlyForStorage) {
-        try {
-          await storage.updateCase(caseId, { specialNotes: `[취소사유] ${radioOnlyForStorage}` });
-          console.log(`[send-cancellation-email] 접수취소 사유 저장 완료: caseId=${caseId}`);
-        } catch (saveErr) {
-          console.error(`[send-cancellation-email] 접수취소 사유 저장 실패:`, saveErr);
+      // [2026-06-09] 선택된 모든 대상의 세대 라벨 수집 + 취소사유 저장
+      const cancelTargets: string[] = [];
+      for (const tid of targetIds) {
+        const tCase = tid === caseId ? caseData : await storage.getCaseById(tid);
+        if (!tCase) continue;
+        cancelTargets.push(getHouseholdLabel(tCase));
+        if (radioOnlyForStorage) {
+          try {
+            await storage.updateCase(tid, {
+              specialNotes: `[취소사유] ${radioOnlyForStorage}`,
+            });
+            console.log(`[send-cancellation-email] 접수취소 사유 저장 완료: caseId=${tid}`);
+          } catch (saveErr) {
+            console.error(`[send-cancellation-email] 접수취소 사유 저장 실패:`, saveErr);
+          }
         }
       }
 
@@ -15059,6 +15087,50 @@ https://www.floxn.co.kr/
       }
       yPos -= reasonRowHeight;
 
+      // [2026-06-09] 취소 대상(다중세대) 행 — 선택된 원인/피해세대 목록 표시
+      if (cancelTargets.length > 0) {
+        const targetLines = cancelTargets.map((t) => normalizeText(t));
+        const targetRowHeight = Math.max(
+          rowHeight,
+          targetLines.length * lineHeight + 14,
+        );
+        page.drawRectangle({
+          x: margin,
+          y: yPos - targetRowHeight,
+          width: col1Width,
+          height: targetRowHeight,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: 0.5,
+        });
+        page.drawText("취소 대상", {
+          x: margin + 5,
+          y: yPos - targetRowHeight / 2 - 4,
+          size: 10,
+          font: customFont,
+          color: rgb(0, 0, 0),
+        });
+        page.drawRectangle({
+          x: margin + col1Width,
+          y: yPos - targetRowHeight,
+          width: tableWidth - col1Width,
+          height: targetRowHeight,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: 0.5,
+        });
+        let targetTextY = yPos - 18;
+        for (const line of targetLines) {
+          page.drawText(line, {
+            x: margin + col1Width + 5,
+            y: targetTextY,
+            size: 10,
+            font: customFont,
+            color: rgb(0, 0, 0),
+          });
+          targetTextY -= lineHeight;
+        }
+        yPos -= targetRowHeight;
+      }
+
       // ========== 본문 텍스트 ==========
       yPos -= 30;
       page.drawText("상기 건에 대하여 접수취소 사유를 첨부하여 송부드립니다.", {
@@ -15114,7 +15186,7 @@ https://www.floxn.co.kr/
       );
 
       const { html: htmlContent, text: textContent } = renderCancellationTemplate({
-        accidentNo, insuredName, cancelReason: cancelReason ?? null, cancelReasonCategory: cancelReasonCategory ?? null, dateStr, caseNumber, logoBuffer,
+        accidentNo, insuredName, cancelReason: cancelReason ?? null, cancelReasonCategory: cancelReasonCategory ?? null, dateStr, caseNumber, logoBuffer, cancelTargets,
       });
 
       const results: { email: string; success: boolean; error?: string }[] = [];
