@@ -17,7 +17,8 @@ zIndex: 사각형 5/15 < 사고영역 50/60 < 누수마커 100/110. 사고영역
 ## 키보드 삭제
 데스크톱 관리자는 Delete/Backspace로 선택 항목 삭제 기대. INPUT/TEXTAREA/contentEditable 포커스 및 isReadOnly(협력사) 시 무시.
 
-## locked는 "클릭/커서 안됨" 증상의 원인이 아님 (확인됨)
-PROD 207개 도면 전체에서 locked=true인 사각형/사고영역 0개. clone-drawing(가져오기)도 사각형을 잠그지 않음(원본 그대로 복사). handleCanvasClick/handleCanvasMouseDown은 pointer 모드에서 선택 해제 안 함. 도형 mousedown은 stopPropagation으로 선택 setter 실행 → 잠금없는 도형 선택/패널은 정상 동작.
-**Why:** "배포 화면에서 사각형 hover시 커서 안변함+클릭안됨"은 locked 교착이 아니라 **배포 아티팩트가 구버전**(패널 clamp/키보드삭제/locked-selectable 수정 미반영)이라서임. 재배포로 해결.
-**적용:** locked 가설 재추적 금지. 현장 버전 불일치 의심 시 빌드 SHA/버전 배지로 확정.
+## locked 교착이 진짜 원인이었음 + DB 환경 분리 함정 (확정)
+"잠긴(locked:true) 사각형은 클릭해도 선택이 안 돼서 잠금해제/삭제가 원천 불가" — 구버전 코드에서 handleRectangleMouseDown이 `setSelectedRectangleId` 전에 `if(rect.locked) return`을 실행해 교착. 한 번 잠그면 선택·해제·삭제 모두 막힘.
+**중요(DB 환경 함정):** 운영 DB는 한 개가 아님. 메인 PROD(ep-gentle-base)엔 이 케이스(예: 260604018-0)가 없어 locked 집계가 0건으로 나왔지만, 실제 문제 케이스는 **별도 배포 DB**에 있었음. → "PROD에서 0건"을 근거로 locked를 섣불리 배제하지 말 것. case_number ILIKE로 못 찾으면 다른 배포 DB 의심.
+**수정(반영·배포 완료):** image/rectangle/accident-area mousedown 모두 선택 setter들을 먼저 실행하고 그 뒤에 `if(locked) return`(이동/리사이즈만 차단). 잠긴 도형도 클릭하면 선택→패널에서 잠금해제/삭제 가능.
+**잔여 엣지케이스:** 잠긴 도형이 캔버스 밖(예: x가 매우 큰 값)으로 완전히 벗어나면 클릭 자체가 불가 → 선택 기반 삭제로도 못 지움. 필요시 "전체 선택/목록에서 삭제" 같은 위치무관 진입점 고려.
