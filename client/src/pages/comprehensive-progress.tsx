@@ -803,6 +803,36 @@ export default function ComprehensiveProgress() {
     },
   });
 
+  // [2026-06-09] 다중세대 접수취소 일괄 처리 — 서버 단일 트랜잭션 호출.
+  //   기존엔 선택 세대마다 updateStatusMutation을 병렬 mutate 했으나, 일부만 성공 시
+  //   상태 불일치(이메일은 1회 발송됨)가 생길 수 있어 단일 호출로 묶는다(전부 성공 또는 전부 롤백).
+  const bulkCancelMutation = useMutation({
+    mutationFn: async ({ caseIds }: { caseIds: string[] }) => {
+      return await apiRequest("POST", "/api/cases/bulk-cancel", { caseIds });
+    },
+    onSuccess: async (_data, variables) => {
+      pendingCancelNavigationRef.current = false;
+      await queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      toast({
+        title: "접수취소 완료",
+        description: `${variables.caseIds.length}건이 접수취소 처리되었습니다.`,
+      });
+    },
+    onError: (error) => {
+      pendingCancelNavigationRef.current = false;
+      // 서버에서 전체 롤백되었으므로 화면은 invalidate로 최신 상태로 되돌린다.
+      queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
+      toast({
+        title: "접수취소 실패",
+        description:
+          error instanceof Error
+            ? error.message
+            : "접수취소 처리 중 오류가 발생했습니다. 변경사항이 모두 롤백되었습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const updateSpecialNotesMutation = useMutation({
     mutationFn: async ({
       caseId,
@@ -5545,19 +5575,15 @@ export default function ComprehensiveProgress() {
           cancelTargetCases={cancelSelectedCases as unknown as SchemaCase[]}
           onSuccess={() => {
             if (smsStage === "접수취소" && smsCaseData) {
-              // [2026-06-09] 선택된 모든 세대를 동시에 접수취소 처리
+              // [2026-06-09] 선택된 모든 세대를 단일 트랜잭션으로 일괄 접수취소.
+              //   이메일은 SMS 다이얼로그에서 이미 1회 발송됨 — 여기선 상태변경만 한 번에 처리한다.
               const targets =
                 cancelSelectedCases.length > 0
                   ? cancelSelectedCases
                   : [smsCaseData];
+              const caseIds = Array.from(new Set(targets.map((tc) => tc.id)));
               pendingCancelNavigationRef.current = true;
-              targets.forEach((tc) => {
-                updateStatusMutation.mutate({
-                  caseId: tc.id,
-                  status: "접수취소",
-                  suppressCancelSms: true,
-                });
-              });
+              bulkCancelMutation.mutate({ caseIds });
               setSmsDialogOpen(false);
               setSmsCaseData(null);
               setCancelSelectedCases([]);

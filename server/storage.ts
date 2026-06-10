@@ -279,6 +279,7 @@ export interface IStorage {
   ): Promise<Case | null>;
   deleteCase(caseId: string): Promise<void>;
   updateCaseStatus(caseId: string, status: string): Promise<Case | null>;
+  bulkCancelCases(caseIds: string[]): Promise<Case[]>;
   updateCaseSpecialNotes(
     caseId: string,
     specialNotes: string | null,
@@ -1984,6 +1985,26 @@ export class MemStorage implements IStorage {
 
     this.cases.set(caseId, updatedCase);
     return updatedCase;
+  }
+
+  async bulkCancelCases(caseIds: string[]): Promise<Case[]> {
+    const currentDate = getKSTDate();
+    const updated: Case[] = [];
+    for (const caseId of caseIds) {
+      const caseItem = this.cases.get(caseId);
+      if (!caseItem) {
+        throw new Error(`케이스를 찾을 수 없습니다: ${caseId}`);
+      }
+      const updatedCase: Case = {
+        ...caseItem,
+        status: "접수취소",
+        cancellationDate: currentDate,
+        updatedAt: currentDate,
+      };
+      this.cases.set(caseId, updatedCase);
+      updated.push(updatedCase);
+    }
+    return updated;
   }
 
   async updateCaseSpecialNotes(
@@ -4846,6 +4867,59 @@ export class DbStorage implements IStorage {
 
     invalidateCasesCache();
     return result[0];
+  }
+
+  // [2026-06-09] 다건 접수취소 일괄 처리 — 단일 트랜잭션으로 전부 성공 또는 전부 롤백.
+  //   클라이언트에서 세대별로 병렬 PATCH 하던 방식은 일부만 성공 시 상태 불일치가 생겼다.
+  async bulkCancelCases(caseIds: string[]): Promise<Case[]> {
+    if (caseIds.length === 0) return [];
+
+    const currentDate = getKSTDate();
+    const timestamp = getKSTTimestamp();
+
+    const updated = await db.transaction(async (tx) => {
+      const results: Case[] = [];
+      for (const caseId of caseIds) {
+        const existing = await tx
+          .select()
+          .from(cases)
+          .where(eq(cases.id, caseId))
+          .limit(1)
+          .for("update");
+
+        if (existing.length === 0) {
+          // throw 시 트랜잭션 전체 롤백 → 일부만 취소되는 상황 방지
+          throw new Error(`케이스를 찾을 수 없습니다: ${caseId}`);
+        }
+
+        const existingCase = existing[0];
+
+        const result = await tx
+          .update(cases)
+          .set({
+            status: "접수취소",
+            cancellationDate: currentDate,
+            updatedAt: timestamp,
+          })
+          .where(eq(cases.id, caseId))
+          .returning();
+
+        if (existingCase.status !== "접수취소") {
+          await tx.insert(caseStatusHistory).values({
+            caseId,
+            previousStatus: existingCase.status,
+            newStatus: "접수취소",
+            changedAt: timestamp,
+          });
+        }
+
+        results.push(result[0]);
+      }
+      return results;
+    });
+
+    invalidateCasesCache();
+    return updated;
   }
 
   async updateCaseSpecialNotes(

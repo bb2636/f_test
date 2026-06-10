@@ -3319,6 +3319,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // [2026-06-09] 다건 접수취소 일괄 처리 — 단일 트랜잭션으로 전부 성공 또는 전부 롤백.
+  //   선택된 세대를 클라이언트에서 병렬 PATCH 하던 방식은 일부만 성공 시 상태 불일치를 유발했다.
+  app.post("/api/cases/bulk-cancel", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+
+    const userRole = req.session.userRole;
+
+    // 접수취소는 관리자만 수행 가능 (협력사는 직접복구/선견적요청만 변경 가능)
+    if (userRole !== "관리자") {
+      return res.status(403).json({ error: "권한이 없습니다" });
+    }
+
+    try {
+      const { caseIds } = req.body;
+
+      if (!Array.isArray(caseIds) || caseIds.length === 0) {
+        return res
+          .status(400)
+          .json({ error: "취소할 케이스 ID 목록이 필요합니다" });
+      }
+
+      if (!caseIds.every((id) => typeof id === "string" && id.length > 0)) {
+        return res
+          .status(400)
+          .json({ error: "유효하지 않은 케이스 ID가 포함되어 있습니다" });
+      }
+
+      // 중복 제거
+      const uniqueIds = Array.from(new Set(caseIds as string[]));
+
+      const updatedCases = await storage.bulkCancelCases(uniqueIds);
+
+      res.json({ success: true, cases: updatedCases });
+    } catch (error) {
+      console.error("Bulk cancel cases error:", error);
+      res.status(500).json({
+        error:
+          error instanceof Error && error.message.includes("찾을 수 없습니다")
+            ? error.message
+            : "접수취소 처리 중 오류가 발생했습니다. 변경사항이 모두 롤백되었습니다.",
+      });
+    }
+  });
+
   app.get("/api/case-status-history", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });

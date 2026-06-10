@@ -1,2 +1,2 @@
 - [field-drawing 캔버스 선택/삭제](field-drawing-canvas.md) — 컨트롤 패널이 도형 x에 왼쪽정렬돼 우측에선 삭제버튼 화면밖; 사각형 z-index가 사고영역/마커보다 낮아 겹치면 선택 가로채짐
-- [병렬 mutation 부수효과 억제](parallel-mutation-sms-suppression.md) — 같은 mutation 동시 호출 시 onSuccess 팝업/문자 억제는 공유 ref 카운터 말고 mutate 변수 플래그로(성공·실패 순서 경합 방지)
+- [다건 상태변경은 서버 단일 트랜잭션](parallel-mutation-sms-suppression.md) — 다건 상태변경은 클라 병렬 mutate 말고 서버 트랜잭션 엔드포인트로(전부 성공/롤백); 불가피한 병렬 부수효과 억제는 mutate 변수 플래그로
