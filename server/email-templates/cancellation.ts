@@ -22,19 +22,13 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
         .join("\n")
     : cancelReason;
   const displayCategory = cancelReasonCategory && cancelReasonCategory.trim() ? cancelReasonCategory.trim() : "-";
-  // [2026-06-09] 취소 대상(다중세대) 표시용 — html 행/text 블록
+  // [2026-06-10] 취소 대상(다중세대)은 별도 행이 아니라 '취소내용' 셀 안(취소사유 아래)에 포함시킨다.
   const targets = (cancelTargets || []).filter((t) => t && t.trim());
-  const cancelTargetsRowHtml =
+  const cancelTargetsHtmlInline =
+    targets.length > 0 ? `\n\n취소 대상:\n${targets.join("\n")}` : "";
+  const cancelTargetsTextInline =
     targets.length > 0
-      ? `
-            <tr>
-              <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold; vertical-align: top;">취소 대상</td>
-              <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">${targets.join("\n")}</td>
-            </tr>`
-      : "";
-  const cancelTargetsTextBlock =
-    targets.length > 0
-      ? `- 취소 대상:\n${targets.map((t) => `  ${t}`).join("\n")}\n`
+      ? `\n  취소 대상:\n${targets.map((t) => `    ${t}`).join("\n")}`
       : "";
 
   const html = `
@@ -59,8 +53,8 @@ export function renderCancellationTemplate(data: CancellationTemplateData): { ht
               <!-- [2026-05-19] 취소사유/취소내용 칸 통합 — 취소내용 한 칸에 "취소사유: {선택값}" + 다음 줄에 자유텍스트 -->
               <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold; vertical-align: top;">취소내용</td>
               <td style="padding: 10px 15px; border: 1px solid #ccc; white-space: pre-line; word-break: break-word;">취소사유: ${displayCategory}
-${displayCancelReason || "-"}</td>
-            </tr>${cancelTargetsRowHtml}
+${displayCancelReason || "-"}${cancelTargetsHtmlInline}</td>
+            </tr>
             <tr>
               <td style="background: #f8f8f8; padding: 10px 15px; border: 1px solid #ccc; font-weight: bold;">발송일</td>
               <td style="padding: 10px 15px; border: 1px solid #ccc;">${dateStr}</td>
@@ -90,8 +84,8 @@ ${displayCancelReason || "-"}</td>
 - 피보험자명: ${insuredName}
 - 취소내용:
   취소사유: ${displayCategory}
-  ${displayCancelReason || "-"}
-${cancelTargetsTextBlock}- 발송일: ${dateStr}
+  ${displayCancelReason || "-"}${cancelTargetsTextInline}
+- 발송일: ${dateStr}
 
 감사합니다.
 FLOXN`;

@@ -15071,7 +15071,14 @@ https://www.floxn.co.kr/
       //   2줄~: 자유 텍스트 (셀 너비 기준 자동 줄바꿈)
       const categoryText = normalizeText(cancelReasonCategory || "-");
       const freeText = normalizeText(cancelReason || "-");
-      const reasonText = `취소사유: ${categoryText}\n${freeText}`;
+      // [2026-06-10] 취소 대상(다중세대)을 별도 행이 아니라 '취소내용' 셀 안(취소사유 아래)에 함께 표시
+      let reasonText = `취소사유: ${categoryText}\n${freeText}`;
+      if (cancelTargets.length > 0) {
+        const targetBlock = cancelTargets
+          .map((t) => normalizeText(t))
+          .join("\n");
+        reasonText += `\n\n취소 대상:\n${targetBlock}`;
+      }
       const reasonCellWidth = tableWidth - col1Width - 10; // 셀 내부 패딩 고려
       const reasonFontSize = 10;
       const reasonLines: string[] = [];
@@ -15150,50 +15157,6 @@ https://www.floxn.co.kr/
         textY -= lineHeight;
       }
       yPos -= reasonRowHeight;
-
-      // [2026-06-09] 취소 대상(다중세대) 행 — 선택된 원인/피해세대 목록 표시
-      if (cancelTargets.length > 0) {
-        const targetLines = cancelTargets.map((t) => normalizeText(t));
-        const targetRowHeight = Math.max(
-          rowHeight,
-          targetLines.length * lineHeight + 14,
-        );
-        page.drawRectangle({
-          x: margin,
-          y: yPos - targetRowHeight,
-          width: col1Width,
-          height: targetRowHeight,
-          borderColor: rgb(0, 0, 0),
-          borderWidth: 0.5,
-        });
-        page.drawText("취소 대상", {
-          x: margin + 5,
-          y: yPos - targetRowHeight / 2 - 4,
-          size: 10,
-          font: customFont,
-          color: rgb(0, 0, 0),
-        });
-        page.drawRectangle({
-          x: margin + col1Width,
-          y: yPos - targetRowHeight,
-          width: tableWidth - col1Width,
-          height: targetRowHeight,
-          borderColor: rgb(0, 0, 0),
-          borderWidth: 0.5,
-        });
-        let targetTextY = yPos - 18;
-        for (const line of targetLines) {
-          page.drawText(line, {
-            x: margin + col1Width + 5,
-            y: targetTextY,
-            size: 10,
-            font: customFont,
-            color: rgb(0, 0, 0),
-          });
-          targetTextY -= lineHeight;
-        }
-        yPos -= targetRowHeight;
-      }
 
       // ========== 본문 텍스트 ==========
       yPos -= 30;
