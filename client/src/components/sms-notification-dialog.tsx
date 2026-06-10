@@ -444,12 +444,12 @@ export function SmsNotificationDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           className="max-w-md"
-          style={{ padding: 0, overflow: "hidden" }}
+          style={{ padding: 0, maxHeight: "90vh", overflowY: "auto" }}
         >
           {/* 헤더 */}
           <div
             style={{
-              padding: "20px 24px",
+              padding: "14px 24px",
               borderBottom: "1px solid var(--color-table-border)",
               background: "var(--color-table-header)",
             }}
@@ -470,10 +470,10 @@ export function SmsNotificationDialog({
           {/* 케이스 정보 */}
           <div
             style={{
-              margin: "16px 24px",
+              margin: "10px 24px",
               background: "#F5F5F5",
               borderRadius: "8px",
-              padding: "16px",
+              padding: "12px",
             }}
           >
             <div
@@ -519,7 +519,7 @@ export function SmsNotificationDialog({
           </div>
 
           {/* 정보 테이블 */}
-          <div style={{ margin: "0 24px 16px 24px" }}>
+          <div style={{ margin: "0 24px 10px 24px" }}>
             <table
               style={{
                 width: "100%",
@@ -531,7 +531,7 @@ export function SmsNotificationDialog({
                 <tr>
                   <td
                     style={{
-                      padding: "10px 12px",
+                      padding: "7px 12px",
                       background: "#e7e7f5",
                       fontWeight: 500,
                       color: "#253396",
@@ -543,7 +543,7 @@ export function SmsNotificationDialog({
                   </td>
                   <td
                     style={{
-                      padding: "10px 12px",
+                      padding: "7px 12px",
                       background: "#FFFFFF",
                       border: "1px solid var(--color-table-border)",
                     }}
@@ -555,7 +555,7 @@ export function SmsNotificationDialog({
                 <tr>
                   <td
                     style={{
-                      padding: "10px 12px",
+                      padding: "7px 12px",
                       background: "#e7e7f5",
                       fontWeight: 500,
                       color: "#253396",
@@ -566,7 +566,7 @@ export function SmsNotificationDialog({
                   </td>
                   <td
                     style={{
-                      padding: "10px 12px",
+                      padding: "7px 12px",
                       background: "#FFFFFF",
                       border: "1px solid var(--color-table-border)",
                     }}
@@ -577,7 +577,7 @@ export function SmsNotificationDialog({
                 <tr>
                   <td
                     style={{
-                      padding: "10px 12px",
+                      padding: "7px 12px",
                       background: "#e7e7f5",
                       fontWeight: 500,
                       color: "#253396",
@@ -588,7 +588,7 @@ export function SmsNotificationDialog({
                   </td>
                   <td
                     style={{
-                      padding: "10px 12px",
+                      padding: "7px 12px",
                       background: "#FFFFFF",
                       border: "1px solid var(--color-table-border)",
                     }}
@@ -601,7 +601,7 @@ export function SmsNotificationDialog({
           </div>
 
           {/* 취소사유 입력 */}
-          <div style={{ margin: "0 24px 20px 24px" }}>
+          <div style={{ margin: "0 24px 12px 24px" }}>
             <div
               style={{
                 display: "flex",
@@ -816,7 +816,7 @@ export function SmsNotificationDialog({
                 }
               }}
               style={{
-                minHeight: "100px",
+                minHeight: "64px",
                 fontFamily: "Pretendard",
                 fontSize: "14px",
                 resize: "none",
@@ -827,7 +827,7 @@ export function SmsNotificationDialog({
 
           {/* [2026-06-09] 취소 대상 — 확인 다이얼로그에서 선택한 세대 목록 연동 */}
           {cancelTargetCases.length > 0 && (
-            <div style={{ margin: "0 24px 20px 24px" }}>
+            <div style={{ margin: "0 24px 12px 24px" }}>
               <div
                 style={{
                   fontFamily: "Pretendard",
@@ -861,7 +861,7 @@ export function SmsNotificationDialog({
           )}
 
           {/* 수신자 이메일 */}
-          <div style={{ margin: "0 24px 20px 24px" }}>
+          <div style={{ margin: "0 24px 12px 24px" }}>
             <div
               style={{
                 fontFamily: "Pretendard",
@@ -949,15 +949,18 @@ export function SmsNotificationDialog({
             </div>
           </div>
 
-          {/* 버튼 */}
+          {/* 버튼 — 작은 해상도에서도 항상 보이도록 하단 고정 */}
           <div
             style={{
               display: "flex",
               justifyContent: "flex-end",
               gap: "8px",
-              padding: "16px 24px",
+              padding: "12px 24px",
               borderTop: "1px solid var(--color-table-border)",
               background: "var(--color-table-header)",
+              position: "sticky",
+              bottom: 0,
+              zIndex: 1,
             }}
           >
             <Button

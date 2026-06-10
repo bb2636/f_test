@@ -15072,12 +15072,12 @@ https://www.floxn.co.kr/
       const categoryText = normalizeText(cancelReasonCategory || "-");
       const freeText = normalizeText(cancelReason || "-");
       // [2026-06-10] 취소 대상(다중세대)을 별도 행이 아니라 '취소내용' 셀 안(취소사유 아래)에 함께 표시
-      let reasonText = `취소사유: ${categoryText}\n${freeText}`;
+      let reasonText = `▶ 취소사유: ${categoryText}\n${freeText}`;
       if (cancelTargets.length > 0) {
         const targetBlock = cancelTargets
           .map((t) => normalizeText(t))
           .join("\n");
-        reasonText += `\n\n취소 대상:\n${targetBlock}`;
+        reasonText += `\n\n▶ 취소 대상:\n${targetBlock}`;
       }
       const reasonCellWidth = tableWidth - col1Width - 10; // 셀 내부 패딩 고려
       const reasonFontSize = 10;
