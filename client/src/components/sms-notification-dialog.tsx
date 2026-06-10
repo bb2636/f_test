@@ -518,8 +518,8 @@ export function SmsNotificationDialog({
             </div>
           </div>
 
-          {/* 정보 테이블 */}
-          <div style={{ margin: "0 24px 8px 24px" }}>
+          {/* 정보 테이블 — 취소사유 입력 위 여백은 이전 간격(약 26px)으로 유지 */}
+          <div style={{ margin: "0 24px 26px 24px" }}>
             <table
               style={{
                 width: "100%",
