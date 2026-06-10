@@ -12841,60 +12841,75 @@ FLOXN 드림`;
 
       updateEmailJob(job.id, { status: "sending" });
 
-      for (const recipientEmail of emails) {
-        try {
-          console.log(
-            `[send-field-report-email-v2] Sending email to ${recipientEmail} with ${finalAttachments.length} attachments`,
-          );
+      // [2026-06-10] 단체발송: 선택된 모든 수신자에게 1회만 발송한다.
+      //   참조(master@floxn.co.kr)는 sendEmailWithAttachment 안에서 1회만 붙으므로,
+      //   기존처럼 수신자별로 반복 발송하지 않아 참조 회신이 1건만 발생한다.
+      // 이메일 제목도 파일명과 동일한 형식으로
+      const emailSubject = safeDetailAddress
+        ? `현장출동보고서 _${accidentNo} (${safeDetailAddress})`
+        : `현장출동보고서 _${accidentNo}`;
+      // 대소문자/공백 정규화 후 중복 수신자 제거(첫 등장 표기 유지)
+      const seenV2 = new Set<string>();
+      const uniqueEmails = emails
+        .map((e) => e.trim())
+        .filter((e) => {
+          if (!e) return false;
+          const key = e.toLowerCase();
+          if (seenV2.has(key)) return false;
+          seenV2.add(key);
+          return true;
+        });
+      const combinedTo = uniqueEmails.join(", ");
+      try {
+        console.log(
+          `[send-field-report-email-v2] Sending one email to ${uniqueEmails.length} recipients (${combinedTo}) with ${finalAttachments.length} attachments`,
+        );
 
-          // 이메일 제목도 파일명과 동일한 형식으로
-          const emailSubject = safeDetailAddress
-            ? `현장출동보고서 _${accidentNo} (${safeDetailAddress})`
-            : `현장출동보고서 _${accidentNo}`;
+        const result = await sendEmailWithAttachment({
+          to: combinedTo,
+          subject: emailSubject,
+          text: emailText,
+          html: emailHtml,
+          attachments: finalAttachments,
+        });
 
-          const result = await sendEmailWithAttachment({
-            to: recipientEmail,
-            subject: emailSubject,
-            text: emailText,
-            html: emailHtml,
-            attachments: finalAttachments,
-          });
-
-          if (result.success) {
+        if (result.success) {
+          for (const recipientEmail of uniqueEmails) {
             sendResults.push({ email: recipientEmail, success: true });
-            console.log(
-              `[Email] Field Report with attachments sent to ${recipientEmail} by ${user.username}`,
-            );
-          } else {
+          }
+          console.log(
+            `[Email] Field Report with attachments sent to ${combinedTo} by ${user.username}`,
+          );
+        } else {
+          for (const recipientEmail of uniqueEmails) {
             sendResults.push({
               email: recipientEmail,
               success: false,
               error: result.error || "전송 실패",
             });
-            console.error(
-              `[Email] Failed to send to ${recipientEmail}:`,
-              result.error,
-            );
           }
-        } catch (sendError: any) {
           console.error(
-            `[Email] Failed to send to ${recipientEmail}:`,
-            sendError,
+            `[Email] Failed to send to ${combinedTo}:`,
+            result.error,
           );
-          const errorMsg =
-            sendError?.message || sendError?.toString() || "전송 실패";
+        }
+      } catch (sendError: any) {
+        console.error(`[Email] Failed to send to ${combinedTo}:`, sendError);
+        const errorMsg =
+          sendError?.message || sendError?.toString() || "전송 실패";
+        for (const recipientEmail of uniqueEmails) {
           sendResults.push({
             email: recipientEmail,
             success: false,
             error: errorMsg,
           });
+        }
 
-          // SMTP 552 오류 감지
-          if (errorMsg.includes("552") || errorMsg.includes("size")) {
-            console.error(
-              `[send-field-report-email-v2] SMTP 552 오류 감지 - 총 첨부파일 크기: ${totalMB}MB`,
-            );
-          }
+        // SMTP 552 오류 감지
+        if (errorMsg.includes("552") || errorMsg.includes("size")) {
+          console.error(
+            `[send-field-report-email-v2] SMTP 552 오류 감지 - 총 첨부파일 크기: ${totalMB}MB`,
+          );
         }
       }
 
@@ -15271,31 +15286,52 @@ https://www.floxn.co.kr/
         });
       }
 
-      for (const email of emailRecipients) {
-        try {
-          const result = await sendEmailWithAttachment({
-            to: email,
-            subject,
-            text: textContent,
-            html: htmlContent,
-            attachments,
-          });
+      // [2026-06-10] 단체발송: 선택된 모든 수신자에게 1회만 발송한다.
+      //   참조(master@floxn.co.kr)는 sendEmailWithAttachment 안에서 1회만 붙으므로,
+      //   기존처럼 수신자별로 반복 발송하지 않아 참조 회신이 1건만 발생한다.
+      // 대소문자/공백 정규화 후 중복 수신자 제거(첫 등장 표기 유지)
+      const seenCancel = new Set<string>();
+      const uniqueRecipients = emailRecipients
+        .map((e) => e.trim())
+        .filter((e) => {
+          if (!e) return false;
+          const key = e.toLowerCase();
+          if (seenCancel.has(key)) return false;
+          seenCancel.add(key);
+          return true;
+        });
+      const combinedTo = uniqueRecipients.join(", ");
+      try {
+        const result = await sendEmailWithAttachment({
+          to: combinedTo,
+          subject,
+          text: textContent,
+          html: htmlContent,
+          attachments,
+        });
 
-          if (result.success) {
-            console.log(`[send-cancellation-email] Email sent successfully`);
+        if (result.success) {
+          console.log(
+            `[send-cancellation-email] Email sent successfully to ${combinedTo}`,
+          );
+          for (const email of uniqueRecipients) {
             results.push({ email, success: true });
-          } else {
-            console.error(
-              `[send-cancellation-email] Failed to send email:`,
-              result.error,
-            );
+          }
+        } else {
+          console.error(
+            `[send-cancellation-email] Failed to send email:`,
+            result.error,
+          );
+          for (const email of uniqueRecipients) {
             results.push({ email, success: false, error: result.error });
           }
-        } catch (sendError: any) {
-          console.error(
-            `[send-cancellation-email] Error sending to ${email}:`,
-            sendError,
-          );
+        }
+      } catch (sendError: any) {
+        console.error(
+          `[send-cancellation-email] Error sending to ${combinedTo}:`,
+          sendError,
+        );
+        for (const email of uniqueRecipients) {
           results.push({
             email,
             success: false,

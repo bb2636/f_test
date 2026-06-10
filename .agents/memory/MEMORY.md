@@ -1,2 +1,3 @@
 - [field-drawing 캔버스 선택/삭제](field-drawing-canvas.md) — 컨트롤 패널이 도형 x에 왼쪽정렬돼 우측에선 삭제버튼 화면밖; 사각형 z-index가 사고영역/마커보다 낮아 겹치면 선택 가로채짐
 - [다건 상태변경은 서버 단일 트랜잭션](parallel-mutation-sms-suppression.md) — 다건 상태변경은 클라 병렬 mutate 말고 서버 트랜잭션 엔드포인트로(전부 성공/롤백); 불가피한 병렬 부수효과 억제는 mutate 변수 플래그로
+- [이메일 master 참조와 단체발송](email-master-cc-group-send.md) — 참조 CC는 sendEmailWithAttachment 내부서 1회 부착; 수신자별 루프 발송은 참조 중복 → to 콤마결합 1회 발송(단체발송)으로
