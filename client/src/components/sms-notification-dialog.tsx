@@ -444,7 +444,7 @@ export function SmsNotificationDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           className="max-w-md"
-          style={{ padding: 0, maxHeight: "90vh", overflowY: "auto" }}
+          style={{ padding: 0, gap: 0, maxHeight: "90vh", overflowY: "auto" }}
         >
           {/* 헤더 */}
           <div
@@ -470,7 +470,7 @@ export function SmsNotificationDialog({
           {/* 케이스 정보 */}
           <div
             style={{
-              margin: "10px 24px",
+              margin: "8px 24px",
               background: "#F5F5F5",
               borderRadius: "8px",
               padding: "12px",
@@ -519,7 +519,7 @@ export function SmsNotificationDialog({
           </div>
 
           {/* 정보 테이블 */}
-          <div style={{ margin: "0 24px 10px 24px" }}>
+          <div style={{ margin: "0 24px 8px 24px" }}>
             <table
               style={{
                 width: "100%",
@@ -601,7 +601,7 @@ export function SmsNotificationDialog({
           </div>
 
           {/* 취소사유 입력 */}
-          <div style={{ margin: "0 24px 12px 24px" }}>
+          <div style={{ margin: "0 24px 8px 24px" }}>
             <div
               style={{
                 display: "flex",
@@ -827,7 +827,7 @@ export function SmsNotificationDialog({
 
           {/* [2026-06-09] 취소 대상 — 확인 다이얼로그에서 선택한 세대 목록 연동 */}
           {cancelTargetCases.length > 0 && (
-            <div style={{ margin: "0 24px 12px 24px" }}>
+            <div style={{ margin: "0 24px 8px 24px" }}>
               <div
                 style={{
                   fontFamily: "Pretendard",
@@ -861,7 +861,7 @@ export function SmsNotificationDialog({
           )}
 
           {/* 수신자 이메일 */}
-          <div style={{ margin: "0 24px 12px 24px" }}>
+          <div style={{ margin: "0 24px 8px 24px" }}>
             <div
               style={{
                 fontFamily: "Pretendard",
