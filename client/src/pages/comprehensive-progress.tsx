@@ -5659,49 +5659,66 @@ export default function ComprehensiveProgress() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           {/* [2026-06-09] 같은 사고 관련 건(원인/피해세대) 체크박스 목록 — 기본 전체 선택 */}
+          {/* [2026-06-10] 팝업 세로 길이 축소: 체크박스 목록(좌) 옆에 취소/확인 버튼(우)을 한 줄로 배치 */}
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-              padding: "8px 0",
-              maxHeight: "240px",
-              overflowY: "auto",
+              alignItems: "center",
+              gap: "16px",
+              padding: "4px 0",
             }}
           >
-            {cancelCandidates.map((c) => {
-              const checked = selectedCancelIds.includes(c.id);
-              return (
-                <label
-                  key={c.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    cursor: "pointer",
-                    fontFamily: "Pretendard",
-                    fontSize: "14px",
-                    color: "#0C0C0C",
-                  }}
-                >
-                  <Checkbox
-                    checked={checked}
-                    onCheckedChange={(v) => {
-                      setSelectedCancelIds((prev) =>
-                        v === true
-                          ? Array.from(new Set([...prev, c.id]))
-                          : prev.filter((id) => id !== c.id),
-                      );
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+                flex: 1,
+                minWidth: 0,
+                maxHeight: "200px",
+                overflowY: "auto",
+              }}
+            >
+              {cancelCandidates.map((c) => {
+                const checked = selectedCancelIds.includes(c.id);
+                return (
+                  <label
+                    key={c.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      cursor: "pointer",
+                      fontFamily: "Pretendard",
+                      fontSize: "14px",
+                      color: "#0C0C0C",
                     }}
-                    data-testid={`checkbox-cancel-target-${c.id}`}
-                  />
-                  <span>{getCancelHouseholdLabel(c)}</span>
-                </label>
-              );
-            })}
-          </div>
-          <AlertDialogFooter>
+                  >
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={(v) => {
+                        setSelectedCancelIds((prev) =>
+                          v === true
+                            ? Array.from(new Set([...prev, c.id]))
+                            : prev.filter((id) => id !== c.id),
+                        );
+                      }}
+                      data-testid={`checkbox-cancel-target-${c.id}`}
+                    />
+                    <span>{getCancelHouseholdLabel(c)}</span>
+                  </label>
+                );
+              })}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                flexShrink: 0,
+              }}
+            >
             <AlertDialogCancel
+              className="mt-0"
               onClick={() => {
                 setCancelConfirmDialogOpen(false);
                 setCancelTargetCase(null);
@@ -5751,7 +5768,8 @@ export default function ComprehensiveProgress() {
             >
               확인
             </AlertDialogAction>
-          </AlertDialogFooter>
+            </div>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
