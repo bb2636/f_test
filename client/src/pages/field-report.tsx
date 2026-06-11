@@ -283,11 +283,15 @@ export default function FieldReport() {
   }, [isDetachedReport]);
 
   // 보고서 열람 화면에 들어오면 브라우저 탭 제목 설정 (분리창/인앱 모두)
-  // 종결 청구(정산 조회)에서 연 경우엔 '종결-보고서열람'으로 구분
+  // 진입점별 구분: 종결 청구(정산 조회)→'종결-보고서열람', 취소→'취소-보고서열람'
   useEffect(() => {
     const prev = document.title;
     document.title =
-      reportFrom === "settlement" ? "종결-보고서열람" : "보고서 열람";
+      reportFrom === "settlement"
+        ? "종결-보고서열람"
+        : reportFrom === "cancelled"
+          ? "취소-보고서열람"
+          : "보고서 열람";
     return () => {
       document.title = prev;
     };

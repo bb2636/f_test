@@ -1283,7 +1283,7 @@ export default function CancelledCases() {
                                 // 창 이름을 케이스별로 분리해 다른 건은 새 창으로 뜨게 함
                                 // (같은 건을 다시 열면 그 창이 그대로 포커스됨).
                                 const reportWin = window.open(
-                                  `/field-survey/report?detached=1&caseId=${selectedCase.id}`,
+                                  `/field-survey/report?detached=1&caseId=${selectedCase.id}&from=cancelled`,
                                   `reportViewer-${selectedCase.id}`,
                                   "width=1500,height=920",
                                 );
