@@ -15,7 +15,7 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 
 ## 분리창 안의 포털/문서 커플링 규칙
 - 분리창 내부에서 쓰는 **모든 포털은 분리창 document로 라우팅**해야 한다. `PortalContainerContext` + `usePortalContainer()`로 분리창 body를 노출.
-  - 공용 Radix UI(`ui/popover|select|dropdown-menu`)는 Portal에 `container={usePortalContainer()}` 배선됨(없으면 기본 body, 하위호환).
+  - 공용 Radix UI(`ui/popover|select|dropdown-menu|alert-dialog`)는 Portal에 `container={usePortalContainer()}` 배선됨(없으면 기본 body, 하위호환). **AlertDialog도 반드시 배선해야** 분리창 안의 확인창이 메인창이 아닌 분리창에 뜬다(미배선시 확인창이 메인창으로 샘).
   - 직접 `createPortal(x, document.body)` 하는 커스텀 컴포넌트(예: comprehensive-progress의 `HeaderTooltip`)는 `portalContainer ?? document.body`로 바꿔야 분리창 안에 뜬다.
 - `getBoundingClientRect`/`position:fixed`는 각 창 뷰포트 기준이라, 포털만 같은(분리창) 문서로 보내면 좌표도 자동으로 맞는다.
 
@@ -40,3 +40,4 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 
 ## SheetTitle/DialogTitle 주의
 - Sheet/Dialog를 DetachedWindow로 바꿀 때 `SheetTitle`/`DialogTitle`(Radix Title)은 Root context가 필요하므로 **일반 div로 교체**. `SheetHeader`는 plain div라 그대로 둬도 됨.
+- 모달 셸 교체 시 내부 스크롤 영역의 `maxHeight: calc(90vh - N)` 같은 모달 기준 높이는 분리창(100vh)에선 빈공간이 생기므로 `flex:1 + minHeight:0`(부모는 height:100vh flex column)으로 바꿔 창을 꽉 채운다.

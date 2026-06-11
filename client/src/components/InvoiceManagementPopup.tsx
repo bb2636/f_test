@@ -1,11 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DetachedWindow } from "@/components/detached-window";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -1461,25 +1456,30 @@ export function InvoiceManagementPopup({
   const claimTotal = preventionAmount + propertyAmount;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-[810px] p-0 gap-0"
+    <DetachedWindow
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="인보이스 관리"
+      width={860}
+      height={920}
+    >
+      <div
         style={{
           fontFamily: "Pretendard",
           background: "#FDFDFD",
-          boxShadow: "0px 0px 20px #DBE9F5",
-          borderRadius: "12px",
-          maxHeight: "90vh",
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
           overflow: "hidden",
         }}
       >
-        <DialogHeader
+        <div
           className="flex flex-row items-center justify-center px-6 py-6"
           style={{
             borderBottom: "2px solid rgba(12, 12, 12, 0.1)",
           }}
         >
-          <DialogTitle
+          <div
             style={{
               fontFamily: "Pretendard",
               fontSize: "22px",
@@ -1489,14 +1489,15 @@ export function InvoiceManagementPopup({
             }}
           >
             인보이스 관리
-          </DialogTitle>
-        </DialogHeader>
+          </div>
+        </div>
 
         <div
           className="overflow-y-auto"
           style={{
-            padding: "24px 24px 0 24px",
-            maxHeight: "calc(90vh - 187px)",
+            padding: "24px 24px 24px 24px",
+            flex: 1,
+            minHeight: 0,
           }}
         >
           <div className="flex flex-col gap-5 p-0">
@@ -2936,7 +2937,7 @@ export function InvoiceManagementPopup({
             )}
           </div>
         </div>
-      </DialogContent>
+      </div>
       {/* Approval confirm dialog */}
       <AlertDialog
         open={showApprovalConfirm}
@@ -3145,6 +3146,6 @@ export function InvoiceManagementPopup({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Dialog>
+    </DetachedWindow>
   );
 }
