@@ -2323,7 +2323,7 @@ export default function ComprehensiveProgress() {
                       cursor: "default",
                       background:
                         caseItem.id === selectedCaseId
-                          ? "rgba(37, 51, 150, 0.08)"
+                          ? "rgba(37, 51, 150, 0.16)"
                           : "transparent",
                       transition: "background 0.15s ease",
                     }}
