@@ -3698,9 +3698,11 @@ export default function ComprehensiveProgress() {
                                 // 보고서 열람은 별도 브라우저 창으로(탭 제목: 보고서열람).
                                 // 전체 라우트라 별도 realm → Radix 잠금 누수 없음.
                                 // caseId를 쿼리로 넘겨 그 창을 해당 케이스에 고정.
+                                // 창 이름을 케이스별로 분리해 다른 건은 새 창으로 뜨게 함
+                                // (같은 건을 다시 열면 그 창이 그대로 포커스됨).
                                 const reportWin = window.open(
                                   `/field-survey/report?detached=1&caseId=${selectedCase.id}`,
-                                  "reportViewer",
+                                  `reportViewer-${selectedCase.id}`,
                                   "width=1500,height=920",
                                 );
                                 // 팝업이 차단되면 기존처럼 같은 탭에서 연다.
