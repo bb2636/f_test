@@ -766,6 +766,15 @@ export default function AdminSettings() {
     }
   }, [usersError, allUsers.length, usersQueryError, refetchUsers]);
 
+  // 관리자 설정 화면에 들어오면 브라우저 탭 제목을 '관리자 설정'으로
+  useEffect(() => {
+    const prev = document.title;
+    document.title = "관리자 설정";
+    return () => {
+      document.title = prev;
+    };
+  }, []);
+
   useEffect(() => {
     if (selectedUser?.id) {
       fetch(`/api/users/${selectedUser.id}/attachments`, { credentials: "include" })
