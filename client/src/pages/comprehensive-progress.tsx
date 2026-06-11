@@ -81,7 +81,7 @@ import {
 } from "@/components/sms-notification-dialog";
 import { InvoiceSheet, getCaseNumberPrefix } from "@/components/InvoiceSheet";
 import { FieldDispatchCostSheet } from "@/components/FieldDispatchCostSheet";
-import { DetachedWindow, usePortalContainer } from "@/components/detached-window";
+import { DetachedWindow } from "@/components/detached-window";
 import type { Case as SchemaCase } from "@shared/schema";
 
 // Safe JSON parse helper for notes history
@@ -101,7 +101,6 @@ const HeaderTooltip = ({ text }: { text: React.ReactNode }) => {
   const [show, setShow] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
-  const portalContainer = usePortalContainer();
 
   useEffect(() => {
     if (show && ref.current) {
@@ -157,7 +156,7 @@ const HeaderTooltip = ({ text }: { text: React.ReactNode }) => {
           />
           {text}
         </div>,
-        portalContainer ?? document.body
+        document.body
       )}
     </span>
   );
@@ -2961,24 +2960,23 @@ export default function ComprehensiveProgress() {
           testIdPrefix="pagination-progress"
         />
       </div>
-      {/* 진행건 상세보기 — 분리형 창(별도 브라우저 창) */}
-      <DetachedWindow
+      {/* 상세보기 Sheet */}
+      <Sheet
         open={selectedCaseId !== null}
-        onClose={() => setSelectedCaseId(null)}
-        title="진행건 상세보기"
-        width={680}
-        height={920}
+        onOpenChange={(open) => !open && setSelectedCaseId(null)}
       >
-        <div
-          className="w-full overflow-y-auto"
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-[600px] overflow-y-auto"
+          overlayClassName="bg-black/30"
           style={{
-            background: "#FDFDFD",
-            minHeight: "100vh",
-            padding: "32px 20px",
+            background: "rgba(253, 253, 253, 0.95)",
+            backdropFilter: "blur(17px)",
+            padding: "50px 20px 32px 20px",
           }}
           data-testid="sheet-case-detail"
         >
-          <div
+          <SheetHeader
             style={{
               padding: "24px 20px",
               borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2993,7 +2991,7 @@ export default function ComprehensiveProgress() {
               }}
             >
               <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
-                <div
+                <SheetTitle
                   style={{
                     fontFamily: "Pretendard",
                     fontWeight: 600,
@@ -3003,7 +3001,7 @@ export default function ComprehensiveProgress() {
                   }}
                 >
                   진행건 상세보기
-                </div>
+                </SheetTitle>
                 {(() => {
                   const currentCase = cases?.find((c) => c.id === selectedCaseId);
                   const caseNumber = currentCase?.caseNumber
@@ -3068,7 +3066,7 @@ export default function ComprehensiveProgress() {
                   })()}
               </div>
             </div>
-          </div>
+          </SheetHeader>
 
           {selectedCaseId &&
             (() => {
@@ -5215,8 +5213,8 @@ export default function ComprehensiveProgress() {
                 </>
               );
             })()}
-        </div>
-      </DetachedWindow>
+        </SheetContent>
+      </Sheet>
       {/* LMS 발송 확인 다이얼로그 */}
       <AlertDialog
         open={showLmsConfirmDialog}
@@ -5430,33 +5428,26 @@ export default function ComprehensiveProgress() {
           </div>
         </DialogContent>
       </Dialog>
-      {/* 접수건 상세보기 Dialog - IntakePage 재사용 */}
-      <Dialog
+      {/* 접수건 상세보기 — 분리형 창(별도 브라우저 창), IntakePage 재사용 */}
+      <DetachedWindow
         open={showReceptionDetailDialog}
-        onOpenChange={(open) => {
-          setShowReceptionDetailDialog(open);
-          if (!open) {
-            setIsReceptionEditMode(false); // 닫을 때 수정 모드 리셋
-          }
+        onClose={() => {
+          setShowReceptionDetailDialog(false);
+          setIsReceptionEditMode(false); // 닫을 때 수정 모드 리셋
         }}
-        modal={true}
+        title="접수건 상세보기"
+        width={1500}
+        height={920}
       >
-        <DialogContent
+        <div
           style={{
-            maxWidth: "95vw",
-            width: "1700px",
-            maxHeight: "90vh",
+            height: "100vh",
             overflow: "hidden",
-            padding: 0,
             background: "#F5F7FA",
-            border: "none",
-            borderRadius: "16px",
             display: "flex",
             flexDirection: "column",
-            zIndex: 100,
+            position: "relative",
           }}
-          onPointerDownOutside={(e) => e.preventDefault()}
-          onInteractOutside={(e) => e.preventDefault()}
           data-testid="dialog-reception-detail"
         >
           {/* 수정 버튼 - 다이얼로그 상단 우측 (협력사 계정에서는 숨김) */}
@@ -5506,7 +5497,6 @@ export default function ComprehensiveProgress() {
               style={{
                 flex: 1,
                 overflow: "auto",
-                maxHeight: "calc(90vh - 60px)",
               }}
             >
               <IntakePage
@@ -5525,8 +5515,8 @@ export default function ComprehensiveProgress() {
               />
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </div>
+      </DetachedWindow>
       {/* INVOICE 다이얼로그 - 직접복구 케이스용 (손해방지비용 + 대물복구비용) */}
       <InvoiceSheet
         open={showInvoiceDialog}

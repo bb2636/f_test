@@ -24,5 +24,9 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 - 분리창에서 `document`/`window` 직접 참조(click-outside 리스너 등)는 메인 창 기준 → 분리창에선 안 잡힘. 커스텀 드롭다운(예: SMS 다이얼로그의 cancelReason)은 분리 전 ownerDocument 기준으로 고쳐야 함.
 - **테스트 한계:** 별도 OS 창은 screenshot 불가 + 미리보기 iframe이 팝업 차단할 수 있음 → 사용자 실브라우저/듀얼모니터 검증 필수(팝업 1회 허용 필요).
 
+## 어떤 팝업을 분리? (사용자 의도)
+- 종합진행관리의 **돋보기(진행건 상세보기 Sheet)는 in-tab 유지**. 분리 대상은 거기서 "접수건 상세보기" 버튼이 여는 **접수 폼(IntakePage, isModal)** 창.
+- `intake.tsx`는 `isModal ? content : createPortal(content, document.body)`로 모달모드에선 이미 inline 렌더 → DetachedWindow(isModal=true)에선 내부 팝업이 분리창 안에 그대로 뜸. intake.tsx 손댈 필요 없음.
+
 ## SheetTitle/DialogTitle 주의
 - Sheet/Dialog를 DetachedWindow로 바꿀 때 `SheetTitle`/`DialogTitle`(Radix Title)은 Root context가 필요하므로 **일반 div로 교체**. `SheetHeader`는 plain div라 그대로 둬도 됨.
