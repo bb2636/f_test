@@ -1104,6 +1104,7 @@ export default function CancelledCases() {
         <SheetContent
           side="right"
           className="w-full sm:max-w-[600px] overflow-y-auto"
+          overlayClassName="bg-black/20"
           style={{
             background: "rgba(253, 253, 253, 0.95)",
             backdropFilter: "blur(17px)",
