@@ -1,11 +1,27 @@
 import { useLocation } from "wouter";
 import { ChevronDown, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { User } from "@shared/schema";
 import logoIcon from "@assets/logo-frame.svg";
 import { usePermissions } from "@/hooks/use-permissions";
 import { MyPageDialog } from "./my-page-dialog";
+
+// 팝업창으로 여는 도면작성/증빙자료 등록 페이지의 lazy 청크를 미리 받아둔다.
+// 새 창은 별도 문서라 모듈을 다시 실행하지만 청크 JS는 브라우저 캐시를 공유하므로,
+// 미리 받아두면 팝업이 네트워크 다운로드 대기 없이 캐시에서 바로 떠 로딩이 빨라진다.
+let fieldSurveyPopupPrefetched = false;
+function prefetchFieldSurveyPopupPages() {
+  if (fieldSurveyPopupPrefetched) return;
+  fieldSurveyPopupPrefetched = true;
+  Promise.all([
+    import("@/pages/field-drawing"),
+    import("@/pages/field-documents"),
+  ]).catch(() => {
+    // 전송 실패(일시적 네트워크 오류) 시 다음 기회에 재시도 허용
+    fieldSurveyPopupPrefetched = false;
+  });
+}
 
 const homeMenuItems = [
   { name: "홈", category: "홈", url: "/dashboard" },
@@ -65,6 +81,20 @@ export function AppSidebarFieldSurvey() {
   const { data: user } = useQuery<User>({
     queryKey: ["/api/user"],
   });
+
+  // 마운트 후 유휴 시간에 팝업 페이지 청크 미리 로드 (초기 렌더 비차단)
+  useEffect(() => {
+    const w = window as typeof window & {
+      requestIdleCallback?: (cb: () => void) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (w.requestIdleCallback) {
+      const id = w.requestIdleCallback(prefetchFieldSurveyPopupPages);
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(prefetchFieldSurveyPopupPages, 1200);
+    return () => clearTimeout(t);
+  }, []);
 
   const visibleHomeItems = homeMenuItems.filter((item) => {
     if (isLoading) return false;
@@ -261,6 +291,8 @@ export function AppSidebarFieldSurvey() {
                         {hasPopup && item.url && (
                           <button
                             type="button"
+                            onPointerEnter={prefetchFieldSurveyPopupPages}
+                            onFocus={prefetchFieldSurveyPopupPages}
                             onClick={(e) => {
                               e.stopPropagation();
                               // 별도 브라우저 창으로 열어 보고서 열람 중에도 작업 가능.
