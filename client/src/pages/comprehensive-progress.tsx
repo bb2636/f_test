@@ -2321,6 +2321,11 @@ export default function ComprehensiveProgress() {
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
                       cursor: "default",
+                      background:
+                        caseItem.id === selectedCaseId
+                          ? "rgba(37, 51, 150, 0.08)"
+                          : "transparent",
+                      transition: "background 0.15s ease",
                     }}
                     data-testid={`case-row-${caseItem.id}`}
                   >
@@ -2962,6 +2967,7 @@ export default function ComprehensiveProgress() {
         <SheetContent
           side="right"
           className="w-full sm:max-w-[600px] overflow-y-auto"
+          overlayClassName="bg-black/30"
           style={{
             background: "rgba(253, 253, 253, 0.95)",
             backdropFilter: "blur(17px)",
