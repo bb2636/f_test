@@ -29,8 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useLocation } from "wouter";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import type {
   Drawing,
   CaseDocument as SchemaDocument,
@@ -250,8 +249,6 @@ function safeParseMaterialCosts(
 
 export default function FieldReport() {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
-
   // 별도 창(보고서 열람)으로 열렸는지 + 그 창에 고정할 케이스 ID (쿼리파라미터)
   const reportSearchParams = new URLSearchParams(window.location.search);
   const isDetachedReport = reportSearchParams.get("detached") === "1";
@@ -284,20 +281,14 @@ export default function FieldReport() {
     };
   }, [isDetachedReport]);
 
-  // 별도 창일 때 탭 제목을 '보고서열람'으로
+  // 보고서 열람 화면에 들어오면 브라우저 탭 제목을 '보고서 열람'으로 (분리창/인앱 모두)
   useEffect(() => {
-    if (!isDetachedReport) return;
     const prev = document.title;
-    document.title = "보고서열람";
+    document.title = "보고서 열람";
     return () => {
       document.title = prev;
     };
-  }, [isDetachedReport]);
-
-  // 종합진행관리에서 왔는지 확인 (별도 창에서는 뒤로가기 숨김)
-  const returnToComprehensiveProgress =
-    !isDetachedReport &&
-    localStorage.getItem("returnToComprehensiveProgress") === "true";
+  }, []);
 
   // 현재 사용자 정보 가져오기
   const { data: currentUser, isLoading: isUserLoading } = useQuery<{
@@ -1228,35 +1219,6 @@ export default function FieldReport() {
         style={{ zIndex: 1 }}
       >
         <div className="flex items-center gap-4">
-          {/* 뒤로 가기 버튼 (종합진행관리에서 온 경우만) */}
-          {returnToComprehensiveProgress && (
-            <button
-              onClick={() => {
-                localStorage.removeItem("returnToComprehensiveProgress");
-                setLocation("/comprehensive-progress");
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "8px 12px",
-                background: "rgba(253, 253, 253, 0.8)",
-                backdropFilter: "blur(7px)",
-                borderRadius: "6px",
-                border: "1px solid rgba(12, 12, 12, 0.2)",
-                fontFamily: "Pretendard",
-                fontSize: "14px",
-                fontWeight: 500,
-                color: "rgba(12, 12, 12, 0.7)",
-                cursor: "pointer",
-              }}
-              data-testid="button-back-to-comprehensive"
-            >
-              <ArrowLeft size={16} />
-              종합진행관리
-            </button>
-          )}
-
           <div className="flex items-center gap-2">
             <h1
               style={{

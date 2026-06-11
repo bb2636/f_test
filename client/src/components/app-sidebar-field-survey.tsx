@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { User } from "@shared/schema";
@@ -225,30 +225,69 @@ export function AppSidebarFieldSurvey() {
                   {visibleReportItems.map((item) => {
                     const active = item.url ? location === item.url : false;
                     const isLabel = !item.url;
+                    const hasPopup =
+                      item.title === "도면작성" ||
+                      item.title === "증빙자료 등록";
                     return (
-                      <button
-                        type="button"
+                      <div
                         key={item.title}
-                        onClick={() => item.url && setLocation(item.url)}
-                        disabled={isLabel}
-                        className="flex items-center px-8 py-2.5 transition-colors text-left"
+                        className="flex items-center"
                         style={{
                           background: active ? "#253396" : "transparent",
-                          fontFamily: "Pretendard",
-                          fontSize: "14px",
-                          fontWeight: active ? 700 : 500,
-                          letterSpacing: "-0.02em",
-                          color: active
-                            ? "#FFFFFF"
-                            : isLabel
-                            ? "rgba(12, 12, 12, 0.45)"
-                            : "rgba(12, 12, 12, 0.8)",
-                          cursor: isLabel ? "default" : "pointer",
                         }}
-                        data-testid={item.testId}
                       >
-                        {item.title}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => item.url && setLocation(item.url)}
+                          disabled={isLabel}
+                          className="flex items-center flex-1 px-8 py-2.5 transition-colors text-left"
+                          style={{
+                            background: "transparent",
+                            fontFamily: "Pretendard",
+                            fontSize: "14px",
+                            fontWeight: active ? 700 : 500,
+                            letterSpacing: "-0.02em",
+                            color: active
+                              ? "#FFFFFF"
+                              : isLabel
+                              ? "rgba(12, 12, 12, 0.45)"
+                              : "rgba(12, 12, 12, 0.8)",
+                            cursor: isLabel ? "default" : "pointer",
+                          }}
+                          data-testid={item.testId}
+                        >
+                          {item.title}
+                        </button>
+                        {hasPopup && item.url && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // 별도 브라우저 창으로 열어 보고서 열람 중에도 작업 가능.
+                              // 케이스는 localStorage(selectedFieldSurveyCaseId)로 공유됨.
+                              const win = window.open(
+                                item.url!,
+                                `floxn-${item.testId}`,
+                                "width=1400,height=900",
+                              );
+                              // 팝업이 차단되면 같은 탭에서 연다.
+                              if (!win) setLocation(item.url!);
+                            }}
+                            title="팝업창으로 열기"
+                            aria-label={`${item.title} 팝업창으로 열기`}
+                            className="flex items-center justify-center pl-2 pr-6 py-2.5"
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              color: active ? "#FFFFFF" : "#253396",
+                            }}
+                            data-testid={`popup-${item.testId}`}
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
