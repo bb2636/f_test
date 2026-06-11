@@ -3,9 +3,8 @@ import { useLocation } from "wouter";
 import { Plus, MessageSquare, X, Mail, Loader2, Search } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { User } from "@shared/schema";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DetachedWindow } from "@/components/detached-window";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import Intake from "@/pages/intake";
@@ -42,7 +41,11 @@ export function FloatingIntakeButton() {
     enabled: smsDialogOpen,
   });
 
+  // 검색 드롭다운 외부 클릭 닫기.
+  // 문자보내기 폼은 분리창(별도 browser document)에 렌더되므로, 드롭다운이 열려
+  // 있을 때(=ref가 채워진 시점) 해당 요소의 ownerDocument에도 리스너를 건다.
   useEffect(() => {
+    if (!showSearchResults && !showSenderSearch) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowSearchResults(false);
@@ -51,9 +54,12 @@ export function FloatingIntakeButton() {
         setShowSenderSearch(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    const docs = new Set<Document>([document]);
+    if (searchRef.current?.ownerDocument) docs.add(searchRef.current.ownerDocument);
+    if (senderSearchRef.current?.ownerDocument) docs.add(senderSearchRef.current.ownerDocument);
+    docs.forEach((d) => d.addEventListener("mousedown", handleClickOutside));
+    return () => docs.forEach((d) => d.removeEventListener("mousedown", handleClickOutside));
+  }, [showSearchResults, showSenderSearch]);
 
   const sendSmsMutation = useMutation({
     mutationFn: async (data: { subject: string; content: string; recipients: Recipient[]; senderName?: string }) => {
@@ -259,31 +265,32 @@ export function FloatingIntakeButton() {
         </button>
       </div>
 
-      <Dialog open={smsDialogOpen} onOpenChange={setSmsDialogOpen}>
-        <DialogContent
+      <DetachedWindow
+        open={smsDialogOpen}
+        onClose={() => setSmsDialogOpen(false)}
+        title="문자 보내기"
+        width={780}
+        height={760}
+      >
+        <div
           style={{
-            maxWidth: '720px',
-            width: '90vw',
-            maxHeight: '85vh',
+            minHeight: '100vh',
+            background: 'var(--color-bg)',
             overflow: 'auto',
-            padding: '0',
-            borderRadius: '12px',
           }}
           data-testid="dialog-sms-send"
         >
           <div style={{ padding: '28px 32px' }}>
-            <DialogHeader>
-              <DialogTitle style={{
-                fontFamily: 'Pretendard',
-                fontSize: '20px',
-                fontWeight: 700,
-                color: '#56687f',
-                textAlign: 'center',
-                marginBottom: '24px',
-              }}>
-                문자 보내기
-              </DialogTitle>
-            </DialogHeader>
+            <div style={{
+              fontFamily: 'Pretendard',
+              fontSize: '20px',
+              fontWeight: 700,
+              color: '#56687f',
+              textAlign: 'center',
+              marginBottom: '24px',
+            }}>
+              문자 보내기
+            </div>
 
             <div style={{ display: 'flex', gap: '20px' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -671,28 +678,30 @@ export function FloatingIntakeButton() {
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </DetachedWindow>
 
-      <Sheet open={isOpen} onOpenChange={setIsOpen} modal={true}>
-        <SheetContent 
-          side="right" 
-          className="w-full sm:max-w-full md:max-w-[90vw] lg:max-w-[85vw] xl:max-w-[80vw] p-0 flex flex-col"
-          style={{ 
-            maxWidth: '1400px',
-            background: '#F5F7FA',
+      <DetachedWindow
+        open={isOpen}
+        onClose={handleClose}
+        title="새로운 접수"
+        width={1500}
+        height={920}
+      >
+        <div
+          style={{
             height: '100vh',
+            overflow: 'auto',
+            background: '#F5F7FA',
           }}
         >
-          <div className="flex-1 overflow-y-auto overflow-x-hidden">
-            <Intake 
-              isModal={true} 
-              onClose={handleClose} 
-              onSuccess={handleSuccess} 
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
+          <Intake
+            isModal={true}
+            onClose={handleClose}
+            onSuccess={handleSuccess}
+          />
+        </div>
+      </DetachedWindow>
     </>
   );
 }
