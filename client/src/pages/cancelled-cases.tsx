@@ -1269,8 +1269,20 @@ export default function CancelledCases() {
                             <button
                               onClick={() => {
                                 localStorage.setItem("selectedFieldSurveyCaseId", selectedCase.id);
-                                localStorage.setItem("returnToComprehensiveProgress", "true");
-                                setLocation("/field-survey/report");
+                                // 보고서 열람은 별도 브라우저 창으로(건별 분리).
+                                // caseId를 쿼리로 넘겨 그 창을 해당 케이스에 고정하고,
+                                // 창 이름을 케이스별로 분리해 다른 건은 새 창으로 뜨게 함
+                                // (같은 건을 다시 열면 그 창이 그대로 포커스됨).
+                                const reportWin = window.open(
+                                  `/field-survey/report?detached=1&caseId=${selectedCase.id}`,
+                                  `reportViewer-${selectedCase.id}`,
+                                  "width=1500,height=920",
+                                );
+                                // 팝업이 차단되면 기존처럼 같은 탭에서 연다.
+                                if (!reportWin) {
+                                  localStorage.setItem("returnToComprehensiveProgress", "true");
+                                  setLocation("/field-survey/report");
+                                }
                               }}
                               style={{
                                 width: "100%", padding: "14px", background: "#253396", borderRadius: "8px",
