@@ -33,5 +33,10 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 - 종합진행관리의 **돋보기(진행건 상세보기 Sheet)는 in-tab 유지**. 분리 대상은 거기서 "접수건 상세보기" 버튼이 여는 **접수 폼(IntakePage, isModal)** 창.
 - `intake.tsx`는 `isModal ? content : createPortal(content, document.body)`로 모달모드에선 이미 inline 렌더 → DetachedWindow(isModal=true)에선 내부 팝업이 분리창 안에 그대로 뜸. intake.tsx 손댈 필요 없음.
 
+## 분리창은 공용 선택 state에 묶지 말 것(내용 사라짐)
+- 분리창 렌더/`initialCaseId`를 메인 창과 공유하는 선택 state(예: `selectedCaseId`)에 바인딩하면, 메인 창에서 다른 행 클릭/상세 닫힘으로 그 값이 바뀔 때 `{selectedCaseId && ...}` 게이트가 무너져 분리창 내용이 통째로 사라진다(비모달이라 메인 작업이 계속 일어남).
+  - **Why:** 분리창은 부모 컴포넌트가 매 렌더 `root.render`로 전파하므로 부모 state 변화에 그대로 반응. 공용 선택값은 메인 창 조작의 부수효과로 수시로 바뀐다.
+  - **How to apply:** 분리창마다 **전용 pinned state**(예: `receptionDetailCaseId`)를 두고, 여는 버튼 onClick에서 현재 선택값을 한 번 고정 → 렌더/`initialCaseId`는 전용 state 사용 → 모든 close/onSuccess 경로에서 null 리셋. 같은 패턴을 route 기반 분리창은 query param 고정(detached report)으로 해결.
+
 ## SheetTitle/DialogTitle 주의
 - Sheet/Dialog를 DetachedWindow로 바꿀 때 `SheetTitle`/`DialogTitle`(Radix Title)은 Root context가 필요하므로 **일반 div로 교체**. `SheetHeader`는 plain div라 그대로 둬도 됨.

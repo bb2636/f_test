@@ -286,6 +286,11 @@ export default function ComprehensiveProgress() {
   const [progressHistoryLoading, setProgressHistoryLoading] = useState(false);
   const [showReceptionDetailDialog, setShowReceptionDetailDialog] =
     useState(false);
+  // 접수건 상세보기 분리창에 고정할 케이스 ID.
+  // 공용 selectedCaseId를 쓰면 메인 창에서 다른 작업 시 값이 바뀌어 분리창 내용이 사라진다.
+  const [receptionDetailCaseId, setReceptionDetailCaseId] = useState<
+    string | null
+  >(null);
   const [isReceptionEditMode, setIsReceptionEditMode] = useState(false);
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const [showFieldDispatchInvoiceDialog, setShowFieldDispatchInvoiceDialog] =
@@ -3056,6 +3061,7 @@ export default function ComprehensiveProgress() {
                         size="sm"
                         onClick={() => {
                           setIsReceptionEditMode(false);
+                          setReceptionDetailCaseId(selectedCaseId);
                           setShowReceptionDetailDialog(true);
                         }}
                         data-testid="button-reception-detail"
@@ -5445,6 +5451,7 @@ export default function ComprehensiveProgress() {
         onClose={() => {
           setShowReceptionDetailDialog(false);
           setIsReceptionEditMode(false); // 닫을 때 수정 모드 리셋
+          setReceptionDetailCaseId(null);
         }}
         title="접수건 상세보기"
         width={1500}
@@ -5503,7 +5510,7 @@ export default function ComprehensiveProgress() {
               )}
             </div>
           )}
-          {selectedCaseId && (
+          {receptionDetailCaseId && (
             <div
               style={{
                 flex: 1,
@@ -5512,15 +5519,17 @@ export default function ComprehensiveProgress() {
             >
               <IntakePage
                 isModal={true}
-                initialCaseId={selectedCaseId}
+                initialCaseId={receptionDetailCaseId}
                 readOnly={!isReceptionEditMode}
                 onClose={() => {
                   setShowReceptionDetailDialog(false);
                   setIsReceptionEditMode(false);
+                  setReceptionDetailCaseId(null);
                 }}
                 onSuccess={() => {
                   setShowReceptionDetailDialog(false);
                   setIsReceptionEditMode(false);
+                  setReceptionDetailCaseId(null);
                   queryClient.invalidateQueries({ queryKey: ["/api/cases"] });
                 }}
               />
