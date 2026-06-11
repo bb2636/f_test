@@ -1752,7 +1752,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                                       // 보고서 열람은 건별 별도 브라우저 창으로(다른 건은 새 창,
                                       // 같은 건 재클릭 시 기존 창 포커스). 팝업 차단 시 같은 탭 fallback.
                                       const reportWin = window.open(
-                                        `/field-survey/report?detached=1&caseId=${caseId}`,
+                                        `/field-survey/report?detached=1&caseId=${caseId}&from=settlement`,
                                         `reportViewer-${caseId}`,
                                         "width=1500,height=920",
                                       );

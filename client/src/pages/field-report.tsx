@@ -253,6 +253,7 @@ export default function FieldReport() {
   const reportSearchParams = new URLSearchParams(window.location.search);
   const isDetachedReport = reportSearchParams.get("detached") === "1";
   const detachedCaseId = reportSearchParams.get("caseId") || "";
+  const reportFrom = reportSearchParams.get("from") || "";
 
   // 현장입력에서 선택한 케이스 ID 가져오기 (문자열 "null" 방지)
   const getInitialCaseId = () => {
@@ -281,14 +282,16 @@ export default function FieldReport() {
     };
   }, [isDetachedReport]);
 
-  // 보고서 열람 화면에 들어오면 브라우저 탭 제목을 '보고서 열람'으로 (분리창/인앱 모두)
+  // 보고서 열람 화면에 들어오면 브라우저 탭 제목 설정 (분리창/인앱 모두)
+  // 종결 청구(정산 조회)에서 연 경우엔 '종결-보고서열람'으로 구분
   useEffect(() => {
     const prev = document.title;
-    document.title = "보고서 열람";
+    document.title =
+      reportFrom === "settlement" ? "종결-보고서열람" : "보고서 열람";
     return () => {
       document.title = prev;
     };
-  }, []);
+  }, [reportFrom]);
 
   // 현재 사용자 정보 가져오기
   const { data: currentUser, isLoading: isUserLoading } = useQuery<{
