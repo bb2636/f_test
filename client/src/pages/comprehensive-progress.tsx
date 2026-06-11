@@ -1381,15 +1381,23 @@ export default function ComprehensiveProgress() {
     if (targetStatus === "접수취소") {
       const targetCase = cases?.find((c) => c.id === caseId);
       if (targetCase) {
-        // [2026-06-09] 같은 사고번호(prefix)의 관련 건을 후보로 모음 (원인/피해세대).
+        // 같은 사고의 관련 건(원인/피해세대)을 후보로 모음.
         //   이미 접수취소/취소대기인 건은 제외하되, 클릭한 건은 항상 포함.
+        // [2026-06-11] 그룹 기준을 caseGroupId(보험사고번호 기반 정식 그룹 식별자)로 변경.
+        //   기존 접수번호 prefix 휴리스틱(getCaseNumberPrefix)은 채번 형식에 따라
+        //   원인세대↔피해세대 prefix가 어긋나 연관 건이 누락되는 문제가 있었음.
+        //   caseGroupId가 없는 구형 데이터는 기존 prefix 방식으로 폴백.
+        const groupId = targetCase.caseGroupId;
         const groupPrefix = getCaseNumberPrefix(targetCase.caseNumber);
         const candidates = (cases || [])
           .filter((c) => {
             if (c.id === targetCase.id) return true;
+            if (c.status === "접수취소" || c.status === "취소대기") return false;
+            // 1순위: caseGroupId 일치(양쪽 모두 값이 있을 때만 신뢰)
+            if (groupId && c.caseGroupId) return c.caseGroupId === groupId;
+            // 2순위(구형식/누락): 접수번호 prefix 휴리스틱
             if (!groupPrefix) return false;
-            if (getCaseNumberPrefix(c.caseNumber) !== groupPrefix) return false;
-            return c.status !== "접수취소" && c.status !== "취소대기";
+            return getCaseNumberPrefix(c.caseNumber) === groupPrefix;
           })
           .sort(
             (a, b) =>
