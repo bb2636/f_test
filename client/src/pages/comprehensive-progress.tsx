@@ -81,6 +81,7 @@ import {
 } from "@/components/sms-notification-dialog";
 import { InvoiceSheet, getCaseNumberPrefix } from "@/components/InvoiceSheet";
 import { FieldDispatchCostSheet } from "@/components/FieldDispatchCostSheet";
+import { DetachedWindow, usePortalContainer } from "@/components/detached-window";
 import type { Case as SchemaCase } from "@shared/schema";
 
 // Safe JSON parse helper for notes history
@@ -100,6 +101,7 @@ const HeaderTooltip = ({ text }: { text: React.ReactNode }) => {
   const [show, setShow] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const portalContainer = usePortalContainer();
 
   useEffect(() => {
     if (show && ref.current) {
@@ -155,7 +157,7 @@ const HeaderTooltip = ({ text }: { text: React.ReactNode }) => {
           />
           {text}
         </div>,
-        document.body
+        portalContainer ?? document.body
       )}
     </span>
   );
@@ -2959,23 +2961,24 @@ export default function ComprehensiveProgress() {
           testIdPrefix="pagination-progress"
         />
       </div>
-      {/* 상세보기 Sheet */}
-      <Sheet
+      {/* 진행건 상세보기 — 분리형 창(별도 브라우저 창) */}
+      <DetachedWindow
         open={selectedCaseId !== null}
-        onOpenChange={(open) => !open && setSelectedCaseId(null)}
+        onClose={() => setSelectedCaseId(null)}
+        title="진행건 상세보기"
+        width={680}
+        height={920}
       >
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-[600px] overflow-y-auto"
-          overlayClassName="bg-black/30"
+        <div
+          className="w-full overflow-y-auto"
           style={{
-            background: "rgba(253, 253, 253, 0.95)",
-            backdropFilter: "blur(17px)",
-            padding: "50px 20px 32px 20px",
+            background: "#FDFDFD",
+            minHeight: "100vh",
+            padding: "32px 20px",
           }}
           data-testid="sheet-case-detail"
         >
-          <SheetHeader
+          <div
             style={{
               padding: "24px 20px",
               borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2990,7 +2993,7 @@ export default function ComprehensiveProgress() {
               }}
             >
               <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
-                <SheetTitle
+                <div
                   style={{
                     fontFamily: "Pretendard",
                     fontWeight: 600,
@@ -3000,7 +3003,7 @@ export default function ComprehensiveProgress() {
                   }}
                 >
                   진행건 상세보기
-                </SheetTitle>
+                </div>
                 {(() => {
                   const currentCase = cases?.find((c) => c.id === selectedCaseId);
                   const caseNumber = currentCase?.caseNumber
@@ -3065,7 +3068,7 @@ export default function ComprehensiveProgress() {
                   })()}
               </div>
             </div>
-          </SheetHeader>
+          </div>
 
           {selectedCaseId &&
             (() => {
@@ -5212,8 +5215,8 @@ export default function ComprehensiveProgress() {
                 </>
               );
             })()}
-        </SheetContent>
-      </Sheet>
+        </div>
+      </DetachedWindow>
       {/* LMS 발송 확인 다이얼로그 */}
       <AlertDialog
         open={showLmsConfirmDialog}
