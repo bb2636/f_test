@@ -793,6 +793,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
         side="right" 
+        overlayClassName="bg-black/30"
         style={{
           display: "flex",
           flexDirection: "column",

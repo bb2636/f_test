@@ -277,6 +277,7 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
         side="right" 
+        overlayClassName="bg-black/30"
         style={{
           width: "680px",
           maxWidth: "95vw",
