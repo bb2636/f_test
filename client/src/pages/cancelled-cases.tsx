@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { prefetchFieldReport } from "@/lib/prefetch";
 import { useCompactPagination } from "@/lib/use-compact-pagination";
 import { CompactPagination } from "@/components/ui/compact-pagination";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -1273,6 +1274,8 @@ export default function CancelledCases() {
                             </div>
                           ) : (
                             <button
+                              onPointerEnter={prefetchFieldReport}
+                              onFocus={prefetchFieldReport}
                               onClick={() => {
                                 localStorage.setItem("selectedFieldSurveyCaseId", selectedCase.id);
                                 // 보고서 열람은 별도 브라우저 창으로(건별 분리).
