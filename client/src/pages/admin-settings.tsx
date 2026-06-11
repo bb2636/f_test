@@ -2712,6 +2712,9 @@ export default function AdminSettings() {
                   style={{
                     minHeight: "44px",
                     borderBottom: "1px solid var(--color-table-border)",
+                    ...(selectedUser?.id === user.id
+                      ? { background: "rgba(37, 51, 150, 0.16)" }
+                      : {}),
                   }}
                   data-testid={`user-row-${user.id}`}
                 >
