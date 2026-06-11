@@ -92,6 +92,7 @@ interface InvoiceManagementPopupProps {
   managerContact?: string;
   settlementCommission?: number;
   settlementClaimAmount?: number;
+  windowName?: string;
 }
 
 const FIXED_FIELD_DISPATCH_COST = 100000;
@@ -224,6 +225,7 @@ export function InvoiceManagementPopup({
   managerContact = "-",
   settlementCommission,
   settlementClaimAmount,
+  windowName,
 }: InvoiceManagementPopupProps) {
   const { toast } = useToast();
   const { hasItem, isAdmin } = usePermissions();
@@ -1460,6 +1462,7 @@ export function InvoiceManagementPopup({
       open={open}
       onClose={() => onOpenChange(false)}
       title="인보이스 관리"
+      name={windowName}
       width={860}
       height={920}
     >

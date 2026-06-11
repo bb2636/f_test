@@ -26,6 +26,9 @@ interface DetachedWindowProps {
   open: boolean;
   onClose: () => void;
   title?: string;
+  /** window.open 대상 이름. 건별로 유니크하게 주면 창이 건마다 분리되고
+   *  같은 이름으로 다시 열면 기존 창이 재사용/포커스된다. 미지정 시 매번 새 창. */
+  name?: string;
   width?: number;
   height?: number;
   children: ReactNode;
@@ -35,6 +38,7 @@ export function DetachedWindow({
   open,
   onClose,
   title = "FLOXN",
+  name = "",
   width = 760,
   height = 900,
   children,
@@ -51,7 +55,7 @@ export function DetachedWindow({
     const left = Math.max(0, window.screenX + (window.outerWidth - width) / 2);
     const top = Math.max(0, window.screenY + 80);
     const features = `popup=yes,width=${width},height=${height},left=${left},top=${top}`;
-    const win = window.open("", "", features);
+    const win = window.open("", name, features);
 
     if (!win) {
       window.alert(
@@ -147,7 +151,7 @@ export function DetachedWindow({
       if (!win.closed) win.close();
       winRef.current = null;
     };
-  }, [open, title, width, height]);
+  }, [open, name, title, width, height]);
 
   useEffect(() => {
     if (!open) return;

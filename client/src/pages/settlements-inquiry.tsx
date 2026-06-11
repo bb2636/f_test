@@ -184,14 +184,31 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
   const [showFieldDispatchInvoiceDialog, setShowFieldDispatchInvoiceDialog] =
     useState(false);
   const [invoiceCaseId, setInvoiceCaseId] = useState<string | null>(null);
-  const [showInvoiceManagementPopup, setShowInvoiceManagementPopup] =
-    useState(false);
-  const [selectedCaseForInvoice, setSelectedCaseForInvoice] =
-    useState<CaseWithLatestProgress | null>(null);
-  const [selectedRelatedCasesForInvoice, setSelectedRelatedCasesForInvoice] =
-    useState<CaseWithLatestProgress[]>([]);
-  const [selectedCommission, setSelectedCommission] = useState<number>(0);
-  const [selectedClaimAmount, setSelectedClaimAmount] = useState<number>(0);
+  // 인보이스 관리 팝업을 건별 별도 창으로 띄우기 위해 열린 팝업 목록을 관리.
+  // 각 항목은 클릭 시점의 데이터 스냅샷을 보유(메인 화면 조작과 무관하게 고정).
+  interface OpenInvoicePopup {
+    id: string;
+    caseData: CaseWithLatestProgress;
+    estimateData: {
+      preventionEstimate: number;
+      preventionApproved: number;
+      propertyEstimate: number;
+      propertyApproved: number;
+    };
+    relatedCases: {
+      id: string;
+      caseNumber?: string | null;
+      recoveryType?: string | null;
+      estimateAmount: number | null;
+    }[];
+    managerName: string;
+    managerContact: string;
+    settlementCommission: number;
+    settlementClaimAmount: number;
+  }
+  const [openInvoicePopups, setOpenInvoicePopups] = useState<OpenInvoicePopup[]>(
+    [],
+  );
 
   const { data: currentUser } = useQuery<User>({
     queryKey: ["/api/user"],
@@ -200,12 +217,6 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
   const { hasCategory: hasPermCategory, hasItem: hasPermItem } = usePermissions();
   const canViewReport = hasPermCategory("현장조사");
   const canManageSettlement = hasPermItem("정산 및 통계", "관리");
-  const [selectedEstimateData, setSelectedEstimateData] = useState<{
-    preventionEstimate: number;
-    preventionApproved: number;
-    propertyEstimate: number;
-    propertyApproved: number;
-  } | null>(null);
 
   useEffect(() => {
     setSettlementStatus("전체");
@@ -297,21 +308,47 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
     const targetCase =
       directRepairCase || relatedCases[0] || cases.find((c) => c.id === row.id);
 
-    if (targetCase) {
-      setSelectedCaseForInvoice(targetCase);
-      setSelectedRelatedCasesForInvoice(relatedCases);
-      setSelectedEstimateData({
-        preventionEstimate: row.preventionEstimateAmount || 0,
-        preventionApproved: row.preventionApprovedAmount || 0,
-        propertyEstimate: row.propertyEstimateAmount || 0,
-        propertyApproved: row.propertyApprovedAmount || 0,
-      });
-      // 해당 케이스의 수수료를 가져옴 (settlementCommission은 이미 그룹별로 계산된 값)
-      setSelectedCommission(row.settlementCommission || 0);
-      // 청구액 설정
-      setSelectedClaimAmount(row.claimAmount || 0);
-      setShowInvoiceManagementPopup(true);
+    if (!targetCase) return;
+
+    const id = targetCase.id;
+    // 이미 그 건의 관리 창이 열려 있으면 새 창을 또 만들지 않고 기존 창을 포커스
+    if (openInvoicePopups.some((p) => p.id === id)) {
+      window.open("", `floxn-invoice-${id}`)?.focus();
+      return;
     }
+
+    const manager = targetCase.managerId
+      ? usersByIdMap.get(targetCase.managerId)
+      : undefined;
+
+    setOpenInvoicePopups((prev) =>
+      prev.some((p) => p.id === id)
+        ? prev
+        : [
+            ...prev,
+            {
+              id,
+              caseData: targetCase,
+              estimateData: {
+                preventionEstimate: row.preventionEstimateAmount || 0,
+                preventionApproved: row.preventionApprovedAmount || 0,
+                propertyEstimate: row.propertyEstimateAmount || 0,
+                propertyApproved: row.propertyApprovedAmount || 0,
+              },
+              // settlementCommission은 이미 그룹별로 계산된 값
+              relatedCases: relatedCases.map((c) => ({
+                id: c.id,
+                caseNumber: c.caseNumber,
+                recoveryType: c.recoveryType,
+                estimateAmount: null,
+              })),
+              managerName: manager?.name || "-",
+              managerContact: manager?.phone || "-",
+              settlementCommission: row.settlementCommission || 0,
+              settlementClaimAmount: row.claimAmount || 0,
+            },
+          ],
+    );
   };
 
   // Helper function to open Invoice Sheet - recoveryType에 따라 적절한 인보이스 표시
@@ -2148,31 +2185,28 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
               : [];
         })()}
       />
-      {/* 인보이스 관리 팝업 */}
-      <InvoiceManagementPopup
-        open={showInvoiceManagementPopup}
-        onOpenChange={setShowInvoiceManagementPopup}
-        caseData={selectedCaseForInvoice}
-        estimateData={selectedEstimateData}
-        relatedCases={selectedRelatedCasesForInvoice.map((c) => ({
-          id: c.id,
-          caseNumber: c.caseNumber,
-          recoveryType: c.recoveryType,
-          estimateAmount: null,
-        }))}
-        managerName={(() => {
-          if (!selectedCaseForInvoice?.managerId) return "-";
-          const manager = usersByIdMap.get(selectedCaseForInvoice.managerId);
-          return manager?.name || "-";
-        })()}
-        managerContact={(() => {
-          if (!selectedCaseForInvoice?.managerId) return "-";
-          const manager = usersByIdMap.get(selectedCaseForInvoice.managerId);
-          return manager?.phone || "-";
-        })()}
-        settlementCommission={selectedCommission}
-        settlementClaimAmount={selectedClaimAmount}
-      />
+      {/* 인보이스 관리 팝업 — 건별 별도 창 */}
+      {openInvoicePopups.map((popup) => (
+        <InvoiceManagementPopup
+          key={popup.id}
+          open={true}
+          onOpenChange={(o) => {
+            if (!o) {
+              setOpenInvoicePopups((prev) =>
+                prev.filter((p) => p.id !== popup.id),
+              );
+            }
+          }}
+          windowName={`floxn-invoice-${popup.id}`}
+          caseData={popup.caseData}
+          estimateData={popup.estimateData}
+          relatedCases={popup.relatedCases}
+          managerName={popup.managerName}
+          managerContact={popup.managerContact}
+          settlementCommission={popup.settlementCommission}
+          settlementClaimAmount={popup.settlementClaimAmount}
+        />
+      ))}
     </div>
   );
 }
