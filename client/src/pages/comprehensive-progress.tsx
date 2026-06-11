@@ -2328,7 +2328,9 @@ export default function ComprehensiveProgress() {
                       alignItems: "stretch",
                       cursor: "default",
                       background:
-                        caseItem.id === selectedCaseId
+                        caseItem.id === selectedCaseId ||
+                        ((showInvoiceDialog || showFieldDispatchInvoiceDialog) &&
+                          caseItem.id === invoiceCaseId)
                           ? "rgba(37, 51, 150, 0.16)"
                           : "transparent",
                       transition: "background 0.15s ease",
