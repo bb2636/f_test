@@ -19,6 +19,11 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
   - 직접 `createPortal(x, document.body)` 하는 커스텀 컴포넌트(예: comprehensive-progress의 `HeaderTooltip`)는 `portalContainer ?? document.body`로 바꿔야 분리창 안에 뜬다.
 - `getBoundingClientRect`/`position:fixed`는 각 창 뷰포트 기준이라, 포털만 같은(분리창) 문서로 보내면 좌표도 자동으로 맞는다.
 
+## 메인 창 잠금 누수(중요)
+- 분리창은 메인 창과 **같은 JS realm**을 공유한다(window.open, 같은 origin). 그래서 분리창 안에서 열리는 **Radix 모달류(Dialog/Select/Popover) + react-remove-scroll**가 스크롤락/`pointer-events:none`/`aria-hidden`을 **메인 창 document.body**에 건다 → 메인 창 전체 클릭이 막힌다(증상: floating "신규접수/문자발송" 버튼이 클릭조차 안 됨).
+  - **Why:** Radix/remove-scroll가 모듈 전역 `document`(=메인 창) 기준으로 본문을 잠그는데, 분리창에서 close/window 닫힘 시 정리가 메인 본문에 안 닿아 잠금이 남음. 비모달 요구사항(분리창 띄운 채 메인 작업)과도 충돌.
+  - **How to apply:** 클릭을 막는 잠금은 모두 메인 **body 자체**에 걸린다(Dialog `pointer-events:none`, remove-scroll `data-scroll-locked`/`overflow`). DetachedWindow가 열려있는 동안 메인 `document.body` **자체 속성만** `MutationObserver`로 감시해 즉시 해제(`unlockMainBody`/`lockGuard`). 감시 범위를 body 자식까지 넓히면 메인 창의 **정상 모달**까지 풀려버리니 금지. body 자식 `aria-hidden`은 클릭을 막지 않는 접근성 잔재라 **닫힐 때 1회만** 정리.
+
 ## 알려진 제한 / 미해결
 - **토스트(Toaster)는 메인 루트에만** 있어 분리창 작업 중 알림이 메인 창에 뜬다.
 - 분리창에서 `document`/`window` 직접 참조(click-outside 리스너 등)는 메인 창 기준 → 분리창에선 안 잡힘. 커스텀 드롭다운(예: SMS 다이얼로그의 cancelReason)은 분리 전 ownerDocument 기준으로 고쳐야 함.

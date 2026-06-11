@@ -101,15 +101,47 @@ export function DetachedWindow({
     win.addEventListener("beforeunload", handleBeforeUnload);
     win.focus();
 
+    // 분리창은 메인 창과 동일한 JS realm을 공유한다. 그래서 분리창 안에서 열리는
+    // Radix(Dialog/Select/Popover 등)와 react-remove-scroll이 스크롤락/pointer-events:none/
+    // aria-hidden을 "메인 창" document.body에 걸어 메인 창 전체 클릭이 막힌다(비모달 요구사항 위반).
+    // → 메인 문서를 감시하며 분리창이 열려있는 동안 메인 창 잠금을 즉시 해제한다.
+    // 클릭을 막는 잠금은 모두 메인 창 body "자체"에 걸린다(Dialog의 pointer-events:none,
+    // react-remove-scroll의 data-scroll-locked/overflow). body 자식의 aria-hidden은 클릭을
+    // 막지 않으므로(접근성 잔재) 닫힐 때 1회만 정리한다. 메인 창의 정상 모달까지 풀어버리지
+    // 않도록 감시 범위를 body 자체 속성으로 좁힌다.
+    const mainDoc = document;
+    const unlockMainBody = () => {
+      const b = mainDoc.body;
+      if (b.style.pointerEvents === "none") b.style.pointerEvents = "";
+      if (b.hasAttribute("data-scroll-locked")) {
+        b.removeAttribute("data-scroll-locked");
+        b.style.overflow = "";
+      }
+    };
+    const lockGuard = new MutationObserver(unlockMainBody);
+    lockGuard.observe(mainDoc.body, {
+      attributes: true,
+      attributeFilter: ["style", "data-scroll-locked"],
+    });
+    unlockMainBody();
+
     return () => {
       window.clearInterval(poll);
       observer.disconnect();
+      lockGuard.disconnect();
       win.removeEventListener("beforeunload", handleBeforeUnload);
       try {
         root.unmount();
       } catch {
         /* ignore */
       }
+      // 분리창이 닫힐 때 메인 창에 남아있을 수 있는 잠금 잔재를 최종 해제한다.
+      unlockMainBody();
+      Array.from(mainDoc.body.children).forEach((el) => {
+        if ((el as HTMLElement).getAttribute("aria-hidden") === "true") {
+          el.removeAttribute("aria-hidden");
+        }
+      });
       rootRef.current = null;
       containerRef.current = null;
       if (!win.closed) win.close();
