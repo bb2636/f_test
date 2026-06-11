@@ -895,6 +895,11 @@ export default function CancelledCases() {
                     borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                     alignItems: "stretch",
                     cursor: "default",
+                    background:
+                      caseItem.id === selectedCaseId
+                        ? "rgba(37, 51, 150, 0.16)"
+                        : "transparent",
+                    transition: "background 0.15s ease",
                   }}
                   data-testid={`cancelled-case-row-${caseItem.id}`}
                 >
