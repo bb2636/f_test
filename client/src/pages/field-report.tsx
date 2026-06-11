@@ -252,8 +252,14 @@ export default function FieldReport() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
+  // 별도 창(보고서 열람)으로 열렸는지 + 그 창에 고정할 케이스 ID (쿼리파라미터)
+  const reportSearchParams = new URLSearchParams(window.location.search);
+  const isDetachedReport = reportSearchParams.get("detached") === "1";
+  const detachedCaseId = reportSearchParams.get("caseId") || "";
+
   // 현장입력에서 선택한 케이스 ID 가져오기 (문자열 "null" 방지)
   const getInitialCaseId = () => {
+    if (isDetachedReport && detachedCaseId) return detachedCaseId;
     const rawCaseId = localStorage.getItem("selectedFieldSurveyCaseId");
     return rawCaseId && rawCaseId !== "null" && rawCaseId !== "undefined"
       ? rawCaseId
@@ -262,7 +268,9 @@ export default function FieldReport() {
   const [selectedCaseId, setSelectedCaseId] = useState(getInitialCaseId);
 
   // 접수번호 탭/타 페이지에서 케이스 변경 시 동기화 (storage 이벤트 + 폴링)
+  // 별도 창은 자기 케이스에 고정 — 메인 창에서 다른 케이스를 골라도 바뀌지 않는다.
   useEffect(() => {
+    if (isDetachedReport) return;
     const sync = () => {
       const raw = localStorage.getItem('selectedFieldSurveyCaseId');
       const next = (raw && raw !== 'null' && raw !== 'undefined') ? raw : '';
@@ -274,10 +282,21 @@ export default function FieldReport() {
       window.removeEventListener('storage', sync);
       clearInterval(id);
     };
-  }, []);
+  }, [isDetachedReport]);
 
-  // 종합진행관리에서 왔는지 확인
+  // 별도 창일 때 탭 제목을 '보고서열람'으로
+  useEffect(() => {
+    if (!isDetachedReport) return;
+    const prev = document.title;
+    document.title = "보고서열람";
+    return () => {
+      document.title = prev;
+    };
+  }, [isDetachedReport]);
+
+  // 종합진행관리에서 왔는지 확인 (별도 창에서는 뒤로가기 숨김)
   const returnToComprehensiveProgress =
+    !isDetachedReport &&
     localStorage.getItem("returnToComprehensiveProgress") === "true";
 
   // 현재 사용자 정보 가져오기

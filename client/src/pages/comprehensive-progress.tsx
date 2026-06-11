@@ -3689,11 +3689,22 @@ export default function ComprehensiveProgress() {
                                   "selectedFieldSurveyCaseId",
                                   selectedCase.id,
                                 );
-                                localStorage.setItem(
-                                  "returnToComprehensiveProgress",
-                                  "true",
+                                // 보고서 열람은 별도 브라우저 창으로(탭 제목: 보고서열람).
+                                // 전체 라우트라 별도 realm → Radix 잠금 누수 없음.
+                                // caseId를 쿼리로 넘겨 그 창을 해당 케이스에 고정.
+                                const reportWin = window.open(
+                                  `/field-survey/report?detached=1&caseId=${selectedCase.id}`,
+                                  "reportViewer",
+                                  "width=1500,height=920",
                                 );
-                                setLocation("/field-survey/report");
+                                // 팝업이 차단되면 기존처럼 같은 탭에서 연다.
+                                if (!reportWin) {
+                                  localStorage.setItem(
+                                    "returnToComprehensiveProgress",
+                                    "true",
+                                  );
+                                  setLocation("/field-survey/report");
+                                }
                               }}
                               style={{
                                 width: "100%",
