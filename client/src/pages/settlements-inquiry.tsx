@@ -1485,7 +1485,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
       </div>
       {/* Wide Table with Horizontal Scroll and Sticky Header/Columns */}
       {(() => {
-        const stickyHeaders = ["보험사", "사고번호", "피보험자", "담당자(플록슨)", "심사사", "심사자", "접수번호", "협력업체"];
+        const stickyHeaders = ["보험사", "보험사고번호", "피보험자", "담당자(플록슨)", "심사사", "심사자", "접수번호", "협력업체"];
         // 날짜 컬럼은 고정 너비로 좁게 표시
         const DATE_COL_WIDTH = 84;
         const DATE_COLUMN_LABELS = new Set(["청구일", "입금일", "계산서 발행일"]);
@@ -1866,7 +1866,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                         color: "rgba(12, 12, 12, 0.5)",
                       }}
                     >
-                      사고번호
+                      보험사고번호
                     </div>
                     <div style={{ fontSize: "14px", fontWeight: 500 }}>
                       {selectedCaseForManagement.accidentNumber}

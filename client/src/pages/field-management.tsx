@@ -986,7 +986,7 @@ export default function FieldManagement() {
                 <span>{selectedCaseData.insuranceCompany || "보험사 미지정"}</span>
                 <span className="text-[#6B7280]">
                   {selectedCaseData.insuranceAccidentNo 
-                    ? `${selectedCaseData.insuranceAccidentNo}(사고번호)` 
+                    ? `${selectedCaseData.insuranceAccidentNo}(보험사고번호)` 
                     : selectedCaseData.insurancePolicyNo 
                       ? `${selectedCaseData.insurancePolicyNo}(증권번호)` 
                       : ""}
@@ -1229,7 +1229,7 @@ export default function FieldManagement() {
                   const cn = selectedCaseData?.caseNumber || "";
                   const suffix = cn.includes("-") ? cn.split("-").pop() : "";
                   const isVictimCase = suffix !== "" && suffix !== "0";
-                  const causeLabel = isVictimCase ? "피해내용" : "사고원인";
+                  const causeLabel = isVictimCase ? "피해내용(기술소견 포함)" : "사고원인(기술소견 포함)";
                   return (
                     <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
                       <div className="flex w-[520px] flex-col gap-1.5">
@@ -1339,7 +1339,7 @@ export default function FieldManagement() {
             </section>
 
             <section className="mt-8">
-              <div className="text-[14px] font-bold">동일사고번호 공사대상건</div>
+              <div className="text-[14px] font-bold">동일 보험사고번호 공사대상건</div>
 
               <div className="mt-3 rounded-lg border border-[#E5E7EB] bg-white">
                 <div className="px-4 py-3 text-[13px] font-semibold">총 {relatedCases.length}건</div>
@@ -1359,7 +1359,7 @@ export default function FieldManagement() {
                               {caseItem.insuranceCompany || "-"}
                               <span className="ml-1 text-[#6B7280]">
                                 {caseItem.insuranceAccidentNo 
-                                  ? `${caseItem.insuranceAccidentNo}(사고번호)` 
+                                  ? `${caseItem.insuranceAccidentNo}(보험사고번호)` 
                                   : caseItem.insurancePolicyNo 
                                     ? `${caseItem.insurancePolicyNo}(증권번호)` 
                                     : ""}

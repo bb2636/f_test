@@ -615,8 +615,8 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
     // 사고번호 확인 - 없으면 발송 차단
     if (!caseData?.insuranceAccidentNo) {
       toast({
-        title: "사고번호가 없습니다",
-        description: "해당 접수건에 사고번호가 등록되어 있지 않습니다.",
+        title: "보험사고번호가 없습니다",
+        description: "해당 접수건에 보험사고번호가 등록되어 있지 않습니다.",
         variant: "destructive",
       });
       return;
@@ -879,7 +879,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
               </div>
               <div style={dividerStyle} />
               <div style={infoRowStyle}>
-                <span style={labelStyle}>사고번호</span>
+                <span style={labelStyle}>보험사고번호</span>
                 <span style={valueStyle}>{caseData?.insuranceAccidentNo || "-"}</span>
               </div>
             </div>
@@ -940,7 +940,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
               width: "604px",
               height: "19px",
             }}>
-              <span style={valueStyle}>사고번호</span>
+              <span style={valueStyle}>보험사고번호</span>
               <span style={valueStyle}>{caseData?.insuranceAccidentNo || "-"}</span>
             </div>
 

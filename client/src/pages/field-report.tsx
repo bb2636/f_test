@@ -3596,7 +3596,7 @@ export default function FieldReport() {
                           color: "rgba(12, 12, 12, 0.6)",
                         }}
                       >
-                        출동 업장지
+                        출동 협력업체
                       </span>
                       <span
                         style={{
@@ -3726,7 +3726,7 @@ export default function FieldReport() {
                           paddingTop: "8px",
                         }}
                       >
-                        {isLossPreventionCase ? "사고원인" : "피해내용"}
+                        {isLossPreventionCase ? "사고원인(기술소견 포함)" : "피해내용(기술소견 포함)"}
                       </span>
                       <div
                         style={{

@@ -1418,7 +1418,7 @@ export default function Dashboard() {
                                 {formatCaseNumber(task.caseNumber)}
                               </div>
                               <div className="mt-1 text-sm text-slate-500">
-                                사고번호 : {task.insuranceAccidentNo || "미정"}
+                                보험사고번호 : {task.insuranceAccidentNo || "미정"}
                               </div>
                             </div>
                             <div className="flex flex-col items-end gap-2">

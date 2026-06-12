@@ -1794,7 +1794,7 @@ export default function Intake({
     }
     if (!formData.insurancePolicyNo && !formData.insuranceAccidentNo) {
       toast({
-        description: "증권번호 또는 사고번호 중 하나는 입력해주세요.",
+        description: "증권번호 또는 보험사고번호 중 하나는 입력해주세요.",
         variant: "destructive",
       });
       return;
@@ -2241,7 +2241,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-4">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>
-                    사고번호
+                    보험사고번호
                     <RequiredMark />
                   </label>
                   <input

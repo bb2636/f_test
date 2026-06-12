@@ -140,8 +140,8 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
     // 사고번호 확인 - 없으면 발송 차단
     if (!caseData?.insuranceAccidentNo) {
       toast({
-        title: "사고번호가 없습니다",
-        description: "해당 접수건에 사고번호가 등록되어 있지 않습니다.",
+        title: "보험사고번호가 없습니다",
+        description: "해당 접수건에 보험사고번호가 등록되어 있지 않습니다.",
         variant: "destructive",
       });
       return;
@@ -402,7 +402,7 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
                     letterSpacing: "-0.01em",
                     color: "rgba(12, 12, 12, 0.7)",
                   }}>
-                    사고번호
+                    보험사고번호
                   </span>
                   <span style={{
                     fontFamily: "Pretendard",
@@ -512,7 +512,7 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
                 letterSpacing: "-0.02em",
                 color: "rgba(12, 12, 12, 0.9)",
               }}>
-                사고번호 {caseData?.insuranceAccidentNo || "-"}
+                보험사고번호 {caseData?.insuranceAccidentNo || "-"}
               </div>
             </div>
 

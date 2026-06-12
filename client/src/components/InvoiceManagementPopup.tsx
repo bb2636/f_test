@@ -1579,7 +1579,7 @@ export function InvoiceManagementPopup({
                       borderTop: "none",
                     }}
                   >
-                    사고번호
+                    보험사고번호
                   </div>
                   <div
                     style={{

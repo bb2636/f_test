@@ -9667,7 +9667,7 @@ export default function FieldEstimate() {
           {/* 검색 입력 */}
           <div className="mb-4">
             <Input
-              placeholder="접수번호, 보험사, 사고번호, 계약자명, 피해자명, 피보험자주소 검색..."
+              placeholder="접수번호, 보험사, 보험사고번호, 계약자명, 피해자명, 피보험자주소 검색..."
               value={caseSearchQuery}
               onChange={(e) => setCaseSearchQuery(e.target.value)}
               className="w-full"

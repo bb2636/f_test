@@ -1064,7 +1064,7 @@ export default function UnsettledCaseStatistics() {
               }}
               data-testid="toggle-unsettled-accident-number"
             >
-              사고번호
+              보험사고번호
             </button>
             <button
               onClick={() => setSearchType("접수번호")}
@@ -1162,7 +1162,7 @@ export default function UnsettledCaseStatistics() {
           <div className="relative" style={{ flex: "1 1 360px", minWidth: "320px", maxWidth: "640px" }}>
             <Search size={20} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "rgba(12, 12, 12, 0.4)" }} />
             <Input
-              placeholder="증권번호, 사고번호 또는 접수번호를 입력해주세요"
+              placeholder="증권번호, 보험사고번호 또는 접수번호를 입력해주세요"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -1293,7 +1293,7 @@ export default function UnsettledCaseStatistics() {
             <tr>
               <th style={stickyTh(0, { width: "120px" })}>보험사</th>
               <th style={stickyTh(1, { width: "140px" })}>증권번호</th>
-              <th style={stickyTh(2, { width: "140px" })}>사고번호</th>
+              <th style={stickyTh(2, { width: "140px" })}>보험사고번호</th>
               {searchType === "접수번호" && (
                 <th style={stickyTh(3, { width: "140px" })}>접수번호</th>
               )}

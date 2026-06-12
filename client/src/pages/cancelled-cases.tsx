@@ -751,7 +751,7 @@ export default function CancelledCases() {
           >
             {[
               { label: "증권번호", textAlign: "center" as const },
-              { label: "사고번호", textAlign: "center" as const },
+              { label: "보험사고번호", textAlign: "center" as const },
               { label: "접수번호", textAlign: "center" as const },
               { label: "보험사", textAlign: "center" as const },
               { label: "피보험자", textAlign: "center" as const },

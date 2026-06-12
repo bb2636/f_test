@@ -56,13 +56,13 @@ export function ChangeLogTab({
                 color: "#686A6E",
               }}
             >
-              사고 번호 검색
+              보험사고번호 검색
             </label>
             <input
               type="text"
               value={changeLogCaseNumberFilter}
               onChange={(e) => setChangeLogCaseNumberFilter(e.target.value)}
-              placeholder="사고번호를 입력해주세요"
+              placeholder="보험사고번호를 입력해주세요"
               className="w-full px-3 py-2 outline-none"
               style={{
                 background: "#FFFFFF",
@@ -161,7 +161,7 @@ export function ChangeLogTab({
           <table className="w-full" style={{ tableLayout: "auto" }}>
             <thead>
               <tr className="compact-row" style={{ background: "rgba(12, 12, 12, 0.04)", borderBottom: "1px solid rgba(12, 12, 12, 0.12)" }}>
-                {["사고번호", "변경자", "변경일시", "변경 항목", "변경 내용"].map((label) => (
+                {["보험사고번호", "변경자", "변경일시", "변경 항목", "변경 내용"].map((label) => (
                   <th
                     key={label}
                     className="px-4 py-3 text-left"

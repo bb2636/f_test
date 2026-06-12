@@ -2156,7 +2156,7 @@ export default function ComprehensiveProgress() {
               )}
               {[
                 { label: "증권번호", textAlign: "center" as const },
-                { label: "사고번호", textAlign: "center" as const },
+                { label: "보험사고번호", textAlign: "center" as const },
                 { label: "접수번호", textAlign: "center" as const },
                 { label: "보험사", textAlign: "center" as const },
                 { label: "심사사", textAlign: "center" as const },
@@ -2303,7 +2303,7 @@ export default function ComprehensiveProgress() {
                         • 검색어를 콤마(,)로 분리하면 다중검색이 가능합니다
                       </li>
                       <li>
-                        • 보험사명, 사고번호, 접수번호, 피보험자, 당사 담당자
+                        • 보험사명, 보험사고번호, 접수번호, 피보험자, 당사 담당자
                         등으로 검색해보세요.
                       </li>
                     </ul>

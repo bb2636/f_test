@@ -949,7 +949,7 @@ export default function SettlementAction() {
                 <div className="grid grid-cols-4 gap-x-6 gap-y-4">
                   {[
                     { label: "보험사", value: selectedCase.insuranceCompany },
-                    { label: "사고번호", value: selectedCase.insuranceAccidentNo },
+                    { label: "보험사고번호", value: selectedCase.insuranceAccidentNo },
                     { label: "접수번호", value: formatCaseNumber(selectedCase.caseNumber) },
                     { label: "계약자", value: selectedCase.contractor },
                     { label: "당사 담당자", value: selectedCase.clientManager },
