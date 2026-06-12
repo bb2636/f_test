@@ -1278,88 +1278,86 @@ export default function FieldDrawing() {
               >
                 작성중인 건
               </div>
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ background: "#253396" }}
-                />
-                <span
-                  style={{
-                    fontFamily: "Pretendard",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    letterSpacing: "-0.02em",
-                    color: "#0C0C0C",
-                  }}
-                >
-                  {selectedCase.assignedPartnerManager || selectedCase.clientName || selectedCase.insuranceCompany}
-                </span>
-                <span
-                  style={{
-                    fontFamily: "Pretendard",
-                    fontSize: "12px",
-                    fontWeight: 400,
-                    letterSpacing: "-0.02em",
-                    color: "rgba(12, 12, 12, 0.5)",
-                  }}
-                >
-                  {formatCaseNumber(selectedCase.caseNumber)}
-                </span>
-              </div>
+              {isDetachedWindow() ? (
+                <>
+                  {/* 첫 번째 줄: 보험사명 + 사고번호 */}
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ background: "#253396" }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontSize: "15px",
+                        fontWeight: 600,
+                        letterSpacing: "-0.02em",
+                        color: "#0C0C0C",
+                      }}
+                    >
+                      {selectedCase.insuranceCompany || "보험사 미정"}{" "}
+                      {selectedCase.insuranceAccidentNo || ""}
+                    </span>
+                  </div>
 
-              {/* 분리창(팝업)에서는 사이드바가 없으므로 기초 정보를 함께 표시 */}
-              {isDetachedWindow() && (
-                <div
-                  className="mt-3 pt-3 grid gap-x-4 gap-y-1.5"
-                  style={{
-                    borderTop: "1px solid rgba(37, 51, 150, 0.12)",
-                    gridTemplateColumns: "auto 1fr",
-                  }}
-                >
-                  {[
-                    { label: "사건번호", value: selectedCase.insuranceAccidentNo },
-                    { label: "보험사", value: selectedCase.insuranceCompany },
-                    { label: "접수번호", value: formatCaseNumber(selectedCase.caseNumber) },
-                    { label: "피보험자", value: selectedCase.insuredName },
-                    { label: "담당자", value: selectedCase.assignedPartnerManager },
-                    {
-                      label: "주소",
-                      value: (selectedCase.victimAddress
+                  {/* 두 번째 줄: 접수번호, 피보험자, 담당자, 주소 */}
+                  <div
+                    className="flex items-center gap-4 flex-wrap mt-2"
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "13px",
+                      fontWeight: 400,
+                      letterSpacing: "-0.02em",
+                      color: "rgba(12, 12, 12, 0.5)",
+                      paddingLeft: "16px",
+                    }}
+                  >
+                    <span>접수번호 {formatCaseNumber(selectedCase.caseNumber)}</span>
+                    <span>피보험자 {selectedCase.insuredName || "미정"}</span>
+                    <span>담당자 {selectedCase.assignedPartnerManager || "미정"}</span>
+                    {(() => {
+                      const [base, detail] = selectedCase.victimAddress
                         ? [selectedCase.victimAddress, selectedCase.victimAddressDetail]
-                        : [selectedCase.insuredAddress, selectedCase.insuredAddressDetail]
-                      )
-                        .filter(Boolean)
-                        .join(" "),
-                    },
-                  ]
-                    .filter((row) => row.value)
-                    .map((row) => (
-                      <div key={row.label} className="contents">
-                        <span
-                          style={{
-                            fontFamily: "Pretendard",
-                            fontSize: "12px",
-                            fontWeight: 500,
-                            letterSpacing: "-0.02em",
-                            color: "rgba(12, 12, 12, 0.45)",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {row.label}
+                        : [selectedCase.insuredAddress, selectedCase.insuredAddressDetail];
+                      if (!base) return null;
+                      const address = `${base}${detail ? ` (${detail})` : ""}`;
+                      return (
+                        <span>
+                          <span style={{ color: "rgba(12, 12, 12, 0.5)" }}>주소</span>{" "}
+                          <span style={{ color: "rgba(12, 12, 12, 0.7)" }}>{address}</span>
                         </span>
-                        <span
-                          style={{
-                            fontFamily: "Pretendard",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                            letterSpacing: "-0.02em",
-                            color: "#0C0C0C",
-                          }}
-                        >
-                          {row.value}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })()}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ background: "#253396" }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      letterSpacing: "-0.02em",
+                      color: "#0C0C0C",
+                    }}
+                  >
+                    {selectedCase.assignedPartnerManager || selectedCase.clientName || selectedCase.insuranceCompany}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "12px",
+                      fontWeight: 400,
+                      letterSpacing: "-0.02em",
+                      color: "rgba(12, 12, 12, 0.5)",
+                    }}
+                  >
+                    {formatCaseNumber(selectedCase.caseNumber)}
+                  </span>
                 </div>
               )}
             </div>
