@@ -13,6 +13,10 @@ export function classifyPropertyType(
   const text = [address, addressDetail].filter(Boolean).join(" ").trim();
   if (!text) return "기타";
 
+  // [우선순위] "아파트" 단어가 포함되면 상가/공단(공장) 등 다른 키워드보다 우선해 "아파트"로 분류
+  // (예: "상가 아파트", "공단 인근 아파트" → 아파트)
+  if (/아파트/.test(text)) return "아파트";
+
   if (/공장|산업단지|공단|제조/.test(text)) return "공장";
 
   if (
@@ -21,9 +25,6 @@ export function classifyPropertyType(
   ) {
     return "상가";
   }
-
-  // 아파트를 단일동(가동/A동) 패턴보다 먼저 판정해 "아파트 A동" 같은 케이스 보호
-  if (/아파트/.test(text)) return "아파트";
 
   if (/빌라|연립|타운하우스|테라스하우스|테리스하우스/.test(text)) {
     return "연립주택";
