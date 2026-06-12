@@ -180,6 +180,8 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
   const [selectedCaseForManagement, setSelectedCaseForManagement] =
     useState<SettlementRow | null>(null);
   const [reportPopoverOpen, setReportPopoverOpen] = useState<Record<string, boolean>>({});
+  // 관리/보고서 팝업이 열린 행을 음영 처리하기 위한 상태 (메인 화면 클릭 시 해제)
+  const [highlightedRowId, setHighlightedRowId] = useState<string | null>(null);
 
   const [showInvoiceDialog, setShowInvoiceDialog] = useState(false);
   const [showFieldDispatchInvoiceDialog, setShowFieldDispatchInvoiceDialog] =
@@ -1076,7 +1078,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
   };
 
   return (
-    <div className="p-8 flxn-page" style={{ background: "var(--color-bg)", minHeight: "100%" }}>
+    <div className="p-8 flxn-page" style={{ background: "var(--color-bg)", minHeight: "100%" }} onClick={() => setHighlightedRowId(null)}>
       {/* Page title */}
       <div className="flex items-center gap-2 mb-6">
         <h1
@@ -1596,7 +1598,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                 </tr>
               ) : (
                 pagedRows.map((row, index) => {
-                  const rowBg = "#FFFFFF";
+                  const rowBg = highlightedRowId === row.id ? "#E7E7F5" : "#FFFFFF";
                   // [2026-05-20] 미결건/종결건 통계 페이지와 행 높이 통일 — vertical padding 9px
                   const verticalPadding = "9px";
                   const isLastRow = index === pagedRows.length - 1;
@@ -1679,6 +1681,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              setHighlightedRowId(row.id);
                               handleOpenManagement(row);
                             }}
                             data-testid={`button-management-${row.id}`}
@@ -1748,6 +1751,7 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                                     key={caseId}
                                     onClick={() => {
                                       setReportPopoverOpen((prev) => ({ ...prev, [row.id]: false }));
+                                      setHighlightedRowId(row.id);
                                       localStorage.setItem("selectedFieldSurveyCaseId", caseId);
                                       // 보고서 열람은 건별 별도 브라우저 창으로(다른 건은 새 창,
                                       // 같은 건 재클릭 시 기존 창 포커스). 팝업 차단 시 같은 탭 fallback.
