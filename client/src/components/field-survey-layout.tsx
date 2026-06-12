@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from "react";
 import { useLocation } from "wouter";
 import { AppSidebarFieldSurvey } from "@/components/app-sidebar-field-survey";
 import { CaseReceiptTabs } from "@/components/case-receipt-tabs";
-import { isDetachedWindow } from "@/lib/detached-window";
+import { isDetachedWindow, isSoloFieldPopup } from "@/lib/detached-window";
 
 interface FieldSurveyLayoutProps {
   children: ReactNode;
@@ -11,9 +11,11 @@ interface FieldSurveyLayoutProps {
 export function FieldSurveyLayout({ children }: FieldSurveyLayoutProps) {
   const [location] = useLocation();
   const detached = isDetachedWindow();
-  // 도면작성/증빙자료 등록 팝업: 좌측 사이드바 전체 제거.
+  // 도면작성/증빙자료 "전용" 팝업(아이콘으로 새로 띄운 단독 창)만 좌측 사이드바 전체 제거.
+  // 보고서 열람 팝업 안에서 제목 클릭으로 도면/증빙을 열람할 땐 사이드바를 유지하고 내용만 교체.
   const hideSidebar =
     detached &&
+    isSoloFieldPopup() &&
     (location.startsWith("/field-survey/drawing") ||
       location.startsWith("/field-survey/documents"));
   // 모바일 viewport 높이를 CSS 변수로 설정 (초기 설정만)

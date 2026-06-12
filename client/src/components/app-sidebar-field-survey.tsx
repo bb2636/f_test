@@ -303,7 +303,7 @@ export function AppSidebarFieldSurvey({
                               // 별도 브라우저 창으로 열어 보고서 열람 중에도 작업 가능.
                               // 케이스는 localStorage(selectedFieldSurveyCaseId)로 공유됨.
                               const win = window.open(
-                                `${item.url!}?detached=1`,
+                                `${item.url!}?detached=1&solo=1`,
                                 `floxn-${item.testId}`,
                                 "width=1400,height=900",
                               );

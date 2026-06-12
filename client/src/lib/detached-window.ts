@@ -21,3 +21,26 @@ export function isDetachedWindow(): boolean {
   }
   return cached;
 }
+
+// 도면작성/증빙자료 "전용" 팝업(사이드바 팝업 아이콘으로 새로 띄운 단독 창)인지 판별.
+// 이 경우에만 좌측 사이드바를 전체 제거한다. 보고서 열람 팝업 안에서 제목 클릭으로
+// 도면/증빙으로 이동하는 경우(solo 아님)는 보고서 팝업 사이드바를 그대로 유지한다.
+const SOLO_KEY = "floxn:soloFieldPopup";
+let soloCached: boolean | null = null;
+
+export function isSoloFieldPopup(): boolean {
+  if (soloCached !== null) return soloCached;
+  try {
+    const fromQuery =
+      new URLSearchParams(window.location.search).get("solo") === "1";
+    if (fromQuery) {
+      sessionStorage.setItem(SOLO_KEY, "1");
+      soloCached = true;
+      return soloCached;
+    }
+    soloCached = sessionStorage.getItem(SOLO_KEY) === "1";
+  } catch {
+    soloCached = false;
+  }
+  return soloCached;
+}
