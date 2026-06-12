@@ -70,7 +70,12 @@ const reportMenuItems = [
   },
 ];
 
-export function AppSidebarFieldSurvey() {
+export function AppSidebarFieldSurvey({
+  hidePersonal = false,
+}: {
+  // 분리창(보고서 열람 팝업)에서 홈 메뉴/로그인 계정 영역을 숨긴다.
+  hidePersonal?: boolean;
+} = {}) {
   const [location, setLocation] = useLocation();
   const { hasItem, hasCategory, isAdmin, isLoading, user: permsUser } = usePermissions();
   const [myPageOpen, setMyPageOpen] = useState(false);
@@ -176,7 +181,7 @@ export function AppSidebarFieldSurvey() {
         {/* Navigation */}
         <div className="flex flex-col pt-3 flex-1 overflow-y-auto">
           {/* 홈 그룹 */}
-          {visibleHomeItems.length > 0 && (
+          {!hidePersonal && visibleHomeItems.length > 0 && (
             <div>
               <button
                 type="button"
@@ -298,7 +303,7 @@ export function AppSidebarFieldSurvey() {
                               // 별도 브라우저 창으로 열어 보고서 열람 중에도 작업 가능.
                               // 케이스는 localStorage(selectedFieldSurveyCaseId)로 공유됨.
                               const win = window.open(
-                                item.url!,
+                                `${item.url!}?detached=1`,
                                 `floxn-${item.testId}`,
                                 "width=1400,height=900",
                               );
@@ -410,7 +415,7 @@ export function AppSidebarFieldSurvey() {
         </div>
 
         {/* User Profile */}
-        {user && (
+        {!hidePersonal && user && (
           <button
             onClick={() => setMyPageOpen(true)}
             className="flex items-center gap-3 px-5 py-4 hover:bg-gray-100/50 transition-colors cursor-pointer"

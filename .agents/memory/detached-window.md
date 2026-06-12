@@ -41,3 +41,8 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 ## SheetTitle/DialogTitle 주의
 - Sheet/Dialog를 DetachedWindow로 바꿀 때 `SheetTitle`/`DialogTitle`(Radix Title)은 Root context가 필요하므로 **일반 div로 교체**. `SheetHeader`는 plain div라 그대로 둬도 됨.
 - 모달 셸 교체 시 내부 스크롤 영역의 `maxHeight: calc(90vh - N)` 같은 모달 기준 높이는 분리창(100vh)에선 빈공간이 생기므로 `flex:1 + minHeight:0`(부모는 height:100vh flex column)으로 바꿔 창을 꽉 채운다.
+
+## query param 기반 분리창 감지는 sessionStorage로 고정
+- 분리창을 `?detached=1`로 열고 query param만으로 감지하면, 분리창 안에서 다른 경로로 setLocation 이동 시 query가 유실돼 감지가 풀린다(사이드바/플로팅이 다시 나타남).
+  - **Why:** wouter setLocation은 쿼리스트링을 보존하지 않음. 각 브라우저 창은 별도 JS 컨텍스트라 모듈 캐시/sessionStorage가 창 단위로 격리됨.
+  - **How to apply:** `isDetachedWindow()` 같은 헬퍼에서 최초 진입 시 `?detached=1`을 감지하면 sessionStorage에 기록 후 모듈변수 캐시. 이후엔 sessionStorage로 판정 → 창 내 라우팅에도 분리창 상태 유지. 팝업 차단 fallback(같은 탭)은 detached 미설정이라 자연히 일반 모드.

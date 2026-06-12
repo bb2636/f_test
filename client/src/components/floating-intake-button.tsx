@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DetachedWindow } from "@/components/detached-window";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { isDetachedWindow } from "@/lib/detached-window";
 import Intake from "@/pages/intake";
 
 interface Recipient {
@@ -82,6 +83,9 @@ export function FloatingIntakeButton() {
       });
     },
   });
+
+  // 분리창(보고서 열람/도면작성/증빙자료 팝업)에서는 접수+/문자발송 플로팅 버튼 숨김.
+  if (isDetachedWindow()) return null;
 
   const hiddenPaths = ['/', '/login', '/intake', '/forbidden', '/not-found'];
   if (hiddenPaths.includes(location)) return null;
