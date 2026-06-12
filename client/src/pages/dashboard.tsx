@@ -41,6 +41,15 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -67,6 +76,74 @@ import { DateRangeModal } from "@/components/DateRangeModal";
 
 type PeriodType = "all" | "today" | "thisMonth" | "lastMonth" | "custom";
 type StaffTabType = "reception" | "pending" | "insurance" | "partner";
+
+// 공지 첨부(이미지/파일) 렌더 — 상세 팝업/자동 팝업 공용
+function NoticeAttachments({ images }: { images?: string | null }) {
+  if (!images) return null;
+  let imgs: any[];
+  try {
+    imgs = JSON.parse(images);
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(imgs) || imgs.length === 0) return null;
+  return (
+    <div className="mt-3 space-y-2">
+      {imgs.map((img: any, i: number) =>
+        img.fileType?.startsWith("image/") ||
+        (!img.fileType && img.url && !img.url.endsWith(".pdf")) ? (
+          <img
+            key={i}
+            src={img.url}
+            alt={img.fileName || "첨부 이미지"}
+            className="w-full rounded-lg border border-slate-200 cursor-pointer"
+            style={{ maxHeight: "300px", objectFit: "contain" }}
+            onClick={() => window.open(img.url, "_blank")}
+          />
+        ) : (
+          <div
+            key={i}
+            className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+            onClick={() => {
+              const url = img.url;
+              if (url.startsWith("data:")) {
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = img.fileName || "첨부파일";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              } else {
+                window.open(url, "_blank");
+              }
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded flex items-center justify-center"
+              style={{ background: "rgba(0, 143, 237, 0.1)" }}
+            >
+              <FileText className="w-5 h-5" style={{ color: "#008FED" }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div
+                className="truncate"
+                style={{ fontFamily: "Pretendard", fontSize: "13px", fontWeight: 500, color: "#0C0C0C" }}
+              >
+                {img.fileName || "첨부파일"}
+              </div>
+              {img.fileSize && (
+                <div style={{ fontFamily: "Pretendard", fontSize: "11px", color: "#686A6E" }}>
+                  {(img.fileSize / 1024).toFixed(1)}KB
+                </div>
+              )}
+            </div>
+            <Download className="w-4 h-4" style={{ color: "#686A6E" }} />
+          </div>
+        ),
+      )}
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -156,8 +233,15 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  const { data: notices = [] } = useQuery<Notice[]>({
+  const { data: notices = [], isSuccess: noticesLoaded } = useQuery<Notice[]>({
     queryKey: ["/api/notices"],
+    enabled: !!user,
+  });
+
+  const { data: readNoticeIds = [], isSuccess: readsLoaded } = useQuery<
+    string[]
+  >({
+    queryKey: ["/api/notices/reads"],
     enabled: !!user,
   });
 
@@ -167,6 +251,50 @@ export default function Dashboard() {
   });
 
   const [isNoticesSheetOpen, setIsNoticesSheetOpen] = useState(false);
+  const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
+  const [autoPopupQueue, setAutoPopupQueue] = useState<Notice[]>([]);
+  const [confirmChecked, setConfirmChecked] = useState(false);
+  const popupInitRef = useRef(false);
+
+  const markNoticeReadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest("POST", `/api/notices/${id}/read`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notices/reads"] });
+    },
+  });
+
+  // 신규(미확인) 공지가 있으면 로그인 후 자동 팝업 — 마운트당 1회 큐 구성
+  // notices/reads 모두 성공 로드된 뒤에만 판정(실패 시 전부 미확인 오판 방지)
+  useEffect(() => {
+    if (popupInitRef.current) return;
+    if (!user || !noticesLoaded || !readsLoaded) return;
+    popupInitRef.current = true;
+    const unread = notices.filter((n) => !readNoticeIds.includes(n.id));
+    if (unread.length > 0) {
+      setAutoPopupQueue(unread);
+      setConfirmChecked(false);
+    }
+  }, [user, noticesLoaded, readsLoaded, notices, readNoticeIds]);
+
+  const currentAutoNotice = autoPopupQueue[0] ?? null;
+
+  // 서버 읽음 기록 성공 시에만 닫기(dequeue) — 실패하면 그대로 두고 재시도 유도
+  const handleConfirmAutoNotice = async () => {
+    if (!currentAutoNotice || !confirmChecked) return;
+    try {
+      await markNoticeReadMutation.mutateAsync(currentAutoNotice.id);
+      setAutoPopupQueue((q) => q.slice(1));
+      setConfirmChecked(false);
+    } catch {
+      toast({
+        title: "확인 처리 실패",
+        description: "잠시 후 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const { data: allUsers = [] } = useQuery<Omit<User, "password">[]>({
     queryKey: ["/api/users"],
@@ -1504,7 +1632,14 @@ export default function Dashboard() {
                 ) : (
                   notices.slice(0, 3).map((notice) => (
                     <li key={notice.id} className="leading-6">
-                      {notice.title}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedNotice(notice)}
+                        className="text-left hover:underline hover:text-[#253396] transition-colors"
+                        data-testid={`notice-title-${notice.id}`}
+                      >
+                        {notice.title}
+                      </button>
                     </li>
                   ))
                 )}
@@ -1714,6 +1849,99 @@ export default function Dashboard() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* 공지 제목 클릭 시 상세 팝업 */}
+      <Dialog
+        open={!!selectedNotice}
+        onOpenChange={(open) => {
+          if (!open) setSelectedNotice(null);
+        }}
+      >
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="pr-6 text-left">
+              {selectedNotice?.title}
+            </DialogTitle>
+            {selectedNotice && (
+              <DialogDescription className="text-left">
+                {new Date(selectedNotice.createdAt).toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                })}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          {selectedNotice?.content && (
+            <p className="text-sm text-slate-700 whitespace-pre-wrap">
+              {selectedNotice.content}
+            </p>
+          )}
+          <NoticeAttachments images={selectedNotice?.images} />
+        </DialogContent>
+      </Dialog>
+
+      {/* 신규 공지 자동 팝업 — '확인' 체크 후에만 닫힘 */}
+      <Dialog open={!!currentAutoNotice} onOpenChange={() => {}}>
+        <DialogContent
+          className="max-w-lg max-h-[85vh] overflow-y-auto [&>button]:hidden"
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-left">
+              공지사항{" "}
+              <span className="text-xs font-bold text-[#EF4444]">필독</span>
+            </DialogTitle>
+            {currentAutoNotice && (
+              <DialogDescription className="text-left">
+                {new Date(currentAutoNotice.createdAt).toLocaleDateString(
+                  "ko-KR",
+                  { year: "numeric", month: "2-digit", day: "2-digit" },
+                )}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          {currentAutoNotice && (
+            <div>
+              <h4 className="font-semibold text-slate-900">
+                {currentAutoNotice.title}
+              </h4>
+              {currentAutoNotice.content && (
+                <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">
+                  {currentAutoNotice.content}
+                </p>
+              )}
+              <NoticeAttachments images={currentAutoNotice.images} />
+            </div>
+          )}
+          <div className="mt-2 flex items-center gap-2 border-t pt-4">
+            <Checkbox
+              id="notice-confirm"
+              checked={confirmChecked}
+              onCheckedChange={(v) => setConfirmChecked(v === true)}
+              data-testid="checkbox-notice-confirm"
+            />
+            <label
+              htmlFor="notice-confirm"
+              className="text-sm text-slate-700 cursor-pointer select-none"
+            >
+              확인
+            </label>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              disabled={!confirmChecked || markNoticeReadMutation.isPending}
+              onClick={handleConfirmAutoNotice}
+              style={{ background: "#253396", color: "#fff" }}
+              data-testid="button-notice-confirm"
+            >
+              닫기
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 새 문의 모달 */}
       {showNewInquiryModal && (

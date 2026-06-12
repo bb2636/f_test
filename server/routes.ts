@@ -8630,6 +8630,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 현재 사용자가 확인(읽음)한 공지 ID 목록
+  app.get("/api/notices/reads", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+    try {
+      const ids = await storage.getReadNoticeIds(req.session.userId);
+      res.json(ids);
+    } catch (error) {
+      console.error("Get notice reads error:", error);
+      res
+        .status(500)
+        .json({ error: "공지 확인 정보를 조회하는 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 공지 확인(읽음) 처리
+  app.post("/api/notices/:id/read", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+    try {
+      await storage.markNoticeRead(req.session.userId, req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      // 존재하지 않는 공지(외래키 위반)는 404로 처리
+      if (error?.code === "23503") {
+        return res.status(404).json({ error: "공지사항을 찾을 수 없습니다" });
+      }
+      console.error("Mark notice read error:", error);
+      res
+        .status(500)
+        .json({ error: "공지 확인 처리 중 오류가 발생했습니다" });
+    }
+  });
+
   // Create notice (admin only)
   app.post("/api/notices", async (req, res) => {
     if (!req.session?.userId) {

@@ -52,6 +52,8 @@ import {
   type Notice,
   type InsertNotice,
   notices,
+  type NoticeRead,
+  noticeReads,
   type CaseChangeLog,
   type InsertCaseChangeLog,
   caseChangeLogs,
@@ -488,6 +490,8 @@ export interface IStorage {
     data: { title: string; content: string; images?: string | null },
   ): Promise<Notice | null>;
   deleteNotice(id: string): Promise<void>;
+  getReadNoticeIds(userId: string): Promise<string[]>;
+  markNoticeRead(userId: string, noticeId: string): Promise<void>;
   deleteInquiry(id: string): Promise<void>;
   // Asset cloning methods (for syncing from related cases)
   getRelatedCaseWithDrawing(
@@ -2745,6 +2749,14 @@ export class MemStorage implements IStorage {
   }
 
   async deleteNotice(id: string): Promise<void> {
+    throw new Error("Notice methods not implemented in MemStorage");
+  }
+
+  async getReadNoticeIds(userId: string): Promise<string[]> {
+    throw new Error("Notice methods not implemented in MemStorage");
+  }
+
+  async markNoticeRead(userId: string, noticeId: string): Promise<void> {
     throw new Error("Notice methods not implemented in MemStorage");
   }
 
@@ -6470,6 +6482,21 @@ export class DbStorage implements IStorage {
 
   async deleteNotice(id: string): Promise<void> {
     await db.delete(notices).where(eq(notices.id, id));
+  }
+
+  async getReadNoticeIds(userId: string): Promise<string[]> {
+    const rows = await db
+      .select({ noticeId: noticeReads.noticeId })
+      .from(noticeReads)
+      .where(eq(noticeReads.userId, userId));
+    return rows.map((r) => r.noticeId);
+  }
+
+  async markNoticeRead(userId: string, noticeId: string): Promise<void> {
+    await db
+      .insert(noticeReads)
+      .values({ userId, noticeId })
+      .onConflictDoNothing();
   }
 
   async deleteInquiry(id: string): Promise<void> {

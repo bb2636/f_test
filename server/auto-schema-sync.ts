@@ -30,6 +30,13 @@ async function ensureColumns(label: string, dbUrl: string | undefined) {
         UNIQUE(location, category, work_name)
       )`,
       `ALTER TABLE cases ADD COLUMN IF NOT EXISTS created_at_timestamp text`,
+      `CREATE TABLE IF NOT EXISTS notice_reads (
+        id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id varchar NOT NULL REFERENCES users(id),
+        notice_id varchar NOT NULL REFERENCES notices(id) ON DELETE CASCADE,
+        created_at timestamp DEFAULT NOW() NOT NULL,
+        CONSTRAINT notice_reads_user_id_notice_id_unique UNIQUE (user_id, notice_id)
+      )`,
       // ========== [accidentCause DB-level 보호 트리거 2026-05-19] ==========
       // 사용자 보고: 입력한 사고원인이 반복적으로 사라짐.
       // 코드 레벨 가드(updateCase/updateCaseFieldSurvey/syncFieldSurvey)는 이미

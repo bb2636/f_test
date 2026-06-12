@@ -2,4 +2,5 @@
 - [다건 상태변경은 서버 단일 트랜잭션](parallel-mutation-sms-suppression.md) — 다건 상태변경은 클라 병렬 mutate 말고 서버 트랜잭션 엔드포인트로(전부 성공/롤백); 불가피한 병렬 부수효과 억제는 mutate 변수 플래그로
 - [분리형 창(DetachedWindow)](detached-window.md) — 팝업을 별도 브라우저 창으로: 자식창 별도 createRoot+Provider 재제공(단순 createPortal은 이벤트 깨짐), 포털은 usePortalContainer로 분리창 라우팅, 토스트/click-outside는 메인창 커플링 남음
 - [접수취소 연관건 그룹핑 불일치](cancel-related-grouping.md) — 취소 후보를 caseNumber prefix(마지막 세그먼트 제거) 휴리스틱으로 묶어 누락; 정식 키는 caseGroupId(보험사고번호). 세 prefix/suffix 규칙이 제각각
+- [스키마 변경 적용 경로](schema-sync.md) — 새 테이블/컬럼은 shared/schema.ts + server/auto-schema-sync.ts(매 기동 DEV/PROD idempotent)에 추가; db:push는 대화형이라 불안정·PROD 누락 위험
 - [이메일 master 참조와 단체발송](email-master-cc-group-send.md) — 참조 CC는 sendEmailWithAttachment 내부서 1회 부착; 수신자별 루프 발송은 참조 중복 → to 콤마결합 1회 발송(단체발송)으로

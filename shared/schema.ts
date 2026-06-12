@@ -869,6 +869,26 @@ export const insertNoticeSchema = createInsertSchema(notices).omit({
 export type Notice = typeof notices.$inferSelect;
 export type InsertNotice = z.infer<typeof insertNoticeSchema>;
 
+// 공지사항 확인(읽음) 기록 — 사용자별 자동 팝업 확인 추적
+export const noticeReads = pgTable(
+  "notice_reads",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id),
+    noticeId: varchar("notice_id")
+      .notNull()
+      .references(() => notices.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    userNoticeUnique: unique().on(table.userId, table.noticeId),
+  }),
+);
+
+export type NoticeRead = typeof noticeReads.$inferSelect;
+
 // 케이스 변경 로그 테이블
 export const caseChangeLogs = pgTable("case_change_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
