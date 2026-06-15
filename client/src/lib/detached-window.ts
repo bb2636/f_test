@@ -22,6 +22,52 @@ export function isDetachedWindow(): boolean {
   return cached;
 }
 
+// 보고서 열람 팝업 열기 — 건별로 분리된 창으로 띄운다.
+// 핵심: 창 이름을 건별로 유니크하게 줘서 다른 건은 새 창으로 열리고,
+//   같은 건을 다시 열면 기존 창을 그대로 포커스한다(중복 방지).
+// 또한 window.open에 위치를 지정하지 않으면 브라우저가 매번 같은 자리에 새 창을
+//   겹쳐 띄워(별도 창이지만) 앞 창을 완전히 가려 "내용이 바뀐 것처럼" 보인다.
+//   → 열 때마다 위치를 계단식으로 어긋나게 해 시각적으로도 분리되게 한다.
+const REPORT_WIN_W = 1500;
+const REPORT_WIN_H = 920;
+const REPORT_CASCADE_STEP = 36; // 창마다 어긋나는 픽셀
+const REPORT_CASCADE_MAX = 8; // 이 횟수 후 처음 위치로 순환
+const openReportWindows = new Map<string, Window>();
+let reportCascadeIndex = 0;
+
+export function openReportWindow(
+  caseId: string,
+  from?: string,
+): Window | null {
+  const name = `reportViewer-${caseId}`;
+
+  // 이미 같은 건의 창이 열려 있으면 새로 열지 않고 그 창을 포커스한다.
+  const existing = openReportWindows.get(name);
+  if (existing && !existing.closed) {
+    existing.focus();
+    return existing;
+  }
+
+  // 화면 중앙을 기준으로 열 때마다 조금씩 어긋나게 한다(화면 밖으로 나가지 않도록 클램프).
+  const offset = (reportCascadeIndex % REPORT_CASCADE_MAX) * REPORT_CASCADE_STEP;
+  reportCascadeIndex += 1;
+  const availW = window.screen?.availWidth ?? REPORT_WIN_W;
+  const availH = window.screen?.availHeight ?? REPORT_WIN_H;
+  const baseLeft = Math.max(0, Math.round((availW - REPORT_WIN_W) / 2));
+  const baseTop = Math.max(0, Math.round((availH - REPORT_WIN_H) / 2));
+  const left = Math.max(0, Math.min(baseLeft + offset, availW - REPORT_WIN_W));
+  const top = Math.max(0, Math.min(baseTop + offset, availH - REPORT_WIN_H));
+
+  const fromParam = from ? `&from=${from}` : "";
+  const win = window.open(
+    `/field-survey/report?detached=1&caseId=${caseId}${fromParam}`,
+    name,
+    `width=${REPORT_WIN_W},height=${REPORT_WIN_H},left=${left},top=${top}`,
+  );
+  if (win) openReportWindows.set(name, win);
+  return win;
+}
+
 // 도면작성/증빙자료 "전용" 팝업(사이드바 팝업 아이콘으로 새로 띄운 단독 창)인지 판별.
 // 이 경우에만 좌측 사이드바를 전체 제거한다. 보고서 열람 팝업 안에서 제목 클릭으로
 // 도면/증빙으로 이동하는 경우(solo 아님)는 보고서 팝업 사이드바를 그대로 유지한다.

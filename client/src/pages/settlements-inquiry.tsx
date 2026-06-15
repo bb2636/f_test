@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { prefetchFieldReport } from "@/lib/prefetch";
+import { openReportWindow } from "@/lib/detached-window";
 import { getStatusDisplayText } from "@/lib/case-status";
 import { useCompactPagination } from "@/lib/use-compact-pagination";
 import { CompactPagination } from "@/components/ui/compact-pagination";
@@ -1754,12 +1755,9 @@ export default function SettlementsInquiry({ filterMode = "claim" }: Settlements
                                       setHighlightedRowId(row.id);
                                       localStorage.setItem("selectedFieldSurveyCaseId", caseId);
                                       // 보고서 열람은 건별 별도 브라우저 창으로(다른 건은 새 창,
-                                      // 같은 건 재클릭 시 기존 창 포커스). 팝업 차단 시 같은 탭 fallback.
-                                      const reportWin = window.open(
-                                        `/field-survey/report?detached=1&caseId=${caseId}&from=settlement`,
-                                        `reportViewer-${caseId}`,
-                                        "width=1500,height=920",
-                                      );
+                                      // 같은 건 재클릭 시 기존 창 포커스, 열 때마다 위치를 어긋나게).
+                                      // 팝업 차단 시 같은 탭 fallback.
+                                      const reportWin = openReportWindow(caseId, "settlement");
                                       if (!reportWin) {
                                         localStorage.setItem("returnToComprehensiveProgress", "true");
                                         setLocation("/field-survey/report");

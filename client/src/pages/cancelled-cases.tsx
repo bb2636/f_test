@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { prefetchFieldReport } from "@/lib/prefetch";
+import { openReportWindow } from "@/lib/detached-window";
 import { useCompactPagination } from "@/lib/use-compact-pagination";
 import { CompactPagination } from "@/components/ui/compact-pagination";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -1278,15 +1279,9 @@ export default function CancelledCases() {
                               onFocus={prefetchFieldReport}
                               onClick={() => {
                                 localStorage.setItem("selectedFieldSurveyCaseId", selectedCase.id);
-                                // 보고서 열람은 별도 브라우저 창으로(건별 분리).
-                                // caseId를 쿼리로 넘겨 그 창을 해당 케이스에 고정하고,
-                                // 창 이름을 케이스별로 분리해 다른 건은 새 창으로 뜨게 함
-                                // (같은 건을 다시 열면 그 창이 그대로 포커스됨).
-                                const reportWin = window.open(
-                                  `/field-survey/report?detached=1&caseId=${selectedCase.id}&from=cancelled`,
-                                  `reportViewer-${selectedCase.id}`,
-                                  "width=1500,height=920",
-                                );
+                                // 보고서 열람은 건별 별도 브라우저 창으로(다른 건은 새 창,
+                                // 같은 건 재클릭 시 기존 창 포커스, 열 때마다 위치를 어긋나게).
+                                const reportWin = openReportWindow(selectedCase.id, "cancelled");
                                 // 팝업이 차단되면 기존처럼 같은 탭에서 연다.
                                 if (!reportWin) {
                                   localStorage.setItem("returnToComprehensiveProgress", "true");
