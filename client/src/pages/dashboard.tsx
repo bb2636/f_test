@@ -265,15 +265,18 @@ export default function Dashboard() {
     },
   });
 
-  // 신규(미확인) 공지가 있으면 로그인 후 자동 팝업 — 마운트당 1회 큐 구성
-  // notices/reads 모두 성공 로드된 뒤에만 판정(실패 시 전부 미확인 오판 방지)
+  // 마지막으로 등록된 최신 공지 1건만 로그인 후 자동 팝업 — 마운트당 1회 판정
+  // notices/reads 모두 성공 로드된 뒤에만 판정(실패 시 미확인 오판 방지)
   useEffect(() => {
     if (popupInitRef.current) return;
     if (!user || !noticesLoaded || !readsLoaded) return;
     popupInitRef.current = true;
-    const unread = notices.filter((n) => !readNoticeIds.includes(n.id));
-    if (unread.length > 0) {
-      setAutoPopupQueue(unread);
+    const latest = [...notices].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )[0];
+    if (latest && !readNoticeIds.includes(latest.id)) {
+      setAutoPopupQueue([latest]);
       setConfirmChecked(false);
     }
   }, [user, noticesLoaded, readsLoaded, notices, readNoticeIds]);
