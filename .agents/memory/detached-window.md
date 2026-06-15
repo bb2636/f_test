@@ -46,3 +46,7 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 - 분리창을 `?detached=1`로 열고 query param만으로 감지하면, 분리창 안에서 다른 경로로 setLocation 이동 시 query가 유실돼 감지가 풀린다(사이드바/플로팅이 다시 나타남).
   - **Why:** wouter setLocation은 쿼리스트링을 보존하지 않음. 각 브라우저 창은 별도 JS 컨텍스트라 모듈 캐시/sessionStorage가 창 단위로 격리됨.
   - **How to apply:** `isDetachedWindow()` 같은 헬퍼에서 최초 진입 시 `?detached=1`을 감지하면 sessionStorage에 기록 후 모듈변수 캐시. 이후엔 sessionStorage로 판정 → 창 내 라우팅에도 분리창 상태 유지. 팝업 차단 fallback(같은 탭)은 detached 미설정이라 자연히 일반 모드.
+- **분리창 고정 ID도 sessionStorage에 박을 것(창 간 내용 동기화 차단):** detached 보고서는 자기 caseId에 고정돼야 하는데, `isDetachedReport`를 매 렌더 query에서만 계산하면 창 내 라우팅으로 query 유실 시 false로 뒤집힌다 → 공유 `localStorage`(예: `selectedFieldSurveyCaseId`)를 폴링하는 동기화 effect가 켜진다. 이 키는 모든 창이 공유 + 여는 쪽이 클릭마다 덮어쓰므로, 열린 모든 분리창이 "마지막 클릭한 건"으로 한꺼번에 동기화돼 버린다(증상: 별도 창은 떠도 내용이 전부 같아짐).
+  - **Why:** localStorage는 동일 origin 모든 창이 공유하고 storage 이벤트/폴링으로 전파됨. sessionStorage는 window.open으로 연 창마다 별도라 창 간 비공유.
+  - **How to apply:** detached 여부 + 고정 ID를 둘 다 sessionStorage에 최초 1회 저장(`isDetachedReport = queryDetached || stickyDetached`, `pinnedId = queryId || stickyId`). 폴링/storage 동기화 effect는 `if (isDetachedReport) return;`로 분리창에선 항상 꺼지게. sessionStorage write는 렌더 중이 아니라 effect에서.
+- **여러 분리창은 위치도 어긋나게:** `window.open(url, name, features)`에 left/top을 안 주면 브라우저가 매번 같은 자리에 새 창을 겹쳐 띄워, 별도 창인데도 앞 창을 가려 "내용이 바뀐 것처럼" 보인다. 창 이름은 건별 유니크(`reportViewer-<id>`)로 분리 + 열 때마다 계단식 offset(화면 밖 클램프). 같은 건 재클릭은 Map 추적+`closed` 체크로 기존 창 focus(중복 방지).

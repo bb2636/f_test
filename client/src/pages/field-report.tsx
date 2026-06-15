@@ -249,11 +249,44 @@ function safeParseMaterialCosts(
 
 export default function FieldReport() {
   const { toast } = useToast();
-  // 별도 창(보고서 열람)으로 열렸는지 + 그 창에 고정할 케이스 ID (쿼리파라미터)
+  // 별도 창(보고서 열람)으로 열렸는지 + 그 창에 고정할 케이스 ID.
+  // 핵심: detached 여부/고정 caseId를 sessionStorage(창 단위, 다른 창과 공유 안 됨)에
+  //   한 번 박아둔다. window.location.search만 보면 팝업 안에서 라우팅으로 쿼리스트링이
+  //   사라질 때 detached가 false로 뒤집혀 localStorage 폴링이 켜지고,
+  //   공유 localStorage(마지막 클릭 건) 값으로 모든 창 내용이 동기화돼 버린다.
+  //   sessionStorage로 고정하면 각 창이 자기 건에 영구 고정된다.
+  const REPORT_DETACHED_KEY = "floxn:reportDetached";
+  const REPORT_CASEID_KEY = "floxn:reportCaseId";
   const reportSearchParams = new URLSearchParams(window.location.search);
-  const isDetachedReport = reportSearchParams.get("detached") === "1";
-  const detachedCaseId = reportSearchParams.get("caseId") || "";
+  const queryDetached = reportSearchParams.get("detached") === "1";
+  const queryCaseId = reportSearchParams.get("caseId") || "";
+  const stickyDetached = (() => {
+    try {
+      return sessionStorage.getItem(REPORT_DETACHED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  })();
+  const stickyCaseId = (() => {
+    try {
+      return sessionStorage.getItem(REPORT_CASEID_KEY) || "";
+    } catch {
+      return "";
+    }
+  })();
+  const isDetachedReport = queryDetached || stickyDetached;
+  const detachedCaseId = queryCaseId || stickyCaseId;
   const reportFrom = reportSearchParams.get("from") || "";
+
+  // 최초 detached 진입 시 창 단위 sessionStorage에 고정(이후 쿼리 유실돼도 유지).
+  // 렌더 부수효과를 피하려 effect로 영속화 — 첫 렌더는 쿼리값으로 이미 정상 동작.
+  useEffect(() => {
+    if (!queryDetached) return;
+    try {
+      sessionStorage.setItem(REPORT_DETACHED_KEY, "1");
+      if (queryCaseId) sessionStorage.setItem(REPORT_CASEID_KEY, queryCaseId);
+    } catch {}
+  }, [queryDetached, queryCaseId]);
 
   // 현장입력에서 선택한 케이스 ID 가져오기 (문자열 "null" 방지)
   const getInitialCaseId = () => {
