@@ -1,4 +1,10 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  REPORT_DETACHED_KEY,
+  REPORT_CASEID_KEY,
+  REPORT_CASE_CHANGE_EVENT,
+  setDetachedReportCaseId,
+} from "@/lib/detached-window";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -255,8 +261,6 @@ export default function FieldReport() {
   //   사라질 때 detached가 false로 뒤집혀 localStorage 폴링이 켜지고,
   //   공유 localStorage(마지막 클릭 건) 값으로 모든 창 내용이 동기화돼 버린다.
   //   sessionStorage로 고정하면 각 창이 자기 건에 영구 고정된다.
-  const REPORT_DETACHED_KEY = "floxn:reportDetached";
-  const REPORT_CASEID_KEY = "floxn:reportCaseId";
   const reportSearchParams = new URLSearchParams(window.location.search);
   const queryDetached = reportSearchParams.get("detached") === "1";
   const queryCaseId = reportSearchParams.get("caseId") || "";
@@ -313,6 +317,18 @@ export default function FieldReport() {
       window.removeEventListener('storage', sync);
       clearInterval(id);
     };
+  }, [isDetachedReport]);
+
+  // 별도 창 안에서 접수번호 탭/연관건 전환 시 — 같은 창에만 도는 CustomEvent로 동기화한다.
+  // (공유 localStorage/storage 이벤트는 다른 창까지 바꿔버리므로 분리창에선 쓰지 않는다.)
+  useEffect(() => {
+    if (!isDetachedReport) return;
+    const onCaseChange = (e: Event) => {
+      const next = (e as CustomEvent<string>).detail || "";
+      if (next) setSelectedCaseId((prev) => (prev !== next ? next : prev));
+    };
+    window.addEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
+    return () => window.removeEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
   }, [isDetachedReport]);
 
   // 보고서 열람 화면에 들어오면 브라우저 탭 제목 설정 (분리창/인앱 모두)
@@ -1559,11 +1575,16 @@ export default function FieldReport() {
                             key={suffixCase.caseId}
                             onClick={() => {
                               if (!isCurrentCase) {
-                                // localStorage와 상태 모두 업데이트
-                                localStorage.setItem(
-                                  "selectedFieldSurveyCaseId",
-                                  suffixCase.caseId,
-                                );
+                                if (isDetachedReport) {
+                                  // 분리창: 공유 localStorage 대신 창 단위로만 전환(다른 창에 누수 X).
+                                  setDetachedReportCaseId(suffixCase.caseId);
+                                } else {
+                                  // 인앱: localStorage로 다른 페이지와 동기화.
+                                  localStorage.setItem(
+                                    "selectedFieldSurveyCaseId",
+                                    suffixCase.caseId,
+                                  );
+                                }
                                 setSelectedCaseId(suffixCase.caseId);
                                 setIsRelatedCasesPopoverOpen(false);
                                 // React Query 캐시 무효화하여 새 데이터 fetch

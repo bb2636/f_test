@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Case } from "@shared/schema";
 import { format } from "date-fns";
+import {
+  isDetachedWindow,
+  getDetachedReportCaseId,
+  setDetachedReportCaseId,
+  REPORT_CASE_CHANGE_EVENT,
+} from "@/lib/detached-window";
 
 function getCaseNumberPrefix(caseNumber?: string | null): string {
   if (!caseNumber) return "";
@@ -44,13 +50,32 @@ function extractUnitLabel(
 }
 
 export function CaseReceiptTabs() {
+  // 별도 창(보고서 분리창)에서는 공유 localStorage를 폴링하면 다른 창에서 건을 바꿀 때
+  // 같이 동기화돼 버린다. 분리창은 창 단위(sessionStorage) + 같은 창 CustomEvent로만 동작.
+  const detached = isDetachedWindow();
   const [selectedCaseId, setSelectedCaseId] = useState<string>(() => {
+    if (detached) {
+      // URL의 caseId가 그 창이 처음 요청한 건 — field-report와 동일하게 URL을 우선한다.
+      // (새 창은 opener의 sessionStorage를 복사하므로 stale 값이 URL을 덮어쓰지 않게.)
+      const fromQuery =
+        new URLSearchParams(window.location.search).get("caseId") || "";
+      return fromQuery || getDetachedReportCaseId();
+    }
     const raw = localStorage.getItem("selectedFieldSurveyCaseId");
     return raw && raw !== "null" && raw !== "undefined" ? raw : "";
   });
 
-  // localStorage 폴링 + storage 이벤트 (다른 페이지/탭과 동기화)
+  // 동기화: 분리창은 같은 창에만 도는 CustomEvent, 인앱은 공유 localStorage(폴링+storage).
   useEffect(() => {
+    if (detached) {
+      const onCaseChange = (e: Event) => {
+        const next = (e as CustomEvent<string>).detail || "";
+        if (next) setSelectedCaseId((prev) => (prev !== next ? next : prev));
+      };
+      window.addEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
+      return () =>
+        window.removeEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
+    }
     const sync = () => {
       const raw = localStorage.getItem("selectedFieldSurveyCaseId");
       const next = raw && raw !== "null" && raw !== "undefined" ? raw : "";
@@ -62,7 +87,7 @@ export function CaseReceiptTabs() {
       window.removeEventListener("storage", sync);
       clearInterval(id);
     };
-  }, []);
+  }, [detached]);
 
   const { data: cases } = useQuery<Case[]>({
     queryKey: ["/api/cases"],
@@ -90,8 +115,13 @@ export function CaseReceiptTabs() {
 
   const handleSelect = (id: string) => {
     if (id === selectedCaseId) return;
-    localStorage.setItem("selectedFieldSurveyCaseId", id);
     setSelectedCaseId(id);
+    if (detached) {
+      // 분리창: 공유 localStorage 대신 창 단위로만 전환(다른 창에 누수 X).
+      setDetachedReportCaseId(id);
+      return;
+    }
+    localStorage.setItem("selectedFieldSurveyCaseId", id);
     // 같은 탭의 다른 페이지가 즉시 반응하도록 storage 이벤트 강제 dispatch
     try {
       window.dispatchEvent(new StorageEvent("storage", { key: "selectedFieldSurveyCaseId", newValue: id }));

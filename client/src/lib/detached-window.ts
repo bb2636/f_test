@@ -22,6 +22,37 @@ export function isDetachedWindow(): boolean {
   return cached;
 }
 
+// 보고서 분리창의 "현재 보는 건"은 창 단위로만 관리한다(공유 localStorage 금지).
+//   localStorage.setItem은 같은 origin의 다른 창 전체에 storage 이벤트를 발생시켜
+//   내용이 동기화돼 버린다(다른 건으로 새 팝업을 열면 여는 쪽이 localStorage를 덮어써
+//   기존 팝업까지 따라 바뀜). 그래서 분리창에서는 sessionStorage(창 단위)에 저장하고
+//   같은 창 안에서만 전파되는 CustomEvent로 컴포넌트 간 동기화한다(창 간 누수 없음).
+export const REPORT_DETACHED_KEY = "floxn:reportDetached";
+export const REPORT_CASEID_KEY = "floxn:reportCaseId";
+export const REPORT_CASE_CHANGE_EVENT = "floxn:reportCaseChange";
+
+export function getDetachedReportCaseId(): string {
+  try {
+    const v = sessionStorage.getItem(REPORT_CASEID_KEY);
+    return v && v !== "null" && v !== "undefined" ? v : "";
+  } catch {
+    return "";
+  }
+}
+
+// 분리창 안에서 보는 건을 바꾼다 — sessionStorage에 고정 + 같은 창에만 CustomEvent 전파.
+// localStorage는 절대 건드리지 않는다(다른 창으로 새어나감).
+export function setDetachedReportCaseId(caseId: string): void {
+  try {
+    sessionStorage.setItem(REPORT_CASEID_KEY, caseId);
+  } catch {}
+  try {
+    window.dispatchEvent(
+      new CustomEvent(REPORT_CASE_CHANGE_EVENT, { detail: caseId }),
+    );
+  } catch {}
+}
+
 // 보고서 열람 팝업 열기 — 건별로 분리된 창으로 띄운다.
 // 핵심: 창 이름을 건별로 유니크하게 줘서 다른 건은 새 창으로 열리고,
 //   같은 건을 다시 열면 기존 창을 그대로 포커스한다(중복 방지).
