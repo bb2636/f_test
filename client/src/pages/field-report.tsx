@@ -3717,7 +3717,7 @@ export default function FieldReport() {
                     {/* [2026-05-13] 사고원인 — 라벨은 값 박스 첫 줄과 상단 정렬(items-start + 라벨 padding-top 8px로 박스 padding과 맞춤). 여러 줄 텍스트여도 위에 다른 항목들과 동일한 간격 유지. */}
                     <div className="flex items-start">
                       <span
-                        className="w-24 shrink-0"
+                        className="w-24 shrink-0 whitespace-pre-line"
                         style={{
                           fontFamily: "Pretendard",
                           fontSize: "13px",
@@ -3726,7 +3726,7 @@ export default function FieldReport() {
                           paddingTop: "8px",
                         }}
                       >
-                        {isLossPreventionCase ? "사고원인(기술소견 포함)" : "피해내용(기술소견 포함)"}
+                        {isLossPreventionCase ? "사고원인\n(기술소견 포함)" : "피해내용\n(기술소견 포함)"}
                       </span>
                       <div
                         style={{

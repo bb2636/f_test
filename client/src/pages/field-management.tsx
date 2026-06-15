@@ -1229,7 +1229,8 @@ export default function FieldManagement() {
                   const cn = selectedCaseData?.caseNumber || "";
                   const suffix = cn.includes("-") ? cn.split("-").pop() : "";
                   const isVictimCase = suffix !== "" && suffix !== "0";
-                  const causeLabel = isVictimCase ? "피해내용(기술소견 포함)" : "사고원인(기술소견 포함)";
+                  const causeBaseLabel = isVictimCase ? "피해내용" : "사고원인";
+                  const causeLabel = `${causeBaseLabel}(기술소견 포함)`;
                   return (
                     <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
                       <div className="flex w-[520px] flex-col gap-1.5">
@@ -1267,7 +1268,7 @@ export default function FieldManagement() {
                       </div>
 
                       <div className="flex flex-1 min-w-[300px] flex-col gap-1.5">
-                        <div className="text-[12px] text-[#6B7280]">{causeLabel}</div>
+                        <div className="text-[12px] text-[#6B7280] whitespace-pre-line">{`${causeBaseLabel}\n(기술소견 포함)`}</div>
                         <textarea
                           className="min-h-[70px] w-full rounded-md border border-[#E5E7EB] bg-white p-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
                           placeholder={causeLabel}
