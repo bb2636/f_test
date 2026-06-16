@@ -1753,7 +1753,7 @@ export default function Dashboard() {
       />
 
       <Sheet open={isNoticesSheetOpen} onOpenChange={setIsNoticesSheetOpen}>
-        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+        <SheetContent side="right" className="w-[520px] sm:w-[520px] sm:max-w-[520px]">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
               공지사항{" "}
@@ -1785,7 +1785,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                   {notice.content && (
-                    <p className="mt-2 text-sm text-slate-600 whitespace-pre-wrap">
+                    <p className="mt-2 text-sm text-slate-600 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                       {notice.content}
                     </p>
                   )}
@@ -1860,9 +1860,9 @@ export default function Dashboard() {
           if (!open) setSelectedNotice(null);
         }}
       >
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
-            <DialogTitle className="pr-6 text-left">
+            <DialogTitle className="pr-6 text-left break-words [overflow-wrap:anywhere]">
               {selectedNotice?.title}
             </DialogTitle>
             {selectedNotice && (
@@ -1876,7 +1876,7 @@ export default function Dashboard() {
             )}
           </DialogHeader>
           {selectedNotice?.content && (
-            <p className="text-sm text-slate-700 whitespace-pre-wrap">
+            <p className="text-sm text-slate-700 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
               {selectedNotice.content}
             </p>
           )}
@@ -1887,7 +1887,7 @@ export default function Dashboard() {
       {/* 신규 공지 자동 팝업 — '확인' 체크 후에만 닫힘 */}
       <Dialog open={!!currentAutoNotice} onOpenChange={() => {}}>
         <DialogContent
-          className="max-w-lg max-h-[85vh] overflow-y-auto [&>button]:hidden"
+          className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto overflow-x-hidden [&>button]:hidden"
           onInteractOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => e.preventDefault()}
         >
@@ -1907,11 +1907,11 @@ export default function Dashboard() {
           </DialogHeader>
           {currentAutoNotice && (
             <div>
-              <h4 className="font-semibold text-slate-900">
+              <h4 className="font-semibold text-slate-900 break-words [overflow-wrap:anywhere]">
                 {currentAutoNotice.title}
               </h4>
               {currentAutoNotice.content && (
-                <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">
+                <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                   {currentAutoNotice.content}
                 </p>
               )}

@@ -7948,7 +7948,7 @@ export default function AdminSettings() {
           <div
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50"
             style={{
-              width: "420px",
+              width: "520px",
               maxHeight: "90vh",
               overflowY: "auto",
               background: "#FDFDFD",
@@ -8550,6 +8550,8 @@ export default function AdminSettings() {
                   lineHeight: "1.8",
                   color: "#0C0C0C",
                   whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
                   padding: "16px",
                   background: "#F9FAFB",
                   borderRadius: "8px",
