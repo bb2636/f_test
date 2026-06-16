@@ -1767,13 +1767,18 @@ export default function Dashboard() {
               </div>
             ) : (
               notices.map((notice) => (
-                <div
+                <button
                   key={notice.id}
-                  className="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors"
+                  type="button"
+                  onClick={() => {
+                    setIsNoticesSheetOpen(false);
+                    setSelectedNotice(notice);
+                  }}
+                  className="w-full text-left p-4 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors"
                   data-testid={`notice-item-${notice.id}`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <h4 className="font-semibold text-slate-900">
+                    <h4 className="min-w-0 font-semibold text-slate-900 break-words [overflow-wrap:anywhere]">
                       {notice.title}
                     </h4>
                     <span className="text-xs text-slate-500 whitespace-nowrap">
@@ -1784,69 +1789,7 @@ export default function Dashboard() {
                       })}
                     </span>
                   </div>
-                  {notice.content && (
-                    <p className="mt-2 text-sm text-slate-600 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
-                      {notice.content}
-                    </p>
-                  )}
-                  {notice.images && (() => {
-                    try {
-                      const imgs = JSON.parse(notice.images);
-                      if (Array.isArray(imgs) && imgs.length > 0) {
-                        return (
-                          <div className="mt-3 space-y-2">
-                            {imgs.map((img: any, i: number) =>
-                              img.fileType?.startsWith("image/") || (!img.fileType && img.url && !img.url.endsWith(".pdf")) ? (
-                                <img
-                                  key={i}
-                                  src={img.url}
-                                  alt={img.fileName || "첨부 이미지"}
-                                  className="w-full rounded-lg border border-slate-200 cursor-pointer"
-                                  style={{ maxHeight: "300px", objectFit: "contain" }}
-                                  onClick={() => window.open(img.url, "_blank")}
-                                />
-                              ) : (
-                                <div
-                                  key={i}
-                                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
-                                  onClick={() => {
-                                    const url = img.url;
-                                    if (url.startsWith("data:")) {
-                                      const link = document.createElement("a");
-                                      link.href = url;
-                                      link.download = img.fileName || "첨부파일";
-                                      document.body.appendChild(link);
-                                      link.click();
-                                      document.body.removeChild(link);
-                                    } else {
-                                      window.open(url, "_blank");
-                                    }
-                                  }}
-                                >
-                                  <div className="w-10 h-10 rounded flex items-center justify-center" style={{ background: "rgba(0, 143, 237, 0.1)" }}>
-                                    <FileText className="w-5 h-5" style={{ color: "#008FED" }} />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="truncate" style={{ fontFamily: "Pretendard", fontSize: "13px", fontWeight: 500, color: "#0C0C0C" }}>
-                                      {img.fileName || "첨부파일"}
-                                    </div>
-                                    {img.fileSize && (
-                                      <div style={{ fontFamily: "Pretendard", fontSize: "11px", color: "#686A6E" }}>
-                                        {(img.fileSize / 1024).toFixed(1)}KB
-                                      </div>
-                                    )}
-                                  </div>
-                                  <Download className="w-4 h-4" style={{ color: "#686A6E" }} />
-                                </div>
-                              )
-                            )}
-                          </div>
-                        );
-                      }
-                      return null;
-                    } catch { return null; }
-                  })()}
-                </div>
+                </button>
               ))
             )}
           </div>
