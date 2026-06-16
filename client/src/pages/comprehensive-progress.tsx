@@ -1383,7 +1383,10 @@ export default function ComprehensiveProgress() {
       const targetCase = cases?.find((c) => c.id === caseId);
       if (targetCase) {
         // 같은 사고의 관련 건(원인/피해세대)을 후보로 모음.
-        //   이미 접수취소/취소대기인 건은 제외하되, 클릭한 건은 항상 포함.
+        //   이미 최종 취소(접수취소)된 건만 제외하고, 취소대기 건은 함께 취소할 수 있도록 후보에 포함.
+        //   (클릭한 건은 항상 포함.)
+        // [2026-06-16] 연관 건이 모두 취소대기일 때 한 번에 취소되지 않던 문제 수정 —
+        //   기존엔 후보에서 취소대기를 제외해 클릭한 1건만 떴음. 취소대기도 후보/기본선택에 포함.
         // [2026-06-11] 그룹 기준을 caseGroupId(보험사고번호 기반 정식 그룹 식별자)로 변경.
         //   기존 접수번호 prefix 휴리스틱(getCaseNumberPrefix)은 채번 형식에 따라
         //   원인세대↔피해세대 prefix가 어긋나 연관 건이 누락되는 문제가 있었음.
@@ -1393,7 +1396,7 @@ export default function ComprehensiveProgress() {
         const candidates = (cases || [])
           .filter((c) => {
             if (c.id === targetCase.id) return true;
-            if (c.status === "접수취소" || c.status === "취소대기") return false;
+            if (c.status === "접수취소") return false;
             // 1순위: caseGroupId 일치(양쪽 모두 값이 있을 때만 신뢰)
             if (groupId && c.caseGroupId) return c.caseGroupId === groupId;
             // 2순위(구형식/누락): 접수번호 prefix 휴리스틱
