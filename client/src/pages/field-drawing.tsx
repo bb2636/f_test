@@ -17,7 +17,6 @@ import html2canvas from "html2canvas";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { formatCaseNumber } from "@/lib/utils";
-import { isDetachedWindow } from "@/lib/detached-window";
 
 interface UploadedImage {
   id: string;
@@ -1311,67 +1310,6 @@ export default function FieldDrawing() {
 
           {/* 저장 버튼 (우측 상단) */}
           <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2" data-ui="save-buttons">
-            {/* 분리창(팝업)에서는 사이드바가 없으므로 기초정보를 버튼 위에 표시 */}
-            {selectedCase && isDetachedWindow() && (
-              <div
-                className="px-4 py-3 rounded-lg"
-                style={{
-                  background: "white",
-                  border: "1px solid rgba(37, 51, 150, 0.15)",
-                  maxWidth: "min(640px, 70vw)",
-                }}
-              >
-                {/* 첫 번째 줄: 보험사명 + 사고번호 */}
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: "#253396" }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: "Pretendard",
-                      fontSize: "15px",
-                      fontWeight: 600,
-                      letterSpacing: "-0.02em",
-                      color: "#0C0C0C",
-                    }}
-                  >
-                    {selectedCase.insuranceCompany || "보험사 미정"}{" "}
-                    {selectedCase.insuranceAccidentNo || ""}
-                  </span>
-                </div>
-
-                {/* 두 번째 줄: 접수번호, 피보험자, 담당자, 주소 */}
-                <div
-                  className="flex items-center gap-4 flex-wrap mt-2"
-                  style={{
-                    fontFamily: "Pretendard",
-                    fontSize: "13px",
-                    fontWeight: 400,
-                    letterSpacing: "-0.02em",
-                    color: "rgba(12, 12, 12, 0.5)",
-                    paddingLeft: "16px",
-                  }}
-                >
-                  <span>접수번호 {formatCaseNumber(selectedCase.caseNumber)}</span>
-                  <span>피보험자 {selectedCase.insuredName || "미정"}</span>
-                  <span>담당자 {selectedCase.assignedPartnerManager || "미정"}</span>
-                  {(() => {
-                    const [base, detail] = selectedCase.victimAddress
-                      ? [selectedCase.victimAddress, selectedCase.victimAddressDetail]
-                      : [selectedCase.insuredAddress, selectedCase.insuredAddressDetail];
-                    if (!base) return null;
-                    const address = `${base}${detail ? ` (${detail})` : ""}`;
-                    return (
-                      <span>
-                        <span style={{ color: "rgba(12, 12, 12, 0.5)" }}>주소</span>{" "}
-                        <span style={{ color: "rgba(12, 12, 12, 0.7)" }}>{address}</span>
-                      </span>
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
             <div className="flex gap-2">
             {/* 관련접수건 도면 가져오기 버튼 - 항상 표시 */}
             {!isReadOnly && (

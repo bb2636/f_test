@@ -50,3 +50,10 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
   - **Why:** sessionStorage는 window.open으로 연 창마다 별도(opener 값 1회 복사 후 비공유)지만, localStorage·storage 이벤트는 창을 가로지른다.
   - **How to apply:** 분리창 상태는 sessionStorage(창 단위 고정값) + **같은 창 안에서만 도는 CustomEvent**(window.dispatchEvent — 창을 안 넘음)로 컴포넌트 간 동기화. 초기값은 URL 쿼리 우선(opener의 stale sessionStorage 복사본이 URL을 덮지 않게), 이후 전환은 CustomEvent. 폴링/storage 동기화는 `if (detached) return;`로 끄고, 분리 여부도 query 유실 대비 sessionStorage에 고정.
 - **여러 분리창은 위치도 어긋나게:** `window.open(url, name, features)`에 left/top을 안 주면 매번 같은 자리에 겹쳐 떠 앞 창을 가려 "내용이 바뀐 것처럼" 보인다. 창 이름 건별 유니크 + 계단식 offset(화면 밖 클램프), 같은 건 재클릭은 Map+`closed` 체크로 기존 창 focus.
+
+## 분리창 종류별로 건(case) 선택 소스가 다름 — 한 덩어리로 묶지 말 것
+- 모든 detached 창을 `if (detached)` 한 분기로 처리하면 안 된다. 종류가 둘이다:
+  - **보고서 열람 분리창**: caseId를 URL 쿼리에 싣고 열며, 창 단위 sessionStorage(`REPORT_CASEID_KEY`) + 같은 창 CustomEvent(`REPORT_CASE_CHANGE_EVENT`)로 건을 관리(다른 창에 누수 X).
+  - **도면작성/증빙 단독 팝업(solo, `?detached=1&solo=1`)**: caseId를 **URL에 안 싣고** 공유 localStorage(`selectedFieldSurveyCaseId`)로만 넘긴다. 그래서 이 창은 인앱과 **동일하게 localStorage 폴링/storage**로 건을 읽어야 한다. sessionStorage 경로를 타면 `selectedCaseId`가 비어 컴포넌트가 `return null` → 상단 바/카드 통째 미렌더.
+  - **How to apply:** `useReportDetached = detached && !isSoloFieldPopup()`로 갈라서 초기 state·sync effect(+deps)·handleSelect를 모두 분기. 보고서만 sessionStorage+CustomEvent, solo는 localStorage. `isSoloFieldPopup()`은 detached-window.ts(solo=1 / SOLO_KEY).
+  - **주의:** "분리창엔 localStorage 쓰지 말 것"(위 49행)은 **창 단위로 격리돼야 하는** 상태(보고서 건 선택)에 한정. solo 팝업처럼 **일부러 인앱과 같은 건을 공유**해야 하는 경우는 localStorage가 정답.
