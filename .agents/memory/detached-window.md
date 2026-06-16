@@ -24,8 +24,12 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
   - **Why:** Radix/remove-scroll가 모듈 전역 `document`(=메인 창) 기준으로 본문을 잠그는데, 분리창에서 close/window 닫힘 시 정리가 메인 본문에 안 닿아 잠금이 남음. 비모달 요구사항(분리창 띄운 채 메인 작업)과도 충돌.
   - **How to apply:** 클릭을 막는 잠금은 모두 메인 **body 자체**에 걸린다(Dialog `pointer-events:none`, remove-scroll `data-scroll-locked`/`overflow`). DetachedWindow가 열려있는 동안 메인 `document.body` **자체 속성만** `MutationObserver`로 감시해 즉시 해제(`unlockMainBody`/`lockGuard`). 감시 범위를 body 자식까지 넓히면 메인 창의 **정상 모달**까지 풀려버리니 금지. body 자식 `aria-hidden`은 클릭을 막지 않는 접근성 잔재라 **닫힐 때 1회만** 정리.
 
+## 토스트(Toaster)는 surface 스토어로 활성 창에만 표시 (해결됨)
+- use-toast는 전역 단일 memoryState라 Toaster를 메인+분리창 양쪽 마운트하면 같은 토스트가 두 창에 **중복**된다.
+  - **How to apply:** `client/src/lib/toast-surface.ts`(열린 분리창 스택 추적) + `Toaster`의 optional `detachedId` prop + `useSyncExternalStore`로 활성 surface 구독. 분리창이 열려있으면 활성(스택 top) 분리창 Toaster만 보이고 **메인 Toaster는 null 반환**. DetachedWindow가 열릴 때 `acquireDetachedToastSurface()`, 닫힐 때 release, 분리창 트리 안에 `<Toaster detachedId={...}/>` 렌더. ToastViewport는 Radix 비포털 `position:fixed`라 분리창 DOM에 그대로 뜬다.
+  - **부수효과(의도됨):** 분리창이 열려있는 동안은 메인 창 액션 토스트도 활성 분리창에 표시된다(단일 포커스 surface). 비모달 작업 흐름엔 적절.
+
 ## 알려진 제한 / 미해결
-- **토스트(Toaster)는 메인 루트에만** 있어 분리창 작업 중 알림이 메인 창에 뜬다.
 - 분리창에서 `document`/`window` 직접 참조(click-outside 리스너 등)는 메인 창 기준 → 분리창에선 안 잡힘. 커스텀 드롭다운(예: SMS 다이얼로그의 cancelReason)은 분리 전 ownerDocument 기준으로 고쳐야 함.
 - **테스트 한계:** 별도 OS 창은 screenshot 불가 + 미리보기 iframe이 팝업 차단할 수 있음 → 사용자 실브라우저/듀얼모니터 검증 필수(팝업 1회 허용 필요).
 

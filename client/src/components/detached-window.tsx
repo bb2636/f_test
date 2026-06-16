@@ -9,6 +9,11 @@ import { createRoot, type Root } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster";
+import {
+  acquireDetachedToastSurface,
+  releaseDetachedToastSurface,
+} from "@/lib/toast-surface";
 
 const PortalContainerContext = createContext<HTMLElement | undefined>(undefined);
 
@@ -46,6 +51,7 @@ export function DetachedWindow({
   const winRef = useRef<Window | null>(null);
   const rootRef = useRef<Root | null>(null);
   const containerRef = useRef<HTMLElement | null>(null);
+  const surfaceIdRef = useRef<number | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -92,6 +98,10 @@ export function DetachedWindow({
     win.document.body.appendChild(container);
     containerRef.current = container;
 
+    // 이 분리창을 토스트 활성 surface로 등록 → 분리창이 열려 있는 동안 토스트는
+    // 메인 창이 아닌 이 분리창에서 표시된다.
+    surfaceIdRef.current = acquireDetachedToastSurface();
+
     const root = createRoot(container);
     rootRef.current = root;
 
@@ -130,6 +140,10 @@ export function DetachedWindow({
     unlockMainBody();
 
     return () => {
+      if (surfaceIdRef.current != null) {
+        releaseDetachedToastSurface(surfaceIdRef.current);
+        surfaceIdRef.current = null;
+      }
       window.clearInterval(poll);
       observer.disconnect();
       lockGuard.disconnect();
@@ -163,6 +177,7 @@ export function DetachedWindow({
         <TooltipProvider>
           <PortalContainerContext.Provider value={container}>
             {children}
+            <Toaster detachedId={surfaceIdRef.current ?? undefined} />
           </PortalContainerContext.Provider>
         </TooltipProvider>
       </QueryClientProvider>,

@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react"
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -8,9 +9,23 @@ import {
   ToastViewport,
 } from "@/components/ui/toast"
 import { CheckCircle, AlertCircle } from "lucide-react"
+import {
+  subscribeToastSurface,
+  getActiveDetachedSurface,
+} from "@/lib/toast-surface"
 
-export function Toaster() {
+export function Toaster({ detachedId }: { detachedId?: number } = {}) {
   const { toasts, dismiss } = useToast()
+  // 분리창(팝업)이 열려 있으면 토스트는 활성 분리창에서만 보이고 메인 Toaster는 숨긴다.
+  // (토스트 상태는 전역 공유라 surface 가드가 없으면 메인·분리창에 중복 표시됨)
+  const activeDetached = useSyncExternalStore(
+    subscribeToastSurface,
+    getActiveDetachedSurface,
+    () => null,
+  )
+  const visible =
+    detachedId != null ? activeDetached === detachedId : activeDetached == null
+  if (!visible) return null
 
   return (
     <ToastProvider>
