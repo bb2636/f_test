@@ -1270,13 +1270,29 @@ async function renderFieldReportPage(
   });
 
   {
-    const causeText = normalizeText(caseData.accidentCause || "-");
     const causeHeaderWidth = 90;
     const causeContentWidth = 425;
     const causePadding = 6;
     const causeFontSize = 9;
     const causeLineHeight = causeFontSize * 1.4;
-    const causeLines = wrapText(causeText, fonts.regular, causeFontSize, causeContentWidth - causePadding * 2);
+    // 사용자가 입력한 줄바꿈(\n)을 보존하기 위해, normalizeText를 한 번에 적용하지 않고
+    // 줄 단위로 분리해 각 줄에만 적용한다 (normalizeText가 특수문자 인접 \n을 제거하는 문제 회피).
+    const rawCauseText = caseData.accidentCause || "-";
+    const causeSegments = rawCauseText.split(/\r?\n/).map((seg: string) => normalizeText(seg));
+    const causeLines: string[] = [];
+    for (const seg of causeSegments) {
+      if (seg === "") {
+        causeLines.push("");
+        continue;
+      }
+      const wrapped = wrapText(seg, fonts.regular, causeFontSize, causeContentWidth - causePadding * 2);
+      if (wrapped.length === 0) {
+        causeLines.push("");
+      } else {
+        for (const ln of wrapped) causeLines.push(ln);
+      }
+    }
+    if (causeLines.length === 0) causeLines.push("-");
     const minRowHeight = 24;
     const causeRowHeight = Math.max(minRowHeight, causeLines.length * causeLineHeight + causePadding * 2);
 

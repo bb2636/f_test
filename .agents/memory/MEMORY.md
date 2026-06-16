@@ -5,4 +5,5 @@
 - [스키마 변경 적용 경로](schema-sync.md) — 새 테이블/컬럼은 shared/schema.ts + server/auto-schema-sync.ts(매 기동 DEV/PROD idempotent)에 추가; db:push는 대화형이라 불안정·PROD 누락 위험
 - [자재비 연동 자동행 lock/진입 재계산](material-autorow-lock-reconcile.md) — 보양재 등 연동행이 복구면적 편집 중 autosave로 lockedAtSave 잠겨 첫 진입 stale; 진입 시 forceUnlock 재계산(저장X, 카탈로그 로드 가드)
 - [Dialog 본문 텍스트 잘림(grid 오버플로)](dialog-grid-text-clipping.md) — shadcn DialogContent는 grid라 긴 본문이 max-content로 넘쳐 overflow-x-hidden에 잘림; min-w-0만으론 부족, grid-cols-[minmax(0,1fr)]로 컬럼 강제 수축
+- [PDF 멀티라인 줄바꿈 보존](pdf-multiline-normalizetext.md) — pdf-lib-service normalizeText의 \s가 \n을 먹어 특수문자 인접 줄바꿈 소실; 멀티라인 필드는 \n으로 split 후 줄별 normalizeText+wrapText (VOC 패턴)
 - [이메일 master 참조와 단체발송](email-master-cc-group-send.md) — 참조 CC는 sendEmailWithAttachment 내부서 1회 부착; 수신자별 루프 발송은 참조 중복 → to 콤마결합 1회 발송(단체발송)으로
