@@ -3024,7 +3024,10 @@ export default function FieldEstimate() {
     ];
     const shouldExcludeFromMaterialSync = (category: string, workName: string, isLinkedFromRecovery?: boolean): boolean => {
       if (!isLinkedFromRecovery) return true;
-      if ((category === '목공사' && workName === '반자틀') || category === '철거공사') return true;
+      // 반자틀은 공종(category)과 무관하게 자재비 자동연동 제외 (복구면적→자재비 sync line 1808과 동일 규칙).
+      //   복구면적에서 공종 미선택 등으로 category가 ''/'목공사'가 아닌 채 들어온 반자틀 행이
+      //   기존 (category === '목공사') 조건을 빠져나가 빈 반자틀 자재행이 삭제 후에도 재생성되던 문제 해결.
+      if (workName === '반자틀' || category === '철거공사') return true;
       if (category === '가설공사' && workName !== '건축물현장정리' && workName !== '건축물보양') return true;
       if ((workName || '').startsWith('바탕만들기')) return true;
       if (AUTO_MATERIAL_SYNC_WORK_NAMES.includes(workName) || isItemInLinkSettings(category, workName)) {
