@@ -1861,7 +1861,7 @@ export default function Dashboard() {
         }}
       >
         <DialogContent className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto overflow-x-hidden">
-          <DialogHeader>
+          <DialogHeader className="min-w-0">
             <DialogTitle className="pr-6 text-left break-words [overflow-wrap:anywhere]">
               {selectedNotice?.title}
             </DialogTitle>
@@ -1876,7 +1876,7 @@ export default function Dashboard() {
             )}
           </DialogHeader>
           {selectedNotice?.content && (
-            <p className="text-sm text-slate-700 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+            <p className="min-w-0 text-sm text-slate-700 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
               {selectedNotice.content}
             </p>
           )}
@@ -1891,7 +1891,7 @@ export default function Dashboard() {
           onInteractOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => e.preventDefault()}
         >
-          <DialogHeader>
+          <DialogHeader className="min-w-0">
             <DialogTitle className="flex items-center gap-2 text-left">
               공지사항{" "}
               <span className="text-xs font-bold text-[#EF4444]">필독</span>
@@ -1906,7 +1906,7 @@ export default function Dashboard() {
             )}
           </DialogHeader>
           {currentAutoNotice && (
-            <div>
+            <div className="min-w-0">
               <h4 className="font-semibold text-slate-900 break-words [overflow-wrap:anywhere]">
                 {currentAutoNotice.title}
               </h4>
