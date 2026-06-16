@@ -1860,7 +1860,7 @@ export default function Dashboard() {
           if (!open) setSelectedNotice(null);
         }}
       >
-        <DialogContent className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto overflow-x-hidden">
+        <DialogContent className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto overflow-x-hidden px-7 grid-cols-[minmax(0,1fr)]">
           <DialogHeader className="min-w-0">
             <DialogTitle className="pr-6 text-left break-words [overflow-wrap:anywhere]">
               {selectedNotice?.title}
@@ -1887,7 +1887,7 @@ export default function Dashboard() {
       {/* 신규 공지 자동 팝업 — '확인' 체크 후에만 닫힘 */}
       <Dialog open={!!currentAutoNotice} onOpenChange={() => {}}>
         <DialogContent
-          className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto overflow-x-hidden [&>button]:hidden"
+          className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto overflow-x-hidden px-7 grid-cols-[minmax(0,1fr)] [&>button]:hidden"
           onInteractOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => e.preventDefault()}
         >
