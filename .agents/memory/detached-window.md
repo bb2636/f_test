@@ -66,3 +66,8 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 - 보고서 분리창에서 "건 전환"을 **쏘는 쪽**(상단 탭)과 **받는 쪽**(보고서 본문)이 "여기가 보고서 분리창인가"를 **서로 다른 신호**로 판정하면 split-brain이 된다: 한쪽은 CustomEvent로 쏘고 다른 쪽은 localStorage 폴링만 봐서 **탭 하이라이트는 바뀌는데 본문이 안 바뀜**.
   - **Why:** 과거 탭은 `isDetachedWindow()`(렌더 중 동기 설정되는 `floxn:detached`)+`!solo`로, 본문은 `queryDetached||sticky(floxn:reportDetached, queryDetached 의존 deferred effect로만 설정)`로 따로 판정 → URL에서 detached=1이 먼저 유실되거나 solo가 sessionStorage 복사로 새어들면 두 판정이 어긋남.
   - **How to apply:** `isDetachedReportWindow()`(detached-window.ts) **하나만** 쓴다. 우선순위: 분리창 아니면 false → 라우트가 `/field-survey/report`면 무조건 true(solo보다 라우트 우선) → solo면 false → 비solo는 `REPORT_DETACHED_KEY` sticky. 새 분리창 동작 추가 시 컴포넌트별 ad-hoc 판정 만들지 말 것.
+
+## 분리창 건 전환은 CustomEvent만 믿지 말고 sessionStorage 폴백 폴링 (중요)
+- 분리창에서 상단 탭으로 건 전환 시 같은 창 CustomEvent에만 의존하면 이벤트 누락 시 본문이 안 따라온다. 인앱(현장/증빙/견적)은 localStorage 폴링이라 안정적이었던 것.
+  - **Why:** 분리창은 cross-window 누수 방지로 공유 localStorage 대신 **창단위 sessionStorage(REPORT_CASEID_KEY)**를 쓰는데 폴백 폴링이 없어서, dispatch/수신이 같은 창이어도 리스너 부착 타이밍 등으로 전환이 한 번씩 먹지 않았다. 내부 팝오버 전환(setSelectedCaseId 직접호출)은 멀쩡한 게 단서.
+  - **How to apply:** 분리창 detached 분기에선 CustomEvent(즉시성)+sessionStorage 500ms 폴링(폴백)을 **둘 다** 둔다. sessionStorage는 창단위라 다른 창으로 안 샌다(인앱 localStorage 폴링과 동일 패턴). field-report와 CaseReceiptTabs 양쪽 모두.

@@ -317,12 +317,30 @@ export default function FieldReport() {
   // (공유 localStorage/storage 이벤트는 다른 창까지 바꿔버리므로 분리창에선 쓰지 않는다.)
   useEffect(() => {
     if (!isDetachedReport) return;
+    const readSticky = () => {
+      try {
+        const raw = sessionStorage.getItem(REPORT_CASEID_KEY);
+        return raw && raw !== "null" && raw !== "undefined" ? raw : "";
+      } catch {
+        return "";
+      }
+    };
     const onCaseChange = (e: Event) => {
       const next = (e as CustomEvent<string>).detail || "";
       if (next) setSelectedCaseId((prev) => (prev !== next ? next : prev));
     };
     window.addEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
-    return () => window.removeEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
+    // CustomEvent가 (리스너 부착 타이밍 등으로) 누락돼도 상단 연관건 탭 전환이 본문에
+    // 반영되도록 창 단위 sessionStorage(REPORT_CASEID_KEY)를 폴백으로 폴링한다.
+    // sessionStorage는 창 단위라 다른 창으로 새지 않는다(인앱 localStorage 폴링과 동일 패턴).
+    const pollId = setInterval(() => {
+      const next = readSticky();
+      if (next) setSelectedCaseId((prev) => (prev !== next ? next : prev));
+    }, 500);
+    return () => {
+      window.removeEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
+      clearInterval(pollId);
+    };
   }, [isDetachedReport]);
 
   // 보고서 열람 화면에 들어오면 브라우저 탭 제목 설정 (분리창/인앱 모두)

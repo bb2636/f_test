@@ -81,8 +81,16 @@ export function CaseReceiptTabs() {
         if (next) setSelectedCaseId((prev) => (prev !== next ? next : prev));
       };
       window.addEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
-      return () =>
+      // CustomEvent 누락 대비: 창 단위 sessionStorage 폴백 폴링(다른 창 누수 없음).
+      // 보고서 본문(field-report)과 동일 sticky를 보고 탭 하이라이트도 함께 따라가게 한다.
+      const pollId = setInterval(() => {
+        const next = getDetachedReportCaseId();
+        if (next) setSelectedCaseId((prev) => (prev !== next ? next : prev));
+      }, 500);
+      return () => {
         window.removeEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
+        clearInterval(pollId);
+      };
     }
     const sync = () => {
       const raw = localStorage.getItem("selectedFieldSurveyCaseId");
