@@ -121,3 +121,25 @@ export function isSoloFieldPopup(): boolean {
   }
   return soloCached;
 }
+
+// "보고서 열람 분리창"인지 단일 판정 — 탭(전환을 쏘는 쪽)과 보고서 본문(전환을 받는 쪽)이
+// 같은 기준으로 판단해야 한다. 둘이 다른 신호(서로 다른 sessionStorage 키, 한쪽만 solo 고려)를
+// 쓰면 한쪽은 CustomEvent로 쏘고 다른 쪽은 localStorage만 보고 있어 전환이 먹지 않는다.
+// 규칙:
+//  1) 분리창이 아니면(인앱) false → 인앱은 공유 localStorage로 동기화.
+//  2) 라우트가 /field-survey/report 면 무조건 true(보고서 본문이 뜨는 창).
+//     solo 플래그가 sessionStorage 복사로 새어들어와도 라우트가 우선.
+//  3) 보고서 단독팝업(solo)은 false → 도면/증빙 solo는 인앱과 동일하게 localStorage 공유.
+//  4) 보고서 창 안에서 도면/증빙으로 잠깐 이동한 경우(비solo)는 REPORT 한정 sticky로 유지.
+export function isDetachedReportWindow(): boolean {
+  if (!isDetachedWindow()) return false;
+  try {
+    if (window.location.pathname.includes("/field-survey/report")) return true;
+  } catch {}
+  if (isSoloFieldPopup()) return false;
+  try {
+    return sessionStorage.getItem(REPORT_DETACHED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}

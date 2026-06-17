@@ -4,6 +4,7 @@ import {
   REPORT_CASEID_KEY,
   REPORT_CASE_CHANGE_EVENT,
   setDetachedReportCaseId,
+  isDetachedReportWindow,
 } from "@/lib/detached-window";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -264,13 +265,6 @@ export default function FieldReport() {
   const reportSearchParams = new URLSearchParams(window.location.search);
   const queryDetached = reportSearchParams.get("detached") === "1";
   const queryCaseId = reportSearchParams.get("caseId") || "";
-  const stickyDetached = (() => {
-    try {
-      return sessionStorage.getItem(REPORT_DETACHED_KEY) === "1";
-    } catch {
-      return false;
-    }
-  })();
   const stickyCaseId = (() => {
     try {
       return sessionStorage.getItem(REPORT_CASEID_KEY) || "";
@@ -278,7 +272,7 @@ export default function FieldReport() {
       return "";
     }
   })();
-  const isDetachedReport = queryDetached || stickyDetached;
+  const isDetachedReport = isDetachedReportWindow();
   const detachedCaseId = queryCaseId || stickyCaseId;
   const reportFrom = reportSearchParams.get("from") || "";
 

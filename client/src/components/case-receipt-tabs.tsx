@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { formatCaseNumber } from "@/lib/utils";
 import {
   isDetachedWindow,
-  isSoloFieldPopup,
+  isDetachedReportWindow,
   getDetachedReportCaseId,
   setDetachedReportCaseId,
   REPORT_CASE_CHANGE_EVENT,
@@ -60,7 +60,7 @@ export function CaseReceiptTabs() {
   // 보고서 열람 분리창만 창 단위(sessionStorage+CustomEvent)로 건을 관리한다.
   // 도면작성/증빙자료 단독 팝업(solo)은 인앱과 동일하게 localStorage(selectedFieldSurveyCaseId)로
   // 건을 공유한다 — 열 때 caseId를 URL에 싣지 않고 localStorage로만 넘기기 때문.
-  const useReportDetached = detached && !isSoloFieldPopup();
+  const useReportDetached = isDetachedReportWindow();
   const [selectedCaseId, setSelectedCaseId] = useState<string>(() => {
     if (useReportDetached) {
       // URL의 caseId가 그 창이 처음 요청한 건 — field-report와 동일하게 URL을 우선한다.

@@ -61,3 +61,8 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
   - **도면작성/증빙 단독 팝업(solo, `?detached=1&solo=1`)**: caseId를 **URL에 안 싣고** 공유 localStorage(`selectedFieldSurveyCaseId`)로만 넘긴다. 그래서 이 창은 인앱과 **동일하게 localStorage 폴링/storage**로 건을 읽어야 한다. sessionStorage 경로를 타면 `selectedCaseId`가 비어 컴포넌트가 `return null` → 상단 바/카드 통째 미렌더.
   - **How to apply:** `useReportDetached = detached && !isSoloFieldPopup()`로 갈라서 초기 state·sync effect(+deps)·handleSelect를 모두 분기. 보고서만 sessionStorage+CustomEvent, solo는 localStorage. `isSoloFieldPopup()`은 detached-window.ts(solo=1 / SOLO_KEY).
   - **주의:** "분리창엔 localStorage 쓰지 말 것"(위 49행)은 **창 단위로 격리돼야 하는** 상태(보고서 건 선택)에 한정. solo 팝업처럼 **일부러 인앱과 같은 건을 공유**해야 하는 경우는 localStorage가 정답.
+
+## 분리창 판정은 단일 헬퍼로 — dispatch/수신 양쪽이 같은 신호 (중요)
+- 보고서 분리창에서 "건 전환"을 **쏘는 쪽**(상단 탭)과 **받는 쪽**(보고서 본문)이 "여기가 보고서 분리창인가"를 **서로 다른 신호**로 판정하면 split-brain이 된다: 한쪽은 CustomEvent로 쏘고 다른 쪽은 localStorage 폴링만 봐서 **탭 하이라이트는 바뀌는데 본문이 안 바뀜**.
+  - **Why:** 과거 탭은 `isDetachedWindow()`(렌더 중 동기 설정되는 `floxn:detached`)+`!solo`로, 본문은 `queryDetached||sticky(floxn:reportDetached, queryDetached 의존 deferred effect로만 설정)`로 따로 판정 → URL에서 detached=1이 먼저 유실되거나 solo가 sessionStorage 복사로 새어들면 두 판정이 어긋남.
+  - **How to apply:** `isDetachedReportWindow()`(detached-window.ts) **하나만** 쓴다. 우선순위: 분리창 아니면 false → 라우트가 `/field-survey/report`면 무조건 true(solo보다 라우트 우선) → solo면 false → 비solo는 `REPORT_DETACHED_KEY` sticky. 새 분리창 동작 추가 시 컴포넌트별 ad-hoc 판정 만들지 말 것.
