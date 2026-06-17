@@ -221,7 +221,17 @@ export function isSoloFieldPopup(): boolean {
 export function isDetachedReportWindow(): boolean {
   if (!isDetachedWindow()) return false;
   try {
-    if (window.location.pathname.includes("/field-survey/report")) return true;
+    if (window.location.pathname.includes("/field-survey/report")) {
+      // 보고서 라우트에 도달하는 즉시 sticky를 "동기적으로" 박는다. field-report의
+      // deferred useEffect만 믿으면, 그 효과가 돌기 전에 다른 컴포넌트가 이 함수를
+      // 부르거나 사용자가 빠르게 다른 페이지로 이동하면 sticky 미설정 → 같은 창의
+      // CaseReceiptTabs/field-management 등이 detached 판정이 엇갈려(split-brain)
+      // 한쪽은 CustomEvent로 쏘고 다른 쪽은 localStorage만 봐서 전환이 먹지 않는다.
+      try {
+        sessionStorage.setItem(REPORT_DETACHED_KEY, "1");
+      } catch {}
+      return true;
+    }
   } catch {}
   if (isSoloFieldPopup()) return false;
   try {

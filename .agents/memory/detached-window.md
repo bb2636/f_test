@@ -66,6 +66,9 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 - 보고서 분리창에서 "건 전환"을 **쏘는 쪽**(상단 탭)과 **받는 쪽**(보고서 본문)이 "여기가 보고서 분리창인가"를 **서로 다른 신호**로 판정하면 split-brain이 된다: 한쪽은 CustomEvent로 쏘고 다른 쪽은 localStorage 폴링만 봐서 **탭 하이라이트는 바뀌는데 본문이 안 바뀜**.
   - **Why:** 과거 탭은 `isDetachedWindow()`(렌더 중 동기 설정되는 `floxn:detached`)+`!solo`로, 본문은 `queryDetached||sticky(floxn:reportDetached, queryDetached 의존 deferred effect로만 설정)`로 따로 판정 → URL에서 detached=1이 먼저 유실되거나 solo가 sessionStorage 복사로 새어들면 두 판정이 어긋남.
   - **How to apply:** `isDetachedReportWindow()`(detached-window.ts) **하나만** 쓴다. 우선순위: 분리창 아니면 false → 라우트가 `/field-survey/report`면 무조건 true(solo보다 라우트 우선) → solo면 false → 비solo는 `REPORT_DETACHED_KEY` sticky. 새 분리창 동작 추가 시 컴포넌트별 ad-hoc 판정 만들지 말 것.
+- **sticky는 deferred effect 말고 판정 함수 안에서 "동기적으로" 박아라(중요).** 보고서 분리창 sticky(`REPORT_DETACHED_KEY`)를 field-report의 useEffect에서만 설정하면, 그 효과가 돌기 전에 다른 컴포넌트가 판정하거나 사용자가 빠르게 다른 페이지로 이동할 때 sticky 미설정 → split-brain. 증상: 세대 탭(원인/피해) 하이라이트는 바뀌는데 본문이 안 따라옴(본문이 빈 게 아니라 "이전 건"을 보임 = selectedCase 자체가 안 바뀜 = 이벤트 미수신).
+  - **Why:** 받는 쪽(현장입력/견적/증빙)은 subscribeFieldSurveyCaseId를 deps:[]로 마운트 시 1회만 transport를 판정한다. 마운트 순간 detached가 false면 평생 localStorage만 듣는다. 쏘는 쪽(CaseReceiptTabs)이 detached=true로 CustomEvent를 쏘면 영영 못 받음.
+  - **How to apply:** 라우트가 `/field-survey/report`면 `isDetachedReportWindow()` 내부에서 즉시 `sessionStorage.setItem(REPORT_DETACHED_KEY,"1")`. 보고서 라우트는 팝업 진입 경로라, 다른 페이지 이동 전에 sticky가 확정돼 같은 창 모든 컴포넌트가 같은 transport에 묶인다(window-scoped sessionStorage라 누수 없음).
 
 ## 분리창 건 전환은 CustomEvent만 믿지 말고 sessionStorage 폴백 폴링 (중요)
 - 분리창에서 상단 탭으로 건 전환 시 같은 창 CustomEvent에만 의존하면 이벤트 누락 시 본문이 안 따라온다. 인앱(현장/증빙/견적)은 localStorage 폴링이라 안정적이었던 것.
