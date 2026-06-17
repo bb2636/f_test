@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { format } from "date-fns";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { DetachedWindow } from "@/components/detached-window";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useQueries } from "@tanstack/react-query";
@@ -790,28 +790,35 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side="right" 
-        overlayClassName="bg-black/30"
+    <DetachedWindow
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="INVOICE"
+      name="invoiceSheet"
+      width={720}
+      height={920}
+    >
+      <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
-          padding: "38px 0px 38px",
-          gap: "24px",
-          width: "680px",
-          maxWidth: "95vw",
-          maxHeight: "100vh",
+          minHeight: "100vh",
           background: "#FFFFFF",
-          boxShadow: "0px -2px 70px rgba(179, 193, 205, 0.8)",
-          borderRadius: "12px 0 0 12px",
-          overflowY: "auto",
-          overflowX: "hidden",
+          display: "flex",
+          justifyContent: "center",
         }}
-        data-testid="dialog-invoice"
       >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
+            padding: "38px 0px 38px",
+            gap: "24px",
+            width: "680px",
+            maxWidth: "100%",
+          }}
+          data-testid="dialog-invoice"
+        >
         {/* Header Section */}
         <div style={{
           display: "flex",
@@ -1895,7 +1902,8 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
             </button>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+        </div>
+      </div>
+    </DetachedWindow>
   );
 }

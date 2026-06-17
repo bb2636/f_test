@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { format } from "date-fns";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { DetachedWindow } from "@/components/detached-window";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -274,21 +274,26 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side="right" 
-        overlayClassName="bg-black/30"
+    <DetachedWindow
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="현장출동비용 청구"
+      name="fieldDispatchInvoice"
+      width={720}
+      height={920}
+    >
+      <div
         style={{
-          width: "680px",
-          maxWidth: "95vw",
-          padding: 0,
+          minHeight: "100vh",
           background: "#FFFFFF",
-          overflow: "auto",
-          boxShadow: "0px -2px 70px rgba(179, 193, 205, 0.8)",
-          borderRadius: "12px 0 0 12px",
+          display: "flex",
+          justifyContent: "center",
         }}
-        data-testid="dialog-field-dispatch-invoice"
       >
+        <div
+          style={{ width: "680px", maxWidth: "100%" }}
+          data-testid="dialog-field-dispatch-invoice"
+        >
         <div style={{
           display: "flex",
           flexDirection: "column",
@@ -1053,8 +1058,9 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
             </div>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+        </div>
+      </div>
+    </DetachedWindow>
   );
 }
 

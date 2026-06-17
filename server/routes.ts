@@ -13101,17 +13101,22 @@ FLOXN 드림`;
       }
 
       // Check SMTP environment variables
+      // [2026-06-17] 인증정보 일원화: SMTP_PASSWORD(유효) > MAIL_APP_PASSWORD > SMTP_PASS(구버전).
+      //   SMTP_PASS 단독 사용 시 535 인증실패 → "SMTP 설정 확인" 메시지로 오인됨.
       const SMTP_HOST = process.env.SMTP_HOST;
       const SMTP_PORT = process.env.SMTP_PORT;
       const SMTP_USER = process.env.SMTP_USER;
-      const SMTP_PASS = process.env.SMTP_PASS;
+      const SMTP_PASS =
+        process.env.SMTP_PASSWORD ||
+        process.env.MAIL_APP_PASSWORD ||
+        process.env.SMTP_PASS;
 
       if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
         console.error("[send-pdf] Missing SMTP configuration");
         return res.status(500).json({
           ok: false,
           message:
-            "SMTP 설정이 필요합니다 (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS)",
+            "SMTP 설정이 필요합니다 (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD)",
         });
       }
 

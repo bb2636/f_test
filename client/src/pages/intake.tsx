@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
+import { usePortalContainer } from "@/components/detached-window";
 import { useLocation } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -241,6 +242,8 @@ export default function Intake({
 }: IntakeProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  // 분리창(DetachedWindow) 안에서 열리면 분리창 문서로 포털, 아니면 기존처럼 메인 body.
+  const portalContainer = usePortalContainer();
 
   const [sameAsPolicyHolder, setSameAsPolicyHolder] = useState(false);
   const [additionalVictims, setAdditionalVictims] = useState<
@@ -3277,11 +3280,11 @@ export default function Intake({
               </div>
             </div>
           );
-          return isModal ? modalContent : createPortal(modalContent, document.body);
+          return isModal ? modalContent : createPortal(modalContent, portalContainer ?? document.body);
         })()}
       {/* 의뢰사 검색 팝업 */}
       {isClientSearchOpen &&
-        ((clientPopupEl: React.ReactNode) => isModal ? clientPopupEl : createPortal(clientPopupEl, document.body))(
+        ((clientPopupEl: React.ReactNode) => isModal ? clientPopupEl : createPortal(clientPopupEl, portalContainer ?? document.body))(
           <div
             style={{
               position: "fixed",
@@ -3434,7 +3437,7 @@ export default function Intake({
         )}
       {/* 심사자 검색 팝업 */}
       {isAssessorSearchOpen &&
-        ((assessorPopupEl: React.ReactNode) => isModal ? assessorPopupEl : createPortal(assessorPopupEl, document.body))(
+        ((assessorPopupEl: React.ReactNode) => isModal ? assessorPopupEl : createPortal(assessorPopupEl, portalContainer ?? document.body))(
           <div
             style={{
               position: "fixed",
@@ -3588,7 +3591,7 @@ export default function Intake({
         )}
       {/* 조사자 검색 팝업 */}
       {isInvestigatorSearchOpen &&
-        ((investigatorPopupEl: React.ReactNode) => isModal ? investigatorPopupEl : createPortal(investigatorPopupEl, document.body))(
+        ((investigatorPopupEl: React.ReactNode) => isModal ? investigatorPopupEl : createPortal(investigatorPopupEl, portalContainer ?? document.body))(
           <div
             style={{
               position: "fixed",

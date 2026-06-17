@@ -931,11 +931,17 @@ export async function sendInvoiceEmailWithAttachment(
   const smtpHost = process.env.SMTP_HOST;
   const smtpPort = parseInt(process.env.SMTP_PORT || "587");
   const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
+  // [2026-06-17] 인증정보 일원화: 현장출동보고서 경로(hiworks-email.ts)와 동일하게
+  //   SMTP_PASSWORD(유효) > MAIL_APP_PASSWORD > SMTP_PASS(구버전) 순으로 사용.
+  //   SMTP_PASS 단독 사용 시 535 인증실패가 발생해 "SMTP 설정 확인" 메시지로 오인됨.
+  const smtpPass =
+    process.env.SMTP_PASSWORD ||
+    process.env.MAIL_APP_PASSWORD ||
+    process.env.SMTP_PASS;
 
   if (!smtpHost || !smtpUser || !smtpPass) {
     throw new Error(
-      "SMTP 설정이 필요합니다. SMTP_HOST, SMTP_USER, SMTP_PASS를 확인해주세요.",
+      "SMTP 설정이 필요합니다. SMTP_HOST, SMTP_USER, SMTP_PASSWORD를 확인해주세요.",
     );
   }
 

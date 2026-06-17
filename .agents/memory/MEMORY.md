@@ -1,9 +1,10 @@
 - [field-drawing 캔버스 선택/삭제](field-drawing-canvas.md) — 컨트롤 패널이 도형 x에 왼쪽정렬돼 우측에선 삭제버튼 화면밖; 사각형 z-index가 사고영역/마커보다 낮아 겹치면 선택 가로채짐
 - [다건 상태변경은 서버 단일 트랜잭션](parallel-mutation-sms-suppression.md) — 다건 상태변경은 클라 병렬 mutate 말고 서버 트랜잭션 엔드포인트로(전부 성공/롤백); 불가피한 병렬 부수효과 억제는 mutate 변수 플래그로
-- [분리형 창(DetachedWindow)](detached-window.md) — 팝업을 별도 브라우저 창으로: 자식창 별도 createRoot+Provider 재제공(단순 createPortal은 이벤트 깨짐), 포털은 usePortalContainer 라우팅, 토스트는 toast-surface 스토어로 활성 창에만(중복 방지); click-outside는 메인창 커플링 남음
+- [분리형 창(DetachedWindow)](detached-window.md) — 팝업을 별도 브라우저 창으로: 자식창 createRoot+Provider 재제공, 중첩 포털은 usePortalContainer 라우팅, 토스트는 toast-surface로 활성창에만
 - [접수취소 연관건 그룹핑 불일치](cancel-related-grouping.md) — 취소 후보를 caseNumber prefix(마지막 세그먼트 제거) 휴리스틱으로 묶어 누락; 정식 키는 caseGroupId(보험사고번호). 세 prefix/suffix 규칙이 제각각
 - [스키마 변경 적용 경로](schema-sync.md) — 새 테이블/컬럼은 shared/schema.ts + server/auto-schema-sync.ts(매 기동 DEV/PROD idempotent)에 추가; db:push는 대화형이라 불안정·PROD 누락 위험
 - [자재비 연동 자동행 lock/진입 재계산](material-autorow-lock-reconcile.md) — 보양재 등 연동행이 복구면적 편집 중 autosave로 lockedAtSave 잠겨 첫 진입 stale; 진입 시 forceUnlock 재계산(저장X, 카탈로그 로드 가드)
 - [Dialog 본문 텍스트 잘림(grid 오버플로)](dialog-grid-text-clipping.md) — shadcn DialogContent는 grid라 긴 본문이 max-content로 넘쳐 overflow-x-hidden에 잘림; min-w-0만으론 부족, grid-cols-[minmax(0,1fr)]로 컬럼 강제 수축
 - [PDF 멀티라인 줄바꿈 보존](pdf-multiline-normalizetext.md) — pdf-lib-service normalizeText의 \s가 \n을 먹어 특수문자 인접 줄바꿈 소실; 멀티라인 필드는 \n으로 split 후 줄별 normalizeText+wrapText (VOC 패턴)
 - [이메일 master 참조와 단체발송](email-master-cc-group-send.md) — 참조 CC는 sendEmailWithAttachment 내부서 1회 부착; 수신자별 루프 발송은 참조 중복 → to 콤마결합 1회 발송(단체발송)으로
+- [SMTP 자격증명 일원화](email-smtp-credentials.md) — 메일 경로가 비밀번호 env 둘로 갈려 일부만 535 실패; 모든 경로 SMTP_PASSWORD||MAIL_APP_PASSWORD||SMTP_PASS 순. "SMTP 설정 확인"은 send-time 535일 수 있음
