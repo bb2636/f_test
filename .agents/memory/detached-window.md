@@ -71,3 +71,8 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 - 분리창에서 상단 탭으로 건 전환 시 같은 창 CustomEvent에만 의존하면 이벤트 누락 시 본문이 안 따라온다. 인앱(현장/증빙/견적)은 localStorage 폴링이라 안정적이었던 것.
   - **Why:** 분리창은 cross-window 누수 방지로 공유 localStorage 대신 **창단위 sessionStorage(REPORT_CASEID_KEY)**를 쓰는데 폴백 폴링이 없어서, dispatch/수신이 같은 창이어도 리스너 부착 타이밍 등으로 전환이 한 번씩 먹지 않았다. 내부 팝오버 전환(setSelectedCaseId 직접호출)은 멀쩡한 게 단서.
   - **How to apply:** 분리창 detached 분기에선 CustomEvent(즉시성)+sessionStorage 500ms 폴링(폴백)을 **둘 다** 둔다. sessionStorage는 창단위라 다른 창으로 안 샌다(인앱 localStorage 폴링과 동일 패턴). field-report와 CaseReceiptTabs 양쪽 모두.
+
+## 분리창 안에서 라우팅으로 도달하는 "모든" 페이지를 점검 — 본문/탭만으론 부족 (중요)
+- 보고서 분리창 사이드바로 현장입력/견적서/증빙자료로 전환해도 페이지가 안 바뀌는 버그: field-report(본문)·CaseReceiptTabs(탭)만 detached-aware로 고쳤고, **사이드바로 들어가는 페이지 컴포넌트들**(field-management/field-estimate/field-documents)은 여전히 `selectedFieldSurveyCaseId` localStorage만 직접 읽/쓰/폴링 → 분리창에선 stale/빈 localStorage라 전환 실패 + 탭 CustomEvent 미수신.
+  - **Why:** 보고서 분리창은 라우트가 `/field-survey/report`가 아니어도(현장입력 등으로 이동해도) `isDetachedReportWindow()`가 `REPORT_DETACHED_KEY` sticky로 여전히 true. 즉 그 창 안 모든 페이지가 분리창 규칙(sessionStorage)을 따라야 하는데 페이지들이 인앱 가정(localStorage)으로 짜여 있었음.
+  - **How to apply:** 케이스 소스를 컴포넌트마다 인라인하지 말고 `detached-window.ts`의 단일 헬퍼(`getFieldSurveyCaseId`/`setFieldSurveyCaseId`/`clearFieldSurveyCaseId`/`subscribeFieldSurveyCaseId`)로 통일. 헬퍼가 `isDetachedReportWindow()`로 분기(분리창=sessionStorage+CustomEvent, 인앱/solo=localStorage+storage). 구독 콜백은 **빈 문자열(클리어)도 전파**해야 stale 잔존 안 됨. 새 현장조사 페이지/팝업 추가 시 반드시 이 헬퍼 경유.

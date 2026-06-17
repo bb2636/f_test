@@ -53,6 +53,93 @@ export function setDetachedReportCaseId(caseId: string): void {
   } catch {}
 }
 
+// 현장조사 페이지(현장입력/견적서/증빙자료)들이 "현재 보는 건"을 읽고/쓰고/구독하는 단일 진입점.
+// 보고서 열람 분리창 안이면 창 단위(sessionStorage + CustomEvent)로, 인앱/solo 팝업이면
+// 공유 localStorage 로 동작한다. 보고서 팝업 안에서 사이드바로 현장입력/견적서/증빙자료로
+// 이동하면 isDetachedReportWindow()가 true 라서 팝업이 보는 건(sessionStorage)을 그대로 따라간다.
+const FIELD_SURVEY_CASE_KEY = "selectedFieldSurveyCaseId";
+
+export function getFieldSurveyCaseId(): string {
+  if (isDetachedReportWindow()) return getDetachedReportCaseId();
+  try {
+    const raw = localStorage.getItem(FIELD_SURVEY_CASE_KEY);
+    return raw && raw !== "null" && raw !== "undefined" ? raw : "";
+  } catch {
+    return "";
+  }
+}
+
+export function setFieldSurveyCaseId(caseId: string): void {
+  if (isDetachedReportWindow()) {
+    setDetachedReportCaseId(caseId);
+    return;
+  }
+  try {
+    localStorage.setItem(FIELD_SURVEY_CASE_KEY, caseId);
+  } catch {}
+  // 같은 탭의 다른 페이지가 즉시 반응하도록 storage 이벤트 강제 dispatch.
+  try {
+    window.dispatchEvent(
+      new StorageEvent("storage", { key: FIELD_SURVEY_CASE_KEY, newValue: caseId }),
+    );
+  } catch {
+    window.dispatchEvent(new Event("storage"));
+  }
+}
+
+export function clearFieldSurveyCaseId(): void {
+  if (isDetachedReportWindow()) {
+    setDetachedReportCaseId("");
+    return;
+  }
+  try {
+    localStorage.removeItem(FIELD_SURVEY_CASE_KEY);
+  } catch {}
+  // 같은 탭의 다른 페이지가 즉시 비워지도록 storage 이벤트 강제 dispatch.
+  try {
+    window.dispatchEvent(
+      new StorageEvent("storage", { key: FIELD_SURVEY_CASE_KEY, newValue: null }),
+    );
+  } catch {
+    window.dispatchEvent(new Event("storage"));
+  }
+}
+
+// "현재 보는 건" 변경 구독. 분리창은 같은 창 CustomEvent + sessionStorage 폴백 폴링,
+// 인앱/solo 는 공유 localStorage storage 이벤트 + 폴링. cleanup 함수를 반환한다.
+export function subscribeFieldSurveyCaseId(
+  cb: (caseId: string) => void,
+): () => void {
+  if (isDetachedReportWindow()) {
+    // 명시적 전환/클리어 모두 전파 — 빈 문자열(클리어)도 그대로 넘긴다.
+    const onCaseChange = (e: Event) => {
+      cb((e as CustomEvent<string>).detail || "");
+    };
+    window.addEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
+    const pollId = setInterval(() => {
+      cb(getDetachedReportCaseId());
+    }, 500);
+    return () => {
+      window.removeEventListener(REPORT_CASE_CHANGE_EVENT, onCaseChange);
+      clearInterval(pollId);
+    };
+  }
+  const sync = () => {
+    let raw: string | null = null;
+    try {
+      raw = localStorage.getItem(FIELD_SURVEY_CASE_KEY);
+    } catch {}
+    const next = raw && raw !== "null" && raw !== "undefined" ? raw : "";
+    cb(next);
+  };
+  window.addEventListener("storage", sync);
+  const id = setInterval(sync, 500);
+  return () => {
+    window.removeEventListener("storage", sync);
+    clearInterval(id);
+  };
+}
+
 // 보고서 열람 팝업 열기 — 건별로 분리된 창으로 띄운다.
 // 핵심: 창 이름을 건별로 유니크하게 줘서 다른 건은 새 창으로 열리고,
 //   같은 건을 다시 열면 기존 창을 그대로 포커스한다(중복 방지).

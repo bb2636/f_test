@@ -15,6 +15,12 @@ import { ko } from "date-fns/locale";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import {
+  getFieldSurveyCaseId,
+  setFieldSurveyCaseId,
+  clearFieldSurveyCaseId,
+  subscribeFieldSurveyCaseId,
+} from "@/lib/detached-window";
 
 const normalizeBoolean = (value: any): boolean => {
   if (typeof value === "boolean") return value;
@@ -24,24 +30,14 @@ const normalizeBoolean = (value: any): boolean => {
 
 export default function FieldManagement() {
   const { toast } = useToast();
-  const [selectedCase, setSelectedCase] = useState<string>(() => {
-    const rawCaseId = localStorage.getItem('selectedFieldSurveyCaseId');
-    return (rawCaseId && rawCaseId !== 'null' && rawCaseId !== 'undefined') ? rawCaseId : "";
-  });
+  const [selectedCase, setSelectedCase] = useState<string>(() => getFieldSurveyCaseId());
 
-  // 접수번호 탭/타 페이지에서 케이스 변경 시 동기화 (storage 이벤트 + 폴링)
+  // 접수번호 탭/타 페이지에서 케이스 변경 시 동기화.
+  // 보고서 열람 분리창이면 창 단위(CustomEvent+sessionStorage), 인앱이면 공유 localStorage.
   useEffect(() => {
-    const sync = () => {
-      const raw = localStorage.getItem('selectedFieldSurveyCaseId');
-      const next = (raw && raw !== 'null' && raw !== 'undefined') ? raw : '';
+    return subscribeFieldSurveyCaseId((next) => {
       setSelectedCase(prev => (prev !== next ? next : prev));
-    };
-    window.addEventListener('storage', sync);
-    const id = setInterval(sync, 500);
-    return () => {
-      window.removeEventListener('storage', sync);
-      clearInterval(id);
-    };
+    });
   }, []);
 
   const [accidentDate, setAccidentDate] = useState<Date | undefined>(undefined);
@@ -258,7 +254,7 @@ export default function FieldManagement() {
     if (availableCases.length === 0) {
       if (selectedCase && !selectedCaseDetail && !isLoadingSelectedCaseDetail) {
         setSelectedCase("");
-        localStorage.removeItem('selectedFieldSurveyCaseId');
+        clearFieldSurveyCaseId();
       }
       return;
     }
@@ -268,13 +264,13 @@ export default function FieldManagement() {
     if (!isCurrentCaseAvailable && !selectedCaseDetail && !isLoadingSelectedCaseDetail) {
       const newCaseId = availableCases[0].id;
       setSelectedCase(newCaseId);
-      localStorage.setItem('selectedFieldSurveyCaseId', newCaseId);
+      setFieldSurveyCaseId(newCaseId);
     }
   }, [availableCaseIds, selectedCase, selectedCaseDetail, isLoadingSelectedCaseDetail]);
 
   const handleCaseChange = (caseId: string) => {
     setSelectedCase(caseId);
-    localStorage.setItem('selectedFieldSurveyCaseId', caseId);
+    setFieldSurveyCaseId(caseId);
   };
 
   const [autoReviewUpdated, setAutoReviewUpdated] = useState<Set<string>>(new Set());

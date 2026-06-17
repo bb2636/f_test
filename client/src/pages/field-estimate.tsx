@@ -26,6 +26,11 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import {
+  getFieldSurveyCaseId,
+  setFieldSurveyCaseId,
+  subscribeFieldSurveyCaseId,
+} from "@/lib/detached-window";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -324,10 +329,7 @@ export default function FieldEstimate() {
   const [workTypeInputMode, setWorkTypeInputMode] = useState<{[rowId: string]: boolean}>({}); // 행별 직접입력 모드
   const [customWorkNames, setCustomWorkNames] = useState<string[]>([]); // 사용자가 추가한 공사내용 목록
   const [workNameInputMode, setWorkNameInputMode] = useState<{[rowId: string]: boolean}>({}); // 행별 직접입력 모드
-  const [selectedCaseId, setSelectedCaseId] = useState(() => {
-    const rawCaseId = localStorage.getItem('selectedFieldSurveyCaseId');
-    return (rawCaseId && rawCaseId !== 'null' && rawCaseId !== 'undefined') ? rawCaseId : '';
-  });
+  const [selectedCaseId, setSelectedCaseId] = useState(() => getFieldSurveyCaseId());
 
   // [Task #11] latest state ref 동기화 — triggerAutoSaveAfterSync의 setTimeout
   //   콜백이 stale closure를 보지 않도록, 매 렌더에서 ref를 최신 state로 갱신.
@@ -380,29 +382,12 @@ export default function FieldEstimate() {
   }, [selectedCaseId, estimateCase?.id]);
   
 
-  // localStorage 변경 감지 (현장입력에서 케이스 선택 시)
+  // 케이스 변경 감지 (현장입력/접수번호 탭에서 케이스 선택 시).
+  // 보고서 열람 분리창이면 창 단위(CustomEvent+sessionStorage), 인앱이면 공유 localStorage.
   useEffect(() => {
-    const handleStorageChange = () => {
-      const rawCaseId = localStorage.getItem('selectedFieldSurveyCaseId');
-      const newCaseId = (rawCaseId && rawCaseId !== 'null' && rawCaseId !== 'undefined') ? rawCaseId : '';
-      setSelectedCaseId(prevId => {
-        if (newCaseId !== prevId) {
-          return newCaseId;
-        }
-        return prevId;
-      });
-    };
-
-    // storage event (다른 탭/창에서의 변경)
-    window.addEventListener('storage', handleStorageChange);
-    
-    // 같은 페이지 내에서의 변경 감지 (interval)
-    const intervalId = setInterval(handleStorageChange, 500);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(intervalId);
-    };
+    return subscribeFieldSurveyCaseId((newCaseId) => {
+      setSelectedCaseId(prevId => (newCaseId !== prevId ? newCaseId : prevId));
+    });
   }, []); // dependency 제거 (한 번만 설정)
 
   // 자재비 동기화 중복 호출 방지 ref (공종+공사명별 진행 중인 동기화 추적)
@@ -1033,7 +1018,7 @@ export default function FieldEstimate() {
   // 케이스 선택 핸들러
   const handleCaseSelect = (caseId: string) => {
     setSelectedCaseId(caseId);
-    localStorage.setItem('selectedFieldSurveyCaseId', caseId);
+    setFieldSurveyCaseId(caseId);
     
     // 선택한 케이스를 estimateCase로 직접 설정 (고객정보 즉시 업데이트)
     const selected = allCases?.find((c: Case) => c.id === caseId);
