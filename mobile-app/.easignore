@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+dist/
+web-build/
+.git/
+*.log
+.metro-health-check*
+android/
+ios/
