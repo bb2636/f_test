@@ -450,14 +450,16 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
           setFieldDispatchPropertyAmount("0");
         }
         
-        setInvoiceRemarks(caseData.invoiceRemarks || "");
-        setInvoiceRecipientEmail("");
-        setSelectedEmails([]);
-        setSelectedDocumentIds([]);
-        
-        // 다이얼로그가 처음 열릴 때만 DB 값을 기반으로 hasPdfAction 설정
-        // 이후에는 PDF 다운로드/발송 시 직접 설정된 값 유지
+        // 비고/수신자/문서선택은 다이얼로그가 "처음 열릴 때 1회만" 초기화한다.
+        // 이 effect의 deps(categorizedAmounts/relatedCases 등)는 매 렌더 새 객체라 자주
+        // 재실행되는데, 매번 setInvoiceRemarks로 DB값을 되돌리면 사용자가 비고에 한글을
+        // 입력하는 도중 음절 commit→리렌더→리셋되어 글자가 깨진다. 1회 초기화로 해결.
         if (!dialogInitialized) {
+          setInvoiceRemarks(caseData.invoiceRemarks || "");
+          setInvoiceRecipientEmail("");
+          setSelectedEmails([]);
+          setSelectedDocumentIds([]);
+
           const hasExistingInvoiceData = !!(
             caseData.invoicePdfGenerated ||
             caseData.invoiceDamagePreventionAmount || 
