@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NumericInput } from "@/components/ui/numeric-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import {
@@ -2184,23 +2185,15 @@ export function InvoiceManagementPopup({
                         {/* 청구액 */}
                         <div style={DEPOSIT_COLS.col3}>
                           <div className="flex items-center gap-1">
-                            <Input
-                              type="text"
-                              value={
-                                entry.claimAmount
-                                  ? entry.claimAmount.toLocaleString()
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const value = e.target.value
-                                  .replace(/,/g, "")
-                                  .replace(/[^0-9]/g, "");
+                            <NumericInput
+                              value={entry.claimAmount}
+                              onValueChange={(v) =>
                                 handleUpdateDepositEntry(
                                   index,
                                   "claimAmount",
-                                  parseInt(value) || 0,
-                                );
-                              }}
+                                  v,
+                                )
+                              }
                               data-testid={`input-deposit-claim-${index}`}
                               placeholder="0"
                               style={{
@@ -2219,23 +2212,15 @@ export function InvoiceManagementPopup({
                         {/* 입금액 */}
                         <div style={DEPOSIT_COLS.col4}>
                           <div className="flex items-center gap-1">
-                            <Input
-                              type="text"
-                              value={
-                                entry.depositAmount
-                                  ? entry.depositAmount.toLocaleString()
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const value = e.target.value
-                                  .replace(/,/g, "")
-                                  .replace(/[^0-9]/g, "");
+                            <NumericInput
+                              value={entry.depositAmount}
+                              onValueChange={(v) =>
                                 handleUpdateDepositEntry(
                                   index,
                                   "depositAmount",
-                                  parseInt(value) || 0,
-                                );
-                              }}
+                                  v,
+                                )
+                              }
                               data-testid={`input-deposit-amount-${index}`}
                               placeholder="0"
                               style={{
@@ -2622,23 +2607,15 @@ export function InvoiceManagementPopup({
                         {/* 입금액 */}
                         <div style={PAYMENT_COLS.colDeposit}>
                           <div className="flex items-center gap-1">
-                            <Input
-                              type="text"
-                              value={
-                                entry.depositAmount
-                                  ? entry.depositAmount.toLocaleString()
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const value = e.target.value
-                                  .replace(/,/g, "")
-                                  .replace(/[^0-9]/g, "");
+                            <NumericInput
+                              value={entry.depositAmount}
+                              onValueChange={(v) =>
                                 handleUpdatePaymentEntry(
                                   index,
                                   "depositAmount",
-                                  parseInt(value) || 0,
-                                );
-                              }}
+                                  v,
+                                )
+                              }
                               data-testid={`input-deposit-amount-${index}`}
                               placeholder="0"
                               style={{
@@ -2655,23 +2632,15 @@ export function InvoiceManagementPopup({
                         {/* 지급액 */}
                         <div style={PAYMENT_COLS.col3}>
                           <div className="flex items-center gap-1">
-                            <Input
-                              type="text"
-                              value={
-                                entry.paymentAmount
-                                  ? entry.paymentAmount.toLocaleString()
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const value = e.target.value
-                                  .replace(/,/g, "")
-                                  .replace(/[^0-9]/g, "");
+                            <NumericInput
+                              value={entry.paymentAmount}
+                              onValueChange={(v) =>
                                 handleUpdatePaymentEntry(
                                   index,
                                   "paymentAmount",
-                                  parseInt(value) || 0,
-                                );
-                              }}
+                                  v,
+                                )
+                              }
                               data-testid={`input-payment-amount-${index}`}
                               placeholder="0"
                               style={{
@@ -2690,23 +2659,15 @@ export function InvoiceManagementPopup({
                         {/* 수수료 */}
                         <div style={PAYMENT_COLS.col4}>
                           <div className="flex items-center gap-1">
-                            <Input
-                              type="text"
-                              value={
-                                entry.commission
-                                  ? entry.commission.toLocaleString()
-                                  : ""
-                              }
-                              onChange={(e) => {
-                                const value = e.target.value
-                                  .replace(/,/g, "")
-                                  .replace(/[^0-9]/g, "");
+                            <NumericInput
+                              value={entry.commission}
+                              onValueChange={(v) =>
                                 handleUpdatePaymentEntry(
                                   index,
                                   "commission",
-                                  parseInt(value) || 0,
-                                );
-                              }}
+                                  v,
+                                )
+                              }
                               data-testid={`input-payment-commission-${index}`}
                               placeholder="0"
                               style={{

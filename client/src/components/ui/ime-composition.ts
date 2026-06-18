@@ -28,7 +28,8 @@ export function useIMEComposition<
   onChange,
   onCompositionStart,
   onCompositionEnd,
-}: CompositionProps<E>): CompositionProps<E> {
+  disabled,
+}: CompositionProps<E> & { disabled?: boolean }): CompositionProps<E> {
   const detached = useIsDetachedWindow()
   const isComposingRef = React.useRef(false)
   const controlled = value !== undefined
@@ -43,8 +44,8 @@ export function useIMEComposition<
     }
   }, [value, detached, controlled])
 
-  if (!detached) {
-    // 메인 창: 원래 동작 그대로.
+  if (!detached || disabled) {
+    // 메인 창 또는 IME 비활성(숫자 전용 등): 원래 동작 그대로(native 통과).
     return { value, onChange, onCompositionStart, onCompositionEnd }
   }
 
