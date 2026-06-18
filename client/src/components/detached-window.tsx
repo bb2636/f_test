@@ -145,6 +145,29 @@ export function DetachedWindow({
     });
     unlockMainBody();
 
+    // 분리창 안에서 Radix 모달류(Select 등)가 열리면 DismissableLayer가 layer의
+    // ownerDocument(=분리창 document) 기준으로 분리창 **body**에 pointer-events:none을 건다.
+    // 닫힐 때 정상이면 복원되지만, react-remove-scroll이 같은 realm의 메인 body를 잠그고
+    // 위 lockGuard가 그걸 강제 해제하면서 refcount가 어긋나면 분리창 body의 pointer-events:none이
+    // 남아 분리창 전체 클릭이 죽는다(증상: 날짜/셀렉트/추가 버튼이 안 눌림, 이미 포커스된 입력만 타이핑됨).
+    // → 분리창 body도 동일하게 감시해 즉시 해제한다(드롭다운 content는 자체 pointer-events:auto라
+    //   계속 클릭 가능 = 사실상 비모달, 폼 팝업엔 적절).
+    const winDoc = win.document;
+    const unlockWinBody = () => {
+      const b = winDoc.body;
+      if (b.style.pointerEvents === "none") b.style.pointerEvents = "";
+      if (b.hasAttribute("data-scroll-locked")) {
+        b.removeAttribute("data-scroll-locked");
+        b.style.overflow = "";
+      }
+    };
+    const winLockGuard = new MutationObserver(unlockWinBody);
+    winLockGuard.observe(winDoc.body, {
+      attributes: true,
+      attributeFilter: ["style", "data-scroll-locked"],
+    });
+    unlockWinBody();
+
     return () => {
       if (surfaceIdRef.current != null) {
         releaseDetachedToastSurface(surfaceIdRef.current);
@@ -153,6 +176,7 @@ export function DetachedWindow({
       window.clearInterval(poll);
       observer.disconnect();
       lockGuard.disconnect();
+      winLockGuard.disconnect();
       win.removeEventListener("beforeunload", handleBeforeUnload);
       try {
         root.unmount();

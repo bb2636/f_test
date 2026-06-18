@@ -79,3 +79,8 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 - 보고서 분리창 사이드바로 현장입력/견적서/증빙자료로 전환해도 페이지가 안 바뀌는 버그: field-report(본문)·CaseReceiptTabs(탭)만 detached-aware로 고쳤고, **사이드바로 들어가는 페이지 컴포넌트들**(field-management/field-estimate/field-documents)은 여전히 `selectedFieldSurveyCaseId` localStorage만 직접 읽/쓰/폴링 → 분리창에선 stale/빈 localStorage라 전환 실패 + 탭 CustomEvent 미수신.
   - **Why:** 보고서 분리창은 라우트가 `/field-survey/report`가 아니어도(현장입력 등으로 이동해도) `isDetachedReportWindow()`가 `REPORT_DETACHED_KEY` sticky로 여전히 true. 즉 그 창 안 모든 페이지가 분리창 규칙(sessionStorage)을 따라야 하는데 페이지들이 인앱 가정(localStorage)으로 짜여 있었음.
   - **How to apply:** 케이스 소스를 컴포넌트마다 인라인하지 말고 `detached-window.ts`의 단일 헬퍼(`getFieldSurveyCaseId`/`setFieldSurveyCaseId`/`clearFieldSurveyCaseId`/`subscribeFieldSurveyCaseId`)로 통일. 헬퍼가 `isDetachedReportWindow()`로 분기(분리창=sessionStorage+CustomEvent, 인앱/solo=localStorage+storage). 구독 콜백은 **빈 문자열(클리어)도 전파**해야 stale 잔존 안 됨. 새 현장조사 페이지/팝업 추가 시 반드시 이 헬퍼 경유.
+
+## 분리창 body의 pointer-events 잠금도 해제해야 함 (메인 body만으론 부족)
+- lockGuard가 **메인 창 body**만 감시·해제하면, 분리창 안에서 Radix 모달류(Select 등)가 열릴 때 분리창 전체 클릭이 죽는 잔여 잠금을 못 잡는다(증상: 날짜 Popover·Select·추가 버튼이 안 눌리고, 이미 포커스된 입력 타이핑만 살아있음).
+  - **Why:** Radix DismissableLayer는 layer의 **ownerDocument(=분리창 document)** 기준으로 분리창 body에 `pointer-events:none`을 건다. 한편 react-remove-scroll은 모듈 전역 document(=메인 창)를 잠그고 lockGuard가 그걸 강제 해제 → 잠금 refcount가 어긋나 분리창 body의 `pointer-events:none`이 close 시 복원되지 못하고 남는다.
+  - **How to apply:** DetachedWindow 첫 useEffect에서 메인 body용 lockGuard와 **별도로** 분리창 `win.document.body`도 MutationObserver(winLockGuard)+unlockWinBody로 감시해 `pointer-events:none`/`data-scroll-locked`를 즉시 해제. 드롭다운 content는 자체 `pointer-events:auto`라 그대로 클릭 가능(사실상 비모달, 폼 팝업엔 적절). cleanup에서 winLockGuard.disconnect(). 진짜 모달이 필요하면 그때 창/타입 플래그로 범위를 좁힐 것.
