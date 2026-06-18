@@ -12,7 +12,7 @@ import { StatusBar } from "expo-status-bar";
 import * as ScreenCapture from "expo-screen-capture";
 import * as ScreenOrientation from "expo-screen-orientation";
 
-const APP_URL = "https://www.floxn.co.kr/";
+const APP_URL = "https://floxn-test.replit.app/";
 const BRAND = "#253396";
 
 export default function App() {
