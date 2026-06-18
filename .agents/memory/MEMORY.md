@@ -9,6 +9,6 @@
 - [PDF 멀티라인 줄바꿈 보존](pdf-multiline-normalizetext.md) — pdf-lib-service normalizeText의 \s가 \n을 먹어 특수문자 인접 줄바꿈 소실; 멀티라인 필드는 \n으로 split 후 줄별 normalizeText+wrapText (VOC 패턴)
 - [이메일 master 참조와 단체발송](email-master-cc-group-send.md) — 참조 CC는 sendEmailWithAttachment 내부서 1회 부착; 수신자별 루프 발송은 참조 중복 → to 콤마결합 1회 발송(단체발송)으로
 - [비번변경 SMS 문자인증/고위험 리셋 가드](sms-verification-auth.md) — verificationCode는 스키마 안건드리고 req.body 직접 검증(phone 없으면 생략); apiRequest는 raw Response throw Error("status: text"); 일괄리셋 라우트는 진입부 superadmin 가드 필수
-- [멀티아티팩트 상태 불일치](multi-artifact-state-mismatch.md) — 물리적으론 레거시 npm 단일앱인데 플랫폼은 pnpm_workspace로 분류→proposeMigration "already workspace"로 거부; 프로덕션에서 createArtifact 강행은 위험
+- [멀티아티팩트 상태 불일치 + 격리형 Expo 해법](multi-artifact-state-mismatch.md) — 레거시 npm앱인데 플랫폼은 pnpm_workspace로 오분류→createArtifact는 pnpm install로 운영앱 깨질 위험; 대신 서브폴더 standalone Expo(자체 deps + tunnel 워크플로)로 완전 격리
 - [모바일 비고 컬럼 제거 패턴](mobile-mode-note-column.md) — useMobileMode()로 showNote 토글; 컬럼 숨길 땐 thead/tbody/tfoot(콜스팬)을 한꺼번에. 기본값 false라 데스크톱 무영향
 - [SMTP 자격증명 일원화](email-smtp-credentials.md) — 메일 경로가 비밀번호 env 둘로 갈려 일부만 535 실패; 모든 경로 SMTP_PASSWORD||MAIL_APP_PASSWORD||SMTP_PASS 순. "SMTP 설정 확인"은 send-time 535일 수 있음

@@ -26,3 +26,18 @@ client/server/shared 루트 구조, `package-lock.json`(npm), `pnpm-workspace.ya
 "already pnpm_workspace"로 거부하면, 프로덕션 앱에서 createArtifact를 무턱대고 돌리지 말 것.
 사용자에게 알리고 합의(또는 Replit 지원으로 프로젝트 상태 정합화)를 받은 뒤 진행.
 체크포인트(롤백)는 있으니, 시도한다면 직후 기존 앱(포트 5000) 정상 구동을 반드시 재확인.
+
+# 채택한 해법: 격리형 standalone Expo (createArtifact 우회)
+
+createArtifact 대신 **루트와 완전 분리된 서브폴더 Expo 앱**으로 가면 프로덕션 위험 0:
+- 자체 `package.json`/`node_modules`만 가지는 서브폴더(아티팩트 시스템 미사용). 루트
+  package.json·`[deployment]`(build/run) 무변경 → 기존 앱 빌드/배포에 절대 안 섞임.
+- 실행은 별도 워크플로(console)로 `npx expo start --tunnel`. 단일 폴더라 `--port`/PORT
+  주입 불필요. Expo Go QR/`exp://...exp.direct`로 실기기 테스트.
+- WebView(react-native-webview)로 운영 사이트를 감싸고 네이티브 기능만 입힘
+  (expo-screen-capture 캡처차단, expo-screen-orientation, 카메라/사진 권한).
+- 버전은 추측 말고 `node_modules/expo/bundledNativeModules.json`에서 SDK 호환 버전 확인
+  (`npx expo` 직접 실행 금지 규칙 회피). 검증은 tsc + `curl localhost:8081/index.bundle?platform=ios`로 풀 번들 강제 컴파일(hasError:false).
+- **Why:** 정합화 안 된 반쪽 workspace에서 createArtifact의 pnpm install이 npm node_modules를
+  깨는 리스크를 아예 회피. 트레이드오프=Replit Expo Launch(정식 iOS 빌드/preview) 미사용.
+- 헤드리스 컨테이너에서 `libglib-2.0.so.0` (React Native DevTools) 에러는 무해(디버거 UI만 실패, 번들/Expo Go 무관).

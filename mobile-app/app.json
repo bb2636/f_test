@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "FLOXN",
+    "slug": "floxn-mobile",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#253396"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "kr.co.floxn.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "증빙 사진 촬영을 위해 카메라를 사용합니다.",
+        "NSPhotoLibraryUsageDescription": "증빙 자료 업로드를 위해 사진 보관함에 접근합니다.",
+        "NSPhotoLibraryAddUsageDescription": "촬영한 사진을 보관함에 저장합니다.",
+        "NSMicrophoneUsageDescription": "동영상 촬영 시 마이크를 사용합니다."
+      }
+    },
+    "android": {
+      "package": "kr.co.floxn.mobile",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#253396",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
