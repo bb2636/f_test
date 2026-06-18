@@ -13,7 +13,11 @@ IME 조합 버퍼를 깨서 글자가 중복/분해되어 들어간다(예: "안
 이 컴포넌트들은 `isComposingRef`를 onCompositionStart/End로 토글하고, **조합 중 onChange를 억제**한 뒤
 **compositionend에서 1회 onChange로 확정**한다. 브라우저별 input↔compositionend 순서에 견고
 (끝 input이 먼저 와도 억제, compositionend가 먼저 와도 확정; 뒤따르는 동일값 onChange는 멱등).
-raw `<input>`/`<textarea>`를 분리창 안에서 직접 쓰면 같은 버그가 재발하니 공용 컴포넌트를 쓸 것.
+raw `<input>`/`<textarea>`를 분리창 안에서 직접 쓰면 같은 버그가 재발한다. 인라인 style 등으로
+공용 `ui/input`/`ui/textarea`(Tailwind class 부착)로 못 바꾸는 raw 태그는 **native passthrough**인
+`ui/ime-input.tsx`의 `IMEInput`/`IMETextarea`로 치환할 것(모든 props 그대로 전달 + 동일 composition 가드,
+시각/동작 동일). 분리창 컴포넌트의 raw 태그는 텍스트가 아닌 type(radio/checkbox/date/email/button)도
+같이 치환돼도 가드가 no-op이라 무해.
 
 **Why:** ASCII는 composition 이벤트가 없어 영향 0 → 메인창 동작 보존하면서 분리창만 고쳐진다.
 입력별로 일일이 핸들링하면 분리창 모든 텍스트필드(InvoiceSheet/FieldDispatchCostSheet/접수검색팝업 등)에서

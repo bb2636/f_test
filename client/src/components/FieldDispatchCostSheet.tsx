@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { IMEInput, IMETextarea } from "@/components/ui/ime-input";
 import { format } from "date-fns";
 import { DetachedWindow } from "@/components/detached-window";
 import { Button } from "@/components/ui/button";
@@ -706,7 +707,7 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
                 }}>
                   비고
                 </div>
-                <textarea
+                <IMETextarea
                   className="field-dispatch-remarks-textarea"
                   value={invoiceRemarks}
                   onChange={(e) => setInvoiceRemarks(e.target.value)}
@@ -1008,7 +1009,7 @@ export function FieldDispatchCostSheet({ open, onOpenChange, caseData, relatedCa
               }}>
                 수신자 이메일
               </span>
-              <input
+              <IMEInput
                 type="email"
                 value={invoiceRecipientEmail}
                 onChange={(e) => setInvoiceRecipientEmail(e.target.value)}

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { IMEInput, IMETextarea } from "@/components/ui/ime-input";
 import { useLocation } from "wouter";
 import { Plus, MessageSquare, X, Mail, Loader2, Search } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -308,7 +309,7 @@ export function FloatingIntakeButton() {
                   }}>
                     제목
                   </label>
-                  <input
+                  <IMEInput
                     type="text"
                     value={smsSubject}
                     onChange={(e) => setSmsSubject(e.target.value)}
@@ -335,7 +336,7 @@ export function FloatingIntakeButton() {
                   }}>
                     내용입력
                   </label>
-                  <textarea
+                  <IMETextarea
                     value={smsContent}
                     onChange={(e) => setSmsContent(e.target.value)}
                     placeholder="문자 내용을 입력하세요"
@@ -380,7 +381,7 @@ export function FloatingIntakeButton() {
                       background: '#FFFFFF',
                     }}>
                       <Search size={16} color="rgba(12,12,12,0.4)" />
-                      <input
+                      <IMEInput
                         type="text"
                         value={searchQuery}
                         onChange={(e) => {
@@ -530,7 +531,7 @@ export function FloatingIntakeButton() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <input
+                    <IMEInput
                       type="text"
                       value={senderName}
                       onChange={(e) => setSenderName(e.target.value)}
@@ -570,7 +571,7 @@ export function FloatingIntakeButton() {
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                         }}>
                           <div style={{ padding: '8px' }}>
-                            <input
+                            <IMEInput
                               type="text"
                               value={senderSearchQuery}
                               onChange={(e) => setSenderSearchQuery(e.target.value)}

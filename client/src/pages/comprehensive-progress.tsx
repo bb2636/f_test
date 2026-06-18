@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { IMEInput, IMETextarea } from "@/components/ui/ime-input";
 import { useCompactPagination } from "@/lib/use-compact-pagination";
 import { CompactPagination } from "@/components/ui/compact-pagination";
 import ReactDOM from "react-dom";
@@ -1770,7 +1771,7 @@ export default function ComprehensiveProgress() {
                   color: "rgba(12, 12, 12, 0.4)",
                 }}
               />
-              <input
+              <IMEInput
                 type="text"
                 placeholder="보험사 사고번호, 접수번호, 피보험자, 피보험자 주소, 당사 담당자, 증권번호, 협력사, 심사사, 심사자 등으로 검색해주세요."
                 value={searchQuery}
@@ -4203,7 +4204,7 @@ export default function ComprehensiveProgress() {
                                   alignItems: "flex-start",
                                 }}
                               >
-                                <textarea
+                                <IMETextarea
                                   value={newNoteContent}
                                   onChange={(e) =>
                                     setNewNoteContent(e.target.value)
@@ -4444,7 +4445,7 @@ export default function ComprehensiveProgress() {
                                   alignItems: "flex-start",
                                 }}
                               >
-                                <textarea
+                                <IMETextarea
                                   value={newNoteContent}
                                   onChange={(e) =>
                                     setNewNoteContent(e.target.value)
@@ -4578,7 +4579,7 @@ export default function ComprehensiveProgress() {
                                   gap: "8px",
                                 }}
                               >
-                                <input
+                                <IMEInput
                                   type="checkbox"
                                   checked={true}
                                   readOnly
@@ -4827,7 +4828,7 @@ export default function ComprehensiveProgress() {
                                       >
                                         일자
                                       </div>
-                                      <input
+                                      <IMEInput
                                         type="date"
                                         value={manualHistoryDate}
                                         onChange={(e) => setManualHistoryDate(e.target.value)}
@@ -4906,7 +4907,7 @@ export default function ComprehensiveProgress() {
                                       >
                                         내용
                                       </div>
-                                      <input
+                                      <IMEInput
                                         type="text"
                                         value={manualHistoryContent}
                                         onChange={(e) => setManualHistoryContent(e.target.value)}
@@ -4944,7 +4945,7 @@ export default function ComprehensiveProgress() {
                                       >
                                         수신자
                                       </div>
-                                      <input
+                                      <IMEInput
                                         type="text"
                                         value={manualHistoryRecipient}
                                         onChange={(e) => setManualHistoryRecipient(e.target.value)}

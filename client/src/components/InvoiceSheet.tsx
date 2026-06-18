@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { IMEInput, IMETextarea } from "@/components/ui/ime-input";
 import { format } from "date-fns";
 import { DetachedWindow } from "@/components/detached-window";
 import { useToast } from "@/hooks/use-toast";
@@ -1256,7 +1257,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
                 width: "266px",
                 height: "186px",
               }}>
-                <textarea
+                <IMETextarea
                   value={invoiceRemarks}
                   onChange={(e) => setInvoiceRemarks(e.target.value)}
                   placeholder="내용을 입력해주세요"
@@ -1781,7 +1782,7 @@ export function InvoiceSheet({ open, onOpenChange, caseData, relatedCases = [] }
           )}
 
           {/* Email Input */}
-          <input
+          <IMEInput
             type="email"
             value={invoiceRecipientEmail}
             onChange={(e) => {

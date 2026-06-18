@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { IMEInput, IMETextarea } from "@/components/ui/ime-input";
 import { createPortal } from "react-dom";
 import { usePortalContainer } from "@/components/detached-window";
 import { useLocation } from "wouter";
@@ -2032,7 +2033,7 @@ export default function Intake({
               <div className="col-span-6 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>접수번호</label>
-                  <input
+                  <IMEInput
                     className={`${disabledInputClasses} keep-border`}
                     value={displayCaseNumber}
                     readOnly
@@ -2047,7 +2048,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>접수일자</label>
                   {editCaseId && loadedReceptionDate ? (
-                    <input
+                    <IMEInput
                       className={disabledInputClasses}
                       value={loadedReceptionDate}
                       readOnly
@@ -2130,7 +2131,7 @@ export default function Intake({
               <div className="col-span-6 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>담당자 연락처</label>
-                  <input
+                  <IMEInput
                     className={disabledInputClasses}
                     value={formData.managerContact}
                     placeholder="연락처"
@@ -2223,7 +2224,7 @@ export default function Intake({
                     증권번호
                     <RequiredMark />
                   </label>
-                  <input
+                  <IMEInput
                     className={`${inputClasses} bg-white`}
                     value={formData.insurancePolicyNo}
                     onChange={(e) =>
@@ -2247,7 +2248,7 @@ export default function Intake({
                     보험사고번호
                     <RequiredMark />
                   </label>
-                  <input
+                  <IMEInput
                     className={`${inputClasses} bg-white`}
                     value={formData.insuranceAccidentNo}
                     onChange={(e) =>
@@ -2279,7 +2280,7 @@ export default function Intake({
                     의뢰사
                     <RequiredMark />
                   </label>
-                  <input
+                  <IMEInput
                     className={autoFilledInputClasses}
                     value={formData.clientResidence}
                     readOnly
@@ -2293,7 +2294,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>소속부서명</label>
-                  <input
+                  <IMEInput
                     className={autoFilledInputClasses}
                     value={formData.clientDepartment}
                     readOnly
@@ -2332,7 +2333,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>의뢰자 연락처</label>
-                  <input
+                  <IMEInput
                     className={autoFilledInputClasses}
                     value={clientOfficePhone || formData.clientContact}
                     readOnly
@@ -2347,7 +2348,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>심사사</label>
-                  <input
+                  <IMEInput
                     className={autoFilledInputClasses}
                     value={formData.assessorId}
                     readOnly
@@ -2361,7 +2362,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>소속부서명</label>
-                  <input
+                  <IMEInput
                     className={autoFilledInputClasses}
                     value={formData.assessorDepartment}
                     readOnly
@@ -2397,7 +2398,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>심사자 연락처</label>
-                  <input
+                  <IMEInput
                     className={autoFilledInputClasses}
                     value={assessorOfficePhone || formData.assessorContact}
                     readOnly
@@ -2412,7 +2413,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>조사사</label>
-                  <input
+                  <IMEInput
                     className={autoFilledInputClasses}
                     value={formData.investigatorTeam}
                     readOnly
@@ -2426,7 +2427,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>소속부서명</label>
-                  <input
+                  <IMEInput
                     className={autoFilledInputClasses}
                     value={formData.investigatorDepartment}
                     readOnly
@@ -2462,7 +2463,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>조사자 연락처</label>
-                  <input
+                  <IMEInput
                     className={autoFilledInputClasses}
                     value={formData.investigatorContact}
                     readOnly
@@ -2487,7 +2488,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>보험계약자</label>
-                  <input
+                  <IMEInput
                     className={`${inputClasses} bg-white`}
                     value={formData.policyHolderName}
                     onChange={(e) =>
@@ -2507,7 +2508,7 @@ export default function Intake({
                     피보험자
                     <RequiredMark />
                   </label>
-                  <input
+                  <IMEInput
                     className={`${inputClasses} bg-white`}
                     value={formData.insuredName}
                     onChange={(e) =>
@@ -2527,7 +2528,7 @@ export default function Intake({
                     피보험자 연락처
                     <RequiredMark />
                   </label>
-                  <input
+                  <IMEInput
                     className={`${inputClasses} bg-white`}
                     value={formData.insuredContact}
                     onChange={(e) =>
@@ -2551,7 +2552,7 @@ export default function Intake({
                     className="relative flex-1"
                     ref={insuredAddressWrapperRef}
                   >
-                    <input
+                    <IMEInput
                       className={`${inputClasses} bg-white keep-border ${!readOnly ? "cursor-pointer" : ""}`}
                       value={formData.insuredAddress}
                       onClick={() => !readOnly && openInsuredAddressDropdown()}
@@ -2576,7 +2577,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-6">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>상세주소</label>
-                  <input
+                  <IMEInput
                     className={`${inputClasses} bg-white`}
                     value={formData.insuredAddressDetail}
                     onChange={(e) =>
@@ -2602,7 +2603,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>피해자</label>
-                  <input
+                  <IMEInput
                     className={`${inputClasses} bg-white`}
                     value={formData.victimName}
                     onChange={(e) =>
@@ -2619,7 +2620,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>피해자 연락처</label>
-                  <input
+                  <IMEInput
                     className={`${inputClasses} bg-white`}
                     value={formData.victimContact}
                     onChange={(e) =>
@@ -2643,7 +2644,7 @@ export default function Intake({
                     className="relative flex-1"
                     ref={victimAddressWrapperRef}
                   >
-                    <input
+                    <IMEInput
                       className={`${inputClasses} bg-white keep-border ${!readOnly ? "cursor-pointer" : ""}`}
                       value={formData.victimAddress}
                       onClick={() => !readOnly && openVictimAddressDropdown()}
@@ -2668,7 +2669,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-6">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>상세주소</label>
-                  <input
+                  <IMEInput
                     className={`${inputClasses} bg-white`}
                     value={formData.victimAddressDetail}
                     onChange={(e) =>
@@ -2715,7 +2716,7 @@ export default function Intake({
 
             <div className="mb-5 flex flex-wrap items-center gap-6">
               <label className="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                <input
+                <IMEInput
                   className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-200"
                   type="checkbox"
                   checked={formData.damagePreventionCost === true}
@@ -2728,7 +2729,7 @@ export default function Intake({
                 손해방지
               </label>
               <label className="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                <input
+                <IMEInput
                   className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-200"
                   type="checkbox"
                   checked={formData.victimIncidentAssistance === true}
@@ -2928,7 +2929,7 @@ export default function Intake({
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>협력사</label>
                   {/* [2026-05-14] readOnly + keep-border 추가: 전역 input[readonly]{border:none} 룰 예외 처리하여 테두리 표시 */}
-                  <input
+                  <IMEInput
                     className={`${inputClasses} keep-border ${!readOnly ? "cursor-pointer" : ""}`}
                     value={formData.assignedPartner}
                     onClick={() => !readOnly && setIsPartnerSearchOpen(true)}
@@ -3003,7 +3004,7 @@ export default function Intake({
               <div className="col-span-12 md:col-span-3">
                 <div className={fieldRowClasses}>
                   <label className={labelClasses}>담당자 연락처</label>
-                  <input
+                  <IMEInput
                     className={disabledInputClasses}
                     value={formData.assignedPartnerContact}
                     readOnly
@@ -3020,7 +3021,7 @@ export default function Intake({
                     특이사항 및 요청사항
                   </label>
                   <div className="relative">
-                    <textarea
+                    <IMETextarea
                       className="min-h-[100px] w-full resize-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
                       placeholder="현장 특이사항, 요청사항 등"
                       value={formData.specialRequests}
@@ -3150,7 +3151,7 @@ export default function Intake({
                   <div className="flex flex-col items-start w-full gap-2">
                     <label className={labelClasses}>협력사 검색</label>
                     <div className="flex flex-row items-center w-full">
-                      <input
+                      <IMEInput
                         type="text"
                         placeholder="업체명을 입력해주세요."
                         value={partnerSearchQuery}
@@ -3322,7 +3323,7 @@ export default function Intake({
                 <div className="flex flex-col items-start w-full gap-2">
                   <label className={labelClasses}>이름/회사/부서 검색</label>
                   <div className="flex flex-row items-center w-full">
-                    <input
+                    <IMEInput
                       type="text"
                       placeholder="이름, 회사명 또는 부서명을 입력해주세요."
                       value={clientSearchQuery}
@@ -3475,7 +3476,7 @@ export default function Intake({
                 <div className="flex flex-col items-start w-full gap-2">
                   <label className={labelClasses}>이름/회사/부서 검색</label>
                   <div className="flex flex-row items-center w-full">
-                    <input
+                    <IMEInput
                       type="text"
                       placeholder="이름, 회사명 또는 부서명을 입력해주세요."
                       value={assessorSearchQuery}
@@ -3629,7 +3630,7 @@ export default function Intake({
                 <div className="flex flex-col items-start w-full gap-2">
                   <label className={labelClasses}>이름/회사/부서 검색</label>
                   <div className="flex flex-row items-center w-full">
-                    <input
+                    <IMEInput
                       type="text"
                       placeholder="이름, 회사명 또는 부서명을 입력해주세요."
                       value={investigatorSearchQuery}
