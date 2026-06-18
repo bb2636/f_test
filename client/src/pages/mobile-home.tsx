@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { User, Case } from "@shared/schema";
 import { ChevronDown, Calendar, AlertCircle, Wallet, CheckCircle2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { GlobalHeader } from "@/components/global-header";
+import MobileComprehensiveProgress from "@/pages/mobile-comprehensive-progress";
 import { 
   startOfMonth, 
   endOfMonth, 
@@ -24,8 +25,28 @@ import {
 } from "date-fns";
 import { ko } from "date-fns/locale";
 
-type TabType = '전체' | '미결' | '미정산' | '일부정산';
+type MainTabType = '진행건 요약' | '종합진행관리';
+type TabType = '접수' | '미결' | '보험사 미정산' | '협력사 미정산';
 type DateFilterType = '전체' | '오늘' | '이번 달' | '지난 달' | 'custom';
+
+// 미결/미정산 판별 — dashboard.tsx 의 기존 로직과 동일 (산식 변경 없음)
+const isPendingStatus = (status: string | null | undefined): boolean =>
+  status !== '청구자료제출(복구)' &&
+  status !== '출동비청구(선견적)' &&
+  status !== '청구' &&
+  status !== '입금완료' &&
+  status !== '부분입금' &&
+  status !== '부분지급' &&
+  status !== '지급완료' &&
+  status !== '정산완료' &&
+  status !== '접수취소' &&
+  status !== '취소대기' &&
+  status !== '종결' &&
+  status !== '취소';
+const isInsuranceUnsettledStatus = (status: string | null | undefined): boolean =>
+  status === '청구' || status === '부분입금';
+const isPartnerUnsettledStatus = (status: string | null | undefined): boolean =>
+  status === '부분지급' || status === '지급완료';
 
 interface DateRange {
   from: Date | null;
@@ -34,7 +55,8 @@ interface DateRange {
 
 export default function MobileHome() {
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState<TabType>('미정산');
+  const [mainTab, setMainTab] = useState<MainTabType>('진행건 요약');
+  const [activeTab, setActiveTab] = useState<TabType>('접수');
   const [dateFilter, setDateFilter] = useState<DateFilterType>('이번 달');
   const [customDateRange, setCustomDateRange] = useState<DateRange>({ from: null, to: null });
   const [tempDateRange, setTempDateRange] = useState<DateRange>({ from: null, to: null });
@@ -138,16 +160,15 @@ export default function MobileHome() {
       ? ((thisMonthReceptionCount - lastMonthReceptionCount) / lastMonthReceptionCount * 100).toFixed(1)
       : '0';
     
-    const pendingCount = filteredCases.filter(c => 
-      c.status === '제출' || c.status === '검토중' || c.status === '1차승인'
-    ).length;
-
-    const unsettledCount = filteredCases.filter(c => c.status === '완료').length;
+    const pendingCount = filteredCases.filter(c => isPendingStatus(c.status)).length;
+    const insuranceUnsettledCount = filteredCases.filter(c => isInsuranceUnsettledStatus(c.status)).length;
+    const partnerUnsettledCount = filteredCases.filter(c => isPartnerUnsettledStatus(c.status)).length;
 
     return {
       receptionCount,
       pendingCount,
-      unsettledCount,
+      insuranceUnsettledCount,
+      partnerUnsettledCount,
       changePercent,
       isIncrease: thisMonthReceptionCount >= lastMonthReceptionCount,
     };
@@ -155,16 +176,14 @@ export default function MobileHome() {
 
   const filteredCasesByTab = useMemo(() => {
     switch (activeTab) {
-      case '전체':
+      case '접수':
         return filteredCases;
       case '미결':
-        return filteredCases.filter(c => 
-          c.status === '제출' || c.status === '검토중' || c.status === '1차승인'
-        );
-      case '미정산':
-        return filteredCases.filter(c => c.status === '완료');
-      case '일부정산':
-        return filteredCases.filter(c => c.status === '완료');
+        return filteredCases.filter(c => isPendingStatus(c.status));
+      case '보험사 미정산':
+        return filteredCases.filter(c => isInsuranceUnsettledStatus(c.status));
+      case '협력사 미정산':
+        return filteredCases.filter(c => isPartnerUnsettledStatus(c.status));
       default:
         return filteredCases;
     }
@@ -327,7 +346,7 @@ export default function MobileHome() {
     );
   }
 
-  const tabs: TabType[] = ['전체', '미결', '미정산', '일부정산'];
+  const tabs: TabType[] = ['접수', '미결', '보험사 미정산', '협력사 미정산'];
   const filterOptions: DateFilterType[] = ['전체', '오늘', '이번 달', '지난 달', 'custom'];
   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -338,6 +357,38 @@ export default function MobileHome() {
     >
       <GlobalHeader />
 
+      {/* 메인 2탭: 진행건 요약 / 종합진행관리 */}
+      <div
+        className="flex items-center"
+        style={{
+          height: '48px',
+          borderBottom: '1px solid rgba(12, 12, 12, 0.08)',
+        }}
+      >
+        {(['진행건 요약', '종합진행관리'] as MainTabType[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setMainTab(tab)}
+            className="flex-1 flex justify-center items-center"
+            style={{
+              height: '48px',
+              borderBottom: mainTab === tab ? '2px solid #253396' : '2px solid transparent',
+              fontFamily: 'Pretendard',
+              fontWeight: mainTab === tab ? 600 : 400,
+              fontSize: '15px',
+              letterSpacing: '-0.02em',
+              color: mainTab === tab ? '#253396' : 'rgba(12, 12, 12, 0.5)',
+            }}
+            data-testid={`main-tab-${tab}`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {mainTab === '종합진행관리' ? (
+        <MobileComprehensiveProgress user={user} cases={allCases} />
+      ) : (
       <div className="flex flex-col">
         <div
           className="flex flex-col items-center px-5 pt-4"
@@ -545,7 +596,7 @@ export default function MobileHome() {
                     color: 'rgba(12, 12, 12, 0.8)',
                   }}
                 >
-                  미정산
+                  보험사 미정산
                 </span>
               </div>
               <span
@@ -557,9 +608,43 @@ export default function MobileHome() {
                   letterSpacing: '-0.02em',
                   color: '#0C0C0C',
                 }}
-                data-testid="text-unsettled-count"
+                data-testid="text-insurance-unsettled-count"
               >
-                {stats.unsettledCount.toString().padStart(3, '0')}
+                {stats.insuranceUnsettledCount.toString().padStart(3, '0')}
+              </span>
+            </div>
+
+            <div
+              className="flex justify-between items-center"
+              style={{ padding: '12px 0', height: '46px' }}
+            >
+              <div className="flex items-center" style={{ gap: '8px' }}>
+                <Wallet style={{ width: '22px', height: '22px', color: 'rgba(12, 12, 12, 0.3)' }} />
+                <span
+                  style={{
+                    fontFamily: 'Pretendard',
+                    fontWeight: 500,
+                    fontSize: '16px',
+                    lineHeight: '128%',
+                    letterSpacing: '-0.02em',
+                    color: 'rgba(12, 12, 12, 0.8)',
+                  }}
+                >
+                  협력사 미정산
+                </span>
+              </div>
+              <span
+                style={{
+                  fontFamily: 'Pretendard',
+                  fontWeight: 600,
+                  fontSize: '16px',
+                  lineHeight: '128%',
+                  letterSpacing: '-0.02em',
+                  color: '#0C0C0C',
+                }}
+                data-testid="text-partner-unsettled-count"
+              >
+                {stats.partnerUnsettledCount.toString().padStart(3, '0')}
               </span>
             </div>
           </div>
@@ -766,6 +851,7 @@ export default function MobileHome() {
           </div>
         </div>
       </div>
+      )}
 
       {isDateFilterOpen && (
         <div 

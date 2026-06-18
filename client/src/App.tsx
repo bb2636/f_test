@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 const Login = lazy(() => import("@/pages/login"));
 const MobileLogin = lazy(() => import("@/pages/mobile-login"));
 const MobileHome = lazy(() => import("@/pages/mobile-home"));
+const MobileCaseDetail = lazy(() => import("@/pages/mobile-case-detail"));
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const AdminSettings = lazy(() => import("@/pages/admin-settings"));
 const Intake = lazy(() => import("@/pages/intake"));
@@ -48,6 +49,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/mobile-login" component={MobileLogin} />
         <Route path="/mobile-home" component={MobileHome} />
+        <Route path="/mobile-case/:id" component={MobileCaseDetail} />
         <Route path="/forbidden" component={Forbidden} />
         
         <Route path="/home">
