@@ -30,6 +30,15 @@ whack-a-mole이 되므로 공용 부품 한 곳에서 해결한다.
 덮어쓰기를 자체 처리하므로 가드가 불필요하다. 메인 창에 가드를 "항상" 적용하면 **회귀**가 난다:
 조합 중 onChange 억제 → state가 stale → 폴링/잦은 리렌더 페이지(예: comprehensive-progress 진행메모
 in-tab Sheet)에서 조합 도중 백그라운드 리렌더가 stale value로 textarea를 덮어써 "입력이 안 되는"
-증상이 생긴다. 그래서 `ui/input`/`ui/textarea`/`ui/ime-input` 셋 다 `useIsDetachedWindow()`
-(detached-window.tsx, `PortalContainerContext !== undefined`)로 **분리창일 때만** 가드를 켜고
-메인 창에선 plain native(onChange/onCompositionStart/onCompositionEnd 그대로)로 통과시킨다.
+증상이 생긴다. 그래서 공용 훅 `useIMEComposition`(ui/ime-composition.ts)이 `useIsDetachedWindow()`
+(detached-window.tsx, `PortalContainerContext !== undefined`)로 **분리창일 때만** 보정을 켜고
+메인 창에선 plain native로 통과시킨다.
+
+**"onChange 억제"만으로는 부족 — 분리창은 로컬 미러 state 필요(2차 회귀 핵심).** 조합 중 onChange만
+억제하면, 부모가 조합 도중 리렌더될 때 React가 controlled `value`를 stale 값으로 되돌려 진행 중인
+조합을 지운다. 인보이스 팝업(InvoiceManagementPopup의 `Input` 메모, InvoiceSheet의 `IMETextarea`)은
+배열/useMemo 재계산으로 리렌더가 잦아 이 증상으로 한글이 아예 입력 안 됐다. 해결: 분리창 분기에서
+**로컬 미러 state(inner)** 로 표시값을 보유하고, **조합 중에는 외부 value 동기화를 차단**(useEffect는
+`!isComposing`일 때만 setInner). 비조합 입력은 즉시 부모 onChange 전파, IME는 compositionend에 1회 전파.
+이로써 조합 도중 리렌더에도 입력이 살아남는다. **Why:** 분리창은 별도 document라 React가 composition을
+메인 document 기준으로만 추적 → controlled+IME가 깨지고, 단순 억제로는 리렌더 덮어쓰기를 못 막는다.
