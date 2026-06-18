@@ -3,8 +3,12 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, onChange, onCompositionStart, onCompositionEnd, ...props }, ref) => {
     // h-9 to match icon buttons and default buttons.
+    // IME(한글/일본어/중국어) 조합 보호: 분리창(window.open)처럼 별도 React root에서는
+    // 조합 중 onChange가 value를 되돌려 글자가 중복/깨져 입력된다. 조합 중에는 onChange를
+    // 억제하고 compositionend에서 1회 확정한다. ASCII 입력은 composition 이벤트가 없어 영향 없음.
+    const isComposingRef = React.useRef(false)
     return (
       <input
         type={type}
@@ -13,6 +17,19 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        onChange={(e) => {
+          if (isComposingRef.current) return
+          onChange?.(e)
+        }}
+        onCompositionStart={(e) => {
+          isComposingRef.current = true
+          onCompositionStart?.(e)
+        }}
+        onCompositionEnd={(e) => {
+          isComposingRef.current = false
+          onChange?.(e as unknown as React.ChangeEvent<HTMLInputElement>)
+          onCompositionEnd?.(e)
+        }}
         {...props}
       />
     )
