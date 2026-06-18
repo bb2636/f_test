@@ -21,6 +21,12 @@ export function usePortalContainer() {
   return useContext(PortalContainerContext);
 }
 
+/** 현재 컴포넌트가 분리창(DetachedWindow) 안에서 렌더되는지 여부.
+ *  분리창 내부에서만 IME(한글) 조합 가드를 적용하기 위한 판별용. */
+export function useIsDetachedWindow() {
+  return useContext(PortalContainerContext) !== undefined;
+}
+
 function copyStyles(src: Document, dest: Document) {
   src
     .querySelectorAll('style, link[rel="stylesheet"]')

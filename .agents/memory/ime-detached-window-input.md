@@ -25,3 +25,11 @@ whack-a-mole이 되므로 공용 부품 한 곳에서 해결한다.
 
 **주의:** compositionend에서 onChange를 한 번 더 쏘므로, onChange가 side-effect(라이브 검색/네트워크)를
 일으키는 곳은 중복 호출 가능. 문제되면 호출부에서 `e.nativeEvent.isComposing` 또는 값 dedupe로 가드.
+
+**가드는 분리창 안에서만 적용할 것(가장 중요).** 메인 창은 React가 조합 중 controlled value
+덮어쓰기를 자체 처리하므로 가드가 불필요하다. 메인 창에 가드를 "항상" 적용하면 **회귀**가 난다:
+조합 중 onChange 억제 → state가 stale → 폴링/잦은 리렌더 페이지(예: comprehensive-progress 진행메모
+in-tab Sheet)에서 조합 도중 백그라운드 리렌더가 stale value로 textarea를 덮어써 "입력이 안 되는"
+증상이 생긴다. 그래서 `ui/input`/`ui/textarea`/`ui/ime-input` 셋 다 `useIsDetachedWindow()`
+(detached-window.tsx, `PortalContainerContext !== undefined`)로 **분리창일 때만** 가드를 켜고
+메인 창에선 plain native(onChange/onCompositionStart/onCompositionEnd 그대로)로 통과시킨다.
