@@ -20,7 +20,6 @@ import {
   Trash2,
 } from "lucide-react";
 import type { LaborRateTier } from "@shared/schema";
-import { useMobileMode } from "@/lib/mobile-mode";
 import {
   calculateIWithTiers,
   calculateAppliedUnitPriceWithTiers,
@@ -159,8 +158,6 @@ export function LaborCostSection({
   isLossPreventionCase = false,
   isPartner = false,
 }: LaborCostSectionProps) {
-  // 모바일 견적서에서는 비고 컬럼만 숨김 (산식 영향 없음)
-  const showNote = !useMobileMode();
   const [directInputMode, setDirectInputMode] = useState<Set<string>>(new Set());
   const [workNameInputMode, setWorkNameInputMode] = useState<Set<string>>(new Set());
 
@@ -2009,7 +2006,6 @@ export function LaborCostSection({
             >
               경비 여부
             </th>
-            {showNote && (
             <th
               style={{
                 /* [정책 2026-05-12] 견적서 탭 — 경비여부에서 줄인 폭을 비고로 이전 */
@@ -2025,7 +2021,6 @@ export function LaborCostSection({
             >
               비고
             </th>
-            )}
           </tr>
         </thead>
         <tbody>
@@ -2777,7 +2772,6 @@ export function LaborCostSection({
                   </td>
 
                   {/* 비고 - 연동 행도 수정 가능 */}
-                  {showNote && (
                   <td style={{ padding: "0 8px" }}>
                     <Input
                       value={row.request}
@@ -2799,7 +2793,6 @@ export function LaborCostSection({
                       data-testid={`input-note-labor-${globalIndex}`}
                     />
                   </td>
-                  )}
                 </tr>
               );
             }),
@@ -2862,7 +2855,7 @@ export function LaborCostSection({
                 }, 0),
               ).toLocaleString()}
             </td>
-            <td colSpan={showNote ? 2 : 1}></td>
+            <td colSpan={2}></td>
           </tr>
         </tfoot>
       </table>

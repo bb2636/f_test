@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, GripVertical, Lock, Plus, Minus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useMobileMode } from "@/lib/mobile-mode";
 
 // MaterialCatalogItem matches excel_data 자재비 response
 export interface MaterialCatalogItem {
@@ -82,8 +81,6 @@ export function MaterialCostSection({
   isAdmin = false,
   isPartner = false,
 }: MaterialCostSectionProps) {
-  // 모바일 견적서에서는 비고 컬럼만 숨김 (산식 영향 없음)
-  const showNote = !useMobileMode();
   // 직접입력 모드 상태: 공사명, 자재항목 각각 관리
   const [workNameInputMode, setWorkNameInputMode] = useState<{[rowId: string]: boolean}>({});
   const [materialItemInputMode, setMaterialItemInputMode] = useState<{[rowId: string]: boolean}>({});
@@ -428,9 +425,7 @@ export function MaterialCostSection({
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "60px" }}>단위</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "right", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "100px" }}>합계</th>
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "center", borderBottom: "1px solid #E5E7EB", borderRight: "1px solid rgba(12, 12, 12, 0.06)", minWidth: "75px", whiteSpace: "nowrap" }}>경비여부</th>
-            {showNote && (
             <th style={{ padding: "0 12px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500, color: "rgba(12, 12, 12, 0.6)", textAlign: "left", borderBottom: "1px solid #E5E7EB", minWidth: "120px" }}>비고</th>
-            )}
           </tr>
         </thead>
         <tbody>
@@ -1048,7 +1043,6 @@ export function MaterialCostSection({
                   </td>
 
                   {/* 비고 - 연동 행도 수정 가능 */}
-                  {showNote && (
                   <td style={{ padding: "0 8px", background: "#EFF6FF", borderBottom: groupBorderBottom }}>
                     <Input
                       value={row.비고}
@@ -1062,7 +1056,6 @@ export function MaterialCostSection({
                       data-testid={`input-비고-${currentGlobalIndex}`}
                     />
                   </td>
-                  )}
                 </tr>
               );
             })
@@ -1098,7 +1091,7 @@ export function MaterialCostSection({
             </td>
             {/* [정책 2026-05-12] 합계 우측 잔여 셀 — 경비여부 1칸 + 비고(관리자 자재비 구성비) 1칸 */}
             <td></td>
-            {showNote && (isAdmin ? (
+            {isAdmin ? (
               <td style={{
                 padding: "0 12px",
                 fontFamily: "Pretendard",
@@ -1117,7 +1110,7 @@ export function MaterialCostSection({
               </td>
             ) : (
               <td></td>
-            ))}
+            )}
           </tr>
         </tfoot>
       </table>

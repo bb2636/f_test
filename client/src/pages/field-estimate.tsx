@@ -43,7 +43,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { LaborCostSection, type LaborCatalogItem, type LaborCostRow } from "@/components/labor-cost-section";
 import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount, isFixedLaborWorkName, isMergeableLaborRow } from "@/lib/labor-merge";
 import { MaterialCostSection, type MaterialCatalogItem, type MaterialRow } from "@/components/material-cost-section";
-import { useMobileMode } from "@/lib/mobile-mode";
 import {
   createAutoSaveScheduler,
   type AutoSaveSchedulerDeps,
@@ -2472,8 +2471,6 @@ export default function FieldEstimate() {
   const isSubmitted = selectedCase?.fieldSurveyStatus === "submitted";
   // 협력사는 제출 후 수정 불가 (반려 시 수정 가능)
   const isReadOnly = isPartner && isSubmitted && !isRejected;
-  // 모바일(네이티브/모바일웹) 견적서에서는 비고란만 숨김 (산식·도면 영향 없음)
-  const showNote = !useMobileMode();
   
   const DAMAGE_PREVENTION_KEYWORDS = ['누수탐지', '원인공사', '원인철거', '원인(기타)'];
   const VICTIM_RECOVERY_ORDER = ['가설공사', '목공사', '수장공사', '도장공사', '전기공사', '타일공사', '가구공사', '욕실공사', '철거공사', '폐기물', '기타'];
@@ -7304,7 +7301,6 @@ export default function FieldEstimate() {
                         </div>
                       </div>
                     </th>
-                    {showNote && (
                     <th 
                       style={{ 
                         width: "205px", 
@@ -7318,7 +7314,6 @@ export default function FieldEstimate() {
                     >
                       비고
                     </th>
-                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -7727,7 +7722,6 @@ export default function FieldEstimate() {
                           data-testid={`input-repair-area-${globalIndex}`}
                         />
                       </td>
-                      {showNote && (
                       <td style={{ padding: "8px" }}>
                         <input
                           type="text"
@@ -7747,7 +7741,6 @@ export default function FieldEstimate() {
                           data-testid={`input-note-${globalIndex}`}
                         />
                           </td>
-                      )}
                         </tr>
                       );
                     })
@@ -8237,9 +8230,7 @@ export default function FieldEstimate() {
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>복구면적 가로(m)</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>복구면적 세로(m)</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>복구면적(㎡)</th>
-                        {showNote && (
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>비고</th>
-                        )}
                       </tr>
                     </thead>
                     <tbody>
@@ -8425,7 +8416,6 @@ export default function FieldEstimate() {
                               }}
                             >{row.repairArea}</div>
                           </td>
-                          {showNote && (
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
@@ -8443,7 +8433,6 @@ export default function FieldEstimate() {
                               }}
                             />
                           </td>
-                          )}
                         </tr>
                       ))}
                     </tbody>
