@@ -7,7 +7,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Eye, EyeOff, Lock, AlertTriangle, ShieldCheck, FileText } from "lucide-react";
+import { Loader2, Eye, EyeOff, Lock, AlertTriangle, ShieldCheck, FileText, Smartphone } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,44 @@ export function ForceChangePasswordModal({
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [termsExpanded, setTermsExpanded] = useState(false);
   const [privacyExpanded, setPrivacyExpanded] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
+  const [maskedPhone, setMaskedPhone] = useState("");
+  // 휴대폰 인증 필요 여부 (휴대폰 미등록 계정이면 false로 전환되어 인증 없이 변경 허용)
+  const [phoneRequired, setPhoneRequired] = useState(true);
+
+  const sendCodeMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/password-change/send-code", {});
+      return (await res.json()) as { success: boolean; phone?: string };
+    },
+    onSuccess: (data) => {
+      setCodeSent(true);
+      setPhoneRequired(true);
+      setMaskedPhone(data?.phone || "");
+      toast({
+        title: "인증번호 발송",
+        description: `${data?.phone || "휴대폰"}으로 인증번호를 발송했습니다.`,
+      });
+    },
+    onError: (error: any) => {
+      const msg = error?.message || "";
+      if (msg.includes("휴대폰 번호가 없") || msg.includes("NO_PHONE")) {
+        // 휴대폰 미등록 → 인증 생략하고 변경 가능
+        setPhoneRequired(false);
+        toast({
+          title: "휴대폰 미등록",
+          description: "등록된 휴대폰이 없어 인증 없이 변경을 진행합니다.",
+        });
+      } else {
+        toast({
+          title: "인증번호 발송 실패",
+          description: "인증번호 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
+          variant: "destructive",
+        });
+      }
+    },
+  });
 
   const form = useForm<ForceChangePasswordInput>({
     resolver: zodResolver(forceChangePasswordSchema),
@@ -53,7 +91,10 @@ export function ForceChangePasswordModal({
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data: ForceChangePasswordInput) => {
-      return await apiRequest("POST", "/api/force-change-password", data);
+      return await apiRequest("POST", "/api/force-change-password", {
+        ...data,
+        verificationCode,
+      });
     },
     onSuccess: () => {
       toast({
@@ -61,6 +102,8 @@ export function ForceChangePasswordModal({
         description: "새 비밀번호로 변경되었습니다.",
       });
       form.reset();
+      setVerificationCode("");
+      setCodeSent(false);
       onSuccess();
     },
     onError: (error: any) => {
@@ -78,6 +121,14 @@ export function ForceChangePasswordModal({
       toast({
         title: "약관 동의 필요",
         description: "서비스 이용약관과 개인정보 처리방침에 모두 동의해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (phoneRequired && !verificationCode.trim()) {
+      toast({
+        title: "휴대폰 인증 필요",
+        description: "인증번호를 받은 뒤 입력해주세요.",
         variant: "destructive",
       });
       return;
@@ -339,6 +390,51 @@ export function ForceChangePasswordModal({
               </ul>
             </div>
 
+            {phoneRequired && (
+              <div className="space-y-2">
+                <FormLabel className="text-sm font-medium flex items-center gap-1.5">
+                  <Smartphone className="h-4 w-4 text-muted-foreground" />
+                  휴대폰 인증 <span className="text-red-500">*</span>
+                </FormLabel>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="인증번호 6자리"
+                      value={verificationCode}
+                      onChange={(e) =>
+                        setVerificationCode(e.target.value.replace(/[^0-9]/g, ""))
+                      }
+                      data-testid="input-verification-code"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => sendCodeMutation.mutate()}
+                    disabled={sendCodeMutation.isPending}
+                    className="whitespace-nowrap"
+                    data-testid="button-send-code"
+                  >
+                    {sendCodeMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : codeSent ? (
+                      "재발송"
+                    ) : (
+                      "인증번호 받기"
+                    )}
+                  </Button>
+                </div>
+                {codeSent && maskedPhone && (
+                  <p className="text-xs text-muted-foreground">
+                    {maskedPhone}로 인증번호를 발송했습니다. (5분 이내 입력)
+                  </p>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-3 pt-2">
               <Button
                 type="button"
@@ -352,7 +448,11 @@ export function ForceChangePasswordModal({
               <Button
                 type="submit"
                 className="flex-1"
-                disabled={changePasswordMutation.isPending || !allAgreed}
+                disabled={
+                  changePasswordMutation.isPending ||
+                  !allAgreed ||
+                  (phoneRequired && !verificationCode.trim())
+                }
                 data-testid="button-change-password"
               >
                 {changePasswordMutation.isPending ? (

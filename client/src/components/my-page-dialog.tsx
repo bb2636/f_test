@@ -37,6 +37,11 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
+  const [maskedPhone, setMaskedPhone] = useState("");
+  // 휴대폰 인증 필요 여부 (휴대폰 미등록 계정이면 false로 전환되어 인증 없이 변경 허용)
+  const [phoneRequired, setPhoneRequired] = useState(true);
   const { toast } = useToast();
   const qc = useQueryClient();
   const [, setLocation] = useLocation();
@@ -209,8 +214,41 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
     },
   });
 
+  const sendCodeMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/password-change/send-code", {});
+      return (await res.json()) as { success: boolean; phone?: string };
+    },
+    onSuccess: (data) => {
+      setCodeSent(true);
+      setPhoneRequired(true);
+      setMaskedPhone(data?.phone || "");
+      toast({
+        title: "인증번호 발송",
+        description: `${data?.phone || "휴대폰"}으로 인증번호를 발송했습니다.`,
+      });
+    },
+    onError: (error: any) => {
+      const msg = error?.message || "";
+      if (msg.includes("휴대폰 번호가 없") || msg.includes("NO_PHONE")) {
+        // 휴대폰 미등록 → 인증 생략하고 변경 가능
+        setPhoneRequired(false);
+        toast({
+          title: "휴대폰 미등록",
+          description: "등록된 휴대폰이 없어 인증 없이 변경을 진행합니다.",
+        });
+      } else {
+        toast({
+          title: "인증번호 발송 실패",
+          description: "인증번호 발송에 실패했습니다. 잠시 후 다시 시도해주세요.",
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
   const changePasswordMutation = useMutation({
-    mutationFn: (data: { currentPassword: string; newPassword: string; confirmPassword: string }) =>
+    mutationFn: (data: { currentPassword: string; newPassword: string; confirmPassword: string; verificationCode?: string }) =>
       apiRequest("PATCH", "/api/me/password", data),
     onSuccess: () => {
       toast({
@@ -221,6 +259,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setVerificationCode("");
+      setCodeSent(false);
     },
     onError: (error: any) => {
       toast({
@@ -486,12 +526,53 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                           )}
                         </div>
 
+                        {phoneRequired && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              휴대폰 인증 <span className="text-red-500">*</span>
+                            </label>
+                            <div className="flex gap-2">
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={6}
+                                value={verificationCode}
+                                onChange={(e) =>
+                                  setVerificationCode(e.target.value.replace(/[^0-9]/g, ""))
+                                }
+                                placeholder="인증번호 6자리"
+                                data-testid="input-verification-code"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => sendCodeMutation.mutate()}
+                                disabled={sendCodeMutation.isPending}
+                                className="whitespace-nowrap"
+                                data-testid="button-send-code"
+                              >
+                                {sendCodeMutation.isPending
+                                  ? "발송 중..."
+                                  : codeSent
+                                  ? "재발송"
+                                  : "인증번호 받기"}
+                              </Button>
+                            </div>
+                            {codeSent && maskedPhone && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {maskedPhone}로 인증번호를 발송했습니다. (5분 이내 입력)
+                              </p>
+                            )}
+                          </div>
+                        )}
+
                         <Button
                           onClick={() => {
                             changePasswordMutation.mutate({
                               currentPassword,
                               newPassword,
                               confirmPassword,
+                              verificationCode,
                             });
                           }}
                           disabled={
@@ -502,6 +583,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                             newPassword.length < 8 ||
                             !/[A-Za-z]/.test(newPassword) ||
                             !/[0-9]/.test(newPassword) ||
+                            (phoneRequired && !verificationCode.trim()) ||
                             changePasswordMutation.isPending
                           }
                           className="w-full hover:opacity-90"

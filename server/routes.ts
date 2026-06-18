@@ -74,6 +74,15 @@ import {
   renderCancellationTemplate,
 } from "./email-templates";
 import { createSolapiAuthHeader, solapiHttpsRequest } from "./solapi";
+import { sendSolapiMessage } from "./sms";
+import {
+  canSendCode,
+  issueCode,
+  verifyCode,
+  maskPhone,
+  parseUserAgent,
+  getClientIp,
+} from "./auth-security";
 import {
   sendFieldDispatchReportEmailSchema,
   generateInvoicePdfSchema,
@@ -267,6 +276,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error("[LOGIN] destroyPgSession failed:", err.message);
           });
           console.log("[LOGIN] Destroyed existing PG session for userId:", user.id, "old sessionId:", existingSessionId);
+
+          // 다른 기기에서 새로 로그인하여 기존 세션이 종료되는 경우,
+          // 계정 소유자에게 이번 로그인의 기기/OS/IP 정보를 SMS로 안내한다.
+          // (로그인 흐름을 막지 않도록 fire-and-forget; 실패해도 로그인은 정상 진행)
+          if (user.phone) {
+            const { device, os } = parseUserAgent(req.headers["user-agent"] || "");
+            const ip = getClientIp(req);
+            const noticeText =
+              `<다른 기기 로그인 안내>\n\n` +
+              `- 디바이스 : ${device}\n` +
+              `- OS : ${os}\n` +
+              `- IP : ${ip}\n\n` +
+              `직접 로그인한 것이 아니라면 관리자에게 연락하여 비밀번호를 초기화하고 변경해 주세요`;
+            sendSolapiMessage(user.phone, noticeText, "다른 기기 로그인 안내").catch(
+              (err: any) =>
+                console.error("[LOGIN] 다른 기기 로그인 안내 SMS 발송 실패:", err?.message || err),
+            );
+          }
         }
 
         req.session.userId = user.id;
@@ -347,6 +374,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 비밀번호 변경용 휴대폰 인증번호 발송 (로그인된 사용자 본인)
+  app.post("/api/password-change/send-code", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+    try {
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
+      }
+      if (!user.phone) {
+        return res.status(400).json({
+          error: "등록된 휴대폰 번호가 없습니다. 관리자에게 문의해주세요.",
+          code: "NO_PHONE",
+        });
+      }
+
+      const gate = canSendCode(user.id);
+      if (!gate.ok) {
+        return res.status(429).json({
+          error: `잠시 후 다시 시도해주세요 (${gate.waitSec}초)`,
+        });
+      }
+
+      const code = issueCode(user.id);
+      try {
+        await sendSolapiMessage(
+          user.phone,
+          `[FLOXN] 비밀번호 변경 인증번호 [${code}]\n5분 이내에 입력해주세요.`,
+        );
+      } catch (smsErr: any) {
+        console.error("[send-code] SMS 발송 실패:", smsErr?.message || smsErr);
+        return res.status(500).json({ error: "인증번호 발송에 실패했습니다" });
+      }
+
+      console.log(`[send-code] 인증번호 발송 userId=${user.id}`);
+      res.json({ success: true, phone: maskPhone(user.phone) });
+    } catch (error) {
+      console.error("Send verification code error:", (error as Error)?.message);
+      res.status(500).json({ error: "인증번호 발송 중 오류가 발생했습니다" });
+    }
+  });
+
   // Force change password endpoint (최초 로그인 시 임시 비밀번호 변경)
   app.post("/api/force-change-password", async (req, res) => {
     if (!req.session?.userId) {
@@ -359,6 +429,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!user) {
         return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
+      }
+
+      // 휴대폰 번호가 등록된 경우 문자 인증번호 검증 (미등록 시 안전하게 생략)
+      if (user.phone) {
+        const code = (req.body?.verificationCode || "").toString().trim();
+        if (!code) {
+          return res.status(400).json({ error: "휴대폰 인증번호를 입력해주세요" });
+        }
+        if (!verifyCode(user.id, code)) {
+          return res
+            .status(400)
+            .json({ error: "인증번호가 올바르지 않거나 만료되었습니다" });
+        }
       }
 
       // 비밀번호 업데이트
@@ -464,6 +547,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Force reset admin passwords and reactivate accounts endpoint (temporary fix for production)
   app.post("/api/reset-admin-passwords", async (req, res) => {
+    // Check authentication
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
+    }
+
+    // Check admin authorization (super-admin only — high-risk bulk reset)
+    if (req.session.userRole !== "관리자" || !req.session.isSuperAdmin) {
+      return res.status(403).json({ error: "최고관리자 권한이 필요합니다" });
+    }
+
     try {
       const isProduction = process.env.REPLIT_DEPLOYMENT === "1";
       const dbUrl = isProduction
@@ -495,6 +588,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Then reset password
           const updated = await storage.updatePassword(username, "1234");
+          // 초기화된 비밀번호는 첫 로그인 시 강제 변경되도록 플래그 설정
+          if (updated) {
+            await storage.updateUserMustChangePassword(updated.id, true);
+          }
           results.push({
             username,
             success: !!updated,
@@ -834,6 +931,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
       }
 
+      // 관리자가 비밀번호를 초기화하면 해당 사용자는 다음 로그인 시
+      // 반드시 비밀번호를 다시 변경하도록 강제한다.
+      await storage.updateUserMustChangePassword(updatedUser.id, true);
+
       const { password, ...userWithoutPassword } = updatedUser;
       res.json({ success: true, user: userWithoutPassword });
     } catch (error) {
@@ -871,6 +972,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res
           .status(400)
           .json({ error: "현재 비밀번호가 올바르지 않습니다" });
+      }
+
+      // 휴대폰 번호가 등록된 경우 문자 인증번호 검증 (미등록 시 안전하게 생략)
+      if (user.phone) {
+        const code = (req.body?.verificationCode || "").toString().trim();
+        if (!code) {
+          return res.status(400).json({ error: "휴대폰 인증번호를 입력해주세요" });
+        }
+        if (!verifyCode(user.id, code)) {
+          return res
+            .status(400)
+            .json({ error: "인증번호가 올바르지 않거나 만료되었습니다" });
+        }
       }
 
       // Update password
