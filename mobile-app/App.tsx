@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import {
   ActivityIndicator,
   BackHandler,
+  PermissionsAndroid,
   Platform,
   StyleSheet,
   View,
@@ -32,6 +33,14 @@ export default function App() {
     // 기본은 세로 고정. 견적서 화면에서만 가로로 전환한다(onNav 참조).
     ScreenOrientation.lockAsync(
       ScreenOrientation.OrientationLock.PORTRAIT_UP,
+    ).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    // 증빙자료 사진 업로드 시 WebView 파일 input(카메라 촬영)에 필요한 런타임 권한.
+    if (Platform.OS !== "android") return;
+    PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.CAMERA,
     ).catch(() => {});
   }, []);
 

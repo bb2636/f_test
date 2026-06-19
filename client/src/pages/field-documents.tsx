@@ -1716,7 +1716,7 @@ export default function FieldDocuments() {
 
       {/* 카테고리 탭 */}
       <div
-        className="flex gap-8 mb-6"
+        className={`mb-6 ${isMobileApp ? "flex gap-4 overflow-x-auto floxn-hscroll" : "flex gap-8"}`}
         style={{
           borderBottom: "2px solid rgba(12, 12, 12, 0.08)",
         }}
@@ -1771,7 +1771,7 @@ export default function FieldDocuments() {
           return (
             <div
               key={category}
-              className="flex items-center gap-1 pb-3 relative"
+              className="flex items-center gap-1 pb-3 relative shrink-0 whitespace-nowrap"
             >
               <button
                 type="button"

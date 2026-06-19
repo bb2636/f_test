@@ -12,6 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCaseNumber } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 
 import {
   Home,
@@ -146,6 +147,7 @@ function NoticeAttachments({ images }: { images?: string | null }) {
 }
 
 export default function Dashboard() {
+  const isMobileApp = useIsMobileApp();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<
     "reception" | "pending" | "insurance" | "partner"
@@ -1093,14 +1095,14 @@ export default function Dashboard() {
 
               <div className="rounded-2xl bg-white/70 p-4 shadow-sm ring-1 ring-[#DDE3F3]">
                 <div className="relative rounded-xl ring-1 ring-[#E5E7EB]">
-                  <div className="max-h-[380px] overflow-y-auto overflow-x-visible rounded-xl">
-                    <table className="w-full text-sm">
+                  <div className={`max-h-[380px] overflow-y-auto rounded-xl ${isMobileApp ? "overflow-x-auto" : "overflow-x-visible"}`}>
+                    <table className={`w-full text-sm ${isMobileApp ? "min-w-[620px]" : ""}`}>
                       <thead className="bg-[#F6F7FB] text-slate-600 sticky top-0 z-20">
                         <tr>
-                          <th className="w-[120px] px-4 py-3 text-left font-semibold">
+                          <th className="w-[120px] px-4 py-3 text-left font-semibold whitespace-nowrap">
                             분류
                           </th>
-                          <th className="px-4 py-3 text-center font-semibold">
+                          <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">
                             <div className="inline-flex items-center gap-1">
                               <span>접수건</span>
                               <div className="relative group/tip">
@@ -1171,7 +1173,7 @@ export default function Dashboard() {
                               </DropdownMenu>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-center font-semibold">
+                          <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">
                             <div className="inline-flex items-center gap-1 justify-center">
                               <span>미결건</span>
                               <div className="relative group/pending">
@@ -1185,7 +1187,7 @@ export default function Dashboard() {
                               </div>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-center font-semibold">
+                          <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">
                             <div className="inline-flex items-center gap-1 justify-center">
                               <span>보험사 미정산</span>
                               <div className="relative group/ins">
@@ -1199,7 +1201,7 @@ export default function Dashboard() {
                               </div>
                             </div>
                           </th>
-                          <th className="px-4 py-3 text-center font-semibold">
+                          <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">
                             <div className="inline-flex items-center gap-1 justify-center">
                               <span>협력사 미정산</span>
                               <div className="relative group/partner">
@@ -1241,7 +1243,7 @@ export default function Dashboard() {
                                 key={index}
                                 data-testid={`summary-row-${index}`}
                               >
-                                <td className="px-4 py-4 text-left font-medium text-slate-700">
+                                <td className="px-4 py-4 text-left font-medium text-slate-700 whitespace-nowrap">
                                   {company.name}
                                 </td>
                                 <td className="px-4 py-4 text-center font-semibold">

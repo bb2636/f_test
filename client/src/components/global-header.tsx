@@ -90,10 +90,12 @@ export function GlobalHeader() {
           >
             {/* Logo */}
             <div
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
               style={{
                 filter: "drop-shadow(0px 0px 20px #DBE9F5)",
               }}
+              onClick={() => setLocation("/dashboard")}
+              data-testid="logo-home-mobile"
             >
               <img
                 src={logoIcon}
@@ -182,10 +184,12 @@ export function GlobalHeader() {
         >
           {/* Logo */}
           <div
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer"
             style={{
               filter: "drop-shadow(0px 0px 20px #DBE9F5)",
             }}
+            onClick={() => setLocation("/dashboard")}
+            data-testid="logo-home-viewport-mobile"
           >
             <img
               src={logoIcon}

@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -29,6 +30,7 @@ const normalizeBoolean = (value: any): boolean => {
 };
 
 export default function FieldManagement() {
+  const isMobileApp = useIsMobileApp();
   const { toast } = useToast();
   const [selectedCase, setSelectedCase] = useState<string>(() => getFieldSurveyCaseId());
 
@@ -1016,11 +1018,11 @@ export default function FieldManagement() {
                   Row2: 협력사 | 담당자명 | 담당자 연락처
                   자동연동(readOnly) 필드는 bg-slate-50, 입력 필드는 bg-white 유지. */}
               <div className="mt-6 space-y-6">
-                <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+                <div className={isMobileApp ? "grid grid-cols-2 gap-3" : "flex flex-wrap items-end gap-x-6 gap-y-4"}>
                   <div className="flex flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">보험사고번호</div>
                     <input
-                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      className={`h-9 ${isMobileApp ? "w-full" : "w-[180px]"} rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border`}
                       value={selectedCaseData.insuranceAccidentNo || ""}
                       readOnly
                       placeholder="-"
@@ -1030,7 +1032,7 @@ export default function FieldManagement() {
                   <div className="flex flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">보험사</div>
                     <input
-                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      className={`h-9 ${isMobileApp ? "w-full" : "w-[180px]"} rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border`}
                       value={selectedCaseData.insuranceCompany || ""}
                       readOnly
                       placeholder="-"
@@ -1040,7 +1042,7 @@ export default function FieldManagement() {
                   <div className="flex flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">보험계약자</div>
                     <input
-                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      className={`h-9 ${isMobileApp ? "w-full" : "w-[180px]"} rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border`}
                       value={selectedCaseData.policyHolderName || ""}
                       readOnly
                       placeholder="-"
@@ -1050,7 +1052,7 @@ export default function FieldManagement() {
                   <div className="flex flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">피보험자</div>
                     <input
-                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      className={`h-9 ${isMobileApp ? "w-full" : "w-[180px]"} rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border`}
                       value={selectedCaseData.insuredName || ""}
                       readOnly
                       placeholder="-"
@@ -1060,7 +1062,7 @@ export default function FieldManagement() {
                   <div className="flex flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">연락처</div>
                     <input
-                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      className={`h-9 ${isMobileApp ? "w-full" : "w-[180px]"} rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border`}
                       value={selectedCaseData.insuredContact || ""}
                       readOnly
                       placeholder="-"
@@ -1069,11 +1071,11 @@ export default function FieldManagement() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+                <div className={isMobileApp ? "grid grid-cols-2 gap-3" : "flex flex-wrap items-end gap-x-6 gap-y-4"}>
                   <div className="flex flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">협력사</div>
                     <input
-                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      className={`h-9 ${isMobileApp ? "w-full" : "w-[180px]"} rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border`}
                       value={selectedCaseData.assignedPartner || ""}
                       readOnly
                       placeholder="-"
@@ -1083,7 +1085,7 @@ export default function FieldManagement() {
                   <div className="flex flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">담당자명</div>
                     <input
-                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      className={`h-9 ${isMobileApp ? "w-full" : "w-[180px]"} rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border`}
                       value={selectedCaseData.assignedPartnerManager || ""}
                       readOnly
                       placeholder="-"
@@ -1093,7 +1095,7 @@ export default function FieldManagement() {
                   <div className="flex flex-col gap-1.5">
                     <div className="text-[12px] text-[#6B7280]">담당자 연락처</div>
                     <input
-                      className="h-9 w-[180px] rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border"
+                      className={`h-9 ${isMobileApp ? "w-full" : "w-[180px]"} rounded-md border border-[#E5E7EB] bg-slate-50 px-3 text-[13px] font-semibold text-[#0C0C0C] outline-none cursor-default keep-border`}
                       value={selectedCaseData.assignedPartnerContact || ""}
                       readOnly
                       placeholder="-"
@@ -1116,7 +1118,7 @@ export default function FieldManagement() {
               <div className="mt-6 space-y-6">
                 {/* Row 1: 사고 발생 일시 + 방문 일시 */}
                 <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
-                  <div className="flex w-[520px] flex-col gap-1.5">
+                  <div className={`flex ${isMobileApp ? "w-full" : "w-[520px]"} flex-col gap-1.5`}>
                     <div className="text-[12px] text-[#6B7280]">사고 발생 일시</div>
                     <div className="flex">
                       <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen} modal={false}>
@@ -1229,7 +1231,7 @@ export default function FieldManagement() {
                   const causeLabel = `${causeBaseLabel}(기술소견 포함)`;
                   return (
                     <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
-                      <div className="flex w-[520px] flex-col gap-1.5">
+                      <div className={`flex ${isMobileApp ? "w-full" : "w-[520px]"} flex-col gap-1.5`}>
                         <div className="text-[12px] text-[#6B7280]">누수유형</div>
                         <div className="flex h-9 items-center gap-3 text-[13px] text-[#374151]">
                           <div className="flex h-9 shrink-0 items-center gap-6">
@@ -1280,7 +1282,7 @@ export default function FieldManagement() {
 
                 {/* Row 3: 처리유형 + 기타사항입력 + 복구방식 */}
                 <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
-                  <div className="flex w-[520px] flex-col gap-1.5">
+                  <div className={`flex ${isMobileApp ? "w-full" : "w-[520px]"} flex-col gap-1.5`}>
                     <div className="text-[12px] text-[#6B7280]">처리유형</div>
                     <div className="flex h-9 items-center gap-3 text-[13px] text-[#374151]">
                       <div className="flex h-9 shrink-0 items-center gap-6">

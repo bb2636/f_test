@@ -3262,7 +3262,7 @@ export default function FieldReport() {
 
             {/* 두 번째 줄: 접수번호, 계약자, 피보험자, 담당자 */}
             <div
-              className="flex items-center gap-6"
+              className={`flex items-center gap-x-6 gap-y-1 ${isMobileApp ? "flex-wrap" : ""}`}
               style={{
                 paddingLeft: "24px",
               }}
@@ -3382,7 +3382,7 @@ export default function FieldReport() {
       >
         {/* 탭 헤더 - 새로운 디자인 */}
         <div
-          className="flex items-center border-b-2 mb-0"
+          className={`flex items-center border-b-2 mb-0 ${isMobileApp ? "overflow-x-auto floxn-hscroll" : ""}`}
           style={{
             borderColor: "rgba(12, 12, 12, 0.2)",
           }}
@@ -3392,7 +3392,7 @@ export default function FieldReport() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className="flex-1 flex items-center justify-center py-5"
+                className={`${isMobileApp ? "shrink-0 px-4 whitespace-nowrap" : "flex-1"} flex items-center justify-center py-5`}
                 style={{
                   fontFamily: "Pretendard",
                   fontSize: "18px",

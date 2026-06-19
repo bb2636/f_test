@@ -136,7 +136,7 @@ export function AppSidebarStatistics() {
 
   const handleTopMenuClick = (name: string) => {
     if (name === "홈") {
-      setLocation(isMobileApp ? "/mobile-home" : "/dashboard");
+      setLocation("/dashboard");
     } else if (name === "접수하기") {
       // 새 접수 시작: 이전 "이어서 작성하기" 잔여 editCaseId 정리
       localStorage.removeItem("editCaseId");

@@ -10,6 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { X, Pencil, Star, Home, CalendarPlus, AlertCircle, Building2, TrendingUp, Settings, FileText, Plus, MessageCircle, ChevronDown, ChevronUp, Eye, EyeOff, Lock, MoreHorizontal, CheckCircle2, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 
 interface MyPageDialogProps {
   open: boolean;
@@ -20,6 +21,7 @@ interface MyPageDialogProps {
 type TabType = "profile" | "notices" | "inquiries" | "favorites";
 
 export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
+  const isMobileApp = useIsMobileApp();
   const [activeTab, setActiveTab] = useState<TabType>("profile");
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -357,27 +359,33 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-3xl p-0 gap-0 overflow-hidden"
+        className={`${isMobileApp ? "w-[95vw] max-w-[95vw]" : "max-w-3xl"} p-0 gap-0 overflow-hidden`}
         style={{ 
           borderRadius: '16px',
           maxHeight: '90vh',
         }}
       >
-        <div className="flex" style={{ height: 'calc(90vh - 2rem)', minHeight: '600px' }}>
+        <div
+          className={`${isMobileApp ? "flex flex-col min-h-0" : "flex"}`}
+          style={isMobileApp ? { maxHeight: 'calc(90vh - 2rem)' } : { height: 'calc(90vh - 2rem)', minHeight: '600px' }}
+        >
           <div 
-            className="w-48 flex-shrink-0 p-6"
+            className={`${isMobileApp ? "w-full p-3" : "w-48 flex-shrink-0 p-6"}`}
             style={{ 
               background: 'var(--color-table-header)',
-              borderRight: '1px solid var(--color-table-border)',
+              borderRight: isMobileApp ? 'none' : '1px solid var(--color-table-border)',
+              borderBottom: isMobileApp ? '1px solid var(--color-table-border)' : undefined,
             }}
           >
-            <h2 className="text-lg font-semibold mb-6" style={{ color: '#56687f' }}>마이페이지</h2>
-            <nav className="space-y-1">
+            {!isMobileApp && (
+              <h2 className="text-lg font-semibold mb-6" style={{ color: '#56687f' }}>마이페이지</h2>
+            )}
+            <nav className={isMobileApp ? "flex gap-2 overflow-x-auto floxn-hscroll" : "space-y-1"}>
               {menuItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={`${isMobileApp ? "shrink-0 whitespace-nowrap" : "w-full text-left"} px-3 py-2 rounded-lg text-sm transition-colors ${
                     activeTab === item.id
                       ? "text-white font-semibold"
                       : "text-gray-600 hover:bg-gray-100"
@@ -391,7 +399,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
             </nav>
           </div>
 
-          <div className="flex-1 p-8 overflow-y-auto relative" style={{ maxHeight: 'calc(90vh - 2rem)', background: 'var(--color-bg)' }}>
+          <div className={`${isMobileApp ? "flex-1 min-h-0 p-4" : "flex-1 p-8"} overflow-y-auto relative`} style={{ maxHeight: isMobileApp ? undefined : 'calc(90vh - 2rem)', background: 'var(--color-bg)' }}>
             {activeTab === "profile" && (
               <div>
                 <h3 className="text-xl font-semibold mb-2" style={{ color: '#56687f' }}>내 프로필 설정</h3>

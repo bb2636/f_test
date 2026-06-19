@@ -45,7 +45,7 @@ export default function MobileLogin() {
         const response = await fetch("/api/check-session");
         const data = await response.json();
         if (data.authenticated) {
-          setLocation("/mobile-home");
+          setLocation("/dashboard");
         }
       } catch (error) {
         console.error("Session check failed:", error);
@@ -67,7 +67,7 @@ export default function MobileLogin() {
       });
 
       setTimeout(() => {
-        setLocation("/mobile-home");
+        setLocation("/dashboard");
       }, 500);
     },
     onError: (error: any) => {

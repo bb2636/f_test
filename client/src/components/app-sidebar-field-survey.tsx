@@ -129,8 +129,8 @@ export function AppSidebarFieldSurvey({
 
   const handleHomeNavigate = (item: typeof homeMenuItems[number]) => {
     if (item.name === "홈") {
-      // 모바일 앱은 모바일 전용 홈(/mobile-home), 데스크톱은 기존 대시보드.
-      setLocation(isMobileApp ? "/mobile-home" : "/dashboard");
+      // 홈은 모바일/데스크톱 모두 현황요약(/dashboard)으로 이동 — 모바일은 상단 네브바 유지.
+      setLocation("/dashboard");
       return;
     }
     if (item.name === "접수하기") {
