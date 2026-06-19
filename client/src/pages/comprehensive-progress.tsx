@@ -5,6 +5,7 @@ import { CompactPagination } from "@/components/ui/compact-pagination";
 import ReactDOM from "react-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 import {
   User,
   CaseWithLatestProgress,
@@ -273,6 +274,7 @@ const progressFormSchema = z.object({
 
 export default function ComprehensiveProgress() {
   const [activeMenu, setActiveMenu] = useState("종합진행관리");
+  const isMobileApp = useIsMobileApp();
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedManager, setSelectedManager] = useState<string>("__INIT__");
@@ -1659,7 +1661,7 @@ export default function ComprehensiveProgress() {
         style={{
           maxWidth: "1800px",
           margin: "0 auto",
-          padding: "32px 20px",
+          padding: isMobileApp ? "12px 10px" : "32px 20px",
           position: "relative",
           zIndex: 1,
         }}
@@ -1677,7 +1679,7 @@ export default function ComprehensiveProgress() {
             style={{
               fontFamily: "Pretendard",
               fontWeight: 600,
-              fontSize: "28px",
+              fontSize: isMobileApp ? "20px" : "28px",
               lineHeight: "128%",
               letterSpacing: "-0.02em",
               color: "#56687f",
@@ -1720,14 +1722,15 @@ export default function ComprehensiveProgress() {
           <div
             style={{
               display: "flex",
-              alignItems: "center",
+              flexDirection: isMobileApp ? "column" : "row",
+              alignItems: isMobileApp ? "stretch" : "center",
               gap: "12px",
             }}
           >
             {/* Status Filter Dropdown */}
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger
-                className="w-[180px] h-[40px]"
+                className={`${isMobileApp ? "w-full" : "w-[180px]"} h-[40px]`}
                 style={{
                   fontFamily: "Pretendard",
                   fontSize: "14px",
@@ -2112,6 +2115,7 @@ export default function ComprehensiveProgress() {
               className="data-table-header"
               style={{
                 display: "grid",
+                minWidth: isMobileApp ? "1040px" : undefined,
                 // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
                 // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
                 //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%
@@ -2323,6 +2327,7 @@ export default function ComprehensiveProgress() {
                     className="data-table-row"
                     style={{
                       display: "grid",
+                      minWidth: isMobileApp ? "1040px" : undefined,
                       // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
                       // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
                       //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%

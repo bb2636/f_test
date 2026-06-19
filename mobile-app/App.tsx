@@ -29,7 +29,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    ScreenOrientation.unlockAsync().catch(() => {});
+    // 기본은 세로 고정. 견적서 화면에서만 가로로 전환한다(onNav 참조).
+    ScreenOrientation.lockAsync(
+      ScreenOrientation.OrientationLock.PORTRAIT_UP,
+    ).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -46,6 +49,13 @@ export default function App() {
 
   const onNav = useCallback((nav: WebViewNavigation) => {
     setCanGoBack(nav.canGoBack);
+    // 견적서(작성) 화면은 가로(landscape) 고정, 그 외에는 세로(portrait) 고정.
+    const isEstimate = (nav.url || "").includes("/field-survey/estimate");
+    ScreenOrientation.lockAsync(
+      isEstimate
+        ? ScreenOrientation.OrientationLock.LANDSCAPE
+        : ScreenOrientation.OrientationLock.PORTRAIT_UP,
+    ).catch(() => {});
   }, []);
 
   return (

@@ -7,7 +7,7 @@ import logoIcon from "@assets/logo-frame.svg";
 import { usePermissions } from "@/hooks/use-permissions";
 import { MyPageDialog } from "./my-page-dialog";
 import { useIsMobileApp } from "@/hooks/use-mobile-app";
-import { MobileNavShell } from "./mobile-nav-shell";
+import { MobileTabNav, type MobileTab } from "./mobile-tab-nav";
 
 // 팝업창으로 여는 도면작성/증빙자료 등록 페이지의 lazy 청크를 미리 받아둔다.
 // 새 창은 별도 문서라 모듈을 다시 실행하지만 청크 JS는 브라우저 캐시를 공유하므로,
@@ -158,88 +158,48 @@ export function AppSidebarFieldSurvey({
   const reportExpanded = expandedGroups.has("보고서");
 
   if (isMobileApp) {
+    const homeTabs: MobileTab[] = (!hidePersonal ? visibleHomeItems : []).map(
+      (item) => ({
+        key: item.name,
+        label: item.name,
+        active: isHomeChildActive(item),
+        onClick: () => handleHomeNavigate(item),
+        testId: `menu-${item.name}`,
+      }),
+    );
+    // 도면작성은 Web 화면에서만 가능 — 모바일 서브탭에서 제외.
+    const reportTabs: MobileTab[] = visibleReportItems
+      .filter((item) => item.url !== "/field-survey/drawing")
+      .map((item) => ({
+        key: item.title,
+        label: item.title,
+        active: item.url ? location === item.url : false,
+        disabled: !item.url,
+        onClick: () => {
+          if (item.url) setLocation(item.url);
+        },
+        testId: item.testId,
+      }));
+
     return (
       <>
-        <MobileNavShell
-          render={(close) => (
-            <div className="flex flex-col py-2">
-              {!hidePersonal && visibleHomeItems.length > 0 && (
-                <>
-                  <div className="px-5 pt-2 pb-1" style={{ fontFamily: "Pretendard", fontSize: "13px", fontWeight: 700, color: "#253396" }}>홈</div>
-                  {visibleHomeItems.map((item) => {
-                    const active = isHomeChildActive(item);
-                    return (
-                      <button
-                        key={item.name}
-                        type="button"
-                        onClick={() => { handleHomeNavigate(item); close(); }}
-                        className="flex items-center w-full text-left px-6 py-3"
-                        style={{
-                          background: active ? "#253396" : "transparent",
-                          fontFamily: "Pretendard",
-                          fontSize: "15px",
-                          fontWeight: active ? 700 : 500,
-                          letterSpacing: "-0.02em",
-                          color: active ? "#FFFFFF" : "rgba(12, 12, 12, 0.8)",
-                        }}
-                        data-testid={`menu-${item.name}`}
-                      >
-                        {item.name}
-                      </button>
-                    );
-                  })}
-                </>
-              )}
-
-              {visibleReportItems.length > 0 && (
-                <>
-                  <div className="px-5 pt-3 pb-1" style={{ fontFamily: "Pretendard", fontSize: "13px", fontWeight: 700, color: "#253396" }}>보고서</div>
-                  {visibleReportItems.map((item) => {
-                    const active = item.url ? location === item.url : false;
-                    const isLabel = !item.url;
-                    return (
-                      <button
-                        key={item.title}
-                        type="button"
-                        disabled={isLabel}
-                        onClick={() => { if (item.url) { setLocation(item.url); close(); } }}
-                        className="flex items-center w-full text-left px-6 py-3"
-                        style={{
-                          background: active ? "#253396" : "transparent",
-                          fontFamily: "Pretendard",
-                          fontSize: "15px",
-                          fontWeight: active ? 700 : 500,
-                          letterSpacing: "-0.02em",
-                          color: active ? "#FFFFFF" : isLabel ? "rgba(12, 12, 12, 0.45)" : "rgba(12, 12, 12, 0.8)",
-                          cursor: isLabel ? "default" : "pointer",
-                        }}
-                        data-testid={item.testId}
-                      >
-                        {item.title}
-                      </button>
-                    );
-                  })}
-                </>
-              )}
-
-              {!hidePersonal && user && (
-                <button
-                  onClick={() => { setMyPageOpen(true); close(); }}
-                  className="flex items-center gap-3 px-5 py-4 mt-2"
-                  style={{ borderTop: "1px solid #E5E7EB" }}
-                  data-testid="button-open-mypage"
-                >
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-[#253396]" style={{ background: "rgba(37, 51, 150, 0.2)" }}>
-                    {user.name ? user.name.charAt(0) : "U"}
-                  </div>
-                  <div className="flex flex-col items-start gap-0.5 min-w-0">
-                    <span style={{ fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, letterSpacing: "-0.02em", color: "rgba(12, 12, 12, 0.8)" }} data-testid="user-info">{user.username}</span>
-                    <span style={{ fontFamily: "Pretendard", fontSize: "12px", fontWeight: 500, letterSpacing: "-0.01em", color: "rgba(12, 12, 12, 0.5)" }} data-testid="user-position">{user.position || user.role || "사용자"}</span>
-                  </div>
-                </button>
-              )}
-            </div>
-          )}
+        <MobileTabNav
+          tabs={homeTabs}
+          subTabs={reportTabs}
+          trailing={
+            !hidePersonal && user ? (
+              <button
+                type="button"
+                onClick={() => setMyPageOpen(true)}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-[#253396]"
+                style={{ background: "rgba(37, 51, 150, 0.2)" }}
+                data-testid="button-open-mypage"
+                aria-label="내 정보"
+              >
+                {user.name ? user.name.charAt(0) : "U"}
+              </button>
+            ) : undefined
+          }
         />
         {user && <MyPageDialog open={myPageOpen} onOpenChange={setMyPageOpen} user={user} />}
       </>

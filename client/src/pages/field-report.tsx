@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -256,6 +257,7 @@ function safeParseMaterialCosts(
 
 export default function FieldReport() {
   const { toast } = useToast();
+  const isMobileApp = useIsMobileApp();
   // 별도 창(보고서 열람)으로 열렸는지 + 그 창에 고정할 케이스 ID.
   // 핵심: detached 여부/고정 caseId를 sessionStorage(창 단위, 다른 창과 공유 안 됨)에
   //   한 번 박아둔다. window.location.search만 보면 팝업 안에서 라우팅으로 쿼리스트링이
@@ -1277,13 +1279,13 @@ export default function FieldReport() {
     <div
       className="relative min-h-screen"
       style={{
-        padding: "32px",
+        padding: isMobileApp ? "16px" : "32px",
         background: "var(--color-bg)",
       }}
     >
       {/* 페이지 타이틀 및 버튼 */}
       <div
-        className="relative flex items-center justify-between mb-4"
+        className={`relative flex items-center justify-between mb-4${isMobileApp ? " flex-wrap gap-2" : ""}`}
         style={{ zIndex: 1 }}
       >
         <div className="flex items-center gap-4">
