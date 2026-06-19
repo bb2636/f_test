@@ -14,12 +14,14 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { ForceChangePasswordModal } from "@/components/force-change-password-modal";
 import logoIcon from "@assets/logo-frame.svg";
 
 export default function MobileLogin() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [showForceChangePassword, setShowForceChangePassword] = useState(false);
 
   useEffect(() => {
     const setVh = () => {
@@ -45,7 +47,11 @@ export default function MobileLogin() {
         const response = await fetch("/api/check-session");
         const data = await response.json();
         if (data.authenticated) {
-          setLocation("/dashboard");
+          if (data.user?.mustChangePassword === true) {
+            setShowForceChangePassword(true);
+          } else {
+            setLocation("/dashboard");
+          }
         }
       } catch (error) {
         console.error("Session check failed:", error);
@@ -58,9 +64,19 @@ export default function MobileLogin() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginInput) => {
-      return await apiRequest("POST", "/api/login", data);
+      const response = await apiRequest("POST", "/api/login", data);
+      return await response.json();
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data: any, variables) => {
+      if (data?.mustChangePassword === true) {
+        toast({
+          title: "비밀번호 변경 필요",
+          description: "임시 비밀번호를 변경해주세요.",
+        });
+        setShowForceChangePassword(true);
+        return;
+      }
+
       toast({
         title: "로그인 성공",
         description: "환영합니다!",
@@ -80,6 +96,22 @@ export default function MobileLogin() {
       });
     },
   });
+
+  const handlePasswordChangeSuccess = () => {
+    setShowForceChangePassword(false);
+    toast({
+      title: "로그인 성공",
+      description: "환영합니다!",
+    });
+    setTimeout(() => {
+      setLocation("/dashboard");
+    }, 500);
+  };
+
+  const handleLogoutFromModal = () => {
+    setShowForceChangePassword(false);
+    form.reset();
+  };
 
   const onSubmit = async (data: LoginInput) => {
     loginMutation.mutate(data);
@@ -319,6 +351,12 @@ export default function MobileLogin() {
           background: '#111111',
           borderRadius: '100px',
         }}
+      />
+
+      <ForceChangePasswordModal
+        open={showForceChangePassword}
+        onSuccess={handlePasswordChangeSuccess}
+        onLogout={handleLogoutFromModal}
       />
     </div>
   );

@@ -16,4 +16,6 @@
 - [모바일 비고 컬럼 제거 패턴](mobile-mode-note-column.md) — useMobileMode()로 showNote 토글; 컬럼 숨길 땐 thead/tbody/tfoot(콜스팬)을 한꺼번에. 기본값 false라 데스크톱 무영향
 - [SMTP 자격증명 일원화](email-smtp-credentials.md) — 메일 경로가 비밀번호 env 둘로 갈려 일부만 535 실패; 모든 경로 SMTP_PASSWORD||MAIL_APP_PASSWORD||SMTP_PASS 순. "SMTP 설정 확인"은 send-time 535일 수 있음
 - [floxn-test 배포/콜드스타트](floxn-test-deploy-coldstart.md) — floxn-test=이 repl autoscale 배포; "무한 스피너"는 프론트버그 아닌 콜드스타트(~10-15초), 깨면 정상; Firecrawl 스샷은 SPA 렌더 전 캡처라 신뢰 금지; floxn.co.kr은 별개 서버
+- [배포 반영 확인은 lazy 청크에서](deploy-verify-lazy-chunks.md) — 페이지는 lazy 코드스플릿이라 배포본 index-*.js엔 셸만 있음; mustChangePassword/min-w-[620px] 마커는 login-*.js·dashboard-*.js 청크에서 grep해야("배포 안됨" 오판 주의). 배포=로컬 워크스페이스, origin/main 무시
+- [모바일 앱 로그인 진입은 desktop Login](mobile-login-entry.md) — WebView는 "/"로 진입→라우트 "/"=desktop Login; /mobile-login·/mobile-home은 orphan. 모바일 전용 로그인 동작은 desktop Login(공용)에 있으면 적용, mobile-login.tsx는 방어적 동기화
 - [모바일 WebView 래퍼 함정+EAS빌드제약](mobile-webview-wrapper.md) — 로그인후 무한로딩=네이티브 로더가 SPA 내부전환 후 onLoadEnd 안와 고정(서버/웹앱 정상); 최초1회만 표시로 수정. 메인에이전트 셸 EAS빌드는 git차단/NO_VCS는 143종료로 불가
