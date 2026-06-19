@@ -1802,169 +1802,209 @@ export default function ComprehensiveProgress() {
             </div>
 
             {/* [2026-05-15] 메모 구분 콤보박스 — 빨간/파란 점 기준으로 케이스 필터 */}
-            <span
-              style={{
-                fontFamily: "Pretendard",
-                fontSize: "14px",
-                fontWeight: 600,
-                letterSpacing: "-0.02em",
-                color: "#0C0C0C",
-                whiteSpace: "nowrap",
-              }}
-            >메모</span>
-            <Select
-              value={selectedMemoFilter}
-              onValueChange={(v) => setSelectedMemoFilter(v as "all" | "red" | "blue")}
-            >
-              <SelectTrigger
-                className="w-[170px] h-[40px]"
-                style={{
-                  fontFamily: "Pretendard",
-                  fontSize: "14px",
-                  fontWeight: 400,
-                  letterSpacing: "-0.02em",
-                  background: "var(--color-input-bg)",
-                  border: "1px solid var(--color-table-border)",
-                  borderRadius: "6px",
-                  flexShrink: 0,
-                }}
-                data-testid="select-memo-filter"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent
-                style={{
-                  backgroundColor: "var(--color-input-bg)",
-                  border: "1px solid var(--color-table-border)",
-                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
-                  zIndex: 1000,
-                }}
-              >
-                <SelectItem value="all" data-testid="option-memo-all">전체</SelectItem>
-                <SelectItem value="red" data-testid="option-memo-red">
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
-                    <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#ED1C00", flexShrink: 0 }} />
-                    협력사 메모 미확인
-                  </span>
-                </SelectItem>
-                <SelectItem value="blue" data-testid="option-memo-blue">
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
-                    <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#008FED", flexShrink: 0 }} />
-                    플록슨 메모 미확인
-                  </span>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Search Button */}
-            <button
-              onClick={() => {
-                // 검색 기능은 실시간으로 이미 작동 중
-              }}
-              style={{
-                width: "88px",
-                height: "40px",
-                background: "var(--color-button-primary)",
-                borderRadius: "8px",
-                border: "none",
-                fontFamily: "Pretendard",
-                fontSize: "14px",
-                fontWeight: 600,
-                letterSpacing: "-0.02em",
-                color: "#FFFFFF",
-                cursor: "pointer",
-              }}
-              data-testid="button-search"
-            >
-              검색
-            </button>
-
+            {/* 모바일: 메모(좌)·구분(우) 한 줄 배치 / 데스크톱: 기존 인라인 유지 */}
             <div
               style={{
-                width: "1px",
-                height: "32px",
-                background: "rgba(12,12,12,0.1)",
-                flexShrink: 0,
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: "12px",
+                width: isMobileApp ? "100%" : undefined,
               }}
-            />
-
-            <span
-              style={{
-                fontFamily: "Pretendard",
-                fontSize: "14px",
-                fontWeight: 600,
-                letterSpacing: "-0.02em",
-                color: "#0C0C0C",
-                whiteSpace: "nowrap",
-              }}
-            >구   분</span>
-
-            <Select
-              value={selectedManager === "__INIT__" ? "전체" : selectedManager}
-              onValueChange={setSelectedManager}
             >
-              <SelectTrigger
-                className="w-[140px] h-[52px]"
+              {/* 메모 그룹 (좌) */}
+              <div
                 style={{
-                  fontFamily: "Pretendard",
-                  fontSize: "14px",
-                  fontWeight: 400,
-                  letterSpacing: "-0.02em",
-                  background: "var(--color-input-bg)",
-                  border: "1px solid var(--color-table-border)",
-                  borderRadius: "6px",
-                  flexShrink: 0,
-                }}
-                data-testid="select-manager-filter"
-              >
-                <SelectValue placeholder="담당자 선택" />
-              </SelectTrigger>
-              <SelectContent
-                style={{
-                  backgroundColor: "var(--color-input-bg)",
-                  border: "1px solid var(--color-table-border)",
-                  boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
-                  zIndex: 1000,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: isMobileApp ? "8px" : "12px",
+                  flex: isMobileApp ? "1 1 0" : undefined,
+                  minWidth: 0,
                 }}
               >
-                <SelectItem value="전체" data-testid="option-manager-all">
-                  전체
-                </SelectItem>
-                {dropdownUsers.map((u) => (
-                  <SelectItem
-                    key={u.id}
-                    value={u.name || u.username}
-                    data-testid={`option-manager-${u.id}`}
+                <span
+                  style={{
+                    fontFamily: "Pretendard",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    letterSpacing: "-0.02em",
+                    color: "#0C0C0C",
+                    whiteSpace: "nowrap",
+                  }}
+                >메모</span>
+                <Select
+                  value={selectedMemoFilter}
+                  onValueChange={(v) => setSelectedMemoFilter(v as "all" | "red" | "blue")}
+                >
+                  <SelectTrigger
+                    className={`${isMobileApp ? "flex-1" : "w-[170px]"} h-[40px]`}
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "14px",
+                      fontWeight: 400,
+                      letterSpacing: "-0.02em",
+                      background: "var(--color-input-bg)",
+                      border: "1px solid var(--color-table-border)",
+                      borderRadius: "6px",
+                      flexShrink: isMobileApp ? undefined : 0,
+                    }}
+                    data-testid="select-memo-filter"
                   >
-                    {u.name || u.username}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent
+                    style={{
+                      backgroundColor: "var(--color-input-bg)",
+                      border: "1px solid var(--color-table-border)",
+                      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                      zIndex: 1000,
+                    }}
+                  >
+                    <SelectItem value="all" data-testid="option-memo-all">전체</SelectItem>
+                    <SelectItem value="red" data-testid="option-memo-red">
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                        <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#ED1C00", flexShrink: 0 }} />
+                        협력사 메모 미확인
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="blue" data-testid="option-memo-blue">
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                        <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#008FED", flexShrink: 0 }} />
+                        플록슨 메모 미확인
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <button
-              onClick={() => {
-                // 조회 트리거 - 필터링은 이미 실시간
-              }}
-              style={{
-                height: "52px",
-                padding: "0 20px",
-                background: "var(--color-button-primary)",
-                borderRadius: "8px",
-                border: "none",
-                fontFamily: "Pretendard",
-                fontSize: "14px",
-                fontWeight: 600,
-                letterSpacing: "-0.02em",
-                color: "#FFFFFF",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-              data-testid="button-manager-search"
-            >
-              조회하기
-            </button>
+              {/* Search Button (데스크톱 전용 — 모바일은 실시간 필터라 숨김) */}
+              {!isMobileApp && (
+                <button
+                  onClick={() => {
+                    // 검색 기능은 실시간으로 이미 작동 중
+                  }}
+                  style={{
+                    width: "88px",
+                    height: "40px",
+                    background: "var(--color-button-primary)",
+                    borderRadius: "8px",
+                    border: "none",
+                    fontFamily: "Pretendard",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    letterSpacing: "-0.02em",
+                    color: "#FFFFFF",
+                    cursor: "pointer",
+                  }}
+                  data-testid="button-search"
+                >
+                  검색
+                </button>
+              )}
+
+              {!isMobileApp && (
+                <div
+                  style={{
+                    width: "1px",
+                    height: "32px",
+                    background: "rgba(12,12,12,0.1)",
+                    flexShrink: 0,
+                  }}
+                />
+              )}
+
+              {/* 구분 그룹 (우) */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: isMobileApp ? "8px" : "12px",
+                  flex: isMobileApp ? "1 1 0" : undefined,
+                  minWidth: 0,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "Pretendard",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    letterSpacing: "-0.02em",
+                    color: "#0C0C0C",
+                    whiteSpace: "nowrap",
+                  }}
+                >구   분</span>
+
+                <Select
+                  value={selectedManager === "__INIT__" ? "전체" : selectedManager}
+                  onValueChange={setSelectedManager}
+                >
+                  <SelectTrigger
+                    className={`${isMobileApp ? "flex-1 h-[40px]" : "w-[140px] h-[52px]"}`}
+                    style={{
+                      fontFamily: "Pretendard",
+                      fontSize: "14px",
+                      fontWeight: 400,
+                      letterSpacing: "-0.02em",
+                      background: "var(--color-input-bg)",
+                      border: "1px solid var(--color-table-border)",
+                      borderRadius: "6px",
+                      flexShrink: isMobileApp ? undefined : 0,
+                    }}
+                    data-testid="select-manager-filter"
+                  >
+                    <SelectValue placeholder="담당자 선택" />
+                  </SelectTrigger>
+                  <SelectContent
+                    style={{
+                      backgroundColor: "var(--color-input-bg)",
+                      border: "1px solid var(--color-table-border)",
+                      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                      zIndex: 1000,
+                    }}
+                  >
+                    <SelectItem value="전체" data-testid="option-manager-all">
+                      전체
+                    </SelectItem>
+                    {dropdownUsers.map((u) => (
+                      <SelectItem
+                        key={u.id}
+                        value={u.name || u.username}
+                        data-testid={`option-manager-${u.id}`}
+                      >
+                        {u.name || u.username}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 조회하기 (데스크톱 전용 — 모바일은 실시간 필터라 숨김) */}
+              {!isMobileApp && (
+                <button
+                  onClick={() => {
+                    // 조회 트리거 - 필터링은 이미 실시간
+                  }}
+                  style={{
+                    height: "52px",
+                    padding: "0 20px",
+                    background: "var(--color-button-primary)",
+                    borderRadius: "8px",
+                    border: "none",
+                    fontFamily: "Pretendard",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    letterSpacing: "-0.02em",
+                    color: "#FFFFFF",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                  data-testid="button-manager-search"
+                >
+                  조회하기
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -2116,7 +2156,7 @@ export default function ComprehensiveProgress() {
               className="data-table-header"
               style={{
                 display: "grid",
-                minWidth: isMobileApp ? "1040px" : undefined,
+                minWidth: isMobileApp ? "1500px" : undefined,
                 // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
                 // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
                 //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%
@@ -2328,7 +2368,7 @@ export default function ComprehensiveProgress() {
                     className="data-table-row"
                     style={{
                       display: "grid",
-                      minWidth: isMobileApp ? "1040px" : undefined,
+                      minWidth: isMobileApp ? "1500px" : undefined,
                       // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
                       // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
                       //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%
