@@ -55,6 +55,7 @@ export default function App() {
         <WebView
           ref={webRef}
           source={{ uri: APP_URL }}
+          applicationNameForUserAgent="FloxnMobileApp"
           style={styles.web}
           onNavigationStateChange={onNav}
           onLoadStart={() => {

@@ -6,6 +6,8 @@ import { User } from "@shared/schema";
 import logoIcon from "@assets/logo-frame.svg";
 import { usePermissions } from "@/hooks/use-permissions";
 import { MyPageDialog } from "./my-page-dialog";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
+import { MobileNavShell } from "./mobile-nav-shell";
 
 interface MenuChild {
   title: string;
@@ -90,6 +92,7 @@ export function AppSidebarStatistics() {
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set(["정산 조회", "통계"]));
   const { hasCategory, hasItem, isLoading: permissionsLoading, permissions } = usePermissions();
   const [myPageOpen, setMyPageOpen] = useState(false);
+  const isMobileApp = useIsMobileApp();
 
   const { data: user } = useQuery<User>({
     queryKey: ["/api/user"],
@@ -163,6 +166,132 @@ export function AppSidebarStatistics() {
       return next;
     });
   };
+
+  if (isMobileApp) {
+    return (
+      <>
+        <MobileNavShell
+          render={(close) => (
+            <div className="flex flex-col py-2">
+              {topMenu.map((item) => {
+                const isActive = activeMenu === item.name;
+                return (
+                  <div key={item.name}>
+                    <button
+                      type="button"
+                      onClick={() => { handleTopMenuClick(item.name); close(); }}
+                      className="flex items-center w-full text-left px-5 py-3.5"
+                      style={{
+                        background: isActive ? "#253396" : "transparent",
+                        fontFamily: "Pretendard",
+                        fontSize: "16px",
+                        fontWeight: isActive ? 700 : 500,
+                        letterSpacing: "-0.02em",
+                        color: isActive ? "#FFFFFF" : "#57677d",
+                      }}
+                      data-testid={`menu-${item.name}`}
+                    >
+                      {item.name}
+                    </button>
+
+                    {item.name === "관리자 설정" && isActive && adminChildren.length > 0 && (
+                      <div className="flex flex-col">
+                        {adminChildren.map((child) => {
+                          const childActive = location === child.url || (child.url === "/admin-settings/users" && location === "/admin-settings");
+                          return (
+                            <button
+                              key={child.title}
+                              onClick={() => { setLocation(child.url); close(); }}
+                              className="flex items-center w-full text-left px-8 py-3"
+                              style={{
+                                background: childActive ? "rgba(37,51,150,0.1)" : "transparent",
+                                fontFamily: "Pretendard",
+                                fontSize: "14px",
+                                fontWeight: childActive ? 700 : 400,
+                                letterSpacing: "-0.02em",
+                                color: childActive ? "#253396" : "#57677d",
+                              }}
+                              data-testid={child.testId}
+                            >
+                              • {child.title}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {item.name === "정산 및 통계" && isActive && (
+                      <div className="flex flex-col">
+                        {menuItems.flatMap((sub) => {
+                          if (sub.children) {
+                            return sub.children.map((child) => {
+                              const childActive = location === child.url || (child.url === "/statistics/closed" && location === "/statistics");
+                              return (
+                                <button
+                                  key={child.title}
+                                  onClick={() => { setLocation(child.url); close(); }}
+                                  className="flex items-center w-full text-left px-8 py-3"
+                                  style={{
+                                    background: childActive ? "rgba(37,51,150,0.1)" : "transparent",
+                                    fontFamily: "Pretendard",
+                                    fontSize: "14px",
+                                    fontWeight: childActive ? 700 : 400,
+                                    letterSpacing: "-0.02em",
+                                    color: childActive ? "#253396" : "#57677d",
+                                  }}
+                                  data-testid={child.testId}
+                                >
+                                  • {child.title}
+                                </button>
+                              );
+                            });
+                          }
+                          return [(
+                            <button
+                              key={sub.title}
+                              onClick={() => { sub.url && setLocation(sub.url); close(); }}
+                              className="flex items-center w-full text-left px-8 py-3"
+                              style={{
+                                fontFamily: "Pretendard", fontSize: "14px", fontWeight: 500,
+                                letterSpacing: "-0.02em", color: "#57677d",
+                              }}
+                              data-testid={sub.testId}
+                            >
+                              • {sub.title}
+                            </button>
+                          )];
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {user && (
+                <button
+                  onClick={() => { setMyPageOpen(true); close(); }}
+                  className="flex items-center gap-3 px-5 py-4 mt-2"
+                  style={{ borderTop: "1px solid #E5E7EB" }}
+                  data-testid="button-open-mypage"
+                >
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-[#253396]" style={{ background: "rgba(37, 51, 150, 0.2)" }}>
+                    {user.name ? user.name.charAt(0) : "U"}
+                  </div>
+                  <div className="flex flex-col items-start gap-0.5 min-w-0">
+                    <span style={{ fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, letterSpacing: "-0.02em", color: "#57677d" }} data-testid="user-info">{user.username}</span>
+                    <span style={{ fontFamily: "Pretendard", fontSize: "12px", fontWeight: 500, letterSpacing: "-0.01em", color: "rgba(87, 103, 125, 0.6)" }} data-testid="user-position">{user.position || user.role || "사용자"}</span>
+                  </div>
+                </button>
+              )}
+            </div>
+          )}
+        />
+        {user && (
+          <MyPageDialog open={myPageOpen} onOpenChange={setMyPageOpen} user={user} />
+        )}
+      </>
+    );
+  }
 
   return (
     <>

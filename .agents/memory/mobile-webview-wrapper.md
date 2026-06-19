@@ -17,3 +17,9 @@ description: 로그인 후 무한로딩의 진짜 원인(네이티브 로딩 오
 - EAS_NO_VCS=1 경로: 작업폴더를 직접 아카이브(uncommitted 반영 OK)하지만, "Compressing project files"에서 멈추고 eas build 프로세스가 SIGTERM(exit 143)으로 반복 종료됨. **OOM 아님(여유 11GB 확인).** node_modules를 워크폴더 밖으로 옮겨 ~800KB로 줄여도 동일하게 143 종료 → 이 환경이 eas build 업로드 프로세스 자체를 죽이는 것으로 보임.
 - 결론: 메인 에이전트 셸에서 새 APK 빌드는 신뢰 불가. 대안 — (1) 실기기 검증은 Expo Go + 실행 중 tunnel(`exp://...exp.direct`)로 즉시 무료 확인, (2) APK 빌드는 다른 채널(사용자 직접 트리거 또는 격리 환경) 필요.
 - mobile-app/.easignore는 이미 node_modules/.expo/dist/android/ios 등 제외함(업로드 실제 대상 ~800KB).
+
+# 모바일 "앱만" 레이아웃 분기 (사이드바→상단바)
+
+- 모바일앱 전용 UI는 화면폭이 아니라 **WebView 식별 신호**로 가른다: mobile-app/App.tsx WebView에 `applicationNameForUserAgent="FloxnMobileApp"` → 웹앱 `useIsMobileApp()`(client/src/hooks/use-mobile-app.tsx)가 navigator.userAgent로 동기 판별. 데스크톱 창을 좁혀도 false라 "모바일앱만"이 정확히 지켜짐(width 기반 useIsMobile과 별개).
+- **적용 위치는 셸 두 곳**: StatisticsLayout/FieldSurveyLayout은 isMobileApp일 때 컨테이너 flex→flex-col(사이드바=상단바가 위), 사이드바 컴포넌트(AppSidebar*)는 isMobileApp 분기에서 좌측 고정열 대신 MobileNavShell(상단바+햄버거 드로어, render(close) 렌더prop) 반환. 분기는 반드시 모든 훅 호출 뒤에.
+- **함정(검증 경로)**: 폰의 WebView는 APP_URL=floxn-test.replit.app(배포본)을 로드한다. 따라서 소스 수정은 (1) floxn-test **재배포** + (2) Expo Go **리로드**(새 UA 신호 적용) 둘 다 해야 폰에 보인다. 로컬 Start application 미리보기는 UA가 없어 모바일 분기가 안 보이고, /dashboard는 인증게이트라 스샷 검증도 막힘 → 실기기 검증에 의존.
