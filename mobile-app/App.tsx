@@ -19,6 +19,7 @@ export default function App() {
   const webRef = useRef<WebView>(null);
   const [loading, setLoading] = useState(true);
   const [canGoBack, setCanGoBack] = useState(false);
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     ScreenCapture.preventScreenCaptureAsync().catch(() => {});
@@ -56,8 +57,16 @@ export default function App() {
           source={{ uri: APP_URL }}
           style={styles.web}
           onNavigationStateChange={onNav}
-          onLoadStart={() => setLoading(true)}
-          onLoadEnd={() => setLoading(false)}
+          onLoadStart={() => {
+            if (!hasLoadedOnce.current) setLoading(true);
+          }}
+          onLoadProgress={({ nativeEvent }) => {
+            if (nativeEvent.progress >= 1) setLoading(false);
+          }}
+          onLoadEnd={() => {
+            hasLoadedOnce.current = true;
+            setLoading(false);
+          }}
           originWhitelist={["*"]}
           javaScriptEnabled
           domStorageEnabled
