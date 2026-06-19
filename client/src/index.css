@@ -496,3 +496,11 @@
     border: 1px solid var(--color-table-border) !important;
   }
 }
+/* 모바일 탭 내비게이션 가로 스크롤바 숨김 (스크롤 자체는 유지) */
+.floxn-hscroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.floxn-hscroll::-webkit-scrollbar {
+  display: none;
+}
