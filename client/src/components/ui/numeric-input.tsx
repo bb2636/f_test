@@ -27,9 +27,15 @@ const NumericInput = React.forwardRef<HTMLInputElement, NumericInputProps>(
         disableIME
         value={value ? value.toLocaleString() : ""}
         onBeforeInput={(e) => {
-          const data = (e.nativeEvent as InputEvent).data
-          if (data != null && /[^0-9]/.test(data)) {
-            e.preventDefault()
+          const ne = e.nativeEvent as InputEvent
+          // 직접 타이핑(insertText)으로 들어오는 숫자 아닌 문자만 차단한다.
+          // 붙여넣기/드롭(insertFromPaste 등)은 통과시키고 onChange에서
+          // 숫자만 남겨 환산한다. (천단위 콤마가 포함된 금액 붙여넣기 허용)
+          if (ne.inputType === "insertText") {
+            const data = ne.data
+            if (data != null && /[^0-9]/.test(data)) {
+              e.preventDefault()
+            }
           }
         }}
         onChange={(e) => {
