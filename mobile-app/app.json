@@ -2,7 +2,7 @@
   "expo": {
     "name": "FLOXN",
     "slug": "floxn-mobile",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -23,6 +23,7 @@
     },
     "android": {
       "package": "kr.co.floxn.mobile",
+      "versionCode": 2,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
