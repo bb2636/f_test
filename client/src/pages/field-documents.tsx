@@ -1666,7 +1666,7 @@ export default function FieldDocuments() {
               <span
                 style={{
                   fontFamily: "Pretendard",
-                  fontSize: "15px",
+                  fontSize: isMobileApp ? "13px" : "15px",
                   fontWeight: 600,
                   letterSpacing: "-0.02em",
                   color: "#0C0C0C",
@@ -1679,10 +1679,10 @@ export default function FieldDocuments() {
 
             {/* 두 번째 줄: 접수번호, 피보험자, 담당자 */}
             <div
-              className="flex items-center gap-4"
+              className={`flex items-center gap-4 ${isMobileApp ? "flex-wrap gap-y-1" : ""}`}
               style={{
                 fontFamily: "Pretendard",
-                fontSize: "13px",
+                fontSize: isMobileApp ? "12px" : "13px",
                 fontWeight: 400,
                 letterSpacing: "-0.02em",
                 color: "rgba(12, 12, 12, 0.5)",

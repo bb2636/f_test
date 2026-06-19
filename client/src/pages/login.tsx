@@ -26,12 +26,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ForceChangePasswordModal } from "@/components/force-change-password-modal";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 import loginIllustration from "@assets/login-illustration.jpg";
 import logoIcon from "@assets/logo-frame.svg";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const isMobileApp = useIsMobileApp();
   const [showForceChangePassword, setShowForceChangePassword] = useState(false);
   const [saveUsername, setSaveUsername] = useState(false);
   const [privacyPolicyOpen, setPrivacyPolicyOpen] = useState(false);
@@ -135,8 +137,8 @@ export default function Login() {
 
   return (
     <div
-      className="relative"
-      style={{ height: "1147px", background: "#E7EDFE" }}
+      className={`relative ${isMobileApp ? "overflow-hidden" : ""}`}
+      style={{ height: isMobileApp ? "100dvh" : "1147px", background: "#E7EDFE" }}
     >
       {/* Blur Background Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -189,7 +191,10 @@ export default function Login() {
         <div className="text-2xl font-bold text-gray-900">FLOXN</div>
       </header>
       {/* Main Content */}
-      <div className="relative flex gap-0 px-8 py-0 max-w-[1856px] mx-auto">
+      <div
+        className="relative flex gap-0 px-8 py-0 max-w-[1856px] mx-auto"
+        style={isMobileApp ? { height: "calc(100dvh - 89px)" } : undefined}
+      >
         {/* Left Panel - Illustration */}
         <div
           className="hidden lg:block overflow-hidden flex-1"
@@ -210,13 +215,13 @@ export default function Login() {
         <div
           className="flex-1 flex items-center justify-center overflow-hidden"
           style={{
-            height: "990px",
+            height: isMobileApp ? "100%" : "990px",
             borderRadius: "12px",
           }}
         >
-          <div className="w-full max-w-lg px-8 py-12">
+          <div className={`w-full max-w-lg px-8 ${isMobileApp ? "py-4" : "py-12"}`}>
             {/* Header */}
-            <div className="mb-[91px]">
+            <div className={isMobileApp ? "mb-8" : "mb-[91px]"}>
               <h1
                 className="font-medium mb-3"
                 style={{

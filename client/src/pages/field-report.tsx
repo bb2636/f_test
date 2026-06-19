@@ -3206,12 +3206,12 @@ export default function FieldReport() {
         <div
           style={{
             fontFamily: "Pretendard",
-            fontSize: "15px",
+            fontSize: isMobileApp ? "13px" : "15px",
             fontWeight: 600,
             letterSpacing: "-0.02em",
             color: "rgba(12, 12, 12, 0.7)",
-            marginBottom: "16px",
-            padding: "24px 0px",
+            marginBottom: isMobileApp ? "8px" : "16px",
+            padding: isMobileApp ? "12px 0px" : "24px 0px",
           }}
         >
           작성중인 건
@@ -3238,7 +3238,7 @@ export default function FieldReport() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "18px",
+                    fontSize: isMobileApp ? "14px" : "18px",
                     fontWeight: 600,
                     letterSpacing: "-0.02em",
                     color: "rgba(12, 12, 12, 0.9)",
@@ -3249,7 +3249,7 @@ export default function FieldReport() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "18px",
+                    fontSize: isMobileApp ? "14px" : "18px",
                     fontWeight: 600,
                     letterSpacing: "-0.02em",
                     color: "rgba(12, 12, 12, 0.9)",
@@ -3271,7 +3271,7 @@ export default function FieldReport() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: isMobileApp ? "12px" : "16px",
                     fontWeight: 400,
                     letterSpacing: "-0.02em",
                     color: "rgba(12, 12, 12, 0.5)",
@@ -3282,7 +3282,7 @@ export default function FieldReport() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: isMobileApp ? "12px" : "16px",
                     fontWeight: 400,
                     letterSpacing: "-0.02em",
                     color: "rgba(12, 12, 12, 0.7)",
@@ -3295,7 +3295,7 @@ export default function FieldReport() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: isMobileApp ? "12px" : "16px",
                     fontWeight: 400,
                     letterSpacing: "-0.02em",
                     color: "rgba(12, 12, 12, 0.5)",
@@ -3306,7 +3306,7 @@ export default function FieldReport() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: isMobileApp ? "12px" : "16px",
                     fontWeight: 400,
                     letterSpacing: "-0.02em",
                     color: "rgba(12, 12, 12, 0.7)",
@@ -3319,7 +3319,7 @@ export default function FieldReport() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: isMobileApp ? "12px" : "16px",
                     fontWeight: 400,
                     letterSpacing: "-0.02em",
                     color: "rgba(12, 12, 12, 0.5)",
@@ -3330,7 +3330,7 @@ export default function FieldReport() {
                 <span
                   style={{
                     fontFamily: "Pretendard",
-                    fontSize: "16px",
+                    fontSize: isMobileApp ? "12px" : "16px",
                     fontWeight: 400,
                     letterSpacing: "-0.02em",
                     color: "rgba(12, 12, 12, 0.7)",
@@ -3344,7 +3344,7 @@ export default function FieldReport() {
                   <span
                     style={{
                       fontFamily: "Pretendard",
-                      fontSize: "16px",
+                      fontSize: isMobileApp ? "12px" : "16px",
                       fontWeight: 400,
                       letterSpacing: "-0.02em",
                       color: "rgba(12, 12, 12, 0.5)",
@@ -3355,7 +3355,7 @@ export default function FieldReport() {
                   <span
                     style={{
                       fontFamily: "Pretendard",
-                      fontSize: "16px",
+                      fontSize: isMobileApp ? "12px" : "16px",
                       fontWeight: 400,
                       letterSpacing: "-0.02em",
                       color: "rgba(12, 12, 12, 0.7)",
@@ -3395,7 +3395,7 @@ export default function FieldReport() {
                 className={`${isMobileApp ? "shrink-0 px-4 whitespace-nowrap" : "flex-1"} flex items-center justify-center py-5`}
                 style={{
                   fontFamily: "Pretendard",
-                  fontSize: "18px",
+                  fontSize: isMobileApp ? "14px" : "18px",
                   fontWeight: 600,
                   letterSpacing: "-0.02em",
                   color:
@@ -3434,7 +3434,7 @@ export default function FieldReport() {
               <h2
                 style={{
                   fontFamily: "Pretendard",
-                  fontSize: "24px",
+                  fontSize: isMobileApp ? "18px" : "24px",
                   fontWeight: 600,
                   letterSpacing: "-0.02em",
                   color: "#0C0C0C",
