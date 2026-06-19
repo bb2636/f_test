@@ -16,7 +16,13 @@ description: 로그인 후 무한로딩의 진짜 원인(네이티브 로딩 오
 - git(VCS) 경로: eas가 .git/index.lock 쓰기를 시도 → 샌드박스가 "Destructive git operations are not allowed in the main agent"로 차단. 게다가 VCS는 HEAD(커밋본)를 아카이브하므로 **uncommitted 수정이 빌드에 안 들어감**. git commit도 메인에이전트에서 차단.
 - EAS_NO_VCS=1 경로: 작업폴더를 직접 아카이브(uncommitted 반영 OK)하지만, "Compressing project files"에서 멈추고 eas build 프로세스가 SIGTERM(exit 143)으로 반복 종료됨. **OOM 아님(여유 11GB 확인).** node_modules를 워크폴더 밖으로 옮겨 ~800KB로 줄여도 동일하게 143 종료 → 이 환경이 eas build 업로드 프로세스 자체를 죽이는 것으로 보임.
 - 결론: 메인 에이전트 셸에서 새 APK 빌드는 신뢰 불가. 대안 — (1) 실기기 검증은 Expo Go + 실행 중 tunnel(`exp://...exp.direct`)로 즉시 무료 확인, (2) APK 빌드는 다른 채널(사용자 직접 트리거 또는 격리 환경) 필요.
-- mobile-app/.easignore는 이미 node_modules/.expo/dist/android/ios 등 제외함(업로드 실제 대상 ~800KB).
+- mobile-app/.easignore는 이미 node_modules/.expo/dist/android/ios 등 제외함.
+
+# 사용자 본인 Shell에서 EAS 빌드 (에이전트 셸 제약 우회) + 모노레포 함정
+- 에이전트 bash의 git차단/143킬은 **에이전트 샌드박스 한정**. 사용자가 Replit "Shell" 탭에서 `cd mobile-app && npx eas build -p android --profile preview` 실행하면 그 단계는 통과(EXPO_TOKEN 자동인증, eas-cli는 미설치라 `npx eas` 필요).
+- **모노레포 함정**: EAS는 git 루트(=workspace 모노레포 전체)를 아카이브 → 루트 node_modules(~853MB)+.cache(~1.1GB)까지 끌어와 tar가 수백MB로 비대. 게다가 루트 `.cache/dotslash/.../React Native DevTools-linux-x64`가 `dr-x------`(쓰기없음)이라 EAS가 임시 shallow-clone 정리(rmdir) 중 EACCES로 실패.
+- **해결**: 루트(workspace)에 `.easignore` 생성해 `.cache/`·`node_modules/`·`.git/`·빌드산출물·`.local/`·`.agents/` 제외. mobile-app/.easignore(서브폴더)가 아니라 **git루트 .easignore**가 모노레포 아카이브에 적용됨. + 스테일 `/tmp/runner/eas-cli-nodejs`는 `chmod -R u+rwX` 후 rm.
+- **lockfile 안전성**: 루트=npm(package-lock.json), mobile-app=yarn(yarn.lock), 워크스페이스 아님. lockfile은 파일이라 아카이브 포함→node_modules 제외해도 EAS가 yarn install로 복구. **Why**: node_modules 제외가 안전한 건 lockfile이 남아서다.
 
 # 모바일 "앱만" 레이아웃 분기 (사이드바→상단바)
 
