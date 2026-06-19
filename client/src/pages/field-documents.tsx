@@ -2648,7 +2648,7 @@ export default function FieldDocuments() {
         </div>
       ) : (
         /* 모든 탭에서 동일한 그리드 형식으로 사진/파일 표시 (사진 탭과 동일한 스타일) */
-        <div className="grid grid-cols-4 gap-3">
+        <div className={`grid ${isMobileApp ? "grid-cols-2" : "grid-cols-4"} gap-3`}>
           {filteredDocuments.map((doc, index) => {
             const isImage = doc.fileType.startsWith("image/");
             return (
@@ -2712,14 +2712,15 @@ export default function FieldDocuments() {
                       e.stopPropagation();
                       handleFileRemove(doc.id);
                     }}
-                    className="absolute top-1 right-1 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                    className={`absolute top-1 right-1 rounded transition-opacity ${isMobileApp ? "p-1.5 opacity-100" : "p-1 opacity-0 group-hover:opacity-100"}`}
                     style={{
                       background: "rgba(255, 255, 255, 0.9)",
+                      boxShadow: isMobileApp ? "0 1px 3px rgba(0,0,0,0.25)" : undefined,
                     }}
                     data-testid={`button-delete-photo-${doc.id}`}
                   >
                     <X
-                      className="w-4 h-4"
+                      className={isMobileApp ? "w-5 h-5" : "w-4 h-4"}
                       style={{ color: "rgba(12, 12, 12, 0.6)" }}
                     />
                   </button>
