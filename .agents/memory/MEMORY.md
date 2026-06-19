@@ -14,3 +14,4 @@
 - [멀티아티팩트 상태 불일치 + 격리형 Expo 해법](multi-artifact-state-mismatch.md) — 레거시 npm앱인데 플랫폼은 pnpm_workspace로 오분류→createArtifact는 pnpm install로 운영앱 깨질 위험; 대신 서브폴더 standalone Expo(자체 deps + tunnel 워크플로)로 완전 격리
 - [모바일 비고 컬럼 제거 패턴](mobile-mode-note-column.md) — useMobileMode()로 showNote 토글; 컬럼 숨길 땐 thead/tbody/tfoot(콜스팬)을 한꺼번에. 기본값 false라 데스크톱 무영향
 - [SMTP 자격증명 일원화](email-smtp-credentials.md) — 메일 경로가 비밀번호 env 둘로 갈려 일부만 535 실패; 모든 경로 SMTP_PASSWORD||MAIL_APP_PASSWORD||SMTP_PASS 순. "SMTP 설정 확인"은 send-time 535일 수 있음
+- [floxn-test 배포/콜드스타트](floxn-test-deploy-coldstart.md) — floxn-test=이 repl autoscale 배포; "무한 스피너"는 프론트버그 아닌 콜드스타트(~10-15초), 깨면 정상; Firecrawl 스샷은 SPA 렌더 전 캡처라 신뢰 금지; floxn.co.kr은 별개 서버
