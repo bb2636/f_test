@@ -275,6 +275,9 @@ const progressFormSchema = z.object({
 export default function ComprehensiveProgress() {
   const [activeMenu, setActiveMenu] = useState("종합진행관리");
   const isMobileApp = useIsMobileApp();
+  // [2026-06-19] 모바일: 주소 컬럼 180px 하한 제거 → 트랙 합이 minWidth(1500px) 배경을
+  // 넘쳐 마지막 컬럼(상세보기) 배경색이 잘리던 문제 해결. 데스크톱은 기존 그대로.
+  const addrTrack = isMobileApp ? "minmax(0px,1.4fr)" : "minmax(180px,1.4fr)";
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedManager, setSelectedManager] = useState<string>("__INIT__");
@@ -2165,11 +2168,11 @@ export default function ComprehensiveProgress() {
                 gridTemplateColumns:
                   canDeleteCases
                     ? (user?.role === "협력사"
-                      ? "40px 7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
-                      : "40px 7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%")
+                      ? `40px 7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%`
+                      : `40px 7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`)
                     : (user?.role === "협력사"
-                      ? "7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
-                      : "7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%"),
+                      ? `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%`
+                      : `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`),
                 padding: "0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2377,11 +2380,11 @@ export default function ComprehensiveProgress() {
                       gridTemplateColumns:
                         canDeleteCases
                           ? (user?.role === "협력사"
-                            ? "40px 7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
-                            : "40px 7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%")
+                            ? `40px 7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%`
+                            : `40px 7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`)
                           : (user?.role === "협력사"
-                            ? "7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%"
-                            : "7% 6% 7% 6% 6% 4% 5% minmax(180px,1.4fr) 4% 6% 5% 56px 56px 56px 9% 3% 8%"),
+                            ? `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%`
+                            : `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`),
                       padding: "0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",

@@ -13,6 +13,7 @@
 - [Expo Go SDK 호환](expo-go-sdk-compat.md) — 기기 Expo Go에서 로딩없이 즉시 "something went wrong"이면 프로젝트 SDK가 스토어 Expo Go보다 높은 것; bundledNativeModules로 SDK54 수동 다운그레이드(번들·매니페스트 정상이어도 SDK불일치면 즉시거부)
 - [멀티아티팩트 상태 불일치 + 격리형 Expo 해법](multi-artifact-state-mismatch.md) — 레거시 npm앱인데 플랫폼은 pnpm_workspace로 오분류→createArtifact는 pnpm install로 운영앱 깨질 위험; 대신 서브폴더 standalone Expo(자체 deps + tunnel 워크플로)로 완전 격리
 - [모바일앱(WebView) 반응형 게이팅](mobile-webview-responsive.md) — useIsMobileApp 분기로 상단탭내비/종합진행 테이블 minWidth(header·row 둘다)/견적서 가로고정; 데스크톱 무영향, Expo Go 실기검증 필수
+- [그리드 트랙 오버플로 배경잘림](grid-track-overflow-bg-clip.md) — minWidth+background 그리드에서 percent+minmax(px,fr)+고정px 트랙 합이 넘치면 마지막 컬럼이 배경 밖으로; fr의 px하한 제거(minmax(0,..))가 minWidth 확대보다 안전
 - [모바일 비고 컬럼 제거 패턴](mobile-mode-note-column.md) — useMobileMode()로 showNote 토글; 컬럼 숨길 땐 thead/tbody/tfoot(콜스팬)을 한꺼번에. 기본값 false라 데스크톱 무영향
 - [SMTP 자격증명 일원화](email-smtp-credentials.md) — 메일 경로가 비밀번호 env 둘로 갈려 일부만 535 실패; 모든 경로 SMTP_PASSWORD||MAIL_APP_PASSWORD||SMTP_PASS 순. "SMTP 설정 확인"은 send-time 535일 수 있음
 - [floxn-test 배포/콜드스타트](floxn-test-deploy-coldstart.md) — floxn-test=이 repl autoscale 배포; "무한 스피너"는 프론트버그 아닌 콜드스타트(~10-15초), 깨면 정상; Firecrawl 스샷은 SPA 렌더 전 캡처라 신뢰 금지; floxn.co.kr은 별개 서버
