@@ -43,6 +43,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -239,6 +240,7 @@ const downloadFile = (
 export default function FieldDocuments() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isMobileApp = useIsMobileApp();
   const [selectedCategory, setSelectedCategory] =
     useState<DocumentCategory>("전체");
   const [photoSubFilter, setPhotoSubFilter] = useState<
@@ -2363,7 +2365,13 @@ export default function FieldDocuments() {
         ref={fileInputRef}
         type="file"
         multiple
-        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.hwp,.hwpx,.zip"
+        // 모바일 앱에서 사진 카테고리는 image/* 로 제한해 카메라/갤러리 선택이 뜨게 한다.
+        // (문서 형식을 섞으면 안드로이드가 파일 관리자만 열기 때문)
+        accept={
+          isMobileApp && selectedCategory === "사진"
+            ? "image/*"
+            : "image/*,.pdf,.doc,.docx,.xls,.xlsx,.hwp,.hwpx,.zip"
+        }
         onChange={(e) => {
           console.log("[파일선택] onChange 이벤트 발생", e.target.files?.length);
           handleFileSelect(e.target.files);

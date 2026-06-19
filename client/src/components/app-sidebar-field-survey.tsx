@@ -128,6 +128,11 @@ export function AppSidebarFieldSurvey({
   };
 
   const handleHomeNavigate = (item: typeof homeMenuItems[number]) => {
+    if (item.name === "홈") {
+      // 모바일 앱은 모바일 전용 홈(/mobile-home), 데스크톱은 기존 대시보드.
+      setLocation(isMobileApp ? "/mobile-home" : "/dashboard");
+      return;
+    }
     if (item.name === "접수하기") {
       localStorage.removeItem("editCaseId");
       setLocation("/intake");
@@ -158,8 +163,10 @@ export function AppSidebarFieldSurvey({
   const reportExpanded = expandedGroups.has("보고서");
 
   if (isMobileApp) {
-    const homeTabs: MobileTab[] = (!hidePersonal ? visibleHomeItems : []).map(
-      (item) => ({
+    const homeTabs: MobileTab[] = (!hidePersonal ? visibleHomeItems : [])
+      // 모바일 앱에서는 정산 및 통계 메뉴를 노출하지 않는다.
+      .filter((item) => item.name !== "정산 및 통계")
+      .map((item) => ({
         key: item.name,
         label: item.name,
         active: isHomeChildActive(item),

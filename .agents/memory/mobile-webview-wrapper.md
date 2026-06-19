@@ -29,3 +29,8 @@ description: 로그인 후 무한로딩의 진짜 원인(네이티브 로딩 오
 - 모바일앱 전용 UI는 화면폭이 아니라 **WebView 식별 신호**로 가른다: mobile-app/App.tsx WebView에 `applicationNameForUserAgent="FloxnMobileApp"` → 웹앱 `useIsMobileApp()`(client/src/hooks/use-mobile-app.tsx)가 navigator.userAgent로 동기 판별. 데스크톱 창을 좁혀도 false라 "모바일앱만"이 정확히 지켜짐(width 기반 useIsMobile과 별개).
 - **적용 위치는 셸 두 곳**: StatisticsLayout/FieldSurveyLayout은 isMobileApp일 때 컨테이너 flex→flex-col(사이드바=상단바가 위), 사이드바 컴포넌트(AppSidebar*)는 isMobileApp 분기에서 좌측 고정열 대신 MobileNavShell(상단바+햄버거 드로어, render(close) 렌더prop) 반환. 분기는 반드시 모든 훅 호출 뒤에.
 - **함정(검증 경로)**: 폰의 WebView는 APP_URL=floxn-test.replit.app(배포본)을 로드한다. 따라서 소스 수정은 (1) floxn-test **재배포** + (2) Expo Go **리로드**(새 UA 신호 적용) 둘 다 해야 폰에 보인다. 로컬 Start application 미리보기는 UA가 없어 모바일 분기가 안 보이고, /dashboard는 인증게이트라 스샷 검증도 막힘 → 실기기 검증에 의존.
+
+# 모바일 홈 라우팅 분기 + WebView 파일업로드(카메라/갤러리)
+
+- **홈 탭 라우팅**: 모바일 전용 홈은 /mobile-home(모바일 최적화 페이지), 데스크톱 홈은 /dashboard(grid-cols-12). 사이드바 홈 탭이 모바일에서도 /dashboard로 가면 데스크톱 레이아웃이 좁게 떠 "현황요약 정렬 깨짐"으로 보임 → 홈 네비게이션은 `isMobileApp ? "/mobile-home" : "/dashboard"`. (mobile-login은 이미 /mobile-home로 보냄, 탭만 어긋났던 케이스)
+- **WebView 파일업로드 카메라/갤러리**: 안드로이드 WebView `<input type=file>`의 accept에 문서형식(.pdf/.doc/.zip 등)이 섞이면 **파일관리자만** 열린다. 사진 업로드는 `accept="image/*"`만 두면 카메라/갤러리 선택 chooser가 뜸(capture는 주지 말 것 — 주면 카메라 강제·선택 불가). **Why**: 선택지를 주려면 image/* 단독, 데스크톱은 image/*도 그대로 동작해 무영향.

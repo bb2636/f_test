@@ -11,6 +11,7 @@ import {
   setDetachedReportCaseId,
   REPORT_CASE_CHANGE_EVENT,
 } from "@/lib/detached-window";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 
 function getCaseNumberPrefix(caseNumber?: string | null): string {
   if (!caseNumber) return "";
@@ -57,6 +58,7 @@ export function CaseReceiptTabs() {
   // 같이 동기화돼 버린다. 분리창은 창 단위(sessionStorage) + 같은 창 CustomEvent로만 동작.
   const detached = isDetachedWindow();
   const [location] = useLocation();
+  const isMobileApp = useIsMobileApp();
   // 보고서 열람 분리창만 창 단위(sessionStorage+CustomEvent)로 건을 관리한다.
   // 도면작성/증빙자료 단독 팝업(solo)은 인앱과 동일하게 localStorage(selectedFieldSurveyCaseId)로
   // 건을 공유한다 — 열 때 caseId를 URL에 싣지 않고 localStorage로만 넘기기 때문.
@@ -164,11 +166,12 @@ export function CaseReceiptTabs() {
     <div
       style={{
         display: "flex",
+        flexDirection: isMobileApp ? "column" : "row",
         flexWrap: "wrap",
-        alignItems: "center",
+        alignItems: isMobileApp ? "stretch" : "center",
         justifyContent: "space-between",
         gap: "12px",
-        padding: "12px 24px",
+        padding: isMobileApp ? "12px 16px" : "12px 24px",
         borderBottom: "1px solid #E5E7EB",
         background: "#FFFFFF",
       }}
@@ -222,8 +225,8 @@ export function CaseReceiptTabs() {
           style={{
             background: "white",
             border: "1px solid rgba(37, 51, 150, 0.15)",
-            maxWidth: "min(640px, 70vw)",
-            marginLeft: "auto",
+            maxWidth: isMobileApp ? "100%" : "min(640px, 70vw)",
+            marginLeft: isMobileApp ? "0" : "auto",
           }}
           data-ui="case-info-bar"
         >

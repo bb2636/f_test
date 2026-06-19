@@ -1972,9 +1972,10 @@ export default function ComprehensiveProgress() {
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            flexDirection: isMobileApp ? "column" : "row",
+            alignItems: isMobileApp ? "stretch" : "center",
             justifyContent: "space-between",
-            
+            gap: isMobileApp ? "10px" : undefined,
             marginBottom: "16px",
           }}
         >
@@ -2011,7 +2012,7 @@ export default function ComprehensiveProgress() {
               display: "flex",
               flexWrap: "wrap",
               gap: "10px",
-              margin: "0 12px",
+              margin: isMobileApp ? "0" : "0 12px",
               minWidth: 0,
             }}
           >

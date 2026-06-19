@@ -136,7 +136,7 @@ export function AppSidebarStatistics() {
 
   const handleTopMenuClick = (name: string) => {
     if (name === "홈") {
-      setLocation("/dashboard");
+      setLocation(isMobileApp ? "/mobile-home" : "/dashboard");
     } else if (name === "접수하기") {
       // 새 접수 시작: 이전 "이어서 작성하기" 잔여 editCaseId 정리
       localStorage.removeItem("editCaseId");
@@ -209,13 +209,15 @@ export function AppSidebarStatistics() {
     return (
       <>
         <MobileTabNav
-          tabs={topMenu.map((item) => ({
-            key: item.name,
-            label: item.name,
-            active: activeMenu === item.name,
-            onClick: () => handleTopMenuClick(item.name),
-            testId: `menu-${item.name}`,
-          }))}
+          tabs={topMenu
+            .filter((item) => item.name !== "정산 및 통계")
+            .map((item) => ({
+              key: item.name,
+              label: item.name,
+              active: activeMenu === item.name,
+              onClick: () => handleTopMenuClick(item.name),
+              testId: `menu-${item.name}`,
+            }))}
           subTabs={subTabs}
           trailing={
             user ? (
