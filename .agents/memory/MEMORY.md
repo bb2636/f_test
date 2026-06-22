@@ -20,3 +20,4 @@
 - [배포 반영 확인은 lazy 청크에서](deploy-verify-lazy-chunks.md) — 페이지는 lazy 코드스플릿이라 배포본 index-*.js엔 셸만 있음; mustChangePassword/min-w-[620px] 마커는 login-*.js·dashboard-*.js 청크에서 grep해야("배포 안됨" 오판 주의). 배포=로컬 워크스페이스, origin/main 무시
 - [모바일 앱 로그인 진입은 desktop Login](mobile-login-entry.md) — WebView는 "/"로 진입→라우트 "/"=desktop Login; /mobile-login·/mobile-home은 orphan. 모바일 전용 로그인 동작은 desktop Login(공용)에 있으면 적용, mobile-login.tsx는 방어적 동기화
 - [모바일 WebView 래퍼 함정+EAS빌드제약](mobile-webview-wrapper.md) — 로그인후 무한로딩=네이티브 로더가 SPA 내부전환 후 onLoadEnd 안와 고정(서버/웹앱 정상); 최초1회만 표시로 수정. 메인에이전트 셸 EAS빌드는 git차단/NO_VCS는 143종료로 불가
+- [users-cache 무효화 레이스](users-cache-race.md) — 무효화가 진행중 fetch를 못 막아 옛 데이터로 캐시 부활; 비번초기화는 password+mustChange를 단일 UPDATE(resetPasswordWithForceChange)로, 캐시엔 epoch 가드 필수

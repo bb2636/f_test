@@ -601,12 +601,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             `[RESET ADMIN] ${username} reactivation: ${reactivated ? "SUCCESS" : "USER NOT FOUND"}`,
           );
 
-          // Then reset password
-          const updated = await storage.updatePassword(username, "1234");
-          // 초기화된 비밀번호는 첫 로그인 시 강제 변경되도록 플래그 설정
-          if (updated) {
-            await storage.updateUserMustChangePassword(updated.id, true);
-          }
+          // Then reset password (비밀번호 + 강제변경 플래그를 원자적으로 설정)
+          const updated = await storage.resetPasswordWithForceChange(
+            username,
+            "1234",
+          );
           results.push({
             username,
             success: !!updated,
@@ -937,7 +936,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate request body with Zod
       const validatedData = updatePasswordSchema.parse(req.body);
 
-      const updatedUser = await storage.updatePassword(
+      // 관리자가 비밀번호를 초기화하면 해당 사용자는 다음 로그인 시 반드시
+      // 비밀번호를 다시 변경하도록 강제한다. 비밀번호와 강제변경 플래그를
+      // 단일 UPDATE로 함께 설정해 캐시 레이스로 플래그가 누락되는 것을 막는다.
+      const updatedUser = await storage.resetPasswordWithForceChange(
         validatedData.username,
         validatedData.newPassword,
       );
@@ -945,10 +947,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!updatedUser) {
         return res.status(404).json({ error: "사용자를 찾을 수 없습니다" });
       }
-
-      // 관리자가 비밀번호를 초기화하면 해당 사용자는 다음 로그인 시
-      // 반드시 비밀번호를 다시 변경하도록 강제한다.
-      await storage.updateUserMustChangePassword(updatedUser.id, true);
 
       const { password, ...userWithoutPassword } = updatedUser;
       res.json({ success: true, user: userWithoutPassword });

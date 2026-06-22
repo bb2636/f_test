@@ -97,10 +97,14 @@ const USERS_STALE_TTL = 30 * 1000;
 let usersCache: User[] | null = null;
 let usersCacheTime = 0;
 let usersCacheFetching: Promise<User[]> | null = null;
+// 무효화 세대 카운터. invalidate가 호출되면 증가한다.
+// 진행 중이던(stale) fetch가 무효화 이후 캐시를 되살리는 것을 막기 위해 사용.
+let usersCacheEpoch = 0;
 
 export function invalidateUsersCache() {
   usersCache = null;
   usersCacheTime = 0;
+  usersCacheEpoch++;
 }
 
 async function getCachedUsers(): Promise<User[]> {
@@ -112,6 +116,9 @@ async function getCachedUsers(): Promise<User[]> {
     return usersCacheFetching;
   }
   const staleCache = usersCache;
+  // 이 fetch가 시작된 시점의 세대. 도중에 invalidate가 일어나면 세대가 바뀌므로
+  // 그 결과로는 캐시를 갱신하지 않는다(오래된 데이터로 캐시 오염 방지).
+  const fetchEpoch = usersCacheEpoch;
   usersCacheFetching = (async () => {
     try {
       const result = await withTimeout(
@@ -119,8 +126,10 @@ async function getCachedUsers(): Promise<User[]> {
         DB_QUERY_TIMEOUT,
         "getCachedUsers",
       ) as User[];
-      usersCache = result;
-      usersCacheTime = Date.now();
+      if (usersCacheEpoch === fetchEpoch) {
+        usersCache = result;
+        usersCacheTime = Date.now();
+      }
       return result;
     } catch (err) {
       console.error("[CACHE] getCachedUsers failed:", (err as Error).message);
@@ -258,6 +267,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   verifyPassword(username: string, password: string): Promise<User | null>;
   updatePassword(username: string, newPassword: string): Promise<User | null>;
+  resetPasswordWithForceChange(username: string, newPassword: string): Promise<User | null>;
   reactivateAccount(username: string): Promise<User | null>;
   updateUser(userId: string, userData: Partial<Omit<User, 'id' | 'username' | 'password' | 'createdAt' | 'status'>>): Promise<User | null>;
   updateUserMustChangePassword(userId: string, mustChangePassword: boolean): Promise<User | null>;
@@ -1466,6 +1476,25 @@ export class MemStorage implements IStorage {
     const updatedUser: User = {
       ...user,
       password: hashedPassword,
+    };
+    this.users.set(user.id, updatedUser);
+    return updatedUser;
+  }
+
+  async resetPasswordWithForceChange(
+    username: string,
+    newPassword: string,
+  ): Promise<User | null> {
+    const user = await this.getUserByUsername(username);
+    if (!user) {
+      return null;
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const updatedUser: User = {
+      ...user,
+      password: hashedPassword,
+      mustChangePassword: true,
     };
     this.users.set(user.id, updatedUser);
     return updatedUser;
@@ -4144,6 +4173,30 @@ export class DbStorage implements IStorage {
     const result = await db
       .update(users)
       .set({ password: hashedPassword })
+      .where(eq(users.username, username))
+      .returning();
+
+    invalidateUsersCache();
+    return result[0] || null;
+  }
+
+  // 비밀번호 초기화 + 강제변경 플래그를 단일 UPDATE로 원자적으로 처리한다.
+  // 두 번에 나눠 쓰면 그 사이 {새 비밀번호, mustChange=false} 상태가 캐시에 잡혀
+  // 첫 로그인 시 강제변경이 적용되지 않는 레이스가 발생할 수 있어 반드시 함께 쓴다.
+  async resetPasswordWithForceChange(
+    username: string,
+    newPassword: string,
+  ): Promise<User | null> {
+    const user = await this.getUserByUsername(username);
+    if (!user) {
+      return null;
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+    const result = await db
+      .update(users)
+      .set({ password: hashedPassword, mustChangePassword: true })
       .where(eq(users.username, username))
       .returning();
 
