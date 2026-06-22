@@ -357,6 +357,105 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
     );
   };
 
+  const renderInquiryDetail = (inquiry: Inquiry) => (
+    <div className="space-y-4">
+      {/* 문의 내용 전체 */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200">
+        <p className="text-sm font-medium text-gray-700 mb-2">문의 내용</p>
+        <p className="text-sm text-gray-600 whitespace-pre-wrap break-all">{inquiry.content}</p>
+      </div>
+
+      {/* 관리자 답변 */}
+      {inquiry.response && (
+        <div className="p-4 rounded-lg border-l-4" style={{ background: '#e7e7f5', borderLeftColor: 'var(--color-button-primary)' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-sm font-medium" style={{ color: '#253396' }}>관리자 답변</span>
+            {inquiry.respondedAt && (
+              <span className="text-xs text-gray-400">
+                {format(new Date(inquiry.respondedAt), "yyyy-MM-dd HH:mm")}
+              </span>
+            )}
+          </div>
+          {inquiry.responseTitle && (
+            <p className="font-medium text-gray-900 mb-1 break-all">{inquiry.responseTitle}</p>
+          )}
+          <p className="text-sm text-gray-600 whitespace-pre-wrap break-all">{inquiry.response}</p>
+        </div>
+      )}
+
+      {/* 관리자용 답변 폼 */}
+      {isAdmin && inquiry.status !== "완료" && (
+        <div className="mt-4">
+          {respondingInquiryId === inquiry.id ? (
+            <div className="space-y-3 p-4 rounded-lg border" style={{ background: '#e7e7f5', borderColor: 'var(--color-table-border)' }}>
+              <h5 className="font-medium" style={{ color: '#253396' }}>답변 작성</h5>
+              <Input
+                placeholder="답변 제목을 입력하세요"
+                value={responseTitle}
+                onChange={(e) => setResponseTitle(e.target.value)}
+                data-testid="input-response-title"
+              />
+              <Textarea
+                placeholder="답변 내용을 입력하세요"
+                value={responseContent}
+                onChange={(e) => setResponseContent(e.target.value)}
+                rows={4}
+                data-testid="input-response-content"
+              />
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRespondingInquiryId(null);
+                    setResponseTitle("");
+                    setResponseContent("");
+                  }}
+                  data-testid="button-cancel-response"
+                >
+                  취소
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (responseTitle.trim() && responseContent.trim()) {
+                      respondInquiryMutation.mutate({
+                        id: inquiry.id,
+                        responseTitle: responseTitle,
+                        response: responseContent,
+                      });
+                    }
+                  }}
+                  disabled={!responseTitle.trim() || !responseContent.trim() || respondInquiryMutation.isPending}
+                  className="hover:opacity-90"
+                  style={{ background: 'var(--color-button-primary)' }}
+                  data-testid="button-submit-response"
+                >
+                  {respondInquiryMutation.isPending ? "등록 중..." : "답변 등록"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setRespondingInquiryId(inquiry.id);
+              }}
+              className="hover:opacity-90"
+              style={{ background: 'var(--color-button-primary)' }}
+              data-testid={`button-respond-${inquiry.id}`}
+            >
+              답변하기
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
@@ -803,6 +902,49 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                     <div className="text-center py-12 text-gray-500">
                       문의 내역이 없습니다.
                     </div>
+                  ) : isMobileApp ? (
+                    <div className="space-y-2">
+                      {inquiries.map((inquiry, index) => {
+                        const formatDateShort = (date: Date | string) => {
+                          try {
+                            return format(new Date(date), "yyyy-MM-dd");
+                          } catch {
+                            return "-";
+                          }
+                        };
+                        const isExpanded = expandedInquiry === inquiry.id;
+
+                        return (
+                          <div
+                            key={inquiry.id}
+                            className="rounded-xl bg-gray-50 overflow-hidden"
+                          >
+                            <button
+                              onClick={() => setExpandedInquiry(isExpanded ? null : inquiry.id)}
+                              className="w-full flex items-center gap-3 p-3 text-left"
+                              data-testid={`inquiry-row-${inquiry.id}`}
+                            >
+                              <span className="text-xs text-gray-400 flex-shrink-0">{index + 1}</span>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-semibold text-gray-900 truncate">{inquiry.title}</h4>
+                                <p className="text-xs text-gray-400">{formatDateShort(inquiry.createdAt)}</p>
+                              </div>
+                              {inquiry.status === "완료" ? (
+                                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                              ) : (
+                                <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                              )}
+                              <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                            </button>
+                            {isExpanded && (
+                              <div className="px-3 pb-3">
+                                {renderInquiryDetail(inquiry)}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
@@ -855,102 +997,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                                 {isExpanded && (
                                   <tr key={`${inquiry.id}-expanded`}>
                                     <td colSpan={5} className="bg-gray-50 p-4">
-                                      <div className="space-y-4">
-                                        {/* 문의 내용 전체 */}
-                                        <div className="p-4 bg-white rounded-lg border border-gray-200">
-                                          <p className="text-sm font-medium text-gray-700 mb-2">문의 내용</p>
-                                          <p className="text-sm text-gray-600 whitespace-pre-wrap break-all">{inquiry.content}</p>
-                                        </div>
-
-                                        {/* 관리자 답변 */}
-                                        {inquiry.response && (
-                                          <div className="p-4 rounded-lg border-l-4" style={{ background: '#e7e7f5', borderLeftColor: 'var(--color-button-primary)' }}>
-                                            <div className="flex items-center gap-2 mb-2">
-                                              <span className="text-sm font-medium" style={{ color: '#253396' }}>관리자 답변</span>
-                                              {inquiry.respondedAt && (
-                                                <span className="text-xs text-gray-400">
-                                                  {format(new Date(inquiry.respondedAt), "yyyy-MM-dd HH:mm")}
-                                                </span>
-                                              )}
-                                            </div>
-                                            {inquiry.responseTitle && (
-                                              <p className="font-medium text-gray-900 mb-1 break-all">{inquiry.responseTitle}</p>
-                                            )}
-                                            <p className="text-sm text-gray-600 whitespace-pre-wrap break-all">{inquiry.response}</p>
-                                          </div>
-                                        )}
-
-                                        {/* 관리자용 답변 폼 */}
-                                        {isAdmin && inquiry.status !== "완료" && (
-                                          <div className="mt-4">
-                                            {respondingInquiryId === inquiry.id ? (
-                                              <div className="space-y-3 p-4 rounded-lg border" style={{ background: '#e7e7f5', borderColor: 'var(--color-table-border)' }}>
-                                                <h5 className="font-medium" style={{ color: '#253396' }}>답변 작성</h5>
-                                                <Input
-                                                  placeholder="답변 제목을 입력하세요"
-                                                  value={responseTitle}
-                                                  onChange={(e) => setResponseTitle(e.target.value)}
-                                                  data-testid="input-response-title"
-                                                />
-                                                <Textarea
-                                                  placeholder="답변 내용을 입력하세요"
-                                                  value={responseContent}
-                                                  onChange={(e) => setResponseContent(e.target.value)}
-                                                  rows={4}
-                                                  data-testid="input-response-content"
-                                                />
-                                                <div className="flex gap-2 justify-end">
-                                                  <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      setRespondingInquiryId(null);
-                                                      setResponseTitle("");
-                                                      setResponseContent("");
-                                                    }}
-                                                    data-testid="button-cancel-response"
-                                                  >
-                                                    취소
-                                                  </Button>
-                                                  <Button
-                                                    size="sm"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      if (responseTitle.trim() && responseContent.trim()) {
-                                                        respondInquiryMutation.mutate({
-                                                          id: inquiry.id,
-                                                          responseTitle: responseTitle,
-                                                          response: responseContent,
-                                                        });
-                                                      }
-                                                    }}
-                                                    disabled={!responseTitle.trim() || !responseContent.trim() || respondInquiryMutation.isPending}
-                                                    className="hover:opacity-90"
-                                                    style={{ background: 'var(--color-button-primary)' }}
-                                                    data-testid="button-submit-response"
-                                                  >
-                                                    {respondInquiryMutation.isPending ? "등록 중..." : "답변 등록"}
-                                                  </Button>
-                                                </div>
-                                              </div>
-                                            ) : (
-                                              <Button
-                                                size="sm"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  setRespondingInquiryId(inquiry.id);
-                                                }}
-                                                className="hover:opacity-90"
-                                                style={{ background: 'var(--color-button-primary)' }}
-                                                data-testid={`button-respond-${inquiry.id}`}
-                                              >
-                                                답변하기
-                                              </Button>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
+                                      {renderInquiryDetail(inquiry)}
                                     </td>
                                   </tr>
                                 )}
