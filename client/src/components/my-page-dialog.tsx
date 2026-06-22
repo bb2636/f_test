@@ -29,6 +29,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
   const [inquiryTitle, setInquiryTitle] = useState("");
   const [inquiryContent, setInquiryContent] = useState("");
   const [expandedInquiry, setExpandedInquiry] = useState<string | null>(null);
+  const [expandedNoticeId, setExpandedNoticeId] = useState<string | null>(null);
   const [respondingInquiryId, setRespondingInquiryId] = useState<string | null>(null);
   const [responseTitle, setResponseTitle] = useState("");
   const [responseContent, setResponseContent] = useState("");
@@ -641,6 +642,43 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                       };
 
                       const contentLines = notice.content.split("\n").filter(line => line.trim());
+
+                      if (isMobileApp) {
+                        const isExpanded = expandedNoticeId === notice.id;
+                        return (
+                          <div
+                            key={notice.id}
+                            className="rounded-xl bg-gray-50 overflow-hidden"
+                          >
+                            <button
+                              onClick={() => setExpandedNoticeId(isExpanded ? null : notice.id)}
+                              className="w-full flex items-center gap-3 p-3 text-left"
+                              data-testid={`notice-title-${notice.id}`}
+                            >
+                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                <FileText className="w-4 h-4 text-gray-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-semibold text-gray-900 truncate">{notice.title}</h4>
+                                <p className="text-xs text-gray-400">{formatDate(notice.createdAt)}</p>
+                              </div>
+                              <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                            </button>
+                            {isExpanded && (
+                              <div className="px-3 pb-3">
+                                <ul className="space-y-1 border-t border-gray-200 pt-3">
+                                  {contentLines.map((line, idx) => (
+                                    <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
+                                      <span className="text-gray-400 mt-0.5">•</span>
+                                      <span className="break-words min-w-0">{line}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
 
                       return (
                         <div
