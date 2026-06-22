@@ -27,10 +27,28 @@ export function useIsDetachedWindow() {
   return useContext(PortalContainerContext) !== undefined;
 }
 
+// 노드를 복제하되, stylesheet <link>는 절대 URL로 고정한다.
+//   분리창은 window.open("")로 연 about:blank 문서라 baseURI가 "about:blank"다.
+//   프로덕션 빌드의 CSS는 <link href="/assets/index-xxxx.css"> 같은 루트상대 경로인데,
+//   cloneNode는 "속성"(상대경로)을 그대로 복사하므로 about:blank에서 해석에 실패해
+//   CSS가 로드되지 않는다(개발모드는 인라인 <style>이라 표가 정상으로 보이지만 배포본에선
+//   Tailwind가 통째로 빠져 flex 행이 세로로 무너짐). link.href "프로퍼티"는 이미 해석된
+//   절대 URL이므로 그 값으로 덮어써 분리창에서도 정상 로드되게 한다.
+function cloneStyleNode(node: Element): Node {
+  const clone = node.cloneNode(true);
+  if (
+    node.nodeName === "LINK" &&
+    (node as HTMLLinkElement).rel === "stylesheet"
+  ) {
+    (clone as HTMLLinkElement).href = (node as HTMLLinkElement).href;
+  }
+  return clone;
+}
+
 function copyStyles(src: Document, dest: Document) {
   src
     .querySelectorAll('style, link[rel="stylesheet"]')
-    .forEach((node) => dest.head.appendChild(node.cloneNode(true)));
+    .forEach((node) => dest.head.appendChild(cloneStyleNode(node)));
 }
 
 interface DetachedWindowProps {
@@ -92,7 +110,7 @@ export function DetachedWindow({
             (n.nodeName === "LINK" &&
               (n as HTMLLinkElement).rel === "stylesheet")
           ) {
-            win.document.head.appendChild(n.cloneNode(true));
+            win.document.head.appendChild(cloneStyleNode(n as Element));
           }
         }),
       );
