@@ -367,10 +367,10 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
       >
         <div
           className={`${isMobileApp ? "flex flex-col min-h-0" : "flex"}`}
-          style={isMobileApp ? { maxHeight: 'calc(90vh - 2rem)' } : { height: 'calc(90vh - 2rem)', minHeight: '600px' }}
+          style={isMobileApp ? { height: 'calc(90vh - 2rem)' } : { height: 'calc(90vh - 2rem)', minHeight: '600px' }}
         >
           <div 
-            className={`${isMobileApp ? "w-full p-3" : "w-48 flex-shrink-0 p-6"}`}
+            className={`${isMobileApp ? "w-full p-3 pr-12" : "w-48 flex-shrink-0 p-6"}`}
             style={{ 
               background: 'var(--color-table-header)',
               borderRight: isMobileApp ? 'none' : '1px solid var(--color-table-border)',
@@ -385,7 +385,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`${isMobileApp ? "shrink-0 whitespace-nowrap" : "w-full text-left"} px-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={`${isMobileApp ? "shrink-0 whitespace-nowrap px-2.5 py-1.5 text-xs" : "w-full text-left px-3 py-2 text-sm"} rounded-lg transition-colors ${
                     activeTab === item.id
                       ? "text-white font-semibold"
                       : "text-gray-600 hover:bg-gray-100"
@@ -402,8 +402,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
           <div className={`${isMobileApp ? "flex-1 min-h-0 p-4" : "flex-1 p-8"} overflow-y-auto relative`} style={{ maxHeight: isMobileApp ? undefined : 'calc(90vh - 2rem)', background: 'var(--color-bg)' }}>
             {activeTab === "profile" && (
               <div>
-                <h3 className="text-xl font-semibold mb-2" style={{ color: '#56687f' }}>내 프로필 설정</h3>
-                <p className="text-sm text-gray-500 mb-6">
+                <h3 className={`${isMobileApp ? "text-base mb-1.5" : "text-xl mb-2"} font-semibold`} style={{ color: '#56687f' }}>내 프로필 설정</h3>
+                <p className={`${isMobileApp ? "text-xs mb-4" : "text-sm mb-6"} text-gray-500`}>
                   최신 연락수단을 유지해주세요. 변경사항은 즉시 저장됩니다.
                 </p>
 
@@ -412,7 +412,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
                     className="w-24 h-24 rounded-lg flex items-center justify-center relative flex-shrink-0"
                     style={{ background: '#e7e7f5' }}
                   >
-                    <span className="text-3xl font-bold" style={{ color: '#253396' }}>
+                    <span className={`${isMobileApp ? "text-2xl" : "text-3xl"} font-bold`} style={{ color: '#253396' }}>
                       {getInitials(user.name)}
                     </span>
                     <button 
@@ -619,8 +619,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
 
             {activeTab === "notices" && (
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">공지사항</h3>
-                <p className="text-sm text-gray-500 mb-6">
+                <h3 className={`${isMobileApp ? "text-base mb-1.5" : "text-xl mb-2"} font-semibold text-gray-900`}>공지사항</h3>
+                <p className={`${isMobileApp ? "text-xs mb-4" : "text-sm mb-6"} text-gray-500`}>
                   보안·개인정보·권한 규정을 준수하세요. 위반 시 계정 제한이 발생할 수 있습니다.
                 </p>
                 {noticesLoading ? (
@@ -675,16 +675,16 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
             {activeTab === "inquiries" && (
               <div>
                 {/* 제목 및 설명 */}
-                <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                <h3 className={`${isMobileApp ? "text-base" : "text-xl"} font-semibold text-gray-900 mb-1`}>
                   {isAdmin ? "1:1 문의 관리" : "1:1 문의"}
                 </h3>
                 {!isAdmin && (
-                  <p className="text-sm text-gray-500 mb-6">
+                  <p className={`${isMobileApp ? "text-xs mb-4" : "text-sm mb-6"} text-gray-500`}>
                     문의하실 핵심 요점을 간결하게 남겨 주세요.
                   </p>
                 )}
                 {isAdmin && (
-                  <p className="text-sm text-gray-500 mb-6">
+                  <p className={`${isMobileApp ? "text-xs mb-4" : "text-sm mb-6"} text-gray-500`}>
                     고객 문의에 답변해 주세요.
                   </p>
                 )}
@@ -755,7 +755,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
 
                 {/* 문의 내역 테이블 */}
                 <div className="border-t border-gray-200 pt-6">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  <h4 className={`${isMobileApp ? "text-base" : "text-lg"} font-semibold text-gray-900 mb-4`}>
                     {isAdmin ? `전체 문의 내역 ${inquiries.length}` : `내 문의 내역 ${inquiries.length}`}
                   </h4>
 
@@ -929,8 +929,8 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
 
             {activeTab === "favorites" && (
               <div>
-                <h3 className="text-xl font-semibold mb-2" style={{ color: '#56687f' }}>즐겨찾기 목록</h3>
-                <p className="text-sm text-gray-500 mb-6">
+                <h3 className={`${isMobileApp ? "text-base mb-1.5" : "text-xl mb-2"} font-semibold`} style={{ color: '#56687f' }}>즐겨찾기 목록</h3>
+                <p className={`${isMobileApp ? "text-xs mb-4" : "text-sm mb-6"} text-gray-500`}>
                   자주 쓰는 화면을 고정해 빠르게 접근하세요. 불필요한 항목은 수시로 정리해 주세요.
                 </p>
 
