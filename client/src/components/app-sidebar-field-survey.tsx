@@ -175,8 +175,9 @@ export function AppSidebarFieldSurvey({
       }),
     );
     // 도면작성은 Web 화면에서만 가능 — 모바일 서브탭에서 제외.
+    // 현장조사는 클릭 불가 라벨(url:null) — 모바일 서브탭에서 제외.
     const reportTabs: MobileTab[] = visibleReportItems
-      .filter((item) => item.url !== "/field-survey/drawing")
+      .filter((item) => item.url !== "/field-survey/drawing" && item.url !== null)
       .map((item) => ({
         key: item.title,
         label: item.title,

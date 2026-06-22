@@ -5,7 +5,7 @@ description: Floxn 모바일 WebView 전용 UI를 데스크톱 무영향으로 �
 
 모바일 WebView 전용 UI는 `useIsMobileApp()`(UA에 "FloxnMobileApp"이면 true)로만 분기. 모든 분기는 삼항으로 데스크톱 값 보존.
 
-**상단 탭 내비**: 모바일 셸은 햄버거(MobileNavShell) 대신 `mobile-tab-nav.tsx`(상단 가로스크롤 탭+서브탭+우측 아바타). 두 사이드바(app-sidebar-statistics / app-sidebar-field-survey)의 isMobileApp 분기에서만 교체. field-survey 서브탭은 도면작성(/field-survey/drawing) 제외(Web 전용).
+**상단 탭 내비**: 모바일 셸은 햄버거(MobileNavShell) 대신 `mobile-tab-nav.tsx`(상단 가로스크롤 탭+서브탭+우측 아바타). 두 사이드바(app-sidebar-statistics / app-sidebar-field-survey)의 isMobileApp 분기에서만 교체. field-survey 모바일 서브탭(reportTabs) 제외 규칙: 도면작성(url=/field-survey/drawing, Web 전용) + 현장조사(url:null인 클릭불가 라벨). 즉 `.filter(item => item.url !== "/field-survey/drawing" && item.url !== null)`. 현장출동보고서는 권한(보고서 작성)으로 자동 게이팅돼 일반 협력사에겐 안 보임.
 
 **종합진행관리 테이블(comprehensive-progress.tsx)**: 데스크톱은 "가로스크롤 제거(컨테이너 100% 폭)" 의도. header 그리드와 row 그리드는 **별도 style 객체**(들여쓰기로 구분)라 gridTemplateColumns/minWidth 변경은 **둘 다** 똑같이 해야 sticky 헤더와 본문 행 정렬이 유지된다(한쪽만 바꾸면 어긋남). 상위 div는 overflowX:auto.
 
