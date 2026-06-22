@@ -2159,8 +2159,11 @@ export default function ComprehensiveProgress() {
               className="data-table-header"
               style={{
                 display: "grid",
-                minWidth: undefined,
-                // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
+                // [2026-06-22] 모바일: 칸이 좁아 글자가 겹치므로 최소 너비를 줘 가로 슬라이드 복구
+                minWidth: isMobileApp
+                  ? (user?.role === "협력사" ? "920px" : "640px")
+                  : undefined,
+                // [2026-05-19 v3] (데스크톱) 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
                 // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
                 //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%
                 // [2026-05-19 v5] 심사사 10%→6%, 상세보기 12%→8%로 축소
@@ -2388,8 +2391,11 @@ export default function ComprehensiveProgress() {
                     className="data-table-row"
                     style={{
                       display: "grid",
-                      minWidth: undefined,
-                      // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
+                      // [2026-06-22] 모바일: 칸이 좁아 글자가 겹치므로 최소 너비를 줘 가로 슬라이드 복구
+                      minWidth: isMobileApp
+                        ? (user?.role === "협력사" ? "920px" : "640px")
+                        : undefined,
+                      // [2026-05-19 v3] (데스크톱) 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
                       // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
                       //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%
                       // [2026-05-19 v5] 심사사 10%→6%, 상세보기 12%→8%로 축소
