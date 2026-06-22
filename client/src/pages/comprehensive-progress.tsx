@@ -2159,20 +2159,23 @@ export default function ComprehensiveProgress() {
               className="data-table-header"
               style={{
                 display: "grid",
-                minWidth: isMobileApp ? "1500px" : undefined,
+                minWidth: undefined,
                 // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
                 // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
                 //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%
                 // [2026-05-19 v5] 심사사 10%→6%, 상세보기 12%→8%로 축소
                 //                경과1~3 40px→56px 확대(여유), 남은 폭은 주소(1fr)가 흡수
-                gridTemplateColumns:
-                  canDeleteCases
+                gridTemplateColumns: isMobileApp
+                  ? (user?.role === "협력사"
+                      ? `13% 15% 11% 9% minmax(0,1.3fr) 13% 12% 9%`
+                      : `15% 17% 13% 11% minmax(0,1.5fr) 16%`)
+                  : (canDeleteCases
                     ? (user?.role === "협력사"
                       ? `40px 7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%`
                       : `40px 7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`)
                     : (user?.role === "협력사"
                       ? `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%`
-                      : `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`),
+                      : `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`)),
                 padding: "0 8px",
                 background: "#F5F5F6",
                 borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
@@ -2181,7 +2184,7 @@ export default function ComprehensiveProgress() {
                 zIndex: 10,
               }}
             >
-              {canDeleteCases && (
+              {canDeleteCases && !isMobileApp && (
                 <div
                   style={{
                     display: "flex",
@@ -2207,7 +2210,20 @@ export default function ComprehensiveProgress() {
                   />
                 </div>
               )}
-              {[
+              {(isMobileApp
+                ? [
+                    { label: "보험사", textAlign: "center" as const },
+                    { label: "사고번호", textAlign: "center" as const },
+                    { label: "피보험자", textAlign: "center" as const },
+                    { label: "손방/대물", textAlign: "center" as const },
+                    { label: "주소", textAlign: "center" as const },
+                    { label: "진행상태", textAlign: "center" as const },
+                    ...(user?.role === "협력사" ? [
+                      { label: "수행업무", textAlign: "center" as const },
+                      { label: "진행메모", textAlign: "center" as const },
+                    ] : []),
+                  ]
+                : [
                 { label: "증권번호", textAlign: "center" as const },
                 { label: "보험사고번호", textAlign: "center" as const },
                 { label: "접수번호", textAlign: "center" as const },
@@ -2226,7 +2242,8 @@ export default function ComprehensiveProgress() {
                 { label: "메모", textAlign: "center" as const, tooltipNode: true },
                 ...(user?.role === "협력사" ? [{ label: "수행업무", textAlign: "center" as const }] : []),
                 { label: "상세보기", textAlign: "center" as const, isLast: true },
-              ].map((col, idx) => (
+              ]
+              ).map((col, idx) => (
                 <div
                   key={col.label || `col-${idx}`}
                   style={{
@@ -2371,20 +2388,23 @@ export default function ComprehensiveProgress() {
                     className="data-table-row"
                     style={{
                       display: "grid",
-                      minWidth: isMobileApp ? "1500px" : undefined,
+                      minWidth: undefined,
                       // [2026-05-19 v3] 가로 스크롤 제거: minWidth 제거(컨테이너 100% 폭에 맞춤)
                       // 컬럼 재배분: 심사사 6%→4%, 보험사 4%→6%, 피보험자 6%→5%,
                       //              경과1~3 3%→4%, 진행상태 10%→9%, 상세보기 7%→6%
                       // [2026-05-19 v5] 심사사 10%→6%, 상세보기 12%→8%로 축소
                       //                경과1~3 40px→56px 확대(여유), 남은 폭은 주소(1fr)가 흡수
-                      gridTemplateColumns:
-                        canDeleteCases
+                      gridTemplateColumns: isMobileApp
+                        ? (user?.role === "협력사"
+                            ? `13% 15% 11% 9% minmax(0,1.3fr) 13% 12% 9%`
+                            : `15% 17% 13% 11% minmax(0,1.5fr) 16%`)
+                        : (canDeleteCases
                           ? (user?.role === "협력사"
                             ? `40px 7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%`
                             : `40px 7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`)
                           : (user?.role === "협력사"
                             ? `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 5% 5% 56px 56px 56px 9% 3% 6% 8%`
-                            : `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`),
+                            : `7% 6% 7% 6% 6% 4% 5% ${addrTrack} 4% 6% 5% 56px 56px 56px 9% 3% 8%`)),
                       padding: "0 8px",
                       borderBottom: "1px solid rgba(12, 12, 12, 0.08)",
                       alignItems: "stretch",
@@ -2399,7 +2419,7 @@ export default function ComprehensiveProgress() {
                     }}
                     data-testid={`case-row-${caseItem.id}`}
                   >
-                    {canDeleteCases && (
+                    {canDeleteCases && !isMobileApp && (
                       <div
                         style={{
                           display: "flex",
@@ -2422,6 +2442,7 @@ export default function ComprehensiveProgress() {
                         />
                       </div>
                     )}
+                    {!isMobileApp && (
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -2443,6 +2464,7 @@ export default function ComprehensiveProgress() {
                     >
                       {caseItem.insurancePolicyNo || "-"}
                     </div>
+                    )}
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -2460,10 +2482,12 @@ export default function ComprehensiveProgress() {
                         overflowWrap: "anywhere",
                         minWidth: 0,
                         lineHeight: "1.3",
+                        order: isMobileApp ? 2 : undefined,
                       }}
                     >
                       {caseItem.insuranceAccidentNo || "-"}
                     </div>
+                    {!isMobileApp && (
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -2480,6 +2504,7 @@ export default function ComprehensiveProgress() {
                     >
                       {formatCaseNumber(caseItem.caseNumber) || "-"}
                     </div>
+                    )}
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -2492,10 +2517,13 @@ export default function ComprehensiveProgress() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        order: isMobileApp ? 1 : undefined,
                       }}
                     >
                       {caseItem.insuranceCompany || "-"}
                     </div>
+                    {!isMobileApp && (
+                    <>
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -2540,6 +2568,8 @@ export default function ComprehensiveProgress() {
                     >
                       {caseItem.assessorTeam || "-"}
                     </div>
+                    </>
+                    )}
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -2552,10 +2582,30 @@ export default function ComprehensiveProgress() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
+                        order: isMobileApp ? 3 : undefined,
                       }}
                     >
                       {caseItem.insuredName || "-"}
                     </div>
+                    {isMobileApp && (
+                      <div
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "13px",
+                          color: "rgba(12, 12, 12, 0.8)",
+                          paddingRight: "4px",
+                          paddingLeft: "4px",
+                          paddingTop: "2px",
+                          paddingBottom: "2px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          order: 4,
+                        }}
+                      >
+                        {parseInt(caseItem.caseNumber?.match(/-(\d+)$/)?.[1] || "0") === 0 ? "손방" : "대물"}
+                      </div>
+                    )}
                     {(() => {
                       const caseNumberSuffix =
                         caseItem.caseNumber?.match(/-(\d+)$/)?.[1] || "0";
@@ -2610,6 +2660,7 @@ export default function ComprehensiveProgress() {
                             paddingBottom: "2px",
                             display: "flex",
                             alignItems: "center",
+                            order: isMobileApp ? 5 : undefined,
                           }}
                           title={addressText}
                           data-testid={`text-address-${caseItem.id}`}
@@ -2618,6 +2669,8 @@ export default function ComprehensiveProgress() {
                         </div>
                       );
                     })()}
+                    {!isMobileApp && (
+                    <>
                     <div
                       style={{
                         fontFamily: "Pretendard",
@@ -2716,7 +2769,9 @@ export default function ComprehensiveProgress() {
                     >
                       {calculateElapsed3(caseItem)}
                     </div>
-                    <div onClick={(e) => e.stopPropagation()} style={{ paddingRight: "4px", paddingLeft: "4px", paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    </>
+                    )}
+                    <div onClick={(e) => e.stopPropagation()} style={{ paddingRight: "4px", paddingLeft: "4px", paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "center", order: isMobileApp ? 6 : undefined }}>
                       {/* 관리자: 모든 상태에서 변경 가능, 협력사: 현장정보제출/복구요청(2차승인) 상태에서만 변경 가능 */}
                       {user?.role === "관리자" ||
                       (user?.role === "협력사" &&
@@ -2835,6 +2890,7 @@ export default function ComprehensiveProgress() {
                         </div>
                       )}
                     </div>
+                    {(!isMobileApp || user?.role === "협력사") && (
                     <div
                       style={{
                         display: "flex",
@@ -2846,6 +2902,7 @@ export default function ComprehensiveProgress() {
                         paddingLeft: "8px",
                         paddingTop: "2px",
                         paddingBottom: "2px",
+                        order: isMobileApp ? 8 : undefined,
                       }}
                     >
                       {/* 협력사 특이사항 빨간색 점: 미확인=채움, 확인=테두리만 */}
@@ -2886,6 +2943,7 @@ export default function ComprehensiveProgress() {
                           />
                         )}
                     </div>
+                    )}
                     {user?.role === "협력사" && (
                       <div
                         style={{
@@ -2902,6 +2960,7 @@ export default function ComprehensiveProgress() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
+                          order: isMobileApp ? 7 : undefined,
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -2928,6 +2987,7 @@ export default function ComprehensiveProgress() {
                             : "현장조사 입력"}
                       </div>
                     )}
+                    {!isMobileApp && (
                     <div style={{ paddingTop: "2px", paddingBottom: "2px", display: "flex", alignItems: "center", justifyContent: "flex-start", paddingLeft: "8px", overflow: "visible", minWidth: 0 }}>
                       {caseItem.status === "배당대기" ? (
                         // 배당대기 상태 - 임시 저장 건이므로 이어서 작성하기 버튼
@@ -3015,6 +3075,7 @@ export default function ComprehensiveProgress() {
                         </div>)
                       )}
                     </div>
+                    )}
                   </div>
                 );
               })

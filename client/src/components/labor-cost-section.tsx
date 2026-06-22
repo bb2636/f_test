@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 import {
   Select,
   SelectContent,
@@ -158,6 +159,8 @@ export function LaborCostSection({
   isLossPreventionCase = false,
   isPartner = false,
 }: LaborCostSectionProps) {
+  // 모바일 앱(WebView)에서만 비고 컬럼 숨김 — 데스크톱은 영향 없음
+  const isMobileApp = useIsMobileApp();
   const [directInputMode, setDirectInputMode] = useState<Set<string>>(new Set());
   const [workNameInputMode, setWorkNameInputMode] = useState<Set<string>>(new Set());
 
@@ -2006,6 +2009,7 @@ export function LaborCostSection({
             >
               경비 여부
             </th>
+            {!isMobileApp && (
             <th
               style={{
                 /* [정책 2026-05-12] 견적서 탭 — 경비여부에서 줄인 폭을 비고로 이전 */
@@ -2021,6 +2025,7 @@ export function LaborCostSection({
             >
               비고
             </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -2771,7 +2776,8 @@ export function LaborCostSection({
                     />
                   </td>
 
-                  {/* 비고 - 연동 행도 수정 가능 */}
+                  {/* 비고 - 연동 행도 수정 가능 (모바일 앱에서는 숨김) */}
+                  {!isMobileApp && (
                   <td style={{ padding: "0 8px" }}>
                     <Input
                       value={row.request}
@@ -2793,6 +2799,7 @@ export function LaborCostSection({
                       data-testid={`input-note-labor-${globalIndex}`}
                     />
                   </td>
+                  )}
                 </tr>
               );
             }),
@@ -2855,7 +2862,8 @@ export function LaborCostSection({
                 }, 0),
               ).toLocaleString()}
             </td>
-            <td colSpan={2}></td>
+            {/* 경비여부 1칸 + 비고 1칸 (모바일 앱은 비고 셀 숨김) */}
+            <td colSpan={isMobileApp ? 1 : 2}></td>
           </tr>
         </tfoot>
       </table>

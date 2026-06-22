@@ -43,6 +43,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { LaborCostSection, type LaborCatalogItem, type LaborCostRow } from "@/components/labor-cost-section";
 import { mergeDemolitionRows as mergeLaborRowsForTotal, getMergedRowAmount, isFixedLaborWorkName, isMergeableLaborRow } from "@/lib/labor-merge";
 import { MaterialCostSection, type MaterialCatalogItem, type MaterialRow } from "@/components/material-cost-section";
+import { useIsMobileApp } from "@/hooks/use-mobile-app";
 import {
   createAutoSaveScheduler,
   type AutoSaveSchedulerDeps,
@@ -283,6 +284,8 @@ const sortLaborRowsByCategory = (rows: LaborCostRow[]): LaborCostRow[] => {
 };
 
 export default function FieldEstimate() {
+  // 모바일 앱(WebView)에서만 비고 컬럼 숨김 — 데스크톱은 영향 없음
+  const isMobileApp = useIsMobileApp();
   // Hydration guard: 기존 견적 복원 완료 추적 (중복 행 방지)
   const isHydratedRef = useRef(false);
   const [isHydratedState, setIsHydratedState] = useState(false); // 컴포넌트 전달용 상태
@@ -7050,7 +7053,8 @@ export default function FieldEstimate() {
                 style={{
                   width: "100%",
                   borderCollapse: "collapse",
-                  minWidth: "1200px",
+                  // 모바일 앱(WebView)에서는 화면 폭에 맞춰 축소 — 데스크톱은 기존 유지
+                  minWidth: isMobileApp ? "0px" : "1200px",
                   borderRadius: "8px 8px 0px 0px",
                   overflow: "hidden",
                 }}
@@ -7301,6 +7305,7 @@ export default function FieldEstimate() {
                         </div>
                       </div>
                     </th>
+                    {!isMobileApp && (
                     <th 
                       style={{ 
                         width: "205px", 
@@ -7314,6 +7319,7 @@ export default function FieldEstimate() {
                     >
                       비고
                     </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -7722,6 +7728,7 @@ export default function FieldEstimate() {
                           data-testid={`input-repair-area-${globalIndex}`}
                         />
                       </td>
+                      {!isMobileApp && (
                       <td style={{ padding: "8px" }}>
                         <input
                           type="text"
@@ -7741,6 +7748,7 @@ export default function FieldEstimate() {
                           data-testid={`input-note-${globalIndex}`}
                         />
                           </td>
+                      )}
                         </tr>
                       );
                     })
@@ -8207,7 +8215,8 @@ export default function FieldEstimate() {
                     style={{
                       width: "100%",
                       borderCollapse: "collapse",
-                      minWidth: "1400px",
+                      // 모바일 앱(WebView)에서는 화면 폭에 맞춰 축소 — 데스크톱은 기존 유지
+                      minWidth: isMobileApp ? "0px" : "1400px",
                       tableLayout: "auto",
                     }}
                   >
@@ -8230,7 +8239,9 @@ export default function FieldEstimate() {
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>복구면적 가로(m)</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>복구면적 세로(m)</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>복구면적(㎡)</th>
+                        {!isMobileApp && (
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>비고</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
@@ -8416,6 +8427,7 @@ export default function FieldEstimate() {
                               }}
                             >{row.repairArea}</div>
                           </td>
+                          {!isMobileApp && (
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
@@ -8433,6 +8445,7 @@ export default function FieldEstimate() {
                               }}
                             />
                           </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>

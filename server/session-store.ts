@@ -58,6 +58,25 @@ export async function clearSessionById(sessionId: string): Promise<string | null
   return result.rows[0]?.id || null;
 }
 
+// 지정 세션(sid)에 저장된 로그인 기기 식별키(loginUaKey)를 읽는다.
+// 세션이 없거나 키가 없으면 null. (다음 로그인 시 동일 기기 여부 비교용)
+export async function getSessionUaKey(sessionPool: any, sid: string): Promise<string | null> {
+  try {
+    const result: any = await withTimeout(
+      sessionPool.query(`SELECT sess FROM session WHERE sid = $1`, [sid]),
+      SESSION_OP_TIMEOUT,
+      "getSessionUaKey",
+    );
+    const sess = result.rows[0]?.sess;
+    if (!sess) return null;
+    const parsed = typeof sess === "string" ? JSON.parse(sess) : sess;
+    return parsed?.loginUaKey ?? null;
+  } catch (err: any) {
+    console.error("[SESSION] getSessionUaKey failed:", sid, err?.message || err);
+    return null;
+  }
+}
+
 export async function destroyPgSession(sessionPool: any, sid: string): Promise<void> {
   try {
     await withTimeout(

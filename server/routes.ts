@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { storage, invalidateUsersCache } from "./storage";
-import { setCurrentSession, getCurrentSessionId, clearCurrentSession, destroyPgSession } from "./session-store";
+import { setCurrentSession, getCurrentSessionId, clearCurrentSession, destroyPgSession, getSessionUaKey } from "./session-store";
 import { getSessionPool } from "./session-pool";
 import { stripEncryptedColumns } from "./pii-service";
 import {
@@ -271,17 +271,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (err: any) {
           console.error("[LOGIN] getCurrentSessionId failed, proceeding without old session cleanup:", err.message);
         }
+        // 이번 로그인의 기기/OS 식별키. 다음 로그인 때 동일 기기 재로그인 여부 판별에 사용.
+        const { device, os } = parseUserAgent(req.headers["user-agent"] || "");
+        const currentUaKey = `${device}|${os}`;
+
         if (existingSessionId && existingSessionId !== req.sessionID) {
+          // 기존 세션이 파기되기 전에 그 세션의 기기 정보를 먼저 읽어둔다.
+          let prevUaKey: string | null = null;
+          try {
+            prevUaKey = await getSessionUaKey(getSessionPool(), existingSessionId);
+          } catch (err: any) {
+            console.error("[LOGIN] getSessionUaKey failed:", err?.message || err);
+          }
+
           await destroyPgSession(getSessionPool(), existingSessionId).catch((err: any) => {
             console.error("[LOGIN] destroyPgSession failed:", err.message);
           });
           console.log("[LOGIN] Destroyed existing PG session for userId:", user.id, "old sessionId:", existingSessionId);
 
-          // 다른 기기에서 새로 로그인하여 기존 세션이 종료되는 경우,
+          // 진짜 다른 기기에서 새로 로그인한 경우(기기종류/OS가 다른 경우)에만
           // 계정 소유자에게 이번 로그인의 기기/OS/IP 정보를 SMS로 안내한다.
+          // 같은 기기(기기종류/OS 동일)에서의 재로그인은 안내 문자를 보내지 않는다.
+          // (기존 세션의 기기 정보를 알 수 없으면 안전하게 발송)
+          const isDifferentDevice = !prevUaKey || prevUaKey !== currentUaKey;
           // (로그인 흐름을 막지 않도록 fire-and-forget; 실패해도 로그인은 정상 진행)
-          if (user.phone) {
-            const { device, os } = parseUserAgent(req.headers["user-agent"] || "");
+          if (user.phone && isDifferentDevice) {
             const ip = getClientIp(req);
             const noticeText =
               `<다른 기기 로그인 안내>\n\n` +
@@ -296,6 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
+        req.session.loginUaKey = currentUaKey;
         req.session.userId = user.id;
         req.session.userRole = user.role;
         req.session.isSuperAdmin = user.isSuperAdmin || false;

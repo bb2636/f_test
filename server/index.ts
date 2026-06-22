@@ -34,6 +34,9 @@ declare module "express-session" {
     userId: string;
     userRole: string;
     isSuperAdmin: boolean;
+    // 이번 로그인의 기기종류/OS 식별키(`${device}|${os}`). 다음 로그인 때 동일 기기
+    // 재로그인 여부를 판별해 '다른 기기 로그인 안내' 문자 오발송을 막는 용도.
+    loginUaKey?: string;
   }
 }
 
