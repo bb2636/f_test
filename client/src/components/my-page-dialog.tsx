@@ -810,7 +810,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
             )}
 
             {activeTab === "inquiries" && (
-              <div>
+              <div className={isMobileApp ? "pr-2" : undefined}>
                 {/* 제목 및 설명 */}
                 <h3 className={`${isMobileApp ? "text-base" : "text-xl"} font-semibold text-gray-900 mb-1`}>
                   {isAdmin ? "1:1 문의 관리" : "1:1 문의"}
