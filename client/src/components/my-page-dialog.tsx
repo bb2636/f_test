@@ -295,7 +295,7 @@ export function MyPageDialog({ open, onOpenChange, user }: MyPageDialogProps) {
     { id: "profile" as TabType, label: "내 프로필 설정" },
     { id: "notices" as TabType, label: "공지사항" },
     { id: "inquiries" as TabType, label: "1:1문의" },
-    ...(user.role !== "협력사" ? [{ id: "favorites" as TabType, label: "즐겨찾기 목록" }] : []),
+    ...(user.role !== "협력사" && !(isMobileApp && user.role === "심사자") ? [{ id: "favorites" as TabType, label: "즐겨찾기 목록" }] : []),
   ];
 
   const getInitials = (name: string) => {
