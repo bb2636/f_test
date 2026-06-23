@@ -41,6 +41,12 @@ function cloneStyleNode(node: Element): Node {
     (node as HTMLLinkElement).rel === "stylesheet"
   ) {
     (clone as HTMLLinkElement).href = (node as HTMLLinkElement).href;
+    // 배포본 CSS 링크엔 crossorigin 속성이 붙는다(<link rel=stylesheet crossorigin>).
+    // about:blank 분리창에서 이 링크는 CORS 모드로 요청되는데, 정적 에셋 응답에
+    // Access-Control-Allow-Origin 헤더가 없어 로드가 실패 → Tailwind가 통째로 빠져
+    // 폼이 세로로 무너진다(개발모드는 인라인 <style>이라 정상). 렌더링에는 CORS가
+    // 불필요하므로 crossorigin을 제거해 no-cors로 로드되게 한다.
+    (clone as HTMLLinkElement).removeAttribute("crossorigin");
   }
   return clone;
 }

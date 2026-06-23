@@ -80,6 +80,11 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
   - **Why:** 보고서 분리창은 라우트가 `/field-survey/report`가 아니어도(현장입력 등으로 이동해도) `isDetachedReportWindow()`가 `REPORT_DETACHED_KEY` sticky로 여전히 true. 즉 그 창 안 모든 페이지가 분리창 규칙(sessionStorage)을 따라야 하는데 페이지들이 인앱 가정(localStorage)으로 짜여 있었음.
   - **How to apply:** 케이스 소스를 컴포넌트마다 인라인하지 말고 `detached-window.ts`의 단일 헬퍼(`getFieldSurveyCaseId`/`setFieldSurveyCaseId`/`clearFieldSurveyCaseId`/`subscribeFieldSurveyCaseId`)로 통일. 헬퍼가 `isDetachedReportWindow()`로 분기(분리창=sessionStorage+CustomEvent, 인앱/solo=localStorage+storage). 구독 콜백은 **빈 문자열(클리어)도 전파**해야 stale 잔존 안 됨. 새 현장조사 페이지/팝업 추가 시 반드시 이 헬퍼 경유.
 
+## about:blank 분리창 CSS는 crossorigin 제거해야 배포본서 안 깨짐 (중요)
+- `window.open("")`로 연 about:blank 분리창(접수+/문자발송 DetachedWindow)은 메인 document의 stylesheet를 cloneStyleNode로 수동 복제하는데, **배포본에선 폼이 세로로 무너짐**(스타일 통째 미적용). 보고서 분리창은 실제 URL navigate라 index.html이 CSS를 자체 로드해 영향 없음.
+  - **Why:** Vite 배포본 index.html의 CSS 링크는 `<link rel="stylesheet" crossorigin href="/assets/index-*.css">`다. about:blank 팝업으로 복제하면 `crossorigin` 때문에 **CORS 모드 요청**이 되는데, 정적 에셋 응답에 `Access-Control-Allow-Origin` 헤더가 없어 로드 실패 → Tailwind 통째 누락. 메인 페이지는 same-origin 문서라 같은 링크가 통과, 개발모드는 인라인 `<style>`이라 정상 → "배포본 + 분리창"에서만 재현.
+  - **How to apply:** cloneStyleNode에서 stylesheet `<link>` 복제 시 절대 href 고정(about:blank baseURI 대응)에 더해 **`removeAttribute("crossorigin")`**. 렌더링엔 CORS 불필요하니 no-cors로 로드되어 적용됨. 초기 copyStyles와 MutationObserver(나중 추가 link) 양 경로가 같은 cloneStyleNode를 타므로 한 곳만 고치면 둘 다 커버.
+
 ## 분리창 body의 pointer-events 잠금도 해제해야 함 (메인 body만으론 부족)
 - lockGuard가 **메인 창 body**만 감시·해제하면, 분리창 안에서 Radix 모달류(Select 등)가 열릴 때 분리창 전체 클릭이 죽는 잔여 잠금을 못 잡는다(증상: 날짜 Popover·Select·추가 버튼이 안 눌리고, 이미 포커스된 입력 타이핑만 살아있음).
   - **Why:** Radix DismissableLayer는 layer의 **ownerDocument(=분리창 document)** 기준으로 분리창 body에 `pointer-events:none`을 건다. 한편 react-remove-scroll은 모듈 전역 document(=메인 창)를 잠그고 lockGuard가 그걸 강제 해제 → 잠금 refcount가 어긋나 분리창 body의 `pointer-events:none`이 close 시 복원되지 못하고 남는다.
