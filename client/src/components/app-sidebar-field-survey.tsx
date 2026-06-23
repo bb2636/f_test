@@ -111,6 +111,8 @@ export function AppSidebarFieldSurvey({
 
   const visibleReportItems = reportMenuItems.filter((item) => {
     if (isLoading) return false;
+    // 모바일 앱에서는 '현장출동보고서' 메뉴 숨김 (데스크톱 웹은 그대로 노출)
+    if (isMobileApp && item.url === "/field-survey/report") return false;
     if (isAdmin) return hasItem("현장조사", item.permissionItem);
     if (!hasCategory("현장조사")) return false;
     return hasItem("현장조사", item.permissionItem);
