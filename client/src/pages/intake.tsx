@@ -740,6 +740,10 @@ export default function Intake({
       formData.victimIncidentAssistance === true ||
       (formData.victimIncidentAssistance as unknown) === "true";
 
+    const hasAccidentNo = !!(
+      formData.insuranceAccidentNo && formData.insuranceAccidentNo.trim()
+    );
+
     let basePrefix = "";
     if (loadedCaseNumber && loadedCaseNumber !== "-") {
       if (loadedCaseNumber.includes("-")) {
@@ -747,7 +751,7 @@ export default function Intake({
       } else {
         basePrefix = loadedCaseNumber;
       }
-    } else if (predictedPrefix) {
+    } else if (predictedPrefix && hasAccidentNo) {
       basePrefix = predictedPrefix;
     }
 
@@ -773,6 +777,7 @@ export default function Intake({
     loadedCaseNumber,
     predictedPrefix,
     predictedSuffix,
+    formData.insuranceAccidentNo,
     formData.damagePreventionCost,
     formData.victimIncidentAssistance,
   ]);
@@ -797,25 +802,35 @@ export default function Intake({
   }, []);
 
   useEffect(() => {
+    const accidentNo = formData.insuranceAccidentNo?.trim();
+    if (!accidentNo) {
+      setPredictedPrefix("");
+      setPredictedSuffix(0);
+      return;
+    }
+    let cancelled = false;
     const fetchPredictedCaseNumber = async () => {
       try {
         const todayDate = getTodayDate();
         const params = new URLSearchParams({ date: todayDate });
-        if (formData.insuranceAccidentNo) {
-          params.append("insuranceAccidentNo", formData.insuranceAccidentNo);
-        }
+        params.append("insuranceAccidentNo", accidentNo);
         const response = await apiRequest(
           "GET",
           `/api/cases/next-sequence?${params.toString()}`,
         );
         const data = await response.json();
+        if (cancelled) return;
         setPredictedPrefix(data.prefix);
         setPredictedSuffix(data.suffix);
       } catch (error) {
+        if (cancelled) return;
         console.error("Failed to fetch predicted case number:", error);
       }
     };
     fetchPredictedCaseNumber();
+    return () => {
+      cancelled = true;
+    };
   }, [formData.insuranceAccidentNo]);
 
   useEffect(() => {
