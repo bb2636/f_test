@@ -59,7 +59,7 @@ export function FieldSurveyLayout({ children }: FieldSurveyLayoutProps) {
       >
         <div className="relative flex flex-col h-full">
           {!hideSidebar && <AppSidebarFieldSurvey hidePersonal={detached} />}
-          <main className="flex-1 flex flex-col overflow-y-auto min-h-0">
+          <main className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-h-0">
             <CaseReceiptTabs />
             {children}
           </main>

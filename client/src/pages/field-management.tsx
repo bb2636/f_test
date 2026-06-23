@@ -965,7 +965,7 @@ export default function FieldManagement() {
 
   return (
     <>
-      <div className="flex-1 py-6 pl-8">
+      <div className={`flex-1 py-6 ${isMobileApp ? "px-4" : "pl-8"}`}>
         <div className="text-[18px] font-bold" data-testid="page-title">현장입력</div>
 
         {casesLoading ? (
@@ -1265,7 +1265,7 @@ export default function FieldManagement() {
                         </div>
                       </div>
 
-                      <div className="flex flex-1 min-w-[300px] flex-col gap-1.5">
+                      <div className={`flex flex-1 ${isMobileApp ? "w-full min-w-0" : "min-w-[300px]"} flex-col gap-1.5`}>
                         <div className="text-[12px] text-[#6B7280] whitespace-pre-line">{`${causeBaseLabel}\n(기술소견 포함)`}</div>
                         <textarea
                           className="min-h-[70px] w-full rounded-md border border-[#E5E7EB] bg-white p-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
@@ -1457,10 +1457,10 @@ export default function FieldManagement() {
                       </div>
 
                       <div className="flex flex-1 flex-wrap gap-4">
-                        <div className="flex items-center gap-2">
+                        <div className={`${isMobileApp ? "w-full" : ""} flex items-center gap-2`}>
                           <div className="w-[60px] text-[12px] text-[#6B7280]">성명</div>
                           <input
-                            className="h-9 w-[220px] rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
+                            className={`h-9 ${isMobileApp ? "flex-1 min-w-0" : "w-[220px]"} rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]`}
                             placeholder="성명"
                             value={newVictimName}
                             onChange={(e) => { handleUserInput(); setNewVictimName(e.target.value); }}
@@ -1468,10 +1468,10 @@ export default function FieldManagement() {
                           />
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className={`${isMobileApp ? "w-full" : ""} flex items-center gap-2`}>
                           <div className="w-[60px] text-[12px] text-[#6B7280]">연락처</div>
                           <input
-                            className="h-9 w-[220px] rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]"
+                            className={`h-9 ${isMobileApp ? "flex-1 min-w-0" : "w-[220px]"} rounded-md border border-[#E5E7EB] px-3 text-[13px] outline-none placeholder:text-[#9CA3AF]`}
                             placeholder="연락처"
                             value={newVictimContact}
                             onChange={(e) => { handleUserInput(); setNewVictimContact(e.target.value); }}
@@ -1482,7 +1482,7 @@ export default function FieldManagement() {
                     </div>
 
                     <div className="col-span-12 grid grid-cols-12 gap-4">
-                      <div className="col-span-7 flex items-center gap-2">
+                      <div className={`${isMobileApp ? "col-span-12" : "col-span-7"} flex items-center gap-2`}>
                         <div className="w-[60px] text-[12px] text-[#6B7280]">피해 주소</div>
                         <div className="relative flex-1">
                           <input
@@ -1497,7 +1497,7 @@ export default function FieldManagement() {
                         </div>
                       </div>
 
-                      <div className="col-span-5 flex items-center gap-2">
+                      <div className={`${isMobileApp ? "col-span-12" : "col-span-5"} flex items-center gap-2`}>
                         <div className="w-[60px] text-[12px] text-[#6B7280]">상세주소</div>
                         <div className="relative flex-1">
                           <input
