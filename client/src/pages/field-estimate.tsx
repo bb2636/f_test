@@ -7055,6 +7055,8 @@ export default function FieldEstimate() {
                   borderCollapse: "collapse",
                   // 모바일 앱(WebView)에서는 화면 폭에 맞춰 축소 — 데스크톱은 기존 유지
                   minWidth: isMobileApp ? "0px" : "1200px",
+                  // 모바일 앱: 표/글자 전체를 비례 축소해 작게 표시 (데스크톱 무영향)
+                  zoom: isMobileApp ? "0.7" : undefined,
                   borderRadius: "8px 8px 0px 0px",
                   overflow: "hidden",
                 }}
@@ -8217,6 +8219,8 @@ export default function FieldEstimate() {
                       borderCollapse: "collapse",
                       // 모바일 앱(WebView)에서는 화면 폭에 맞춰 축소 — 데스크톱은 기존 유지
                       minWidth: isMobileApp ? "0px" : "1400px",
+                      // 모바일 앱: 표/글자 전체를 비례 축소해 작게 표시 (데스크톱 무영향)
+                      zoom: isMobileApp ? "0.7" : undefined,
                       tableLayout: "auto",
                     }}
                   >
