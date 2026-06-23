@@ -2143,72 +2143,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // 새 케이스 생성 (임시저장 없이 바로 접수완료)
-        const { prefix, suffix } = await storage.getNextCaseSequence(
-          fullDate,
-          validatedData.insuranceAccidentNo || undefined,
-        );
+        // 접수번호는 날짜+순번 구조라, 순번을 "읽고→저장"하는 사이의 경합으로
+        // 서로 다른 접수가 같은 순번(-0 등)을 만들려다 충돌(23505)할 수 있다(사고번호 무관).
+        // 충돌 시 다음 순번으로 자동 재배정 후 재시도한다(최대 MAX_SEQ_RETRY회).
+        // 이번 시도에서 부분 생성된 건은 정리하여 고아 데이터를 방지한다.
+        const MAX_SEQ_RETRY = 5;
+        let createdSuccessfully = false;
+        for (let seqAttempt = 0; seqAttempt < MAX_SEQ_RETRY; seqAttempt++) {
+          const { prefix, suffix } = await storage.getNextCaseSequence(
+            fullDate,
+            validatedData.insuranceAccidentNo || undefined,
+          );
 
-        if (hasDamagePrevention && !hasVictimRecovery) {
-          // 가드: 같은 사고건(prefix)에 손해방지(-0)가 이미 있으면 중복 생성 불가
-          // (문서/PDF는 suffix===0을 손해방지로 판별하므로 -0은 사고건당 1개만 허용)
-          const existingPrevention =
-            await storage.getPreventionCaseByPrefix(prefix);
-          if (existingPrevention) {
-            return res.status(409).json({
-              error: `이 사고건의 손해방지 접수가 이미 등록되어 있습니다. (접수번호: ${existingPrevention.caseNumber})`,
-            });
+          try {
+            if (hasDamagePrevention && !hasVictimRecovery) {
+              // 가드: 같은 사고건(prefix)에 손해방지(-0)가 이미 있으면 중복 생성 불가
+              // (문서/PDF는 suffix===0을 손해방지로 판별하므로 -0은 사고건당 1개만 허용)
+              const existingPrevention =
+                await storage.getPreventionCaseByPrefix(prefix);
+              if (existingPrevention) {
+                return res.status(409).json({
+                  error: `이 사고건의 손해방지 접수가 이미 등록되어 있습니다. (접수번호: ${existingPrevention.caseNumber})`,
+                });
+              }
+              const caseNumber = `${prefix}-0`;
+              const newCase = await storage.createCase({
+                ...validatedData,
+                caseNumber,
+                caseGroupId,
+                createdBy: req.session.userId,
+              });
+              completedCases.push(newCase);
+            } else if (!hasDamagePrevention && hasVictimRecovery) {
+              const caseNumber = `${prefix}-${suffix === 0 ? 1 : suffix}`;
+              const newCase = await storage.createCase({
+                ...validatedData,
+                caseNumber,
+                caseGroupId,
+                createdBy: req.session.userId,
+              });
+              completedCases.push(newCase);
+            } else if (hasDamagePrevention && hasVictimRecovery) {
+              const existingPrevention =
+                await storage.getPreventionCaseByPrefix(prefix);
+
+              if (!existingPrevention) {
+                const preventionData = JSON.parse(
+                  JSON.stringify(validatedData),
+                );
+                const preventionCase = await storage.createCase({
+                  ...preventionData,
+                  caseNumber: `${prefix}-0`,
+                  caseGroupId,
+                  createdBy: req.session.userId,
+                });
+                completedCases.push(preventionCase);
+              }
+
+              const nextSuffix = await storage.getNextVictimSuffix(prefix);
+              const recoveryData = JSON.parse(JSON.stringify(validatedData));
+              setVictimAddressForRecoveryCase(recoveryData);
+              const recoveryCase = await storage.createCase({
+                ...recoveryData,
+                caseNumber: `${prefix}-${nextSuffix}`,
+                caseGroupId,
+                createdBy: req.session.userId,
+              });
+              completedCases.push(recoveryCase);
+            } else {
+              const caseNumber = `${prefix}-${suffix === 0 ? 1 : suffix}`;
+              const newCase = await storage.createCase({
+                ...validatedData,
+                caseNumber,
+                caseGroupId,
+                createdBy: req.session.userId,
+              });
+              completedCases.push(newCase);
+            }
+
+            createdSuccessfully = true;
+            break;
+          } catch (seqErr: any) {
+            const isCaseNumberConflict =
+              seqErr?.code === "23505" &&
+              (String(seqErr?.constraint || "").includes("case_number") ||
+                String(seqErr?.detail || "").includes("case_number"));
+
+            // 이번 시도에서 부분 생성된 건 정리(고아 방지)
+            if (completedCases.length > 0) {
+              for (const partial of completedCases) {
+                try {
+                  await storage.deleteCase(partial.id);
+                } catch (cleanupErr) {
+                  console.error(
+                    `[Case Create] Failed to clean up partial case ${partial.caseNumber}:`,
+                    cleanupErr,
+                  );
+                }
+              }
+              completedCases.length = 0;
+            }
+
+            if (isCaseNumberConflict && seqAttempt < MAX_SEQ_RETRY - 1) {
+              console.warn(
+                `[Case Create] 접수번호 순번 충돌 → 다음 순번으로 재시도 (시도 ${seqAttempt + 1}/${MAX_SEQ_RETRY})`,
+              );
+              continue;
+            }
+            throw seqErr;
           }
-          const caseNumber = `${prefix}-0`;
-          const newCase = await storage.createCase({
-            ...validatedData,
-            caseNumber,
-            caseGroupId,
-            createdBy: req.session.userId,
-          });
-          completedCases.push(newCase);
-        } else if (!hasDamagePrevention && hasVictimRecovery) {
-          const caseNumber = `${prefix}-${suffix === 0 ? 1 : suffix}`;
-          const newCase = await storage.createCase({
-            ...validatedData,
-            caseNumber,
-            caseGroupId,
-            createdBy: req.session.userId,
-          });
-          completedCases.push(newCase);
-        } else if (hasDamagePrevention && hasVictimRecovery) {
-          const existingPrevention =
-            await storage.getPreventionCaseByPrefix(prefix);
+        }
 
-          if (!existingPrevention) {
-            const preventionData = JSON.parse(JSON.stringify(validatedData));
-            const preventionCase = await storage.createCase({
-              ...preventionData,
-              caseNumber: `${prefix}-0`,
-              caseGroupId,
-              createdBy: req.session.userId,
-            });
-            completedCases.push(preventionCase);
-          }
-
-          const nextSuffix = await storage.getNextVictimSuffix(prefix);
-          const recoveryData = JSON.parse(JSON.stringify(validatedData));
-          setVictimAddressForRecoveryCase(recoveryData);
-          const recoveryCase = await storage.createCase({
-            ...recoveryData,
-            caseNumber: `${prefix}-${nextSuffix}`,
-            caseGroupId,
-            createdBy: req.session.userId,
-          });
-          completedCases.push(recoveryCase);
-        } else {
-          const caseNumber = `${prefix}-${suffix === 0 ? 1 : suffix}`;
-          const newCase = await storage.createCase({
-            ...validatedData,
-            caseNumber,
-            caseGroupId,
-            createdBy: req.session.userId,
-          });
-          completedCases.push(newCase);
+        if (!createdSuccessfully) {
+          return res
+            .status(409)
+            .json({ error: "접수번호가 중복되었습니다. 다시 시도해 주세요." });
         }
 
         // 동기화
