@@ -394,7 +394,9 @@ export function MaterialCostSection({
           width: "100%",
           borderCollapse: "separate",
           borderSpacing: 0,
-          minWidth: "900px",
+          minWidth: isMobileApp ? "0px" : "900px",
+          // 모바일 앱: 표/글자 전체를 비례 축소해 작게 표시 (데스크톱 무영향)
+          zoom: isMobileApp ? "0.7" : undefined,
         }}
       >
         <thead>

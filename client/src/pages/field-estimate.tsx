@@ -6957,7 +6957,11 @@ export default function FieldEstimate() {
         {selectedCategory === "복구면적 산출표" && (
           <div>
             {/* 복구면적 산출표 헤더 */}
-            <div className="flex items-start justify-between mb-4">
+            {/* 모바일 앱: 제목/장소 버튼 등 헤더 전체를 비례 축소 (데스크톱 무영향) */}
+            <div
+              className="flex items-start justify-between mb-4"
+              style={{ zoom: isMobileApp ? "0.8" : undefined }}
+            >
               <h2
                 style={{
                   fontFamily: "Pretendard",

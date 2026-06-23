@@ -1833,7 +1833,9 @@ export function LaborCostSection({
           borderCollapse: "collapse",
           borderSpacing: 0,
           /* [정책 2026-05-12] 견적서 탭(isReadOnly) — 9개 컬럼을 균등 분배(tableLayout fixed + 컬럼별 11.11% 폭) */
-          minWidth: isReadOnly ? "1000px" : "1200px",
+          minWidth: isMobileApp ? "0px" : (isReadOnly ? "1000px" : "1200px"),
+          // 모바일 앱: 표/글자 전체를 비례 축소해 작게 표시 (데스크톱 무영향)
+          zoom: isMobileApp ? "0.7" : undefined,
           tableLayout: isReadOnly ? "fixed" : "auto",
         }}
       >
