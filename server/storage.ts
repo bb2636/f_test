@@ -4539,11 +4539,45 @@ export class DbStorage implements IStorage {
       updatedAt: getKSTTimestamp(),
     };
 
-    newCase = encryptCaseFields(newCase);
+    // case_number UNIQUE 충돌 방어:
+    // 피해세대(suffix >= 1)가 충돌하면 그룹 내 다음 빈 피해세대 번호로 자동 재배정 후 재시도.
+    // 손해방지(-0)는 그룹당 1건만 존재하는 케이스 종류이고, 번호 suffix가 케이스 종류
+    // (-0=손해방지, -N=피해세대)의 단일 기준으로 PDF/청구/라우트 전반에서 사용되므로,
+    // -0 충돌을 -N으로 바꾸면 종류가 조용히 오분류된다. 따라서 -0 충돌은 재배정하지 않고
+    // 상위 로직(getPreventionCaseByPrefix 기반 처리)에서 다루도록 그대로 throw 한다.
+    const maxAttempts = 10;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const toInsert = encryptCaseFields({ ...newCase });
+        const result = await db
+          .insert(cases)
+          .values(toInsert as any)
+          .returning();
+        invalidateCasesCache();
+        return decryptCaseFields(result[0]) as Case;
+      } catch (err: any) {
+        const isCaseNumberConflict =
+          err?.code === "23505" &&
+          (String(err?.constraint || "").includes("case_number") ||
+            String(err?.detail || "").includes("case_number"));
+        const conflictedNumber = String(newCase.caseNumber || "");
+        const conflictedSuffix = conflictedNumber.includes("-")
+          ? parseInt(conflictedNumber.split("-")[1], 10)
+          : NaN;
+        const isVictimConflict =
+          !isNaN(conflictedSuffix) && conflictedSuffix >= 1;
 
-    const result = await db.insert(cases).values(newCase as any).returning();
-    invalidateCasesCache();
-    return decryptCaseFields(result[0]) as Case;
+        if (!isCaseNumberConflict || !isVictimConflict || attempt >= maxAttempts) {
+          throw err;
+        }
+        const prefix = conflictedNumber.split("-")[0];
+        const nextSuffix = await this.getNextVictimSuffix(prefix);
+        newCase.caseNumber = `${prefix}-${nextSuffix}`;
+        console.warn(
+          `[createCase] 피해세대 case_number 충돌(${conflictedNumber}) → ${newCase.caseNumber}(으)로 재배정 (시도 ${attempt + 1})`,
+        );
+      }
+    }
   }
 
   async getAllCases(user?: User): Promise<CaseWithLatestProgress[]> {
