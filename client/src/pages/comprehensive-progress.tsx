@@ -901,6 +901,8 @@ export default function ComprehensiveProgress() {
 
   // 특이사항 히스토리 입력 상태
   const [newNoteContent, setNewNoteContent] = useState("");
+  // 모바일 협력사 전용 진행메모 팝업(상세보기 전체가 아닌 메모만)
+  const [memoDialogCaseId, setMemoDialogCaseId] = useState<string | null>(null);
 
   // 특이사항 히스토리 추가 mutation
   const addNotesHistoryMutation = useMutation({
@@ -2902,8 +2904,8 @@ export default function ComprehensiveProgress() {
                         isMobileApp && user?.role === "협력사"
                           ? (e) => {
                               e.stopPropagation();
-                              setDetailTab("진행메모");
-                              setSelectedCaseId(caseItem.id);
+                              setNewNoteContent("");
+                              setMemoDialogCaseId(caseItem.id);
                             }
                           : undefined
                       }
@@ -5385,6 +5387,406 @@ export default function ComprehensiveProgress() {
             })()}
         </SheetContent>
       </Sheet>
+      {/* 모바일 협력사 진행메모 팝업 (상세보기 전체가 아닌 메모만) */}
+      <Dialog
+        open={memoDialogCaseId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMemoDialogCaseId(null);
+            setNewNoteContent("");
+          }
+        }}
+      >
+        <DialogContent
+          className="grid-cols-[minmax(0,1fr)] w-[calc(100vw-32px)] max-w-[480px] max-h-[85vh] overflow-y-auto"
+          style={{
+            background: "rgba(253, 253, 253, 0.97)",
+            backdropFilter: "blur(17px)",
+            border: "none",
+            borderRadius: "20px",
+            padding: "24px 20px",
+          }}
+          data-testid="dialog-progress-memo"
+        >
+          <DialogHeader>
+            <DialogTitle
+              style={{
+                fontFamily: "Pretendard",
+                fontWeight: 600,
+                fontSize: "18px",
+                color: "#0C0C0C",
+                textAlign: "left",
+              }}
+            >
+              진행메모
+            </DialogTitle>
+          </DialogHeader>
+          {(() => {
+            const memoCase = cases?.find((c) => c.id === memoDialogCaseId);
+            if (!memoCase) return null;
+            const partnerHistory = safeParseNotesHistory(
+              memoCase.partnerNotesHistory as string,
+            );
+            const adminHistory = safeParseNotesHistory(
+              memoCase.adminNotesHistory as string,
+            );
+            const legacyNote = memoCase.specialNotes;
+            return (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "20px",
+                  minWidth: 0,
+                }}
+              >
+                {/* 협력사 진행메모 */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
+                    minWidth: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "10px",
+                        height: "10px",
+                        borderRadius: "50%",
+                        boxSizing: "border-box" as const,
+                        ...(memoCase.partnerNotesAckedByAdmin === "true"
+                          ? { border: "2.5px solid #ED1C00", background: "transparent" }
+                          : { background: "#ED1C00" }),
+                      }}
+                    />
+                    <div
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontWeight: 600,
+                        fontSize: "15px",
+                        color: "rgba(12, 12, 12, 0.9)",
+                      }}
+                    >
+                      협력사 진행메모
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                      padding: "14px",
+                      background: "rgba(237, 28, 0, 0.04)",
+                      border: "1px solid rgba(237, 28, 0, 0.1)",
+                      borderRadius: "8px",
+                      minHeight: "60px",
+                      minWidth: 0,
+                    }}
+                  >
+                    {partnerHistory.length === 0 && !legacyNote ? (
+                      <div
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "14px",
+                          color: "rgba(12, 12, 12, 0.5)",
+                        }}
+                      >
+                        협력사가 입력한 진행메모가 없습니다.
+                      </div>
+                    ) : (
+                      <>
+                        {legacyNote && (
+                          <div
+                            style={{
+                              fontFamily: "Pretendard",
+                              fontSize: "14px",
+                              lineHeight: "1.6",
+                              color: "rgba(12, 12, 12, 0.9)",
+                              whiteSpace: "pre-wrap",
+                              overflowWrap: "anywhere",
+                              wordBreak: "break-word",
+                              paddingBottom: partnerHistory.length > 0 ? "8px" : 0,
+                              borderBottom:
+                                partnerHistory.length > 0
+                                  ? "1px solid rgba(12, 12, 12, 0.1)"
+                                  : "none",
+                            }}
+                          >
+                            {legacyNote}
+                          </div>
+                        )}
+                        {partnerHistory.map(
+                          (
+                            note: {
+                              content: string;
+                              createdAt: string;
+                              createdByName?: string;
+                            },
+                            idx: number,
+                          ) => (
+                            <div
+                              key={idx}
+                              style={{
+                                fontFamily: "Pretendard",
+                                fontSize: "14px",
+                                lineHeight: "1.6",
+                                color: "rgba(12, 12, 12, 0.9)",
+                                whiteSpace: "pre-wrap",
+                                overflowWrap: "anywhere",
+                                wordBreak: "break-word",
+                                paddingTop: idx > 0 || legacyNote ? "8px" : 0,
+                                borderTop:
+                                  idx > 0
+                                    ? "1px solid rgba(12, 12, 12, 0.1)"
+                                    : "none",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  color: "rgba(12, 12, 12, 0.5)",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                [
+                                {new Date(note.createdAt).toLocaleDateString(
+                                  "ko-KR",
+                                )}
+                                ]
+                              </span>{" "}
+                              {note.content}
+                            </div>
+                          ),
+                        )}
+                      </>
+                    )}
+                  </div>
+                  {/* 협력사 입력 */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                      minWidth: 0,
+                    }}
+                  >
+                    <IMETextarea
+                      value={newNoteContent}
+                      onChange={(e) => setNewNoteContent(e.target.value)}
+                      placeholder="추가 진행메모를 입력하세요"
+                      maxLength={1000}
+                      style={{
+                        width: "100%",
+                        minWidth: 0,
+                        boxSizing: "border-box" as const,
+                        minHeight: "70px",
+                        padding: "12px",
+                        background: "rgba(12, 12, 12, 0.02)",
+                        border: "1px solid rgba(12, 12, 12, 0.15)",
+                        borderRadius: "8px",
+                        fontFamily: "Pretendard",
+                        fontSize: "14px",
+                        lineHeight: "1.5",
+                        color: "rgba(12, 12, 12, 0.9)",
+                        resize: "vertical",
+                      }}
+                      data-testid="textarea-memo-dialog-partner"
+                    />
+                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                      <button
+                        onClick={() => {
+                          if (memoCase.id && newNoteContent.trim()) {
+                            addNotesHistoryMutation.mutate({
+                              caseId: memoCase.id,
+                              content: newNoteContent,
+                            });
+                          }
+                        }}
+                        disabled={
+                          addNotesHistoryMutation.isPending ||
+                          !newNoteContent.trim()
+                        }
+                        style={{
+                          padding: "10px 24px",
+                          background: "#ED1C00",
+                          border: "none",
+                          borderRadius: "8px",
+                          fontFamily: "Pretendard",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                          color: "#FFFFFF",
+                          cursor:
+                            addNotesHistoryMutation.isPending ||
+                            !newNoteContent.trim()
+                              ? "not-allowed"
+                              : "pointer",
+                          opacity:
+                            addNotesHistoryMutation.isPending ||
+                            !newNoteContent.trim()
+                              ? 0.6
+                              : 1,
+                          whiteSpace: "nowrap",
+                        }}
+                        data-testid="button-memo-dialog-save"
+                      >
+                        {addNotesHistoryMutation.isPending ? "저장 중..." : "저장"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 관리자 진행메모 */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
+                    minWidth: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "10px",
+                        height: "10px",
+                        borderRadius: "50%",
+                        boxSizing: "border-box" as const,
+                        ...(memoCase.adminNotesAckedByPartner === "true"
+                          ? { border: "2.5px solid #008FED", background: "transparent" }
+                          : { background: "#008FED" }),
+                      }}
+                    />
+                    <div
+                      style={{
+                        fontFamily: "Pretendard",
+                        fontWeight: 600,
+                        fontSize: "15px",
+                        color: "rgba(12, 12, 12, 0.9)",
+                      }}
+                    >
+                      관리자 진행메모
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                      padding: "14px",
+                      background: "rgba(0, 143, 237, 0.04)",
+                      border: "1px solid rgba(0, 143, 237, 0.1)",
+                      borderRadius: "8px",
+                      minHeight: "60px",
+                      minWidth: 0,
+                    }}
+                  >
+                    {adminHistory.length === 0 ? (
+                      <div
+                        style={{
+                          fontFamily: "Pretendard",
+                          fontSize: "14px",
+                          color: "rgba(12, 12, 12, 0.5)",
+                        }}
+                      >
+                        관리자가 입력한 진행메모가 없습니다.
+                      </div>
+                    ) : (
+                      adminHistory.map(
+                        (
+                          note: {
+                            content: string;
+                            createdAt: string;
+                            createdByName?: string;
+                          },
+                          idx: number,
+                        ) => (
+                          <div
+                            key={idx}
+                            style={{
+                              fontFamily: "Pretendard",
+                              fontSize: "14px",
+                              lineHeight: "1.6",
+                              color: "rgba(12, 12, 12, 0.9)",
+                              whiteSpace: "pre-wrap",
+                              overflowWrap: "anywhere",
+                              wordBreak: "break-word",
+                              paddingTop: idx > 0 ? "8px" : 0,
+                              borderTop:
+                                idx > 0
+                                  ? "1px solid rgba(12, 12, 12, 0.1)"
+                                  : "none",
+                            }}
+                          >
+                            <span
+                              style={{
+                                color: "rgba(12, 12, 12, 0.5)",
+                                fontSize: "12px",
+                              }}
+                            >
+                              [
+                              {new Date(note.createdAt).toLocaleDateString(
+                                "ko-KR",
+                              )}
+                              ]
+                            </span>{" "}
+                            {note.content}
+                          </div>
+                        ),
+                      )
+                    )}
+                  </div>
+                  {/* 협력사가 관리자 메모 확인 */}
+                  {adminHistory.length > 0 &&
+                    memoCase.adminNotesAckedByPartner !== "true" && (
+                      <div
+                        style={{ display: "flex", justifyContent: "flex-end" }}
+                      >
+                        <button
+                          onClick={() => {
+                            if (memoCase.id) {
+                              ackNotesMutation.mutate(memoCase.id);
+                            }
+                          }}
+                          disabled={ackNotesMutation.isPending}
+                          style={{
+                            padding: "8px 16px",
+                            background: "transparent",
+                            border: "1px solid var(--color-button-primary)",
+                            borderRadius: "8px",
+                            fontFamily: "Pretendard",
+                            fontWeight: 600,
+                            fontSize: "13px",
+                            color: "var(--color-button-primary)",
+                            cursor: ackNotesMutation.isPending
+                              ? "not-allowed"
+                              : "pointer",
+                            opacity: ackNotesMutation.isPending ? 0.6 : 1,
+                          }}
+                          data-testid="button-memo-dialog-ack"
+                        >
+                          {ackNotesMutation.isPending ? "처리 중..." : "확인"}
+                        </button>
+                      </div>
+                    )}
+                </div>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
       {/* LMS 발송 확인 다이얼로그 */}
       <AlertDialog
         open={showLmsConfirmDialog}
