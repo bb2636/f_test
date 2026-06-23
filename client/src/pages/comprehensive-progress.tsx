@@ -2898,12 +2898,24 @@ export default function ComprehensiveProgress() {
                     </div>
                     {(!isMobileApp || user?.role === "협력사") && (
                     <div
+                      onClick={
+                        isMobileApp && user?.role === "협력사"
+                          ? (e) => {
+                              e.stopPropagation();
+                              setDetailTab("진행메모");
+                              setSelectedCaseId(caseItem.id);
+                            }
+                          : undefined
+                      }
                       style={{
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
                         gap: "4px",
-    
+                        cursor:
+                          isMobileApp && user?.role === "협력사"
+                            ? "pointer"
+                            : undefined,
                         paddingRight: "8px",
                         paddingLeft: "8px",
                         paddingTop: "2px",
@@ -2948,6 +2960,21 @@ export default function ComprehensiveProgress() {
                             data-testid={`admin-notes-indicator-${caseItem.id}`}
                           />
                         )}
+                      {/* 모바일 협력사: "메모" 텍스트 → 진행메모 팝업(상세 시트 진행메모 탭) */}
+                      {isMobileApp && user?.role === "협력사" && (
+                        <span
+                          style={{
+                            fontFamily: "Pretendard",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "var(--color-button-primary)",
+                            textDecoration: "underline",
+                          }}
+                          data-testid={`button-progress-memo-${caseItem.id}`}
+                        >
+                          메모
+                        </span>
+                      )}
                     </div>
                     )}
                     {user?.role === "협력사" && (
