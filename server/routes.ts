@@ -1683,6 +1683,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         if (hasDamagePrevention && !hasVictimRecovery) {
           // Only damage prevention: create single draft with -0 suffix
+          // 가드: 같은 사고건(prefix)에 손해방지(-0)가 이미 있으면 중복 생성 불가
+          // (문서/PDF는 suffix===0을 손해방지로 판별하므로 -0은 사고건당 1개만 허용)
+          const existingPrevention =
+            await storage.getPreventionCaseByPrefix(prefix);
+          if (existingPrevention) {
+            return res.status(409).json({
+              error: `이 사고건의 손해방지 접수가 이미 등록되어 있습니다. (접수번호: ${existingPrevention.caseNumber})`,
+            });
+          }
           const draftCase = await storage.createCase({
             ...validatedData,
             caseNumber: `${prefix}-0`,
@@ -2140,6 +2149,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
 
         if (hasDamagePrevention && !hasVictimRecovery) {
+          // 가드: 같은 사고건(prefix)에 손해방지(-0)가 이미 있으면 중복 생성 불가
+          // (문서/PDF는 suffix===0을 손해방지로 판별하므로 -0은 사고건당 1개만 허용)
+          const existingPrevention =
+            await storage.getPreventionCaseByPrefix(prefix);
+          if (existingPrevention) {
+            return res.status(409).json({
+              error: `이 사고건의 손해방지 접수가 이미 등록되어 있습니다. (접수번호: ${existingPrevention.caseNumber})`,
+            });
+          }
           const caseNumber = `${prefix}-0`;
           const newCase = await storage.createCase({
             ...validatedData,
