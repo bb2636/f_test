@@ -51,10 +51,29 @@ function cloneStyleNode(node: Element): Node {
   return clone;
 }
 
-function copyStyles(src: Document, dest: Document) {
-  src
-    .querySelectorAll('style, link[rel="stylesheet"]')
-    .forEach((node) => dest.head.appendChild(cloneStyleNode(node)));
+// 스타일 노드를 분리창으로 복사한다. 복제한 <link> 스타일시트는 비동기로 로드되므로
+// (배포본 CSS는 외부 <link>), 모든 <link> 로드가 끝나면 resolve 되는 Promise를 반환해
+// 호출부가 "스타일 적용 후"에 내용을 보여줄 수 있게 한다(무스타일 FOUC 방지).
+// 개발모드는 인라인 <style>뿐이라 대기할 link가 없어 즉시 resolve 된다.
+function copyStyles(src: Document, dest: Document): Promise<void> {
+  const pending: Promise<void>[] = [];
+  src.querySelectorAll('style, link[rel="stylesheet"]').forEach((node) => {
+    const clone = cloneStyleNode(node);
+    if (
+      clone.nodeName === "LINK" &&
+      (clone as HTMLLinkElement).rel === "stylesheet"
+    ) {
+      pending.push(
+        new Promise<void>((resolve) => {
+          clone.addEventListener("load", () => resolve(), { once: true });
+          // 로드 실패해도 영영 기다리지 않도록 error도 resolve 처리.
+          clone.addEventListener("error", () => resolve(), { once: true });
+        }),
+      );
+    }
+    dest.head.appendChild(clone);
+  });
+  return Promise.all(pending).then(() => undefined);
 }
 
 interface DetachedWindowProps {
@@ -106,7 +125,7 @@ export function DetachedWindow({
     win.document.documentElement.className = document.documentElement.className;
     win.document.body.className = document.body.className;
     win.document.body.style.margin = "0";
-    copyStyles(document, win.document);
+    const stylesLoaded = copyStyles(document, win.document);
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((m) =>
@@ -125,8 +144,21 @@ export function DetachedWindow({
 
     const container = win.document.createElement("div");
     container.id = "detached-root";
+    // 배포본 CSS(<link>)는 비동기 로드라, 로드 전 무스타일 폼이 잠깐 보이는 것을 막기 위해
+    // 스타일이 준비될 때까지 숨겨 둔다(아래 revealContent에서 표시).
+    container.style.visibility = "hidden";
     win.document.body.appendChild(container);
     containerRef.current = container;
+
+    let revealed = false;
+    const revealContent = () => {
+      if (revealed) return;
+      revealed = true;
+      if (containerRef.current) containerRef.current.style.visibility = "";
+    };
+    // 스타일시트 로드가 끝나면 표시. 지연/실패해도 3초 후엔 무조건 표시해 빈 창 방지.
+    void stylesLoaded.then(revealContent);
+    const revealFallback = window.setTimeout(revealContent, 3000);
 
     // 이 분리창을 토스트 활성 surface로 등록 → 분리창이 열려 있는 동안 토스트는
     // 메인 창이 아닌 이 분리창에서 표시된다.
@@ -198,6 +230,7 @@ export function DetachedWindow({
         surfaceIdRef.current = null;
       }
       window.clearInterval(poll);
+      window.clearTimeout(revealFallback);
       observer.disconnect();
       lockGuard.disconnect();
       winLockGuard.disconnect();

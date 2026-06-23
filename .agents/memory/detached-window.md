@@ -89,3 +89,8 @@ description: 팝업을 window.open 별도 브라우저 창으로 띄울 때의 �
 - lockGuard가 **메인 창 body**만 감시·해제하면, 분리창 안에서 Radix 모달류(Select 등)가 열릴 때 분리창 전체 클릭이 죽는 잔여 잠금을 못 잡는다(증상: 날짜 Popover·Select·추가 버튼이 안 눌리고, 이미 포커스된 입력 타이핑만 살아있음).
   - **Why:** Radix DismissableLayer는 layer의 **ownerDocument(=분리창 document)** 기준으로 분리창 body에 `pointer-events:none`을 건다. 한편 react-remove-scroll은 모듈 전역 document(=메인 창)를 잠그고 lockGuard가 그걸 강제 해제 → 잠금 refcount가 어긋나 분리창 body의 `pointer-events:none`이 close 시 복원되지 못하고 남는다.
   - **How to apply:** DetachedWindow 첫 useEffect에서 메인 body용 lockGuard와 **별도로** 분리창 `win.document.body`도 MutationObserver(winLockGuard)+unlockWinBody로 감시해 `pointer-events:none`/`data-scroll-locked`를 즉시 해제. 드롭다운 content는 자체 `pointer-events:auto`라 그대로 클릭 가능(사실상 비모달, 폼 팝업엔 적절). cleanup에서 winLockGuard.disconnect(). 진짜 모달이 필요하면 그때 창/타입 플래그로 범위를 좁힐 것.
+
+## about:blank 분리창은 CSS <link> 로드 완료까지 내용을 숨겨라 (FOUC)
+- crossorigin 제거로 CSS가 "로드는 되는데", 배포본에선 외부 `<link>`라 **비동기 로드**다. cloneStyleNode로 복제 직후 React 내용을 바로 렌더하면 CSS 도착 전 무스타일 폼이 먼저 그려져 "디자인 미적용"으로 보인다(개발모드는 인라인 `<style>`이라 동기 → 항상 정상이라 재현 안 됨 = "가끔"으로 신고됨).
+  - **Why:** 접수+/접수건 상세보기/문자발송은 DetachedWindow(about:blank). 보고서 팝업은 실제 URL navigate라 index.html이 CSS를 먼저 로드해 FOUC 없음 → DetachedWindow 계열만 증상.
+  - **How to apply:** copyStyles가 복제 `<link>`들의 `load`/`error`를 기다리는 Promise를 반환. 포털 컨테이너를 `visibility:hidden`으로 만든 뒤 로드 완료(또는 3초 안전 타임아웃)에 표시(revealContent). load/error 리스너는 appendChild **전에** 부착(캐시 즉시로드 누락 방지). cleanup에서 clearTimeout. `<link>` 인라인화는 금지(url() 폰트/이미지가 about:blank 기준으로 깨짐) — 링크 복제 유지가 정답.
