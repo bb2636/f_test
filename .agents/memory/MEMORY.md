@@ -14,7 +14,7 @@
 - [멀티아티팩트 상태 불일치 + 격리형 Expo 해법](multi-artifact-state-mismatch.md) — 레거시 npm앱인데 플랫폼은 pnpm_workspace로 오분류→createArtifact는 pnpm install로 운영앱 깨질 위험; 대신 서브폴더 standalone Expo(자체 deps + tunnel 워크플로)로 완전 격리
 - [모바일앱(WebView) 반응형 게이팅](mobile-webview-responsive.md) — useIsMobileApp 분기로 상단탭내비/종합진행 테이블 minWidth(header·row 둘다)/견적서 가로고정; 데스크톱 무영향, Expo Go 실기검증 필수
 - [overflow-y-auto가 가로스크롤 유발](overflow-y-auto-x-promotion.md) — 한 축만 auto면 visible축이 auto로 승격돼 의도없는 좌우슬라이드; 모바일 컨테이너는 overflow-x-hidden 명시+내부 고정폭 유동화(w-full/col-span-12) 동반 필수
-- [접수번호 미리보기는 저장값 미러링](intake-casenumber-preview.md) — 표시번호=서버 저장 prefix(보험사고번호로 그룹핑, 형제 지급/상태 동기화가 의존); 미리보기만 바꾸면 표시≠저장. "변하는" 제거는 입력전 비움+입력후 1회표시(게이팅+effect cancelled가드)
+- [접수번호 prefix 정책(묶음 공유 안 함)+미리보기](intake-casenumber-preview.md) — 신규접수는 항상 그 날짜 새 순번 prefix(보험사고번호 prefix 재사용 폐지, 2026-06-23); 같은사고 추가는 parentCasePrefix로만 prefix 잇기. prefix그룹핑 vs caseGroupId(상태/지급 sibling)는 별개 키—후자는 그대로. 미리보기≠저장 금지
 - [그리드 트랙 오버플로 배경잘림](grid-track-overflow-bg-clip.md) — minWidth+background 그리드에서 percent+minmax(px,fr)+고정px 트랙 합이 넘치면 마지막 컬럼이 배경 밖으로; fr의 px하한 제거(minmax(0,..))가 minWidth 확대보다 안전
 - [VALID_ROLES 정확한 역할명](valid-roles-naming.md) — 역할 비교값은 심사"사"/조사"사"(심사자/조사자 아님); 오타 시 게이팅이 에러없이 조용히 실패. VALID_ROLES와 글자대조 필수
 - [모바일 비고 컬럼 제거 패턴](mobile-mode-note-column.md) — useMobileMode()로 showNote 토글; 컬럼 숨길 땐 thead/tbody/tfoot(콜스팬)을 한꺼번에. 기본값 false라 데스크톱 무영향

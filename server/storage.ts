@@ -1630,40 +1630,12 @@ export class MemStorage implements IStorage {
     date: string,
     insuranceAccidentNo?: string,
   ): Promise<{ prefix: string; suffix: number }> {
-    // Step 1: Check if there are existing cases with the same insurance accident number
-    if (insuranceAccidentNo) {
-      const existingCases = await db
-        .select({ caseNumber: cases.caseNumber })
-        .from(cases)
-        .where(eq(cases.insuranceAccidentNo, insuranceAccidentNo));
+    // [정책 2026-06-23] 같은 보험사고번호의 기존 묶음 prefix 재사용 제거.
+    // 새 접수는 항상 해당 날짜 기준의 새 순번 prefix를 부여한다(묶음 공유 안 함).
+    // 같은 사고의 추가 피해세대는 별도 흐름(parentCasePrefix + getNextVictimSuffix)에서 처리한다.
+    // (insuranceAccidentNo 인자는 호출부 호환을 위해 유지하되 prefix 산정에는 사용하지 않는다.)
+    void insuranceAccidentNo;
 
-      if (existingCases.length > 0) {
-        // Extract prefix from first existing case (yyMMddxxx part)
-        const firstCaseNumber = existingCases[0].caseNumber;
-        if (firstCaseNumber) {
-          const parts = firstCaseNumber.split("-");
-          if (parts.length >= 2) {
-            const prefix = parts[0]; // "251124001"
-
-            // Find max suffix for this prefix
-            let maxSuffix = -1;
-            for (const c of existingCases) {
-              if (c.caseNumber && c.caseNumber.startsWith(prefix + "-")) {
-                const suffixStr = c.caseNumber.split("-")[1];
-                const suffix = parseInt(suffixStr, 10);
-                if (!isNaN(suffix) && suffix > maxSuffix) {
-                  maxSuffix = suffix;
-                }
-              }
-            }
-
-            return { prefix, suffix: maxSuffix + 1 };
-          }
-        }
-      }
-    }
-
-    // Step 2: No existing cases with same accident number - generate new prefix
     // Convert YYYY-MM-DD to yyMMdd (6 digits)
     const dateParts = date.split("-");
     const year = dateParts[0].substring(2); // YY (last 2 digits)
@@ -4395,35 +4367,11 @@ export class DbStorage implements IStorage {
     return await db.transaction(async (tx) => {
       await tx.execute(sql`SELECT pg_advisory_xact_lock(1, ${lockKey})`);
 
-      if (insuranceAccidentNo) {
-        const existingCases = await tx
-          .select({ caseNumber: cases.caseNumber })
-          .from(cases)
-          .where(eq(cases.insuranceAccidentNo, insuranceAccidentNo));
-
-        if (existingCases.length > 0) {
-          const firstCaseNumber = existingCases[0].caseNumber;
-          if (firstCaseNumber) {
-            const parts = firstCaseNumber.split("-");
-            if (parts.length >= 2) {
-              const prefix = parts[0];
-
-              let maxSuffix = -1;
-              for (const c of existingCases) {
-                if (c.caseNumber && c.caseNumber.startsWith(prefix + "-")) {
-                  const suffixStr = c.caseNumber.split("-")[1];
-                  const suffix = parseInt(suffixStr, 10);
-                  if (!isNaN(suffix) && suffix > maxSuffix) {
-                    maxSuffix = suffix;
-                  }
-                }
-              }
-
-              return { prefix, suffix: maxSuffix + 1 };
-            }
-          }
-        }
-      }
+      // [정책 2026-06-23] 같은 보험사고번호의 기존 묶음 prefix 재사용 제거.
+      // 새 접수는 항상 해당 날짜 기준의 새 순번 prefix를 부여한다(묶음 공유 안 함).
+      // 같은 사고의 추가 피해세대는 별도 흐름(parentCasePrefix + getNextVictimSuffix)에서 처리한다.
+      // (insuranceAccidentNo 인자는 호출부 호환을 위해 유지하되 prefix 산정에는 사용하지 않는다.)
+      void insuranceAccidentNo;
 
       const allCases = await tx
         .select({ caseNumber: cases.caseNumber })
