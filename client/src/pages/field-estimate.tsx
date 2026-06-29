@@ -6752,6 +6752,15 @@ export default function FieldEstimate() {
     autoSaveSchedulerRef.current?.trigger(reason);
   };
 
+  // [버그수정] 자재비 사용자 편집(자재항목 선택 등)은 sync 지점이 아니므로 자동저장이
+  //   걸리지 않아, 저장 없이 단계(현장보고→복구완료보고/청구)를 넘기면 선택값이
+  //   DB에 남지 않고 빈 값으로 되돌아갔다. 자재비 변경 시에도 자동저장 스케줄러를
+  //   트리거하여 디바운스(1500ms)·해시·가드를 거쳐 안전하게 저장되도록 한다.
+  const handleMaterialRowsChange = (newRows: MaterialRow[]) => {
+    setMaterialRows(newRows);
+    triggerAutoSaveAfterSync("material:userEdit");
+  };
+
   // 저장
   const handleSave = () => {
     // 제출 조건 상태 콘솔 로그
@@ -9600,7 +9609,7 @@ export default function FieldEstimate() {
 
             <MaterialCostSection
               rows={materialRows}
-              onRowsChange={setMaterialRows}
+              onRowsChange={handleMaterialRowsChange}
               catalog={transformedMaterialCatalog}
               laborCategories={workTypes}
               selectedRows={selectedMaterialRows}
