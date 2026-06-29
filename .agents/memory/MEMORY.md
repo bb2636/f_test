@@ -5,6 +5,7 @@
 - [분리창 IME(한글) 입력 깨짐](ime-detached-window-input.md) — 별도 root 분리창의 controlled input은 조합 중 onChange가 value 되돌려 한글 중복/분해; 공용 ui/input·textarea가 composition 억제+compositionend 확정으로 해결
 - [접수취소 연관건 그룹핑 불일치](cancel-related-grouping.md) — 취소 후보를 caseNumber prefix(마지막 세그먼트 제거) 휴리스틱으로 묶어 누락; 정식 키는 caseGroupId(보험사고번호). 세 prefix/suffix 규칙이 제각각
 - [스키마 변경 적용 경로](schema-sync.md) — 새 테이블/컬럼은 shared/schema.ts + server/auto-schema-sync.ts(매 기동 DEV/PROD idempotent)에 추가; db:push는 대화형이라 불안정·PROD 누락 위험
+- [다중매칭 자재행 autoKey 불일치(레거시) 보존](material-multimatch-autokey-fallback.md) — 다중매칭 sync는 autoKey를 항상 `공종|공사명|__NONE__`로 만듦; 레거시 item-suffixed 저장행은 lookup MISS→reconcile stale삭제→자재명 풀림. bare-key fallback+claimed 중복방지로 이관 보존
 - [자재비 연동 자동행 lock/진입 재계산](material-autorow-lock-reconcile.md) — 보양재 등 연동행이 복구면적 편집 중 autosave로 lockedAtSave 잠겨 첫 진입 stale; 진입 시 forceUnlock 재계산(저장X, 카탈로그 로드 가드)
 - [Dialog 본문 텍스트 잘림(grid 오버플로)](dialog-grid-text-clipping.md) — shadcn DialogContent는 grid라 긴 본문이 max-content로 넘쳐 overflow-x-hidden에 잘림; min-w-0만으론 부족, grid-cols-[minmax(0,1fr)]로 컬럼 강제 수축
 - [PDF 멀티라인 줄바꿈 보존](pdf-multiline-normalizetext.md) — pdf-lib-service normalizeText의 \s가 \n을 먹어 특수문자 인접 줄바꿈 소실; 멀티라인 필드는 \n으로 split 후 줄별 normalizeText+wrapText (VOC 패턴)
