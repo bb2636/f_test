@@ -52,3 +52,8 @@ listArtifacts()도 빈 배열이라 아티팩트 기반 프리뷰도 없었음 �
 **How to apply:** 웹 프리뷰가 안 뜨면 (1) [[ports]] 매핑, (2) 워크플로 metadata의
 outputType="webview" 둘 다 확인. 수정은 .replit 직접 편집 대신 configureWorkflow
 (command/waitForPort/outputType 재지정)로 — 레거시 npm 구조에서도 안전하게 동작 확인됨.
+
+추가(2026-07-06): outputType="webview" 수정 후에도 사용자 프리뷰 패널에는 "Mobile App"만 표시.
+listArtifacts()=[] 이라 presentArtifact로 웹앱을 프리뷰 패널에 올릴 수도 없음(v2 id도 not found).
+프리뷰 패널이 아티팩트(v3) 기반이라 미등록 레거시 웹앱은 목록에 안 뜨는 것으로 추정 —
+등록하려면 createArtifact(pnpm) 필요 = 금지. 대안: 캔버스 iframe(Start application) 또는 새 탭 URL.
