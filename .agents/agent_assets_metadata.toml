@@ -12,3 +12,9 @@ id = "nr-4Ry_4mHBVXeIZ4zSlu"
 uri = "file://docs/encryption-audit.txt"
 type = "text"
 title = "암호화/해시/마스킹 감사 문서"
+
+[[outputs]]
+id = "iibQiPmt_AQFJ4fdZSJ_e"
+uri = "file://attached_assets/screenshots/b06e4109-f124-4b87-9256-eac690265cb7-00-2rf7k99b2g8as_janeway_replit_dev.png"
+type = "image"
+title = "개발계 주소 외부 접속 캡처 (방금 촬영)"
