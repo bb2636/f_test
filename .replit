@@ -15,7 +15,7 @@ run = ["npm", "run", "start"]
 PORT = "5000"
 
 [workflows]
-runButton = "Project"
+runButton = "Start application"
 
 [[workflows.workflow]]
 name = "Project"
@@ -43,12 +43,12 @@ waitForPort = 5000
 name = "Mobile (Expo)"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "console"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd mobile-app && npx expo start --tunnel"
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [agent]
 integrations = ["javascript_mem_db:1.0.0", "javascript_database:1.0.0", "javascript_object_storage:2.0.0", "javascript_anthropic_ai_integrations:2.0.0"]
