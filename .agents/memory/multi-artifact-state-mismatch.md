@@ -41,3 +41,14 @@ createArtifact 대신 **루트와 완전 분리된 서브폴더 Expo 앱**으로
 - **Why:** 정합화 안 된 반쪽 workspace에서 createArtifact의 pnpm install이 npm node_modules를
   깨는 리스크를 아예 회피. 트레이드오프=Replit Expo Launch(정식 iOS 빌드/preview) 미사용.
 - 헤드리스 컨테이너에서 `libglib-2.0.so.0` (React Native DevTools) 에러는 무해(디버거 UI만 실패, 번들/Expo Go 무관).
+
+# 웹 프리뷰(Webview) 안 뜨는 원인 (2026-07-06)
+포트 매핑([[ports]] 5000→80)이 있고 서버가 200이어도, 워크플로에
+`outputType = "webview"` 메타데이터가 없으면 프리뷰 패널이 웹뷰를 표시하지 않는다.
+
+**Why:** 이 프로젝트의 "Start application" 워크플로는 metadata가 없어 콘솔 취급됐고,
+listArtifacts()도 빈 배열이라 아티팩트 기반 프리뷰도 없었음 → 사용자에겐 웹뷰 부재로 보임.
+
+**How to apply:** 웹 프리뷰가 안 뜨면 (1) [[ports]] 매핑, (2) 워크플로 metadata의
+outputType="webview" 둘 다 확인. 수정은 .replit 직접 편집 대신 configureWorkflow
+(command/waitForPort/outputType 재지정)로 — 레거시 npm 구조에서도 안전하게 동작 확인됨.
