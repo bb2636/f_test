@@ -258,6 +258,11 @@ function safeParseMaterialCosts(
 export default function FieldReport() {
   const { toast } = useToast();
   const isMobileApp = useIsMobileApp();
+  // [2026-07-07] 모바일 앱 산출표: 피해/복구면적 값을 소수점 1자리(00.0)로 표시 (데스크톱 무변경)
+  const fmtArea1 = (v: unknown): string => {
+    const n = parseFloat(String(v ?? ""));
+    return isNaN(n) ? "0.0" : n.toFixed(1);
+  };
   // 별도 창(보고서 열람)으로 열렸는지 + 그 창에 고정할 케이스 ID.
   // 핵심: detached 여부/고정 caseId를 sessionStorage(창 단위, 다른 창과 공유 안 됨)에
   //   한 번 박아둔다. window.location.search만 보면 팝업 안에서 라우팅으로 쿼리스트링이
@@ -5061,7 +5066,7 @@ export default function FieldReport() {
                         <div className="overflow-x-auto [&_th]:border-r [&_td]:border-r [&_th]:border-r-[rgba(12,12,12,0.1)] [&_td]:border-r-[rgba(12,12,12,0.1)] [&_th:last-child]:border-r-0 [&_td:last-child]:border-r-0" style={{ border: "1px solid rgba(12, 12, 12, 0.2)", borderRadius: "8px" }}>
                           <table
                             style={{
-                              minWidth: "1100px",
+                              minWidth: isMobileApp ? "1250px" : "1100px",
                               width: "100%",
                               borderCollapse: "collapse",
                               fontFamily: "Pretendard",
@@ -5076,6 +5081,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     borderBottom:
                                       "1px solid rgba(12, 12, 12, 0.2)",
+                                    width: isMobileApp ? "90px" : undefined,
                                   }}
                                 >
                                   장소
@@ -5086,6 +5092,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     borderBottom:
                                       "1px solid rgba(12, 12, 12, 0.2)",
+                                    width: isMobileApp ? "90px" : undefined,
                                   }}
                                 >
                                   위치
@@ -5096,6 +5103,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     borderBottom:
                                       "1px solid rgba(12, 12, 12, 0.2)",
+                                    width: isMobileApp ? "110px" : undefined,
                                   }}
                                 >
                                   공사내용
@@ -5270,7 +5278,7 @@ export default function FieldReport() {
                                         "1px solid rgba(12, 12, 12, 0.06)",
                                     }}
                                   >
-                                    {row.damageWidth || "0"}
+                                    {isMobileApp ? fmtArea1(row.damageWidth) : row.damageWidth || "0"}
                                   </td>
                                   <td
                                     style={{
@@ -5278,7 +5286,7 @@ export default function FieldReport() {
                                       textAlign: "center",
                                     }}
                                   >
-                                    {row.damageHeight || "0"}
+                                    {isMobileApp ? fmtArea1(row.damageHeight) : row.damageHeight || "0"}
                                   </td>
                                   <td
                                     style={{
@@ -5286,11 +5294,13 @@ export default function FieldReport() {
                                       textAlign: "center",
                                     }}
                                   >
-                                    {row.damageArea
-                                      ? parseFloat(
-                                          String(row.damageArea),
-                                        ).toFixed(2)
-                                      : "0"}
+                                    {isMobileApp
+                                      ? fmtArea1(row.damageArea)
+                                      : row.damageArea
+                                        ? parseFloat(
+                                            String(row.damageArea),
+                                          ).toFixed(2)
+                                        : "0"}
                                   </td>
                                   <td
                                     style={{
@@ -5300,7 +5310,7 @@ export default function FieldReport() {
                                         "1px solid rgba(12, 12, 12, 0.06)",
                                     }}
                                   >
-                                    {row.repairWidth || "0"}
+                                    {isMobileApp ? fmtArea1(row.repairWidth) : row.repairWidth || "0"}
                                   </td>
                                   <td
                                     style={{
@@ -5308,7 +5318,7 @@ export default function FieldReport() {
                                       textAlign: "center",
                                     }}
                                   >
-                                    {row.repairHeight || "0"}
+                                    {isMobileApp ? fmtArea1(row.repairHeight) : row.repairHeight || "0"}
                                   </td>
                                   <td
                                     style={{
@@ -5316,11 +5326,13 @@ export default function FieldReport() {
                                       textAlign: "center",
                                     }}
                                   >
-                                    {row.repairArea
-                                      ? parseFloat(
-                                          String(row.repairArea),
-                                        ).toFixed(2)
-                                      : "0"}
+                                    {isMobileApp
+                                      ? fmtArea1(row.repairArea)
+                                      : row.repairArea
+                                        ? parseFloat(
+                                            String(row.repairArea),
+                                          ).toFixed(2)
+                                        : "0"}
                                   </td>
                                   <td
                                     style={{
@@ -5380,7 +5392,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     borderBottom:
                                       "1px solid rgba(12, 12, 12, 0.2)",
-                                    minWidth: "100px",
+                                    minWidth: isMobileApp ? "80px" : "100px",
                                   }}
                                 >
                                   공종
@@ -5391,7 +5403,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     borderBottom:
                                       "1px solid rgba(12, 12, 12, 0.2)",
-                                    minWidth: "100px",
+                                    minWidth: isMobileApp ? "80px" : "100px",
                                   }}
                                 >
                                   공사명
@@ -5804,7 +5816,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     borderBottom:
                                       "1px solid rgba(12, 12, 12, 0.2)",
-                                    minWidth: "100px",
+                                    minWidth: isMobileApp ? "80px" : "100px",
                                   }}
                                 >
                                   공종
@@ -5815,7 +5827,7 @@ export default function FieldReport() {
                                     textAlign: "center",
                                     borderBottom:
                                       "1px solid rgba(12, 12, 12, 0.2)",
-                                    minWidth: "100px",
+                                    minWidth: isMobileApp ? "80px" : "100px",
                                   }}
                                 >
                                   공사명
