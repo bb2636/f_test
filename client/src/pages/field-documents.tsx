@@ -376,6 +376,10 @@ export default function FieldDocuments() {
   });
 
   // 파일 다운로드 (Object Storage 또는 레거시)
+  // [2026-07-07] 모바일 앱(WebView)에서는 window.open(새 창)이 동작하지 않아
+  // 사진을 눌러도 내용이 안 보임 → 앱 내 전체화면 뷰어로 표시 (데스크톱 무변경)
+  const [previewDoc, setPreviewDoc] = useState<CaseDocument | null>(null);
+
   const handleDownload = useCallback(
     async (doc: CaseDocument) => {
       try {
@@ -2660,7 +2664,13 @@ export default function FieldDocuments() {
                     background: "white",
                     border: "1px solid rgba(12, 12, 12, 0.08)",
                   }}
-                  onClick={() => handleDownload(doc)}
+                  onClick={() => {
+                    if (isMobileApp && isImage) {
+                      setPreviewDoc(doc);
+                    } else {
+                      handleDownload(doc);
+                    }
+                  }}
                   data-testid={`photo-thumbnail-${doc.id}`}
                 >
                   {isImage ? (
@@ -2967,6 +2977,73 @@ export default function FieldDocuments() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* [2026-07-07] 모바일 앱 전용 이미지 뷰어 — WebView에서 window.open이 동작하지 않아 앱 내 전체화면으로 표시 */}
+      {isMobileApp && previewDoc && (
+        <div
+          onClick={() => setPreviewDoc(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(0, 0, 0, 0.9)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+          }}
+          data-testid="mobile-image-preview"
+        >
+          <button
+            onClick={() => setPreviewDoc(null)}
+            style={{
+              position: "absolute",
+              top: "16px",
+              right: "16px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "18px",
+              background: "rgba(255, 255, 255, 0.2)",
+              color: "white",
+              fontSize: "20px",
+              lineHeight: "36px",
+              border: "none",
+            }}
+            aria-label="닫기"
+            data-testid="button-close-image-preview"
+          >
+            ✕
+          </button>
+          <img
+            src={`/api/documents/${previewDoc.id}/image`}
+            alt={previewDoc.fileName}
+            style={{
+              maxWidth: "100%",
+              maxHeight: "90vh",
+              objectFit: "contain",
+              borderRadius: "8px",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "20px",
+              left: 0,
+              right: 0,
+              textAlign: "center",
+              color: "rgba(255, 255, 255, 0.8)",
+              fontFamily: "Pretendard",
+              fontSize: "13px",
+              padding: "0 16px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {previewDoc.fileName}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
