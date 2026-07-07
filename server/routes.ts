@@ -5401,6 +5401,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ===== 증빙자료 Documents API =====
 
   // Upload document(s) to a case
+  // 문서 조회 권한: 해당 사건에 접근 가능한 사용자인지 확인 (getAssignedCasesForUser와 동일 규칙)
+  async function canViewCaseDocuments(
+    userId: string,
+    caseId: string | null | undefined,
+  ): Promise<boolean> {
+    if (!caseId) return false;
+    try {
+      const [user, caseRow] = await Promise.all([
+        storage.getUser(userId),
+        storage.getCaseById(caseId),
+      ]);
+      if (!user || !caseRow) return false;
+      const isPersonal = user.accountType === "개인";
+      switch (user.role) {
+        case "관리자":
+          return true;
+        case "심사사":
+          return isPersonal
+            ? caseRow.assessorId === user.company && caseRow.assessorTeam === user.name
+            : caseRow.assessorId === user.company;
+        case "협력사":
+          return isPersonal
+            ? caseRow.assignedPartner === user.company &&
+                (caseRow.assignedPartnerManager === user.name ||
+                  caseRow.createdBy === user.id ||
+                  caseRow.assignedTo === user.id)
+            : caseRow.assignedPartner === user.company;
+        case "조사사":
+          return isPersonal
+            ? caseRow.investigatorTeam === user.company &&
+                caseRow.investigatorTeamName === user.name
+            : caseRow.investigatorTeam === user.company;
+        case "보험사":
+          return isPersonal
+            ? caseRow.insuranceCompany === user.company &&
+                (caseRow.managerId === user.id || caseRow.createdBy === user.id)
+            : caseRow.insuranceCompany === user.company;
+        default:
+          return false;
+      }
+    } catch (err) {
+      console.error("[doc-access] case access check failed:", err);
+      return false;
+    }
+  }
+
   app.post("/api/documents", async (req, res) => {
     if (!req.session?.userId) {
       return res.status(401).json({ error: "인증되지 않은 사용자입니다" });
@@ -5529,12 +5575,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "문서를 찾을 수 없습니다" });
       }
 
-      // Allow admins and assessors to access all documents, others only their own
+      // Allow admins/assessors, the creator, or users with access to the case
       const userRole = req.session.userRole;
       const isPrivilegedRole = userRole === "관리자" || userRole === "심사사";
 
       if (!isPrivilegedRole && document.createdBy !== req.session.userId) {
-        return res.status(403).json({ error: "권한이 없습니다" });
+        const hasCaseAccess = await canViewCaseDocuments(
+          req.session.userId,
+          document.caseId,
+        );
+        if (!hasCaseAccess) {
+          return res.status(403).json({ error: "권한이 없습니다" });
+        }
       }
 
       const fileData = await storage.getDocumentFileData(id);
@@ -6166,11 +6218,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "문서를 찾을 수 없습니다" });
       }
 
-      // 권한 체크 (관리자/심사사 또는 본인만 접근 가능)
+      // 권한 체크 (관리자/심사사, 본인, 또는 해당 사건 접근 가능자)
       const userRole = req.session.userRole;
       const isPrivilegedRole = userRole === "관리자" || userRole === "심사사";
       if (!isPrivilegedRole && document.createdBy !== req.session.userId) {
-        return res.status(403).json({ error: "권한이 없습니다" });
+        const hasCaseAccess = await canViewCaseDocuments(
+          req.session.userId,
+          document.caseId,
+        );
+        if (!hasCaseAccess) {
+          return res.status(403).json({ error: "권한이 없습니다" });
+        }
       }
 
       // fileData 기반 문서인 경우 이미지 엔드포인트로 리다이렉트
@@ -6231,7 +6289,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userRole = req.session.userRole;
       const isPrivilegedRole = userRole === "관리자" || userRole === "심사사";
       if (!isPrivilegedRole && document.createdBy !== req.session.userId) {
-        return res.status(403).json({ error: "권한이 없습니다" });
+        const hasCaseAccess = await canViewCaseDocuments(
+          req.session.userId,
+          document.caseId,
+        );
+        if (!hasCaseAccess) {
+          return res.status(403).json({ error: "권한이 없습니다" });
+        }
       }
 
       if (document.storageKey && (document.status === "ready" || document.status === "processing")) {
