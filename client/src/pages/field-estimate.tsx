@@ -7151,7 +7151,7 @@ export default function FieldEstimate() {
                     </th>
                     <th 
                       style={{ 
-                        width: isMobileApp ? "80px" : "120px", 
+                        width: isMobileApp ? "100px" : "120px", 
                         padding: "17.5px 8px", 
                         fontFamily: "Pretendard", 
                         fontSize: "15px", 
@@ -7165,7 +7165,7 @@ export default function FieldEstimate() {
                     </th>
                     <th 
                       style={{ 
-                        width: isMobileApp ? "90px" : "140px", 
+                        width: isMobileApp ? "115px" : "140px", 
                         padding: "17.5px 8px", 
                         fontFamily: "Pretendard", 
                         fontSize: "15px", 
@@ -8279,8 +8279,8 @@ export default function FieldEstimate() {
                         {/* [정책 2026-05-12] 견적서 탭은 조회 전용 → 행별 체크박스 컬럼 제거 */}
                         {/* [2026-05-13] 장소/위치/공종/공사명은 한국어 텍스트가 줄바꿈되지 않도록 whiteSpace nowrap + 헤더 padding 축소 */}
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>장소</th>
-                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", width: isMobileApp ? "55px" : undefined }}>위치</th>
-                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", width: isMobileApp ? "55px" : undefined }}>공종</th>
+                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", width: isMobileApp ? "75px" : undefined }}>위치</th>
+                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", width: isMobileApp ? "75px" : undefined }}>공종</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", width: isMobileApp ? "80px" : undefined }}>공사명</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>피해면적 가로(m)</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>피해면적 세로(m)</th>
