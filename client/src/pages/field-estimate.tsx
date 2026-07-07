@@ -286,6 +286,11 @@ const sortLaborRowsByCategory = (rows: LaborCostRow[]): LaborCostRow[] => {
 export default function FieldEstimate() {
   // 모바일 앱(WebView)에서만 비고 컬럼 숨김 — 데스크톱은 영향 없음
   const isMobileApp = useIsMobileApp();
+  // [2026-07-07] 모바일 앱 견적서 표: 피해/복구면적 값을 소수점 1자리(**.*)로 표시 (데스크톱 무변경)
+  const fmtArea1 = (v: unknown): string => {
+    const n = parseFloat(String(v ?? ""));
+    return isNaN(n) ? "0.0" : n.toFixed(1);
+  };
   // Hydration guard: 기존 견적 복원 완료 추적 (중복 행 방지)
   const isHydratedRef = useRef(false);
   const [isHydratedState, setIsHydratedState] = useState(false); // 컴포넌트 전달용 상태
@@ -8257,8 +8262,8 @@ export default function FieldEstimate() {
                     style={{
                       width: "100%",
                       borderCollapse: "collapse",
-                      // 모바일 앱(WebView)에서는 화면 폭에 맞춰 축소 — 데스크톱은 기존 유지
-                      minWidth: isMobileApp ? "0px" : "1400px",
+                      // 모바일 앱(WebView)에서는 화면 폭보다 조금 넓게(가로 스크롤) — 데스크톱은 기존 유지
+                      minWidth: isMobileApp ? "900px" : "1400px",
                       // 모바일 앱: 표/글자 전체를 비례 축소해 작게 표시 (데스크톱 무영향)
                       zoom: isMobileApp ? "0.7" : undefined,
                       tableLayout: "auto",
@@ -8274,9 +8279,9 @@ export default function FieldEstimate() {
                         {/* [정책 2026-05-12] 견적서 탭은 조회 전용 → 행별 체크박스 컬럼 제거 */}
                         {/* [2026-05-13] 장소/위치/공종/공사명은 한국어 텍스트가 줄바꿈되지 않도록 whiteSpace nowrap + 헤더 padding 축소 */}
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>장소</th>
-                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>위치</th>
-                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>공종</th>
-                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>공사명</th>
+                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", width: isMobileApp ? "70px" : undefined }}>위치</th>
+                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", width: isMobileApp ? "70px" : undefined }}>공종</th>
+                        <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap", width: isMobileApp ? "80px" : undefined }}>공사명</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>피해면적 가로(m)</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>피해면적 세로(m)</th>
                         <th style={{ padding: "12px 8px", fontFamily: "Pretendard", fontSize: "14px", fontWeight: 600, color: "rgba(12, 12, 12, 0.6)", whiteSpace: "nowrap" }}>피해면적(㎡)</th>
@@ -8370,7 +8375,7 @@ export default function FieldEstimate() {
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
-                              value={row.damageWidth}
+                              value={isMobileApp ? fmtArea1(row.damageWidth) : row.damageWidth}
                               onChange={(e) => updateRow(row.id, 'damageWidth', e.target.value)}
                               disabled={true}
                               style={{
@@ -8388,7 +8393,7 @@ export default function FieldEstimate() {
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
-                              value={row.damageHeight}
+                              value={isMobileApp ? fmtArea1(row.damageHeight) : row.damageHeight}
                               onChange={(e) => updateRow(row.id, 'damageHeight', e.target.value)}
                               disabled={true}
                               style={{
@@ -8417,12 +8422,12 @@ export default function FieldEstimate() {
                                 textAlign: "right",
                                 background: "white",
                               }}
-                            >{row.damageArea}</div>
+                            >{isMobileApp ? fmtArea1(row.damageArea) : row.damageArea}</div>
                           </td>
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
-                              value={row.repairWidth}
+                              value={isMobileApp ? fmtArea1(row.repairWidth) : row.repairWidth}
                               onChange={(e) => updateRow(row.id, 'repairWidth', e.target.value)}
                               disabled={true}
                               style={{
@@ -8440,7 +8445,7 @@ export default function FieldEstimate() {
                           <td style={{ padding: "8px" }}>
                             <input
                               type="text"
-                              value={row.repairHeight}
+                              value={isMobileApp ? fmtArea1(row.repairHeight) : row.repairHeight}
                               onChange={(e) => updateRow(row.id, 'repairHeight', e.target.value)}
                               disabled={true}
                               style={{
@@ -8469,7 +8474,7 @@ export default function FieldEstimate() {
                                 textAlign: "right",
                                 background: "white",
                               }}
-                            >{row.repairArea}</div>
+                            >{isMobileApp ? fmtArea1(row.repairArea) : row.repairArea}</div>
                           </td>
                           {!isMobileApp && (
                           <td style={{ padding: "8px" }}>
