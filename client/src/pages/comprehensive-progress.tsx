@@ -233,6 +233,13 @@ const QUICK_STATUS_FILTERS: { label: string; key: string }[] = [
   { label: "반려", key: "반려" },
 ];
 
+// [2026-07-07] 모바일 앱 전용 빠른 필터: 배정완료/보험사 심사중/복구요청 3개만 노출 (데스크톱 무변경)
+const MOBILE_QUICK_STATUS_FILTERS: { label: string; key: string }[] = [
+  { label: "배정완료", key: "접수완료" },
+  { label: "보험사 심사중", key: "현장정보제출" },
+  { label: "복구요청", key: "복구요청(2차승인)" },
+];
+
 // 진행상태 목록 - DB에 저장되는 값
 const CASE_STATUSES = [
   "배당대기",
@@ -1206,7 +1213,7 @@ export default function ComprehensiveProgress() {
       return true;
     });
     const counts: Record<string, number> = {};
-    for (const f of QUICK_STATUS_FILTERS) {
+    for (const f of [...QUICK_STATUS_FILTERS, ...MOBILE_QUICK_STATUS_FILTERS]) {
       if (isClaimFilterKey(f.key)) {
         counts[f.key] = visible.filter((c) => matchesClaimFilter(f.key, c, cases || [])).length;
       } else {
@@ -2061,7 +2068,7 @@ export default function ComprehensiveProgress() {
               minWidth: 0,
             }}
           >
-            {QUICK_STATUS_FILTERS.map((f) => {
+            {(isMobileApp ? MOBILE_QUICK_STATUS_FILTERS : QUICK_STATUS_FILTERS).map((f) => {
               const isActive = selectedStatus === f.key;
               const count = quickStatusCounts[f.key] ?? 0;
               return (
@@ -2124,24 +2131,26 @@ export default function ComprehensiveProgress() {
                 삭제
               </button>
             )}
-            <Button
-              variant="outline"
-              onClick={handleExcelDownload}
-              className="flex items-center gap-2"
-              style={{
-                height: "36px",
-                borderRadius: "8px",
-                fontSize: "13px",
-                fontFamily: "Pretendard",
-                fontWeight: 500,
-                color: "rgba(12, 12, 12, 0.7)",
-                border: "1px solid rgba(12, 12, 12, 0.12)",
-              }}
-              data-testid="button-comprehensive-progress-excel-download"
-            >
-              <Download size={14} />
-              엑셀 다운로드
-            </Button>
+            {!isMobileApp && (
+              <Button
+                variant="outline"
+                onClick={handleExcelDownload}
+                className="flex items-center gap-2"
+                style={{
+                  height: "36px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontFamily: "Pretendard",
+                  fontWeight: 500,
+                  color: "rgba(12, 12, 12, 0.7)",
+                  border: "1px solid rgba(12, 12, 12, 0.12)",
+                }}
+                data-testid="button-comprehensive-progress-excel-download"
+              >
+                <Download size={14} />
+                엑셀 다운로드
+              </Button>
+            )}
           </div>
         </div>
 
