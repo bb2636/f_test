@@ -108,10 +108,14 @@ export function FloatingIntakeButton() {
     return u.name && u.name.toLowerCase().includes(q);
   });
 
+  // 심사사는 사무실(직통) 번호 우선, 그 외는 핸드폰 우선
+  const getRecipientPhone = (u: User) =>
+    u.role === "심사사" ? u.office || u.phone : u.phone || u.office;
+
   const filteredUsers = (allUsers || []).filter((u) => {
     if (!searchQuery.trim()) return false;
     const q = searchQuery.trim().toLowerCase();
-    const alreadyAdded = recipients.some((r) => r.phone === u.phone && r.name === u.name);
+    const alreadyAdded = recipients.some((r) => r.phone === getRecipientPhone(u) && r.name === u.name);
     if (alreadyAdded) return false;
     return (
       (u.name && u.name.toLowerCase().includes(q)) ||
@@ -120,7 +124,8 @@ export function FloatingIntakeButton() {
   });
 
   const addUserAsRecipient = (u: User) => {
-    if (!u.phone) {
+    const recipientPhone = getRecipientPhone(u);
+    if (!recipientPhone) {
       toast({
         title: "추가 불가",
         description: `${u.name}님의 연락처가 등록되어 있지 않습니다.`,
@@ -136,7 +141,7 @@ export function FloatingIntakeButton() {
       });
       return;
     }
-    const alreadyAdded = recipients.some((r) => r.phone === u.phone && r.name === u.name);
+    const alreadyAdded = recipients.some((r) => r.phone === recipientPhone && r.name === u.name);
     if (alreadyAdded) {
       toast({
         title: "중복 수신인",
@@ -145,7 +150,7 @@ export function FloatingIntakeButton() {
       });
       return;
     }
-    setRecipients([...recipients, { name: u.name, phone: u.phone, company: u.company }]);
+    setRecipients([...recipients, { name: u.name, phone: recipientPhone, company: u.company }]);
     setSearchQuery("");
     setShowSearchResults(false);
   };

@@ -19,6 +19,7 @@
 - [그리드 트랙 오버플로 배경잘림](grid-track-overflow-bg-clip.md) — minWidth+background 그리드에서 percent+minmax(px,fr)+고정px 트랙 합이 넘치면 마지막 컬럼이 배경 밖으로; fr의 px하한 제거(minmax(0,..))가 minWidth 확대보다 안전
 - [VALID_ROLES 정확한 역할명](valid-roles-naming.md) — 역할 비교값은 심사"사"/조사"사"(심사자/조사자 아님); 오타 시 게이팅이 에러없이 조용히 실패. VALID_ROLES와 글자대조 필수
 - [모바일 비고 컬럼 제거 패턴](mobile-mode-note-column.md) — useMobileMode()로 showNote 토글; 컬럼 숨길 땐 thead/tbody/tfoot(콜스팬)을 한꺼번에. 기본값 false라 데스크톱 무영향
+- [심사사 SMS 사무실번호 우선](assessor-sms-office-first.md) — 심사사 문자 수신번호는 office||phone(2026-07-07 확정, 과거엔 phone 우선); 결정 경로가 서버4곳+클라1곳+SQL에 흩어져 있어 신규 경로 추가 시 전부 확인
 - [SMTP 자격증명 일원화](email-smtp-credentials.md) — 메일 경로가 비밀번호 env 둘로 갈려 일부만 535 실패; 모든 경로 SMTP_PASSWORD||MAIL_APP_PASSWORD||SMTP_PASS 순. "SMTP 설정 확인"은 send-time 535일 수 있음
 - [floxn-test 배포/콜드스타트](floxn-test-deploy-coldstart.md) — floxn-test=이 repl autoscale 배포; "무한 스피너"는 프론트버그 아닌 콜드스타트(~10-15초), 깨면 정상; Firecrawl 스샷은 SPA 렌더 전 캡처라 신뢰 금지; floxn.co.kr은 별개 서버
 - [배포 반영 확인은 lazy 청크에서](deploy-verify-lazy-chunks.md) — 페이지는 lazy 코드스플릿이라 배포본 index-*.js엔 셸만 있음; mustChangePassword/min-w-[620px] 마커는 login-*.js·dashboard-*.js 청크에서 grep해야("배포 안됨" 오판 주의). 배포=로컬 워크스페이스, origin/main 무시

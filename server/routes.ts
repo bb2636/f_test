@@ -1113,7 +1113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .set({
               assessorId: updatedUser.company,
               assessorTeam: updatedUser.name,
-              assessorContact: updatedUser.phone || updatedUser.office || "",
+              assessorContact: updatedUser.office || updatedUser.phone || "",
               assessorEmail: updatedUser.email || "",
               assessorDepartment: updatedUser.department || "",
             })
@@ -13533,11 +13533,11 @@ FLOXN 드림`;
             ),
           )
           .limit(2);
-        // 정확히 1명일 때만 신뢰 (동명이인 회피)
+        // 정확히 1명일 때만 신뢰 (동명이인 회피) — 사무실(직통) 번호 우선
         if (matches.length === 1) {
           const u = matches[0];
-          if (u.phone) resolvedAssessorContactForBody = u.phone;
-          else if (u.office) resolvedAssessorContactForBody = u.office;
+          if (u.office) resolvedAssessorContactForBody = u.office;
+          else if (u.phone) resolvedAssessorContactForBody = u.phone;
         }
       }
 
@@ -13838,7 +13838,7 @@ FLOXN 드림`;
       if (recipientType === "심사자") {
         recipientCompany = caseData.assessorId || "";
         recipientName = caseData.assessorTeam || "";
-        // 심사자 SMS는 핸드폰번호(phone) 우선, 없으면 사무실(office) 사용 (동명이인 회피)
+        // 심사자 SMS는 사무실번호(office) 우선, 없으면 핸드폰(phone) 사용 (동명이인 회피)
         let assessorPhone = caseData.assessorContact || "";
         if (caseData.assessorId && caseData.assessorTeam) {
           const matches = await db
@@ -13853,8 +13853,8 @@ FLOXN 드림`;
             .limit(2);
           if (matches.length === 1) {
             const u = matches[0];
-            if (u.phone) assessorPhone = u.phone;
-            else if (u.office) assessorPhone = u.office;
+            if (u.office) assessorPhone = u.office;
+            else if (u.phone) assessorPhone = u.phone;
           }
         }
         recipientPhone = assessorPhone;
@@ -14504,8 +14504,8 @@ https://www.floxn.co.kr/
         managerData = await storage.getUser(caseData.managerId);
       }
 
-      // 심사자 핸드폰번호 우선 조회 (본문/수신처 공통) — 동명이인 회피
-      // SMS는 사무실 번호 대신 핸드폰으로 발송되어야 함
+      // 심사자 사무실번호 우선 조회 (본문/수신처 공통) — 동명이인 회피
+      // 심사사 SMS는 사무실(직통) 번호로 발송되어야 함 (2026-07-07 정책)
       let resolvedAssessorContact = caseData.assessorContact || "";
       if (caseData.assessorId && caseData.assessorTeam) {
         const matches = await db
@@ -14520,8 +14520,8 @@ https://www.floxn.co.kr/
           .limit(2);
         if (matches.length === 1) {
           const u = matches[0];
-          if (u.phone) resolvedAssessorContact = u.phone;
-          else if (u.office) resolvedAssessorContact = u.office;
+          if (u.office) resolvedAssessorContact = u.office;
+          else if (u.phone) resolvedAssessorContact = u.phone;
         }
       }
 
@@ -16321,12 +16321,12 @@ https://www.floxn.co.kr/
           HAVING COUNT(*) = 1
         )
         UPDATE cases c
-        SET assessor_contact = COALESCE(NULLIF(u.phone, ''), NULLIF(u.office, ''), c.assessor_contact)
+        SET assessor_contact = COALESCE(NULLIF(u.office, ''), NULLIF(u.phone, ''), c.assessor_contact)
         FROM unique_users u
         WHERE u.company = c.assessor_id
           AND u.name = c.assessor_team
-          AND COALESCE(NULLIF(u.phone, ''), NULLIF(u.office, '')) IS NOT NULL
-          AND COALESCE(c.assessor_contact, '') <> COALESCE(NULLIF(u.phone, ''), NULLIF(u.office, ''))
+          AND COALESCE(NULLIF(u.office, ''), NULLIF(u.phone, '')) IS NOT NULL
+          AND COALESCE(c.assessor_contact, '') <> COALESCE(NULLIF(u.office, ''), NULLIF(u.phone, ''))
         RETURNING c.id, c.case_number, c.assessor_team, c.assessor_contact
       `);
 
